@@ -3,7 +3,9 @@ import type { Title } from '@/store/types';
 // TMDB: free for non-commercial use with your own key (themoviedb.org/settings/api).
 // Accepts either the short v3 "API key" or the long v4 "API Read Access Token".
 
-const BASE = 'https://api.themoviedb.org/3';
+// TMDB's alternate API address. Some networks (several Indian ISPs among them) block
+// api.themoviedb.org but not api.tmdb.org; posters on image.tmdb.org load either way.
+const BASE = 'https://api.tmdb.org/3';
 const IMG = 'https://image.tmdb.org/t/p';
 
 /** The key to use: your own from Settings, else one baked in at build time (EXPO_PUBLIC_TMDB_KEY), else none. */
@@ -103,14 +105,45 @@ export async function searchAnimeTmdb(key: string, query: string, signal?: Abort
     .map(([r, type]) => toTitle(r, type));
 }
 
-/** The most popular anime right now: series first, with the biggest films mixed in. */
+const KIDS = 10762;
+const FAMILY = 10751;
+const isoDaysFromNow = (days: number) => new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+
+/**
+ * Anime people are watching now: this week's trending anime first, then popular anime airing this
+ * fortnight. Long-running children's shows (always "airing", always popular) are left out of the second.
+ */
 export async function trendingAnimeTmdb(key: string, signal?: AbortSignal): Promise<Title[]> {
-  const params = { with_genres: String(ANIMATION), with_original_language: 'ja', sort_by: 'popularity.desc', include_adult: 'false' };
-  const [tv, movie] = await Promise.all([
-    get<{ results: Result[] }>(key, '/discover/tv', params, signal),
-    get<{ results: Result[] }>(key, '/discover/movie', params, signal),
+  type Page = { results: Result[] };
+  const [tv1, tv2, films, airing] = await Promise.all([
+    get<Page>(key, '/trending/tv/week', {}, signal),
+    get<Page>(key, '/trending/tv/week', { page: '2' }, signal),
+    get<Page>(key, '/trending/movie/week', {}, signal),
+    get<Page>(
+      key,
+      '/discover/tv',
+      {
+        with_genres: String(ANIMATION),
+        without_genres: `${KIDS},${FAMILY}`,
+        with_original_language: 'ja',
+        sort_by: 'popularity.desc',
+        'air_date.gte': isoDaysFromNow(-14),
+        'air_date.lte': isoDaysFromNow(7),
+      },
+      signal,
+    ),
   ]);
-  return [...tv.results.slice(0, 18).map((r) => toTitle(r, 'tv')), ...movie.results.slice(0, 7).map((r) => toTitle(r, 'movie'))];
+  const seen = new Set<string>();
+  const out: Title[] = [];
+  const add = (r: Result, type: 'tv' | 'movie') => {
+    if (!isAnime(r) || seen.has(`${type}:${r.id}`)) return;
+    seen.add(`${type}:${r.id}`);
+    out.push(toTitle(r, type));
+  };
+  for (const r of [...tv1.results, ...tv2.results]) add(r, 'tv');
+  for (const r of films.results) add(r, 'movie');
+  for (const r of airing.results) add(r, 'tv');
+  return out.slice(0, 25);
 }
 
 type MovieDetails = Result & {
