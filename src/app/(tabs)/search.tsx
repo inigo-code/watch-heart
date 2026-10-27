@@ -1,0 +1,246 @@
+import Ionicons from '@expo/vector-icons/Ionicons';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { router } from 'expo-router';
+import { useEffect, useMemo, useState } from 'react';
+import { ActivityIndicator, FlatList, Keyboard, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+import { search, sourceFor, tmdbKey, trending } from '@/api';
+import { Poster } from '@/components/Film';
+import { DATA_SOURCES } from '@/lib/app';
+import { KIND_COLORS, font, fonts, useTheme } from '@/lib/theme';
+import { useSettings } from '@/settings/SettingsProvider';
+import { useDiary } from '@/store/DiaryStore';
+import type { MediaKind, Title } from '@/store/types';
+
+const KINDS: { kind: MediaKind; label: string }[] = [
+  { kind: 'movie', label: 'FILMS' },
+  { kind: 'tv', label: 'SERIES' },
+  { kind: 'anime', label: 'ANIME' },
+];
+
+const PLACEHOLDER: Record<MediaKind, string> = {
+  movie: 'Try “Past Lives” or “Dune”',
+  tv: 'Try “Severance” or “The Bear”',
+  anime: 'Try “Frieren” or “Cowboy Bebop”',
+};
+
+export default function SearchScreen() {
+  const theme = useTheme();
+  const insets = useSafeAreaInsets();
+  const { settings, update } = useSettings();
+  const { viewingsOf } = useDiary();
+  const kind = settings.searchKind;
+  const key = tmdbKey(settings.tmdbKey);
+  const source = sourceFor(kind, key);
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState<Title[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const q = query.trim();
+
+  // Search as you type, after a short pause; with no query, show what's trending.
+  useEffect(() => {
+    if (!source) return;
+    const controller = new AbortController();
+    const timer = setTimeout(
+      () => {
+        setLoading(true);
+        setError(null);
+        (q ? search(kind, q, key, controller.signal) : trending(kind, key, controller.signal))
+          .then((r) => setResults(r))
+          .catch((e) => {
+            if (controller.signal.aborted) return;
+            setResults([]);
+            setError(e instanceof Error && e.message !== 'Network request failed' ? e.message : 'No connection. Check your internet and try again.');
+          })
+          .finally(() => !controller.signal.aborted && setLoading(false));
+      },
+      q ? 400 : 0,
+    );
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [kind, q, key, source]);
+
+  const open = (t: Title) => {
+    Keyboard.dismiss();
+    router.push({ pathname: '/log', params: { title: JSON.stringify(t) } });
+  };
+
+  const credit = useMemo(() => (source ? (source === 'tmdb' ? DATA_SOURCES.tmdb.label : source === 'anilist' ? DATA_SOURCES.anilist.label : DATA_SOURCES.tvmaze.label) : null), [source]);
+
+  return (
+    <View style={[styles.screen, { backgroundColor: theme.bg, paddingTop: insets.top + 10 }]}>
+      <View style={styles.top}>
+        <Text style={[styles.heading, { color: theme.text }]}>
+          WHAT DID YOU <Text style={{ color: theme.accent }}>WATCH?</Text>
+        </Text>
+        <View style={[styles.kinds, { borderColor: theme.border }]}>
+          {KINDS.map((k) => {
+            const active = k.kind === kind;
+            return (
+              <Pressable
+                key={k.kind}
+                onPress={() => update({ searchKind: k.kind })}
+                accessibilityRole="tab"
+                accessibilityState={{ selected: active }}
+                style={[styles.kind, active && { backgroundColor: KIND_COLORS[k.kind] }]}
+              >
+                <Text style={[styles.kindText, { color: active ? '#0B0A0D' : theme.textMuted }]}>{k.label}</Text>
+              </Pressable>
+            );
+          })}
+        </View>
+        <View style={[styles.search, { backgroundColor: theme.chip }]}>
+          <Ionicons name="search" size={18} color={theme.textMuted} />
+          <TextInput
+            value={query}
+            onChangeText={setQuery}
+            placeholder={PLACEHOLDER[kind]}
+            placeholderTextColor={theme.textMuted}
+            style={[styles.searchInput, { color: theme.text }]}
+            returnKeyType="search"
+            autoCorrect={false}
+          />
+          {loading && source ? (
+            <ActivityIndicator size="small" color={theme.accent} />
+          ) : (
+            !!query && (
+              <Pressable onPress={() => setQuery('')} hitSlop={8} accessibilityLabel="Clear search">
+                <Ionicons name="close-circle" size={18} color={theme.textMuted} />
+              </Pressable>
+            )
+          )}
+        </View>
+      </View>
+
+      <FlatList
+        data={source ? results : []}
+        keyExtractor={(t) => `${t.source}:${t.sourceId}`}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
+        contentContainerStyle={[styles.list, { paddingBottom: insets.bottom + 24 }]}
+        ListHeaderComponent={
+          !source ? (
+            <NeedsKey theme={theme} onManual={() => router.push({ pathname: '/log', params: { manual: kind } })} />
+          ) : error ? (
+            <Text style={[styles.note, { color: theme.danger }]}>{error}</Text>
+          ) : results.length > 0 ? (
+            <Text style={[styles.section, { color: theme.textMuted }]}>{q ? 'RESULTS' : 'TRENDING THIS WEEK'}</Text>
+          ) : !loading && q ? (
+            <Text style={[styles.note, { color: theme.textMuted }]}>Nothing found for “{q}”.</Text>
+          ) : !loading && kind === 'tv' && source === 'tvmaze' ? (
+            <Text style={[styles.note, { color: theme.textMuted }]}>Type a series name to search TVmaze.</Text>
+          ) : undefined
+        }
+        renderItem={({ item }) => {
+          const seen = viewingsOf(item.source, item.sourceId).length;
+          return (
+            <Pressable
+              onPress={() => open(item)}
+              accessibilityRole="button"
+              accessibilityLabel={`${item.title}${item.year ? `, ${item.year}` : ''}`}
+              style={({ pressed }) => [styles.row, { borderBottomColor: theme.border, backgroundColor: pressed ? theme.chip : 'transparent' }]}
+            >
+              <Poster uri={item.posterUrl} title={item.title} width={58} theme={theme} radius={4} />
+              <View style={styles.rowBody}>
+                <Text style={[styles.title, { color: theme.text }]} numberOfLines={2}>
+                  {item.title}
+                  {item.year ? <Text style={[styles.year, { color: theme.textMuted }]}>{`  ${item.year}`}</Text> : null}
+                </Text>
+                {!!item.originalTitle && (
+                  <Text style={[styles.original, { color: theme.textMuted }]} numberOfLines={1}>
+                    {item.originalTitle}
+                  </Text>
+                )}
+                {!!item.overview && (
+                  <Text style={[styles.overview, { color: theme.textMuted }]} numberOfLines={2}>
+                    {item.overview}
+                  </Text>
+                )}
+                {seen > 0 && (
+                  <View style={[styles.seen, { borderColor: theme.accent }]}>
+                    <MaterialCommunityIcons name="ticket-confirmation" size={12} color={theme.accent} />
+                    <Text style={[styles.seenText, { color: theme.accent }]}>{seen === 1 ? 'IN YOUR DIARY' : `SEEN ${seen}×`}</Text>
+                  </View>
+                )}
+              </View>
+              <Ionicons name="add-circle-outline" size={26} color={theme.accent} />
+            </Pressable>
+          );
+        }}
+        ListFooterComponent={
+          source ? (
+            <View style={styles.footer}>
+              <Pressable
+                onPress={() => router.push({ pathname: '/log', params: { manual: kind } })}
+                accessibilityRole="button"
+                style={({ pressed }) => [styles.manual, { borderColor: theme.border, opacity: pressed ? 0.7 : 1 }]}
+              >
+                <Ionicons name="create-outline" size={16} color={theme.text} />
+                <Text style={[styles.manualText, { color: theme.text }]}>CAN’T FIND IT? ADD BY HAND</Text>
+              </Pressable>
+              {credit && <Text style={[styles.credit, { color: theme.textMuted }]}>Search by {credit}</Text>}
+            </View>
+          ) : undefined
+        }
+      />
+    </View>
+  );
+}
+
+/** Film search needs a free TMDB key; explain how to get one, without blocking anything else. */
+function NeedsKey({ theme, onManual }: { theme: ReturnType<typeof useTheme>; onManual: () => void }) {
+  return (
+    <View style={[styles.keyCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
+      <MaterialCommunityIcons name="key-chain-variant" size={28} color={theme.accent} />
+      <Text style={[styles.keyTitle, { color: theme.text }]}>FILM SEARCH NEEDS A FREE TMDB KEY</Text>
+      <Text style={[styles.keyText, { color: theme.textMuted }]}>
+        TMDB is the free film database most apps use. Make an account at themoviedb.org, open Settings → API, copy your key, then paste it
+        into Watch Heart’s settings. Anime and series search already work without one.
+      </Text>
+      <View style={styles.keyButtons}>
+        <Pressable onPress={() => router.push('/settings')} style={[styles.keyBtn, { backgroundColor: theme.accent }]} accessibilityRole="button">
+          <Text style={[styles.keyBtnText, { color: theme.accentText }]}>ADD KEY</Text>
+        </Pressable>
+        <Pressable onPress={onManual} style={[styles.keyBtn, { borderColor: theme.border, borderWidth: 1 }]} accessibilityRole="button">
+          <Text style={[styles.keyBtnText, { color: theme.text }]}>ADD BY HAND</Text>
+        </Pressable>
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  screen: { flex: 1 },
+  top: { paddingHorizontal: 16, gap: 12, paddingBottom: 8 },
+  heading: { fontFamily: fonts.display, fontSize: font.marquee, lineHeight: 46, letterSpacing: 1, includeFontPadding: false },
+  kinds: { flexDirection: 'row', borderWidth: 1, borderRadius: 10, padding: 3, gap: 3 },
+  kind: { flex: 1, height: 34, borderRadius: 7, alignItems: 'center', justifyContent: 'center' },
+  kindText: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 1.5 },
+  search: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, height: 46, borderRadius: 12 },
+  searchInput: { flex: 1, fontSize: font.body, height: '100%' },
+  list: { paddingHorizontal: 16 },
+  section: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 1.5, paddingVertical: 8 },
+  note: { fontFamily: fonts.mono, fontSize: font.footnote, paddingVertical: 12, lineHeight: 19 },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10, borderBottomWidth: StyleSheet.hairlineWidth },
+  rowBody: { flex: 1, gap: 3 },
+  title: { fontSize: font.headline, fontWeight: '700' },
+  year: { fontFamily: fonts.mono, fontSize: font.footnote, fontWeight: '400' },
+  original: { fontFamily: fonts.mono, fontSize: font.caption },
+  overview: { fontSize: font.footnote, lineHeight: 18 },
+  seen: { flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'flex-start', borderWidth: 1, borderRadius: 4, paddingHorizontal: 5, marginTop: 2 },
+  seenText: { fontFamily: fonts.monoBold, fontSize: 10, letterSpacing: 1 },
+  footer: { alignItems: 'center', gap: 12, paddingTop: 20 },
+  manual: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderStyle: 'dashed', borderRadius: 22, height: 44, paddingHorizontal: 18 },
+  manualText: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 1 },
+  credit: { fontFamily: fonts.mono, fontSize: font.caption },
+  keyCard: { borderWidth: 1, borderRadius: 14, padding: 18, gap: 10, marginTop: 8 },
+  keyTitle: { fontFamily: fonts.display, fontSize: 24, letterSpacing: 1 },
+  keyText: { fontFamily: fonts.mono, fontSize: font.footnote, lineHeight: 19 },
+  keyButtons: { flexDirection: 'row', gap: 10, marginTop: 4 },
+  keyBtn: { height: 40, paddingHorizontal: 16, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
+  keyBtnText: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 1 },
+});
