@@ -22,6 +22,10 @@ const SEARCH = `query ($search: String) {
   Page(perPage: 25) { media(search: $search, type: ANIME, isAdult: false, sort: SEARCH_MATCH) { ${FIELDS} } }
 }`;
 
+const BY_ID = `query ($id: Int, $idMal: Int) {
+  Media(id: $id, idMal: $idMal, type: ANIME) { ${FIELDS} }
+}`;
+
 const TRENDING = `query {
   Page(perPage: 25) { media(type: ANIME, isAdult: false, sort: TRENDING_DESC) { ${FIELDS} } }
 }`;
@@ -78,3 +82,16 @@ async function query(body: object, signal?: AbortSignal): Promise<Title[]> {
 
 export const searchAnime = (search: string, signal?: AbortSignal) => query({ query: SEARCH, variables: { search } }, signal);
 export const trendingAnime = (signal?: AbortSignal) => query({ query: TRENDING }, signal);
+
+/** One anime by its AniList id, or by its MyAnimeList id. Null when there's no such anime. */
+export async function animeById(ids: { id?: number; idMal?: number }, signal?: AbortSignal): Promise<Title | null> {
+  const res = await fetch(URL, {
+    method: 'POST',
+    signal,
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify({ query: BY_ID, variables: ids }),
+  });
+  if (!res.ok) return null;
+  const json = (await res.json()) as { data?: { Media: Media | null } };
+  return json.data?.Media ? toTitle(json.data.Media) : null;
+}

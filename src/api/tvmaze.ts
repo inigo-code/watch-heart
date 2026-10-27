@@ -39,3 +39,9 @@ export async function searchTvmaze(query: string, signal?: AbortSignal): Promise
   const json = (await res.json()) as { show: Show }[];
   return json.map((r) => toTitle(r.show));
 }
+
+/** One series by its TVmaze id; null when there's no such show. */
+export async function showById(id: string, signal?: AbortSignal): Promise<Title | null> {
+  const res = await fetch(`https://api.tvmaze.com/shows/${encodeURIComponent(id)}`, { signal });
+  return res.ok ? toTitle((await res.json()) as Show) : null;
+}

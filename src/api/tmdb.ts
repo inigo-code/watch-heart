@@ -111,3 +111,18 @@ export async function detailsTmdb(key: string, t: Title, signal?: AbortSignal): 
     credit: d.networks?.[0]?.name ?? d.created_by?.[0]?.name ?? null,
   };
 }
+
+/** A film or series by its TMDB id, with full details. */
+export function tmdbById(key: string, kind: 'movie' | 'tv', id: string, signal?: AbortSignal): Promise<Title> {
+  const stub: Title = { kind, source: 'tmdb', sourceId: `${kind}:${id}`, title: '', year: null, posterUrl: null, backdropUrl: null, genres: [], runtime: null };
+  return detailsTmdb(key, stub, signal);
+}
+
+/** Looks up an IMDb id (tt1234567) on TMDB; null when TMDB doesn't know it. */
+export async function findImdb(key: string, imdbId: string, signal?: AbortSignal): Promise<Title | null> {
+  const data = await get<{ movie_results: Result[]; tv_results: Result[] }>(key, `/find/${imdbId}`, { external_source: 'imdb_id' }, signal);
+  const movie = data.movie_results[0];
+  if (movie) return tmdbById(key, 'movie', String(movie.id), signal);
+  const tv = data.tv_results[0];
+  return tv ? tmdbById(key, 'tv', String(tv.id), signal) : null;
+}

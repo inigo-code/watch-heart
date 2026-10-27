@@ -1,6 +1,6 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, Keyboard, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -33,7 +33,17 @@ export default function SearchScreen() {
   const kind = settings.searchKind;
   const key = tmdbKey(settings.tmdbKey);
   const source = sourceFor(kind, key);
-  const [query, setQuery] = useState('');
+  const params = useLocalSearchParams<{ q?: string; kind?: MediaKind }>();
+  const [query, setQuery] = useState(params.q ?? '');
+  // Arriving from a share (or anywhere with ?q=) fills in the search and picks the kind.
+  const [lastQ, setLastQ] = useState(params.q);
+  if (params.q !== lastQ) {
+    setLastQ(params.q);
+    if (params.q) setQuery(params.q);
+  }
+  useEffect(() => {
+    if (params.kind) update({ searchKind: params.kind });
+  }, [params.kind, params.q, update]);
   const [results, setResults] = useState<Title[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

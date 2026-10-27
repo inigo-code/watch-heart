@@ -1,11 +1,14 @@
 import { BebasNeue_400Regular } from '@expo-google-fonts/bebas-neue/400Regular';
 import { CourierPrime_400Regular } from '@expo-google-fonts/courier-prime/400Regular';
 import { CourierPrime_700Bold } from '@expo-google-fonts/courier-prime/700Bold';
+import Constants, { ExecutionEnvironment } from 'expo-constants';
 import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
+import { Stack, router, usePathname } from 'expo-router';
+import { ShareIntentProvider, useShareIntentContext } from 'expo-share-intent';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
+import { Platform } from 'react-native';
 
 import { ToastProvider } from '@/components/Toast';
 import { UpdatePrompt } from '@/components/UpdatePrompt';
@@ -17,6 +20,9 @@ import { DiaryStoreProvider } from '@/store/DiaryStore';
 // Keep the splash up until the marquee and typewriter fonts are ready, so titles never flash in the fallback.
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
+// Receiving shares needs the native module, which web and Expo Go don't have.
+const shareDisabled = Platform.OS === 'web' || Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
+
 export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts({ BebasNeue_400Regular, CourierPrime_400Regular, CourierPrime_700Bold });
   useEffect(() => {
@@ -24,6 +30,7 @@ export default function RootLayout() {
   }, [fontsLoaded, fontError]);
 
   return (
+    <ShareIntentProvider options={{ disabled: shareDisabled, resetOnBackground: true }}>
     <SettingsProvider>
       <DiaryStoreProvider>
         <ToastProvider>
@@ -33,11 +40,21 @@ export default function RootLayout() {
         </ToastProvider>
       </DiaryStoreProvider>
     </SettingsProvider>
+    </ShareIntentProvider>
   );
 }
 
 function Navigator() {
   const theme = useTheme();
+  const pathname = usePathname();
+  const { hasShareIntent } = useShareIntentContext();
+
+  // On Android, a shared link arrives through the native module rather than a deep link,
+  // so open the Share screen whenever something has been shared and not yet handled.
+  useEffect(() => {
+    if (hasShareIntent && pathname !== '/share') router.push('/share');
+  }, [hasShareIntent, pathname]);
+
   return (
     <>
       <StatusBar style={theme.dark ? 'light' : 'dark'} />
@@ -58,6 +75,7 @@ function Navigator() {
         <Stack.Screen name="settings" options={{ title: 'SETTINGS' }} />
         <Stack.Screen name="trash" options={{ title: 'TRASH' }} />
         <Stack.Screen name="about" options={{ title: 'ABOUT' }} />
+        <Stack.Screen name="share" options={{ title: '' }} />
       </Stack>
     </>
   );
