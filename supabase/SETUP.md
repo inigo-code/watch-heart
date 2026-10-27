@@ -44,8 +44,8 @@ private. Never use the `service_role` / secret key in the app.
 For builds and updates (EAS), from the project folder:
 
 ```bash
-npx eas-cli@latest env:create --name EXPO_PUBLIC_SUPABASE_URL --value https://YOUR-REF.supabase.co --environment preview --environment production --visibility plaintext
-npx eas-cli@latest env:create --name EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY --value sb_publishable_YOUR_KEY --environment preview --environment production --visibility plaintext
+npx eas-cli@latest env:set --name EXPO_PUBLIC_SUPABASE_URL --value https://YOUR-REF.supabase.co --environment preview --environment production --visibility plaintext --non-interactive
+npx eas-cli@latest env:set --name EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY --value sb_publishable_YOUR_KEY --environment preview --environment production --visibility plaintext --non-interactive
 ```
 
 For `npx expo start` on your PC, put the same two lines in `.env.local` (it's gitignored):

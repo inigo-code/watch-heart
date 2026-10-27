@@ -1,4 +1,3 @@
-import Constants from 'expo-constants';
 import * as Linking from 'expo-linking';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -6,13 +5,13 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BrandTitle } from '@/components/BrandTitle';
 import { Sprockets } from '@/components/Film';
 import { Row, Section } from '@/components/SettingsUI';
+import { UpdateRow, describeRunning } from '@/components/UpdateRow';
 import { APP_TAGLINE, DATA_SOURCES, DEVELOPER, SUPPORT_EMAIL } from '@/lib/app';
 import { font, fonts, useTheme } from '@/lib/theme';
 
 export default function AboutScreen() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
-  const version = Constants.expoConfig?.version ?? '';
 
   return (
     <ScrollView style={{ backgroundColor: theme.bg }} contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 32 }]}>
@@ -21,10 +20,14 @@ export default function AboutScreen() {
         <View style={styles.cardBody}>
           <BrandTitle theme={{ ...theme, text: theme.dark ? theme.text : theme.bg }} size={44} />
           <Text style={[styles.tagline, { color: theme.accent }]}>{APP_TAGLINE.toUpperCase()}</Text>
-          <Text style={[styles.version, { color: theme.textMuted }]}>Version {version}</Text>
+          <Text style={[styles.version, { color: theme.textMuted }]}>Version {describeRunning()}</Text>
         </View>
         <Sprockets color={theme.bg} count={14} hole={6} />
       </View>
+
+      <Section theme={theme} title="Updates" footer="New versions arrive by themselves and apply the next time the app opens. Check here to get one straight away.">
+        <UpdateRow theme={theme} last />
+      </Section>
 
       <Section theme={theme} title="Credits" footer={`${DATA_SOURCES.tmdb.notice} ${DATA_SOURCES.tvmaze.notice}`}>
         <Row theme={theme} icon="film-outline" label="Films and series" value="TMDB" onPress={() => Linking.openURL(DATA_SOURCES.tmdb.url)} />

@@ -30,6 +30,10 @@ export default function RootLayout() {
     if (fontsLoaded || fontError) SplashScreen.hideAsync().catch(() => {});
   }, [fontsLoaded, fontError]);
 
+  // Draw nothing (the splash stays up) until the fonts are in. Android measures text once, so text
+  // laid out in the fallback font keeps the wrong width: a gap in the title, cut-off tab labels.
+  if (!fontsLoaded && !fontError) return null;
+
   return (
     <ShareIntentProvider options={{ disabled: shareDisabled, resetOnBackground: true }}>
     <SettingsProvider>

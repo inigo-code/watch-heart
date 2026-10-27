@@ -2,7 +2,7 @@ import type { MediaKind, Title } from '@/store/types';
 
 import { searchAnime, trendingAnime } from './anilist';
 import { detailsTmdb, searchTmdb, tmdbKey, trendingTmdb } from './tmdb';
-import { searchTvmaze } from './tvmaze';
+import { popularTvmaze, searchTvmaze } from './tvmaze';
 
 export { tmdbKey };
 
@@ -21,11 +21,12 @@ export async function search(kind: MediaKind, query: string, key: string, signal
   return [];
 }
 
-/** What's popular this week, shown before you type. Empty when the source has no such list. */
+/** What's popular, shown before you type: trending this week (TMDB, AniList) or popular on TV today (TVmaze). */
 export async function trending(kind: MediaKind, key: string, signal?: AbortSignal): Promise<Title[]> {
   const source = sourceFor(kind, key);
   if (source === 'anilist') return trendingAnime(signal);
   if (source === 'tmdb') return trendingTmdb(key, kind as 'movie' | 'tv', signal);
+  if (source === 'tvmaze') return popularTvmaze(signal);
   return [];
 }
 

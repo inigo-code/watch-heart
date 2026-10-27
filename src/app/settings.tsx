@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ControlRow, Row, Section, Segmented, ToggleRow } from '@/components/SettingsUI';
 import { useToast } from '@/components/Toast';
+import { UpdateRow } from '@/components/UpdateRow';
 import { APP_NAME, DATA_SOURCES } from '@/lib/app';
 import { tmdbKey } from '@/api';
 import { exportBackup, exportCsv, exportLetterboxd, pickBackup } from '@/lib/backup';
@@ -250,7 +251,7 @@ export default function SettingsScreen() {
       <Section
         theme={theme}
         title="Your data"
-        footer="Everything stays on this phone. Back up now and then; importing a backup merges it in and never deletes anything. From Letterboxd, pick the .zip from letterboxd.com → Settings → Data → Export your data."
+        footer="Everything is saved on this phone, and in your account when you sign in. Back up now and then; importing a backup merges it in and never deletes anything. From Letterboxd, pick the .zip from letterboxd.com → Settings → Data → Export your data."
       >
         <Row
           theme={theme}
@@ -330,6 +331,7 @@ export default function SettingsScreen() {
       </Section>
 
       <Section theme={theme} title="About">
+        <UpdateRow theme={theme} />
         <Row theme={theme} icon="information-circle-outline" label={`About ${APP_NAME}`} onPress={() => router.push('/about')} />
         <Row
           theme={theme}

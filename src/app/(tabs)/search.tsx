@@ -140,7 +140,7 @@ export default function SearchScreen() {
           ) : error ? (
             <Text style={[styles.note, { color: theme.danger }]}>{error}</Text>
           ) : results.length > 0 ? (
-            <Text style={[styles.section, { color: theme.textMuted }]}>{q ? 'RESULTS' : 'TRENDING THIS WEEK'}</Text>
+            <Text style={[styles.section, { color: theme.textMuted }]}>{q ? 'RESULTS' : source === 'tvmaze' ? 'POPULAR ON TV TODAY' : 'TRENDING THIS WEEK'}</Text>
           ) : !loading && q ? (
             <Text style={[styles.note, { color: theme.textMuted }]}>Nothing found for “{q}”.</Text>
           ) : !loading && kind === 'tv' && source === 'tvmaze' ? (
