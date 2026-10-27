@@ -57,7 +57,9 @@ export const StoryCanvas = forwardRef<StoryHandle, Props>(function StoryCanvas({
     [entries, options.ranked],
   );
   const stats = useMemo(() => computeStats(entries), [entries]);
-  const shown = useMemo(() => visibleEntries(sorted, options), [sorted, options]);
+  // The room left between the title and the stats, measured, so any month fits whatever its size.
+  const [area, setArea] = useState(0);
+  const shown = useMemo(() => (area ? visibleEntries(sorted, options, area) : []), [sorted, options, area]);
   const urls = useMemo(() => {
     const list = shown.map((e) => e.posterUrl).filter((u): u is string => !!u);
     if (options.layout === 'spotlight' && stats.favourite?.posterUrl) list.push(stats.favourite.posterUrl);
@@ -77,10 +79,10 @@ export const StoryCanvas = forwardRef<StoryHandle, Props>(function StoryCanvas({
 
       <View style={styles.inner}>
         <Masthead p={p} title={title} subtitle={subtitle} count={entries.length} compact={options.layout === 'spotlight'} />
-        <View style={styles.middle}>
-          {options.layout === 'strip' && <Strip p={p} entries={shown} total={sorted.length} options={options} settled={settled} />}
-          {options.layout === 'tickets' && <Tickets p={p} entries={shown} total={sorted.length} options={options} settled={settled} />}
-          {options.layout === 'spotlight' && stats.favourite && (
+        <View style={styles.middle} onLayout={(e) => setArea(Math.floor(e.nativeEvent.layout.height))}>
+          {area > 0 && options.layout === 'strip' && <Strip p={p} entries={shown} total={sorted.length} options={options} area={area} settled={settled} />}
+          {area > 0 && options.layout === 'tickets' && <Tickets p={p} entries={shown} total={sorted.length} options={options} area={area} settled={settled} />}
+          {area > 0 && options.layout === 'spotlight' && stats.favourite && (
             <Spotlight p={p} favourite={stats.favourite} rest={shown.filter((e) => e.id !== stats.favourite?.id)} total={sorted.length} options={options} settled={settled} />
           )}
         </View>
@@ -96,29 +98,44 @@ export const StoryCanvas = forwardRef<StoryHandle, Props>(function StoryCanvas({
   );
 });
 
-// How many fit in each layout, before a "+N more" takes the last place.
-// The strip gets the room the stats bar would use when it's hidden.
+// How many fit in each layout, given the measured `area` (height) between the title and the stats.
+// When not everything fits, the last place goes to a "+N more".
 const STRIP_W = STORY_W - PAD * 2 - 20;
-const stripHeight = (stats: boolean) => (stats ? 300 : 380);
-const ticketRows = (stats: boolean) => (stats ? 7 : 9);
+// The strip's own height around the posters: two rows of holes, padding and gaps.
+const STRIP_CHROME = 6 * 2 + 6 * 2 + 8 * 2;
+// Stars under a poster are only drawn while they're big enough to read.
+const STARS_MIN_W = 40;
+const STARS_H = 12;
+const MAX_COLS = 10;
+const TICKET_H = 40;
+const TICKET_GAP = 5;
+const MORE_H = 18;
 // One row of small posters under the favourite.
 const SPOTLIGHT_REST = 8;
 
-function stripFit(n: number, ratings: boolean, stats: boolean) {
-  const height = stripHeight(stats);
+function stripFit(n: number, ratings: boolean, area: number) {
+  const height = area - STRIP_CHROME;
   const gap = 6;
-  const label = ratings ? 12 : 0;
-  for (let cols = 2; cols <= 8; cols++) {
+  let fit = { w: 0, label: 0, capacity: 0, gap };
+  for (let cols = 2; cols <= MAX_COLS; cols++) {
     const w = Math.min(110, (STRIP_W - gap * (cols - 1)) / cols);
-    const h = w * 1.5 + label;
-    const rows = Math.floor((height + gap) / (h + gap));
-    if (rows * cols >= n || cols === 8) return { cols, w, capacity: rows * cols, gap };
+    const label = ratings && w >= STARS_MIN_W ? STARS_H : 0;
+    const rows = Math.floor((height + gap) / (w * 1.5 + label + gap));
+    fit = { w, label, capacity: rows * cols, gap };
+    if (fit.capacity >= n) break;
   }
-  return { cols: 8, w: 30, capacity: 48, gap };
+  return fit;
 }
 
-function visibleEntries(sorted: Entry[], o: StoryOptions): Entry[] {
-  const cap = o.layout === 'strip' ? stripFit(sorted.length, o.ratings, o.stats).capacity : o.layout === 'tickets' ? ticketRows(o.stats) : SPOTLIGHT_REST + 1;
+function ticketCapacity(n: number, area: number) {
+  const all = Math.floor((area + TICKET_GAP) / (TICKET_H + TICKET_GAP));
+  // When they don't all fit, the "+N more" line takes some room too.
+  return n <= all ? n : Math.floor((area - MORE_H + TICKET_GAP) / (TICKET_H + TICKET_GAP));
+}
+
+function visibleEntries(sorted: Entry[], o: StoryOptions, area: number): Entry[] {
+  if (o.layout === 'tickets') return sorted.slice(0, ticketCapacity(sorted.length, area));
+  const cap = o.layout === 'strip' ? stripFit(sorted.length, o.ratings, area).capacity : SPOTLIGHT_REST + 1;
   return sorted.length > cap ? sorted.slice(0, cap - 1) : sorted;
 }
 
@@ -189,11 +206,11 @@ function More({ n, w, p }: { n: number; w: number; p: Palette }) {
   );
 }
 
-type LayoutProps = { p: Palette; entries: Entry[]; total: number; options: StoryOptions; settled: (u: string) => void };
+type LayoutProps = { p: Palette; entries: Entry[]; total: number; options: StoryOptions; area: number; settled: (u: string) => void };
 
 /** Posters in the frames of a strip of film, sprocket holes above and below. */
-function Strip({ p, entries, total, options, settled }: LayoutProps) {
-  const { w, gap } = stripFit(total, options.ratings, options.stats);
+function Strip({ p, entries, total, options, area, settled }: LayoutProps) {
+  const { w, gap, label } = stripFit(total, options.ratings, area);
   const extra = total - entries.length;
   return (
     <View style={[styles.strip, { backgroundColor: p.strip }]}>
@@ -202,7 +219,7 @@ function Strip({ p, entries, total, options, settled }: LayoutProps) {
         {entries.map((e, i) => (
           <View key={e.id} style={{ width: w, alignItems: 'center' }}>
             <StoryPoster e={e} w={w} p={p} settled={settled} />
-            {options.ratings && (
+            {label > 0 && (
               <View style={styles.stripMeta}>
                 {options.ranked && <Text style={[styles.rank, { color: p.accent }]}>{i + 1}</Text>}
                 <StoryStars rating={e.rating} size={Math.min(9, w / 6.5)} color={p.star} />
@@ -222,7 +239,7 @@ function Strip({ p, entries, total, options, settled }: LayoutProps) {
 function Tickets({ p, entries, total, options, settled }: LayoutProps) {
   const extra = total - entries.length;
   return (
-    <View style={{ gap: 5 }}>
+    <View style={{ gap: TICKET_GAP }}>
       {entries.map((e, i) => {
         const { day, month } = dayParts(e.watchedOn);
         return (
@@ -238,7 +255,7 @@ function Tickets({ p, entries, total, options, settled }: LayoutProps) {
               )}
             </View>
             <View style={[styles.ticketTear, { borderColor: p.muted + '88' }]} />
-            <StoryPoster e={e} w={22} p={p} settled={settled} radius={2} />
+            <StoryPoster e={e} w={20} p={p} settled={settled} radius={2} />
             <View style={{ flex: 1, gap: 2 }}>
               <Text style={[styles.ticketTitle, { color: p.text }]} numberOfLines={1}>
                 {e.title}
@@ -263,7 +280,7 @@ function Tickets({ p, entries, total, options, settled }: LayoutProps) {
 }
 
 /** The favourite, big, with everything else in a row beneath. */
-function Spotlight({ p, favourite, rest, total, options, settled }: Omit<LayoutProps, 'entries'> & { favourite: Entry; rest: Entry[] }) {
+function Spotlight({ p, favourite, rest, total, options, settled }: Omit<LayoutProps, 'entries' | 'area'> & { favourite: Entry; rest: Entry[] }) {
   const extra = total - 1 - rest.length;
   const quote = favourite.review && !favourite.spoilers ? favourite.review.replace(/\s+/g, ' ').trim() : '';
   return (
@@ -339,15 +356,15 @@ const styles = StyleSheet.create({
   noPosterText: { fontFamily: fonts.display, textAlign: 'center' },
   more: { borderWidth: 1, borderStyle: 'dashed', borderRadius: 3, alignItems: 'center', justifyContent: 'center' },
   moreText: { fontFamily: fonts.display },
-  ticket: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderRadius: 6, paddingVertical: 5, paddingRight: 8 },
+  ticket: { flexDirection: 'row', alignItems: 'center', gap: 8, height: TICKET_H, borderWidth: 1, borderRadius: 6, paddingRight: 8, overflow: 'hidden' },
   ticketStub: { width: 34, alignItems: 'center' },
   ticketDay: { fontFamily: fonts.display, fontSize: 22, lineHeight: 22, includeFontPadding: false },
   ticketMonth: { fontFamily: fonts.monoBold, fontSize: 7, letterSpacing: 1 },
-  ticketTear: { alignSelf: 'stretch', borderLeftWidth: 1, borderStyle: 'dashed', marginVertical: -5, marginLeft: -4 },
+  ticketTear: { alignSelf: 'stretch', borderLeftWidth: 1, borderStyle: 'dashed', marginLeft: -4 },
   ticketTitle: { fontSize: 12, fontWeight: '800' },
   ticketMeta: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   ticketProgress: { fontFamily: fonts.mono, fontSize: 8, flexShrink: 1 },
-  andMore: { fontFamily: fonts.monoBold, fontSize: 9, letterSpacing: 1.5, textAlign: 'center', marginTop: 4 },
+  andMore: { fontFamily: fonts.monoBold, fontSize: 9, lineHeight: MORE_H - TICKET_GAP, letterSpacing: 1.5, textAlign: 'center' },
   favTitle: { fontFamily: fonts.display, fontSize: 28, lineHeight: 30, textAlign: 'center', letterSpacing: 1, includeFontPadding: false },
   quote: { fontFamily: fonts.mono, fontSize: 10, lineHeight: 14, textAlign: 'center', fontStyle: 'italic', paddingHorizontal: 10 },
   restRow: { flexDirection: 'row', justifyContent: 'center', gap: 5, marginTop: 2 },
