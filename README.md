@@ -4,6 +4,7 @@
 
 <p align="center">
   <a href="../../releases/latest/download/watch-heart.apk"><img alt="Download APK" src="https://img.shields.io/badge/Download-Android%20APK-F2B84B?style=for-the-badge&logo=android&logoColor=white&labelColor=0B0A0D"></a>
+  <a href="https://inigo-code.github.io/watch-heart-site/fdroid.html"><img alt="Get it with F-Droid" src="https://img.shields.io/badge/Get%20it%20with-F--Droid-1976D2?style=for-the-badge&logo=f-droid&logoColor=white&labelColor=0B0A0D"></a>
   <a href="https://inigo-code.github.io/watch-heart-site/"><img alt="Website" src="https://img.shields.io/badge/Website-Watch%20Heart-FF4D6D?style=for-the-badge&logo=githubpages&logoColor=white&labelColor=0B0A0D"></a>
   <img alt="Version" src="https://img.shields.io/badge/version-1.0.0-F2B84B?style=for-the-badge&labelColor=0B0A0D">
   <img alt="Expo SDK 58" src="https://img.shields.io/badge/Expo-SDK%2058-000020?style=for-the-badge&logo=expo&logoColor=white">
@@ -81,9 +82,32 @@ keep a watchlist, and turn each month into an <b>Instagram story</b>. Free, with
 
 ## ⬇️ Install
 
+### With F-Droid (recommended, updates automatically)
+
+1. Install [F-Droid](https://f-droid.org) (or Neo Store / Droid-ify) on your phone.
+2. Open the **[Watch Heart F-Droid page](https://inigo-code.github.io/watch-heart-site/fdroid.html)** on your phone and tap **Add to F-Droid**, or scan its QR code from another screen.
+3. Search for **Watch Heart** in F-Droid and install it. New versions show up in F-Droid like any other app.
+
+<details>
+<summary>Add the repository by hand</summary>
+
+In F-Droid, go to **Settings → Repositories → +** and enter:
+
+- **Address:** `https://inigo-code.github.io/watch-heart-site/fdroid/repo`
+- **Fingerprint (SHA-256):** `14F917D7046ACF9C7709C426D8B91B4375B4BF7860CC0BE5601C58C9BF8F68FB`
+
+F-Droid checks the repository against this fingerprint, so you only ever get APKs signed for Watch Heart.
+</details>
+
+> Watch Heart is in its own F-Droid repository, not the main F-Droid one, so it only shows up in F-Droid's search after you add the repository.
+
+### Direct download
+
 1. On your Android phone, tap **[Download APK](../../releases/latest/download/watch-heart.apk)** (or open the [latest release](../../releases/latest)).
 2. Open the file. If Android asks, allow your browser to install apps. If Play Protect warns, choose **Install anyway**.
-3. That's it. Updates arrive by themselves, and new versions install over the old one and keep your diary.
+3. That's it. New versions install over the old one and keep your diary.
+
+Both ways install the same signed APK, so you can switch between them without losing anything. Smaller updates also arrive inside the app by themselves.
 
 > Watch Heart asks for very little: **Internet**, for search, posters, sync and updates; **Biometric**, only if you turn on App lock; and permission to **save** stories to Photos. It can't read your gallery.
 
@@ -100,12 +124,14 @@ Settings → **Import from other apps**, then pick the file your old app exporte
 
 | App | What comes across |
 | --- | --- |
-| Letterboxd | Diary, ratings, reviews, likes, watched films, watchlist |
-| IMDb | Ratings (dated when you rated) and watchlist |
-| Trakt (and Moviebase, through Trakt) | History, ratings, watchlist, with exact matches |
-| MyAnimeList / AniList | Completed, watching, on hold and dropped, with episodes; plan to watch goes to the watchlist |
-| Netflix | Viewing activity, with series grouped per day |
-| Refract, Serializd, TV Time | Any CSV or JSON export: titles, dates, ratings, reviews |
+| <img src="https://inigo-code.github.io/watch-heart-site/assets/logos/letterboxd.png" width="20" height="20" alt="" align="top"> Letterboxd | Diary, ratings, reviews, likes, watched films, watchlist |
+| <img src="https://inigo-code.github.io/watch-heart-site/assets/logos/imdb.png" width="20" height="20" alt="" align="top"> IMDb | Ratings (dated when you rated) and watchlist |
+| <img src="https://inigo-code.github.io/watch-heart-site/assets/logos/trakt.png" width="20" height="20" alt="" align="top"> Trakt, <img src="https://inigo-code.github.io/watch-heart-site/assets/logos/moviebase.png" width="20" height="20" alt="" align="top"> Moviebase (through Trakt) | History, ratings, watchlist, with exact matches |
+| <img src="https://inigo-code.github.io/watch-heart-site/assets/logos/myanimelist.png" width="20" height="20" alt="" align="top"> MyAnimeList, <img src="https://inigo-code.github.io/watch-heart-site/assets/logos/anilist.png" width="20" height="20" alt="" align="top"> AniList | Completed, watching, on hold and dropped, with episodes; plan to watch goes to the watchlist |
+| <img src="https://inigo-code.github.io/watch-heart-site/assets/logos/netflix.png" width="20" height="20" alt="" align="top"> Netflix | Viewing activity, with series grouped per day |
+| <img src="https://inigo-code.github.io/watch-heart-site/assets/logos/refract.png" width="20" height="20" alt="" align="top"> Refract, <img src="https://inigo-code.github.io/watch-heart-site/assets/logos/serializd.png" width="20" height="20" alt="" align="top"> Serializd, <img src="https://inigo-code.github.io/watch-heart-site/assets/logos/tvtime.png" width="20" height="20" alt="" align="top"> TV Time | Any CSV or JSON export: titles, dates, ratings, reviews |
+
+<sub>Logos from <a href="https://simpleicons.org">Simple Icons</a> (CC0); each belongs to its owner. Watch Heart isn't affiliated with any of these apps.</sub>
 
 Entries without a watch date go to an **Archive** at the end of the diary instead of a made-up date.
 
@@ -150,7 +176,7 @@ The EAS profiles match Prompt Heart's: `preview` builds an installable APK and `
 npx eas-cli@latest update --channel preview --platform android --environment preview --message "What changed"
 ```
 
-New native code needs a new build. Attach the APK to a GitHub release as `watch-heart.apk`, so the website's download buttons always fetch the newest one.
+New native code needs a new build. Attach the APK to a GitHub release as `watch-heart.apk`, so the website's download buttons always fetch the newest one, then publish it to the F-Droid repository with `publish.sh` in the `Watch Heart F-Droid` folder next to this one (its README explains the signing key, which stays private).
 
 Accounts and sync need a free Supabase project; see [supabase/SETUP.md](supabase/SETUP.md).
 

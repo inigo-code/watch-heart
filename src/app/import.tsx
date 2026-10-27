@@ -5,6 +5,8 @@ import { useState } from 'react';
 import { ActivityIndicator, LayoutAnimation, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { ImportLogo, logoFor } from '@/components/ImportLogo';
+import type { LogoKey } from '@/components/ImportLogo';
 import { useToast } from '@/components/Toast';
 import { tmdbKey } from '@/api';
 import { pickImport } from '@/lib/import';
@@ -17,46 +19,54 @@ import { useDiary } from '@/store/DiaryStore';
 
 // Bring your history from other apps: pick whatever they exported, check what was found, add it.
 
-type Guide = { app: string; what: string; steps: string };
+type Guide = { app: string; logos: LogoKey[]; what: string; steps: string };
 
 const GUIDES: Guide[] = [
   {
     app: 'Letterboxd',
+    logos: ['letterboxd'],
     what: 'Diary, watched and rated films, reviews, likes, watchlist',
     steps: 'letterboxd.com → Settings → Data → Export your data. Pick the .zip as it is.',
   },
   {
     app: 'IMDb',
+    logos: ['imdb'],
     what: 'Ratings (dated when you rated) and watchlist',
     steps: 'imdb.com → Your ratings → ⋯ → Export, and the same on Your watchlist. Pick both CSVs.',
   },
   {
     app: 'Trakt',
+    logos: ['trakt'],
     what: 'Watch history, ratings, watchlist, with exact matches',
     steps: 'trakt.tv → Settings → Data → Export your data. Pick the .zip.',
   },
   {
     app: 'Moviebase',
+    logos: ['moviebase', 'trakt'],
     what: 'Through Trakt',
     steps: 'Moviebase syncs with Trakt: sync it, then export from Trakt as above.',
   },
   {
     app: 'MyAnimeList / AniList',
+    logos: ['myanimelist', 'anilist'],
     what: 'Anime list: completed, watching, dropped, plan to watch',
     steps: 'myanimelist.net → profile menu → Export → Anime list (.xml.gz). AniList: export your list in MyAnimeList format.',
   },
   {
     app: 'Netflix',
+    logos: ['netflix'],
     what: 'Viewing history; episodes of a show on one day become one entry',
     steps: 'netflix.com → Account → Profiles → your profile → Viewing activity → Download all. Or the full data download (.zip).',
   },
   {
     app: 'Refract',
+    logos: ['refract'],
     what: 'Watched titles, ratings, reviews, watchlist',
     steps: 'In Refract: Settings → Export Data. Save the .zip and pick it here.',
   },
   {
     app: 'Serializd, TV Time and others',
+    logos: ['serializd', 'tvtime'],
     what: 'Any CSV or JSON export with titles and dates',
     steps: 'Columns like title, date, rating, review, season and episode are recognised by name. TV Time: the GDPR export (tracking-prod-records-v2.csv), if you saved it.',
   },
@@ -130,18 +140,21 @@ export default function ImportScreen() {
       {found && (
         <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.accent + '66' }]}>
           <Text style={[styles.cardTitle, { color: theme.text }]}>{total ? 'READY TO IMPORT' : 'NOTHING FOUND'}</Text>
-          {found.sources.map((s) => (
-            <View key={s.source} style={styles.sourceRow}>
-              <Ionicons name="checkmark-circle" size={18} color={theme.accent} />
-              <View style={{ flex: 1 }}>
-                <Text style={[styles.sourceName, { color: theme.text }]}>{s.source}</Text>
-                <Text style={[styles.meta, { color: theme.textMuted }]}>
-                  {[s.entries ? `${s.entries} in the diary` : '', s.watchlist ? `${s.watchlist} on the watchlist` : ''].filter(Boolean).join(' · ')}
-                </Text>
-                {!!s.note && <Text style={[styles.meta, { color: theme.textMuted }]}>{s.note}</Text>}
+          {found.sources.map((s) => {
+            const logo = logoFor(s.source);
+            return (
+              <View key={s.source} style={styles.sourceRow}>
+                {logo ? <ImportLogo logos={[logo]} size={32} /> : <Ionicons name="checkmark-circle" size={18} color={theme.accent} />}
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.sourceName, { color: theme.text }]}>{s.source}</Text>
+                  <Text style={[styles.meta, { color: theme.textMuted }]}>
+                    {[s.entries ? `${s.entries} in the diary` : '', s.watchlist ? `${s.watchlist} on the watchlist` : ''].filter(Boolean).join(' · ')}
+                  </Text>
+                  {!!s.note && <Text style={[styles.meta, { color: theme.textMuted }]}>{s.note}</Text>}
+                </View>
               </View>
-            </View>
-          ))}
+            );
+          })}
           {found.unreadable.length > 0 && (
             <Text style={[styles.meta, { color: theme.textMuted }]}>Not recognised, so left out: {found.unreadable.join(', ')}</Text>
           )}
@@ -182,6 +195,7 @@ export default function ImportScreen() {
             style={[styles.guide, { backgroundColor: theme.card, borderColor: theme.border }]}
           >
             <View style={styles.guideHead}>
+              <ImportLogo logos={g.logos} ring={theme.card} />
               <View style={{ flex: 1 }}>
                 <Text style={[styles.sourceName, { color: theme.text }]}>{g.app}</Text>
                 <Text style={[styles.meta, { color: theme.textMuted }]}>{g.what}</Text>
@@ -241,6 +255,6 @@ const styles = StyleSheet.create({
   link: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 1 },
   label: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 1.5, marginTop: 6 },
   guide: { borderWidth: StyleSheet.hairlineWidth, borderRadius: 12, padding: 14, gap: 8 },
-  guideHead: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  guideHead: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   steps: { fontFamily: fonts.mono, fontSize: font.footnote, lineHeight: 19 },
 });
