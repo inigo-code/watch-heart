@@ -63,7 +63,7 @@ export default function LogScreen() {
   const toast = useToast();
   const params = useLocalSearchParams<Params>();
   const { settings } = useSettings();
-  const { getEntry, viewingsOf, addEntry, updateEntry, deleteEntry, restoreEntry } = useDiary();
+  const { getEntry, viewingsOf, addEntry, updateEntry, deleteEntry, restoreEntry, onWatchlist, addToWatchlist } = useDiary();
 
   const editing = params.id ? getEntry(params.id) : undefined;
   const manual = !editing && !params.again && !params.title;
@@ -112,6 +112,8 @@ export default function LogScreen() {
   };
 
   const series = draft.kind !== 'movie';
+  // New entries only: whether this title is waiting on the watchlist (logging takes it off).
+  const queued = !editing && draft.title.trim() ? onWatchlist(draft) : undefined;
   const canSave = draft.title.trim().length > 0;
   const quickDate = useMemo(() => (draft.watchedOn === today() ? 'today' : draft.watchedOn === daysAgo(1) ? 'yesterday' : 'other'), [draft.watchedOn]);
 
@@ -132,7 +134,30 @@ export default function LogScreen() {
     if (editing) updateEntry(editing.id, final);
     else addEntry(final);
     if (settings.haptics) Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
-    toast(editing ? 'Entry updated' : `Logged · ${friendlyDate(final.watchedOn)}`);
+    toast(editing ? 'Entry updated' : `Logged · ${friendlyDate(final.watchedOn)}${queued ? ' · off your watchlist' : ''}`);
+    router.back();
+  };
+
+  const saveForLater = () => {
+    if (!canSave) {
+      toast('Give it a title first');
+      return;
+    }
+    const year = Number(yearText);
+    addToWatchlist({
+      kind: draft.kind,
+      source: draft.source,
+      sourceId: draft.sourceId,
+      title: draft.title.trim(),
+      originalTitle: draft.originalTitle ?? undefined,
+      year: manual ? (year >= 1870 && year <= 2100 ? year : null) : draft.year,
+      posterUrl: draft.posterUrl,
+      backdropUrl: draft.backdropUrl,
+      genres: draft.genres,
+      runtime: draft.runtime,
+      credit: draft.credit,
+    });
+    toast('Saved to your watchlist');
     router.back();
   };
 
@@ -193,6 +218,12 @@ export default function LogScreen() {
         )}
 
         <View style={styles.form}>
+          {queued && (
+            <View style={[styles.queued, { borderColor: theme.accent + '66', backgroundColor: theme.accentSoft }]}>
+              <Ionicons name="bookmark" size={16} color={theme.accent} />
+              <Text style={[styles.queuedText, { color: theme.text }]}>On your watchlist. Logging it takes it off.</Text>
+            </View>
+          )}
           <Field theme={theme} label="Watched on">
             <View style={styles.row}>
               <Chip theme={theme} label="Today" active={quickDate === 'today'} onPress={() => set({ watchedOn: today() })} />
@@ -288,6 +319,13 @@ export default function LogScreen() {
             <Text style={[styles.logItText, { color: theme.accentText }]}>{editing ? 'SAVE CHANGES' : 'LOG IT'}</Text>
           </Pressable>
 
+          {!editing && !queued && (
+            <Pressable onPress={saveForLater} accessibilityRole="button" style={({ pressed }) => [styles.later, { borderColor: theme.border, opacity: pressed ? 0.7 : 1 }]}>
+              <Ionicons name="bookmark-outline" size={18} color={theme.text} />
+              <Text style={[styles.laterText, { color: theme.text }]}>HAVEN’T SEEN IT? SAVE TO WATCHLIST</Text>
+            </Pressable>
+          )}
+
           {editing && (
             <Pressable onPress={remove} accessibilityRole="button" style={styles.delete}>
               <Ionicons name="trash-outline" size={16} color={theme.danger} />
@@ -350,6 +388,10 @@ const styles = StyleSheet.create({
   toggleText: { flex: 1, fontSize: font.body, fontWeight: '600' },
   logIt: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, height: 54, borderRadius: 27, marginTop: 4 },
   logItText: { fontFamily: fonts.monoBold, fontSize: font.headline, letterSpacing: 2 },
+  queued: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10 },
+  queuedText: { fontFamily: fonts.mono, fontSize: font.footnote, flex: 1 },
+  later: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: 48, borderRadius: 24, borderWidth: 1, borderStyle: 'dashed' },
+  laterText: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 1 },
   delete: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 10 },
   deleteText: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 1 },
 });

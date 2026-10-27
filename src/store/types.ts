@@ -58,3 +58,22 @@ export type Entry = {
 };
 
 export type EntryDraft = Omit<Entry, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt'>;
+
+/** A title you want to watch. Logging it takes it off the list. */
+export type WatchItem = {
+  id: string;
+  kind: MediaKind;
+  source: Source;
+  sourceId: string;
+  title: string;
+  originalTitle: string | null;
+  year: number | null;
+  posterUrl: string | null;
+  backdropUrl: string | null;
+  genres: string[];
+  runtime: number | null;
+  credit: string | null;
+  /** Why it's on the list, e.g. "Recommended by Sam". */
+  note: string;
+  addedAt: number;
+};

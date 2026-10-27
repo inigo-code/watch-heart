@@ -1,11 +1,11 @@
 import { openDatabaseAsync } from 'expo-sqlite';
 import type { SQLiteDatabase } from 'expo-sqlite';
 
-import type { Entry } from './types';
+import type { Entry, WatchItem } from './types';
 
 // The diary lives in SQLite on the phone. (db.web.ts stands in for it in the web design preview.)
 const DATABASE_NAME = 'watchheart.db';
-const DATABASE_VERSION = 1;
+const DATABASE_VERSION = 2;
 
 /** Creates or upgrades the tables. */
 async function migrate(db: SQLiteDatabase) {
@@ -44,6 +44,18 @@ CREATE TABLE IF NOT EXISTS entries (
 CREATE INDEX IF NOT EXISTS entries_watched_on ON entries (watched_on);
 `);
     version = 1;
+  }
+
+  if (version === 1) {
+    // The watchlist is small and always loaded whole, so each item is one JSON row.
+    await db.execAsync(`
+CREATE TABLE IF NOT EXISTS watchlist (
+  id TEXT PRIMARY KEY NOT NULL,
+  data TEXT NOT NULL,
+  added_at INTEGER NOT NULL
+);
+`);
+    version = 2;
   }
 
   await db.execAsync(`PRAGMA user_version = ${DATABASE_VERSION}`);
@@ -150,6 +162,9 @@ export type DiaryDb = {
   load: () => Promise<Entry[]>;
   save: (entries: Entry[]) => Promise<void>;
   remove: (ids: string[]) => Promise<void>;
+  loadWatchlist: () => Promise<WatchItem[]>;
+  saveWatchlist: (items: WatchItem[]) => Promise<void>;
+  removeWatchlist: (ids: string[]) => Promise<void>;
 };
 
 export async function openDiary(): Promise<DiaryDb> {
@@ -166,6 +181,23 @@ export async function openDiary(): Promise<DiaryDb> {
     remove: async (ids) => {
       if (!ids.length) return;
       await db.runAsync(`DELETE FROM entries WHERE id IN (${ids.map(() => '?').join(',')})`, ids);
+    },
+    loadWatchlist: async () =>
+      (await db.getAllAsync<{ data: string }>('SELECT data FROM watchlist ORDER BY added_at DESC')).flatMap((r) => {
+        try {
+          return [JSON.parse(r.data) as WatchItem];
+        } catch {
+          return [];
+        }
+      }),
+    saveWatchlist: async (items) => {
+      await db.withTransactionAsync(async () => {
+        for (const w of items) await db.runAsync('INSERT OR REPLACE INTO watchlist (id, data, added_at) VALUES (?, ?, ?)', [w.id, JSON.stringify(w), w.addedAt]);
+      });
+    },
+    removeWatchlist: async (ids) => {
+      if (!ids.length) return;
+      await db.runAsync(`DELETE FROM watchlist WHERE id IN (${ids.map(() => '?').join(',')})`, ids);
     },
   };
 }

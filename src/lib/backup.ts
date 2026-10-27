@@ -4,7 +4,7 @@ import * as Sharing from 'expo-sharing';
 import { Platform } from 'react-native';
 
 import { APP_NAME, APP_SLUG } from '@/lib/app';
-import type { Entry } from '@/store/types';
+import type { Entry, WatchItem } from '@/store/types';
 
 const FORMAT = 'watchheart-backup';
 const FORMAT_VERSION = 1;
@@ -14,6 +14,8 @@ export type Backup = {
   version: number;
   exportedAt: string;
   entries: Entry[];
+  /** Added after the first release; older backups have none. */
+  watchlist?: WatchItem[];
 };
 
 const stamp = () => new Date().toISOString().slice(0, 10);
@@ -35,9 +37,9 @@ async function share(name: string, contents: string, mimeType: string, dialogTit
   await Sharing.shareAsync(file.uri, { mimeType, dialogTitle });
 }
 
-/** The whole diary (Trash included, so a restore brings it back too) as one JSON file. */
-export async function exportBackup(entries: Entry[]) {
-  const backup: Backup = { format: FORMAT, version: FORMAT_VERSION, exportedAt: new Date().toISOString(), entries };
+/** The whole diary (Trash included, so a restore brings it back too) and the watchlist, as one JSON file. */
+export async function exportBackup(entries: Entry[], watchlist: WatchItem[]) {
+  const backup: Backup = { format: FORMAT, version: FORMAT_VERSION, exportedAt: new Date().toISOString(), entries, watchlist };
   await share(`${APP_SLUG}-backup-${stamp()}.json`, JSON.stringify(backup), 'application/json', `Save ${APP_NAME} backup`);
 }
 

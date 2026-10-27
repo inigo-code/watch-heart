@@ -5,13 +5,23 @@ import { newId } from '@/lib/id';
 
 import { openDiary } from './db';
 import type { DiaryDb } from './db';
-import type { Entry, EntryDraft } from './types';
+import type { Entry, EntryDraft, Title, WatchItem } from './types';
 
 /** Deleted entries stay in Trash this long, then they're removed for good. */
 export const TRASH_DAYS = 30;
 const DAY = 24 * 60 * 60 * 1000;
 
 export type ImportResult = { added: number; updated: number; skipped: number };
+
+type TitleRef = Pick<Title, 'source' | 'sourceId' | 'title' | 'year'>;
+
+const norm = (s: string) => s.toLowerCase().replace(/[^p{L}p{N}]+/gu, '');
+
+/** Whether two records are the same title: same id at the same source, else same name and year. */
+export function sameTitle(a: TitleRef, b: TitleRef): boolean {
+  if (a.source !== 'manual' && a.source === b.source && a.sourceId) return a.sourceId === b.sourceId;
+  return norm(a.title) === norm(b.title) && (a.year === b.year || a.year === null || b.year === null);
+}
 
 type DiaryStore = {
   ready: boolean;
@@ -30,6 +40,14 @@ type DiaryStore = {
   emptyTrash: () => void;
   /** Merges entries from a backup: new ids are added, newer edits win, nothing is deleted. */
   importEntries: (list: Entry[]) => ImportResult;
+  /** Titles you want to watch, most recently added first. */
+  watchlist: WatchItem[];
+  onWatchlist: (t: TitleRef) => WatchItem | undefined;
+  addToWatchlist: (t: Title, note?: string) => WatchItem;
+  updateWatchItem: (id: string, patch: Partial<WatchItem>) => void;
+  removeFromWatchlist: (id: string) => void;
+  /** Adds items not already on the list (by id or title); returns how many were added. */
+  importWatchlist: (items: WatchItem[]) => number;
 };
 
 const Ctx = createContext<DiaryStore | null>(null);
@@ -38,6 +56,12 @@ const byNewest = (a: Entry, b: Entry) => b.watchedOn.localeCompare(a.watchedOn) 
 
 export function DiaryStoreProvider({ children }: { children: ReactNode }) {
   const [all, setAll] = useState<Entry[]>([]);
+  const [watchlist, setWatchlist] = useState<WatchItem[]>([]);
+  // The latest list, for actions that run later (an Undo tapped after the list changed).
+  const watchRef = useRef(watchlist);
+  useEffect(() => {
+    watchRef.current = watchlist;
+  }, [watchlist]);
   const [ready, setReady] = useState(false);
   // Opened once; writes wait for it, then go one at a time, in order, so a quick edit-then-delete
   // can't land out of order.
@@ -52,7 +76,10 @@ export function DiaryStoreProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     db.current ??= openDiary();
     db.current
-      .then((d) => d.load())
+      .then(async (d) => {
+        setWatchlist(await d.loadWatchlist());
+        return d.load();
+      })
       .then((list) => {
         // Trash older than TRASH_DAYS is cleared on launch.
         const cutoff = Date.now() - TRASH_DAYS * DAY;
@@ -84,6 +111,13 @@ export function DiaryStoreProvider({ children }: { children: ReactNode }) {
       const entry: Entry = { ...draft, id: newId(), createdAt: now, updatedAt: now, deletedAt: null };
       setAll((list) => [...list, entry]);
       write((d) => d.save([entry]));
+      // Watching something takes it off the watchlist.
+      setWatchlist((list) => {
+        const done = list.filter((w) => sameTitle(w, entry)).map((w) => w.id);
+        if (!done.length) return list;
+        write((d) => d.removeWatchlist(done));
+        return list.filter((w) => !done.includes(w.id));
+      });
       return entry;
     },
     [write],
@@ -137,6 +171,65 @@ export function DiaryStoreProvider({ children }: { children: ReactNode }) {
     [all, write],
   );
 
+  const addToWatchlist = useCallback(
+    (t: Title, note = '') => {
+      const item: WatchItem = {
+        id: newId(),
+        kind: t.kind,
+        source: t.source,
+        sourceId: t.sourceId,
+        title: t.title,
+        originalTitle: t.originalTitle ?? null,
+        year: t.year,
+        posterUrl: t.posterUrl,
+        backdropUrl: t.backdropUrl,
+        genres: t.genres,
+        runtime: t.runtime,
+        credit: t.credit ?? null,
+        note,
+        addedAt: Date.now(),
+      };
+      setWatchlist((list) => [item, ...list.filter((w) => !sameTitle(w, item))]);
+      write((d) => d.saveWatchlist([item]));
+      return item;
+    },
+    [write],
+  );
+
+  const updateWatchItem = useCallback(
+    (id: string, patch: Partial<WatchItem>) =>
+      setWatchlist((list) =>
+        list.map((w) => {
+          if (w.id !== id) return w;
+          const next = { ...w, ...patch, id };
+          write((d) => d.saveWatchlist([next]));
+          return next;
+        }),
+      ),
+    [write],
+  );
+
+  const removeFromWatchlist = useCallback(
+    (id: string) => {
+      setWatchlist((list) => list.filter((w) => w.id !== id));
+      write((d) => d.removeWatchlist([id]));
+    },
+    [write],
+  );
+
+  const importWatchlist = useCallback(
+    (items: WatchItem[]) => {
+      const fresh = items.filter((i) => !watchRef.current.some((w) => w.id === i.id || sameTitle(w, i)));
+      if (fresh.length) {
+        watchRef.current = [...watchRef.current, ...fresh].sort((a, b) => b.addedAt - a.addedAt);
+        setWatchlist(watchRef.current);
+        write((d) => d.saveWatchlist(fresh));
+      }
+      return fresh.length;
+    },
+    [write],
+  );
+
   const value = useMemo<DiaryStore>(() => {
     const entries = all.filter((e) => e.deletedAt === null).sort(byNewest);
     const trash = all.filter((e) => e.deletedAt !== null).sort((a, b) => (b.deletedAt ?? 0) - (a.deletedAt ?? 0));
@@ -154,8 +247,14 @@ export function DiaryStoreProvider({ children }: { children: ReactNode }) {
       purgeEntry,
       emptyTrash,
       importEntries,
+      watchlist,
+      onWatchlist: (t) => watchlist.find((w) => sameTitle(w, t)),
+      addToWatchlist,
+      updateWatchItem,
+      removeFromWatchlist,
+      importWatchlist,
     };
-  }, [all, ready, addEntry, updateEntry, deleteEntry, restoreEntry, purgeEntry, emptyTrash, importEntries]);
+  }, [all, ready, addEntry, updateEntry, deleteEntry, restoreEntry, purgeEntry, emptyTrash, importEntries, watchlist, addToWatchlist, updateWatchItem, removeFromWatchlist, importWatchlist]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
@@ -164,4 +263,21 @@ export function useDiary() {
   const ctx = useContext(Ctx);
   if (!ctx) throw new Error('useDiary must be used inside DiaryStoreProvider');
   return ctx;
+}
+
+/** A watchlist item as a title, e.g. to open the log screen for it. */
+export function titleOf(w: WatchItem): Title {
+  return {
+    kind: w.kind,
+    source: w.source,
+    sourceId: w.sourceId,
+    title: w.title,
+    originalTitle: w.originalTitle ?? undefined,
+    year: w.year,
+    posterUrl: w.posterUrl,
+    backdropUrl: w.backdropUrl,
+    genres: w.genres,
+    runtime: w.runtime,
+    credit: w.credit,
+  };
 }

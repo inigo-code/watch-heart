@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { search, sourceFor, tmdbKey, trending } from '@/api';
 import { Poster } from '@/components/Film';
+import { useToast } from '@/components/Toast';
 import { DATA_SOURCES } from '@/lib/app';
 import { KIND_COLORS, font, fonts, useTheme } from '@/lib/theme';
 import { useSettings } from '@/settings/SettingsProvider';
@@ -29,7 +30,8 @@ export default function SearchScreen() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const { settings, update } = useSettings();
-  const { viewingsOf } = useDiary();
+  const { viewingsOf, onWatchlist, addToWatchlist, removeFromWatchlist } = useDiary();
+  const toast = useToast();
   const kind = settings.searchKind;
   const key = tmdbKey(settings.tmdbKey);
   const source = sourceFor(kind, key);
@@ -147,38 +149,59 @@ export default function SearchScreen() {
         }
         renderItem={({ item }) => {
           const seen = viewingsOf(item.source, item.sourceId).length;
+          const saved = onWatchlist(item);
+          // Two buttons side by side (log it, bookmark it), not one inside the other.
           return (
-            <Pressable
-              onPress={() => open(item)}
-              accessibilityRole="button"
-              accessibilityLabel={`${item.title}${item.year ? `, ${item.year}` : ''}`}
-              style={({ pressed }) => [styles.row, { borderBottomColor: theme.border, backgroundColor: pressed ? theme.chip : 'transparent' }]}
-            >
-              <Poster uri={item.posterUrl} title={item.title} width={58} theme={theme} radius={4} />
-              <View style={styles.rowBody}>
-                <Text style={[styles.title, { color: theme.text }]} numberOfLines={2}>
-                  {item.title}
-                  {item.year ? <Text style={[styles.year, { color: theme.textMuted }]}>{`  ${item.year}`}</Text> : null}
-                </Text>
-                {!!item.originalTitle && (
-                  <Text style={[styles.original, { color: theme.textMuted }]} numberOfLines={1}>
-                    {item.originalTitle}
+            <View style={[styles.row, { borderBottomColor: theme.border }]}>
+              <Pressable
+                onPress={() => open(item)}
+                accessibilityRole="button"
+                accessibilityLabel={`Log ${item.title}${item.year ? `, ${item.year}` : ''}`}
+                style={({ pressed }) => [styles.rowMain, { backgroundColor: pressed ? theme.chip : 'transparent' }]}
+              >
+                <Poster uri={item.posterUrl} title={item.title} width={58} theme={theme} radius={4} />
+                <View style={styles.rowBody}>
+                  <Text style={[styles.title, { color: theme.text }]} numberOfLines={2}>
+                    {item.title}
+                    {item.year ? <Text style={[styles.year, { color: theme.textMuted }]}>{`  ${item.year}`}</Text> : null}
                   </Text>
-                )}
-                {!!item.overview && (
-                  <Text style={[styles.overview, { color: theme.textMuted }]} numberOfLines={2}>
-                    {item.overview}
-                  </Text>
-                )}
-                {seen > 0 && (
-                  <View style={[styles.seen, { borderColor: theme.accent }]}>
-                    <MaterialCommunityIcons name="ticket-confirmation" size={12} color={theme.accent} />
-                    <Text style={[styles.seenText, { color: theme.accent }]}>{seen === 1 ? 'IN YOUR DIARY' : `SEEN ${seen}×`}</Text>
-                  </View>
-                )}
-              </View>
-              <Ionicons name="add-circle-outline" size={26} color={theme.accent} />
-            </Pressable>
+                  {!!item.originalTitle && (
+                    <Text style={[styles.original, { color: theme.textMuted }]} numberOfLines={1}>
+                      {item.originalTitle}
+                    </Text>
+                  )}
+                  {!!item.overview && (
+                    <Text style={[styles.overview, { color: theme.textMuted }]} numberOfLines={2}>
+                      {item.overview}
+                    </Text>
+                  )}
+                  {seen > 0 && (
+                    <View style={[styles.seen, { borderColor: theme.accent }]}>
+                      <MaterialCommunityIcons name="ticket-confirmation" size={12} color={theme.accent} />
+                      <Text style={[styles.seenText, { color: theme.accent }]}>{seen === 1 ? 'IN YOUR DIARY' : `SEEN ${seen}×`}</Text>
+                    </View>
+                  )}
+                </View>
+                <Ionicons name="add-circle-outline" size={26} color={theme.accent} />
+              </Pressable>
+              <Pressable
+                onPress={() => {
+                  if (saved) {
+                    removeFromWatchlist(saved.id);
+                    toast('Taken off your watchlist');
+                  } else {
+                    addToWatchlist(item);
+                    toast('Added to your watchlist');
+                  }
+                }}
+                hitSlop={8}
+                accessibilityRole="button"
+                accessibilityLabel={saved ? `Take ${item.title} off your watchlist` : `Add ${item.title} to your watchlist`}
+                style={styles.rowBtn}
+              >
+                <Ionicons name={saved ? 'bookmark' : 'bookmark-outline'} size={23} color={saved ? theme.accent : theme.textMuted} />
+              </Pressable>
+            </View>
           );
         }}
         ListFooterComponent={
@@ -235,7 +258,9 @@ const styles = StyleSheet.create({
   list: { paddingHorizontal: 16 },
   section: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 1.5, paddingVertical: 8 },
   note: { fontFamily: fonts.mono, fontSize: font.footnote, paddingVertical: 12, lineHeight: 19 },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10, borderBottomWidth: StyleSheet.hairlineWidth },
+  rowBtn: { padding: 8 },
+  rowMain: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10, borderRadius: 8 },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 4, borderBottomWidth: StyleSheet.hairlineWidth },
   rowBody: { flex: 1, gap: 3 },
   title: { fontSize: font.headline, fontWeight: '700' },
   year: { fontFamily: fonts.mono, fontSize: font.footnote, fontWeight: '400' },

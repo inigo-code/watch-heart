@@ -66,8 +66,10 @@ function toTitle(r: Result, kind: 'movie' | 'tv'): Title {
   };
 }
 
-export async function searchTmdb(key: string, kind: 'movie' | 'tv', query: string, signal?: AbortSignal): Promise<Title[]> {
-  const data = await get<{ results: Result[] }>(key, `/search/${kind}`, { query, include_adult: 'false' }, signal);
+/** Searches films or series; `year` narrows a film search to that release year. */
+export async function searchTmdb(key: string, kind: 'movie' | 'tv', query: string, signal?: AbortSignal, year?: number): Promise<Title[]> {
+  const params = { query, include_adult: 'false', ...(year && kind === 'movie' ? { year: String(year) } : {}) };
+  const data = await get<{ results: Result[] }>(key, `/search/${kind}`, params, signal);
   return data.results.map((r) => toTitle(r, kind));
 }
 

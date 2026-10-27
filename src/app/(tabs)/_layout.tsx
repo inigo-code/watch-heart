@@ -31,6 +31,13 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="watchlist"
+        options={{
+          title: 'WATCHLIST',
+          tabBarIcon: ({ color, size }) => <MaterialCommunityIcons name="bookmark-multiple-outline" size={size} color={color as string} />,
+        }}
+      />
+      <Tabs.Screen
         name="recap"
         options={{
           title: 'RECAP',

@@ -8,7 +8,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ControlRow, Row, Section, Segmented, ToggleRow } from '@/components/SettingsUI';
 import { useToast } from '@/components/Toast';
 import { APP_NAME, DATA_SOURCES } from '@/lib/app';
+import { tmdbKey } from '@/api';
 import { exportBackup, exportCsv, exportLetterboxd, pickBackup } from '@/lib/backup';
+import { fetchPosters, fromLetterboxd, pickLetterboxd } from '@/lib/letterboxd';
 import { ACCENTS, font, fonts, useTheme } from '@/lib/theme';
 import { useAppLock } from '@/lock/AppLockProvider';
 import { lockSupport } from '@/lock/authenticate';
@@ -19,7 +21,7 @@ import { useDiary } from '@/store/DiaryStore';
 
 const errorText = (e: unknown) => (e instanceof Error ? e.message : String(e));
 
-type Busy = 'backup' | 'import' | 'csv' | 'letterboxd' | null;
+type Busy = 'backup' | 'import' | 'csv' | 'letterboxd' | 'lb-import' | 'posters' | null;
 
 export default function SettingsScreen() {
   const theme = useTheme();
@@ -32,6 +34,7 @@ export default function SettingsScreen() {
   const [keyText, setKeyText] = useState(settings.tmdbKey);
   const [showKey, setShowKey] = useState(false);
   const builtInKey = !!process.env.EXPO_PUBLIC_TMDB_KEY;
+  const [posterProgress, setPosterProgress] = useState('');
 
   const run = async (kind: Exclude<Busy, null>, fn: () => Promise<string | null>) => {
     setBusy(kind);
@@ -75,6 +78,31 @@ export default function SettingsScreen() {
   };
 
   const all = [...diary.entries, ...diary.trash];
+  const missingPosters = {
+    entries: diary.entries.filter((e) => e.kind === 'movie' && !e.posterUrl),
+    watchlist: diary.watchlist.filter((w) => w.kind === 'movie' && !w.posterUrl),
+  };
+  const missingCount = missingPosters.entries.length + missingPosters.watchlist.length;
+
+  /** Matches films without posters on TMDB and fills in their poster, genres, running time and director. */
+  const findPosters = async (entries: typeof missingPosters.entries, watchlist: typeof missingPosters.watchlist) => {
+    const key = tmdbKey(settings.tmdbKey);
+    if (!key) return 'Add your TMDB key above to fetch posters';
+    const items = [...entries.map((e) => ({ ...e, list: 'diary' as const })), ...watchlist.map((w) => ({ ...w, list: 'watchlist' as const }))];
+    if (!items.length) return null;
+    const matched = await fetchPosters(
+      key,
+      items,
+      (item, m) => {
+        const patch = { source: m.source, sourceId: m.sourceId, posterUrl: m.posterUrl, backdropUrl: m.backdropUrl, genres: m.genres, runtime: m.runtime, credit: m.credit ?? null };
+        if (item.list === 'diary') diary.updateEntry(item.id, patch);
+        else diary.updateWatchItem(item.id, patch);
+      },
+      (done, total) => setPosterProgress(`${done}/${total}`),
+    );
+    setPosterProgress('');
+    return `Found ${matched} of ${items.length} on TMDB`;
+  };
 
   return (
     <ScrollView
@@ -198,14 +226,14 @@ export default function SettingsScreen() {
       <Section
         theme={theme}
         title="Your data"
-        footer="Everything stays on this phone. Back up now and then; importing a backup merges it in and never deletes anything."
+        footer="Everything stays on this phone. Back up now and then; importing a backup merges it in and never deletes anything. From Letterboxd, pick the .zip from letterboxd.com → Settings → Data → Export your data."
       >
         <Row
           theme={theme}
           icon="download-outline"
           label="Export backup"
           busy={busy === 'backup'}
-          onPress={() => run('backup', async () => (await exportBackup(all), null))}
+          onPress={() => run('backup', async () => (await exportBackup(all, diary.watchlist), null))}
         />
         <Row
           theme={theme}
@@ -217,7 +245,8 @@ export default function SettingsScreen() {
               const backup = await pickBackup();
               if (!backup) return null;
               const r = diary.importEntries(backup.entries);
-              const parts = [`${r.added} added`, r.updated ? `${r.updated} updated` : '', r.skipped ? `${r.skipped} already here` : ''];
+              const queued = diary.importWatchlist(backup.watchlist ?? []);
+              const parts = [`${r.added} added`, r.updated ? `${r.updated} updated` : '', r.skipped ? `${r.skipped} already here` : '', queued ? `${queued} to watchlist` : ''];
               return `Imported: ${parts.filter(Boolean).join(', ')}`;
             })
           }
@@ -240,6 +269,38 @@ export default function SettingsScreen() {
               return n ? null : 'No films in your diary yet';
             })
           }
+        />
+        <Row
+          theme={theme}
+          icon="film-outline"
+          label="Import from Letterboxd"
+          busy={busy === 'lb-import'}
+          onPress={() =>
+            run('lb-import', async () => {
+              const files = await pickLetterboxd();
+              if (!files) return null;
+              const { entries, watchlist } = fromLetterboxd(files);
+              // What's new in this import (a re-import skips what's already here, posters and all).
+              const had = new Set([...all.map((e) => e.id), ...diary.watchlist.map((w) => w.id)]);
+              const newEntries = entries.filter((e) => !had.has(e.id));
+              const newWatch = watchlist.filter((w) => !had.has(w.id));
+              const r = diary.importEntries(entries);
+              const queued = diary.importWatchlist(watchlist);
+              const summary = `Imported ${r.added} films${queued ? ` and ${queued} to watchlist` : ''}${r.skipped ? ` (${r.skipped} already here)` : ''}`;
+              toast(summary);
+              if (!tmdbKey(settings.tmdbKey)) return `${summary}. Add a TMDB key, then “Find missing posters”.`;
+              setBusy('posters');
+              return findPosters(newEntries, newWatch);
+            })
+          }
+        />
+        <Row
+          theme={theme}
+          icon="images-outline"
+          label="Find missing posters"
+          value={posterProgress || (missingCount ? String(missingCount) : 'None')}
+          busy={busy === 'posters' && !posterProgress}
+          onPress={missingCount && busy === null ? () => run('posters', () => findPosters(missingPosters.entries, missingPosters.watchlist)) : undefined}
         />
         <Row theme={theme} icon="trash-outline" label="Trash" value={String(diary.trash.length)} onPress={() => router.push('/trash')} last />
       </Section>
