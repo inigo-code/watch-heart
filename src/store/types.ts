@@ -60,8 +60,17 @@ export type Entry = {
    * them for 6 months, so older ones are refreshed (src/lib/tmdbFreshness.ts). 0 = removed, refresh when possible.
    */
   fetchedAt?: number | null;
+  /** IMDb id (tt…) when the import knew it, for an exact TMDB match. */
+  imdbId?: string | null;
+  /** When a TMDB match was last looked for and not found (so it isn't retried on every launch). */
+  matchTriedAt?: number | null;
   /** Set when moved to Trash. */
   deletedAt: number | null;
+  /**
+   * Imported without a watch date (e.g. a MyAnimeList list). watchedOn holds the import day; the Diary
+   * shows these in the Archive, and recaps and stats leave them out.
+   */
+  undated?: boolean;
 };
 
 export type EntryDraft = Omit<Entry, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt'>;
@@ -88,4 +97,8 @@ export type WatchItem = {
    * them for 6 months, so older ones are refreshed (src/lib/tmdbFreshness.ts). 0 = removed, refresh when possible.
    */
   fetchedAt?: number | null;
+  /** IMDb id (tt…) when the import knew it, for an exact TMDB match. */
+  imdbId?: string | null;
+  /** When a TMDB match was last looked for and not found (so it isn't retried on every launch). */
+  matchTriedAt?: number | null;
 };

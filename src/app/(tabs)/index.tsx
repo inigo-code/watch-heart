@@ -31,6 +31,9 @@ const FILTERS: { key: Filter; label: string; color?: string; icon?: keyof typeof
   { key: 'rewatch', label: 'Rewatches', icon: 'repeat' },
 ];
 
+/** Section key for undated entries (sorts after every month). */
+const ARCHIVE = 'archive';
+
 const GRID_COLS = 4;
 const GAP = 10;
 
@@ -68,17 +71,18 @@ export default function DiaryScreen() {
   const grid = settings.diaryLayout === 'grid';
   const tile = (width - 32 - GAP * (GRID_COLS - 1)) / GRID_COLS;
 
-  const yearStats = useMemo(() => computeStats(entries.filter((e) => e.watchedOn.startsWith(today().slice(0, 4)))), [entries]);
+  const yearStats = useMemo(() => computeStats(entries.filter((e) => !e.undated && e.watchedOn.startsWith(today().slice(0, 4)))), [entries]);
 
   const sections = useMemo(() => {
     const q = query.trim().toLowerCase();
     const months = new Map<string, Entry[]>();
     for (const e of entries) {
       if (!matches(e, filter, q)) continue;
-      const k = monthKey(e.watchedOn);
+      // Imports without a watch date (an old MyAnimeList list, say) share one reel at the end.
+      const k = e.undated ? ARCHIVE : monthKey(e.watchedOn);
       months.set(k, [...(months.get(k) ?? []), e]);
     }
-    return [...months.entries()].map(([month, list]) => ({
+    return [...months.entries()].sort(([a], [b]) => (a === ARCHIVE ? 1 : b === ARCHIVE ? -1 : 0)).map(([month, list]) => ({
       month,
       count: list.length,
       // The poster wall lays a month out in rows; the ticket list has one entry per row.

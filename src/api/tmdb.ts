@@ -199,3 +199,36 @@ export async function findImdb(key: string, imdbId: string, signal?: AbortSignal
   const tv = data.tv_results[0];
   return tv ? tmdbById(key, 'tv', String(tv.id), signal) : null;
 }
+
+const normTitle = (s: string) => s.toLowerCase().normalize('NFKD').replace(/[^\p{L}\p{N}]+/gu, '');
+
+/**
+ * Finds the TMDB title for something imported or typed in by hand: exactly by IMDb id when known,
+ * otherwise by name and year (trying films or series first by kind, then the other). A hit has to have
+ * the same name, or be the right year, so a vague search doesn't attach the wrong poster. Null when unsure.
+ */
+export async function matchTmdb(
+  key: string,
+  t: { title: string; year: number | null; kind: Title['kind']; imdbId?: string | null },
+  signal?: AbortSignal,
+): Promise<Title | null> {
+  if (t.imdbId) {
+    const found = await findImdb(key, t.imdbId, signal);
+    if (found) return found;
+  }
+  const want = normTitle(t.title);
+  const pick = (hits: Title[]) => {
+    const same = (h: Title) => normTitle(h.title) === want || (!!h.originalTitle && normTitle(h.originalTitle) === want);
+    const near = (h: Title) => !!t.year && !!h.year && Math.abs(h.year - t.year) <= 1;
+    return hits.find((h) => same(h) && near(h)) ?? hits.find((h) => same(h) && !t.year) ?? hits.find(same) ?? hits.find((h) => near(h) && normTitle(h.title).includes(want));
+  };
+  if (t.kind === 'anime') {
+    const hit = pick(await searchAnimeTmdb(key, t.title, signal));
+    if (hit) return tmdbById(key, hit.sourceId.startsWith('movie:') ? 'movie' : 'tv', hit.sourceId.split(':')[1], signal);
+  }
+  for (const type of t.kind === 'movie' ? (['movie', 'tv'] as const) : (['tv', 'movie'] as const)) {
+    const hit = pick(await searchTmdb(key, type, t.title, signal, type === 'movie' ? (t.year ?? undefined) : undefined));
+    if (hit) return tmdbById(key, type, hit.sourceId.split(':')[1], signal);
+  }
+  return null;
+}

@@ -126,6 +126,8 @@ export default function LogScreen() {
     const year = Number(yearText);
     const final: EntryDraft = {
       ...draft,
+      // Picking a date for an imported entry that had none files it under that month.
+      undated: draft.undated && editing?.watchedOn === draft.watchedOn ? true : undefined,
       title: draft.title.trim(),
       year: manual ? (year >= 1870 && year <= 2100 ? year : null) : draft.year,
       tags: parseTags(tagText),

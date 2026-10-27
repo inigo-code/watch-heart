@@ -25,7 +25,9 @@ export default function RecapScreen() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
-  const { entries } = useDiary();
+  // Imports without a watch date can't belong to a month, so recaps leave them out.
+  const { entries: all } = useDiary();
+  const entries = useMemo(() => all.filter((e) => !e.undated), [all]);
   const { settings, update } = useSettings();
   const params = useLocalSearchParams<{ period?: string }>();
   const storyRef = useRef<StoryHandle>(null);

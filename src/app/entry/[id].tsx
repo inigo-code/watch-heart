@@ -69,7 +69,7 @@ export default function EntryScreen() {
             </View>
             <View style={styles.ticketBody}>
               <Text style={[styles.watched, { color: theme.textMuted }]}>
-                {entry.rewatch ? 'REWATCHED' : 'WATCHED'} {friendlyDate(entry.watchedOn).toUpperCase()}
+                {entry.rewatch ? 'REWATCHED' : 'WATCHED'} {entry.undated ? '· DATE UNKNOWN' : friendlyDate(entry.watchedOn).toUpperCase()}
               </Text>
               <View style={styles.line}>
                 {entry.rating ? <Stars rating={entry.rating} size={22} color={theme.star} /> : <Text style={[styles.unrated, { color: theme.textMuted }]}>No rating</Text>}

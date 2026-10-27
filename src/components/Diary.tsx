@@ -30,8 +30,8 @@ export function TicketStub({ entry, theme, onPress, onLongPress }: {
       style={({ pressed }) => [styles.ticket, { backgroundColor: theme.card, borderColor: theme.border, opacity: pressed ? 0.85 : 1 }]}
     >
       <View style={styles.stub}>
-        <Text style={[styles.weekday, { color: theme.textMuted }]}>{weekday.toUpperCase()}</Text>
-        <Text style={[styles.day, { color: theme.text }]}>{day}</Text>
+        <Text style={[styles.weekday, { color: theme.textMuted }]}>{entry.undated ? 'DATE' : weekday.toUpperCase()}</Text>
+        <Text style={[styles.day, { color: theme.text }]}>{entry.undated ? '?' : day}</Text>
         {entry.rewatch && <Ionicons name="repeat" size={14} color={theme.accent} accessibilityLabel="Rewatch" />}
       </View>
 
@@ -80,29 +80,37 @@ export function PosterTile({ entry, theme, width, onPress }: { entry: Entry; the
   );
 }
 
-/** A month in the diary: a strip of film with the month in marquee letters, the reel number and the count. */
+/**
+ * A month in the diary: a strip of film with the month in marquee letters, the reel number and the count.
+ * month "archive" is the reel of imports without a watch date.
+ */
 export function ReelHeader({ month, count, theme, onShare }: { month: string; count: number; theme: Theme; onShare: () => void }) {
+  const archive = month === 'archive';
   const reel = Number(month.slice(5, 7));
   return (
     <View style={[styles.reel, { backgroundColor: theme.dark ? '#000000' : theme.text }]}>
       <Sprockets color={theme.bg} count={16} hole={6} />
       <View style={styles.reelRow}>
         <View style={{ flex: 1 }}>
-          <Text style={[styles.reelMonth, { color: theme.dark ? theme.text : theme.bg }]}>{monthName(month).toUpperCase()}</Text>
+          <Text style={[styles.reelMonth, { color: theme.dark ? theme.text : theme.bg }]}>{archive ? 'THE ARCHIVE' : monthName(month).toUpperCase()}</Text>
           <Text style={[styles.reelMeta, { color: theme.accent }]}>
-            {`${month.slice(0, 4)} · REEL ${String(reel).padStart(2, '0')} · ${count} ${count === 1 ? 'TITLE' : 'TITLES'}`}
+            {archive
+              ? `NO WATCH DATE · ${count} ${count === 1 ? 'TITLE' : 'TITLES'}`
+              : `${month.slice(0, 4)} · REEL ${String(reel).padStart(2, '0')} · ${count} ${count === 1 ? 'TITLE' : 'TITLES'}`}
           </Text>
         </View>
-        <Pressable
-          onPress={onShare}
-          hitSlop={8}
-          accessibilityRole="button"
-          accessibilityLabel={`Make a story for ${monthName(month)}`}
-          style={({ pressed }) => [styles.reelShare, { borderColor: theme.accent, opacity: pressed ? 0.7 : 1 }]}
-        >
-          <Ionicons name="sparkles" size={14} color={theme.accent} />
-          <Text style={[styles.reelShareText, { color: theme.accent }]}>STORY</Text>
-        </Pressable>
+        {!archive && (
+          <Pressable
+            onPress={onShare}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel={`Make a story for ${monthName(month)}`}
+            style={({ pressed }) => [styles.reelShare, { borderColor: theme.accent, opacity: pressed ? 0.7 : 1 }]}
+          >
+            <Ionicons name="sparkles" size={14} color={theme.accent} />
+            <Text style={[styles.reelShareText, { color: theme.accent }]}>STORY</Text>
+          </Pressable>
+        )}
       </View>
       <Sprockets color={theme.bg} count={16} hole={6} />
     </View>

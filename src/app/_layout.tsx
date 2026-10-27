@@ -84,6 +84,7 @@ function Navigator() {
         <Stack.Screen name="settings" options={{ title: 'SETTINGS' }} />
         <Stack.Screen name="account" options={{ title: 'ACCOUNT & SYNC' }} />
         <Stack.Screen name="trash" options={{ title: 'TRASH' }} />
+        <Stack.Screen name="import" options={{ title: 'IMPORT' }} />
         <Stack.Screen name="about" options={{ title: 'ABOUT' }} />
         <Stack.Screen name="share" options={{ title: '' }} />
       </Stack>

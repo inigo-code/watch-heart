@@ -82,6 +82,8 @@ type DiaryStore = {
   onWatchlist: (t: TitleRef) => WatchItem | undefined;
   addToWatchlist: (t: Title, note?: string) => WatchItem;
   updateWatchItem: (id: string, patch: Partial<WatchItem>) => void;
+  /** Background changes to many records at once (posters found, details refreshed): one save, one redraw. */
+  patchMany: (entries: { id: string; patch: Partial<Entry> }[], watchlist: { id: string; patch: Partial<WatchItem> }[]) => void;
   removeFromWatchlist: (id: string) => void;
   /** Adds items not already on the list (by id or title); returns how many were added. */
   importWatchlist: (items: WatchItem[]) => number;
@@ -286,6 +288,42 @@ export function DiaryStoreProvider({ children }: { children: ReactNode }) {
     [write, touch],
   );
 
+  const patchMany = useCallback<DiaryStore['patchMany']>(
+    (entryPatches, watchPatches) => {
+      if (entryPatches.length) {
+        const byId = new Map(entryPatches.map((p) => [p.id, p.patch]));
+        const changed: Entry[] = [];
+        allRef.current = allRef.current.map((e) => {
+          const patch = byId.get(e.id);
+          if (!patch) return e;
+          const next = { ...e, ...patch, id: e.id, updatedAt: Date.now() };
+          changed.push(next);
+          return next;
+        });
+        setAll(allRef.current);
+        if (changed.length) write((d) => d.save(changed));
+      }
+      if (watchPatches.length) {
+        const byId = new Map(watchPatches.map((p) => [p.id, p.patch]));
+        const changed: WatchItem[] = [];
+        watchRef.current = watchRef.current.map((w) => {
+          const patch = byId.get(w.id);
+          if (!patch) return w;
+          const next = { ...w, ...patch, id: w.id };
+          changed.push(next);
+          return next;
+        });
+        setWatchlist(watchRef.current);
+        if (changed.length) write((d) => d.saveWatchlist(changed));
+      }
+      touch(
+        entryPatches.map((p) => p.id),
+        watchPatches.map((p) => p.id),
+      );
+    },
+    [write, touch],
+  );
+
   const removeFromWatchlist = useCallback(
     (id: string) => {
       setWatchlist((list) => list.filter((w) => w.id !== id));
@@ -428,11 +466,12 @@ export function DiaryStoreProvider({ children }: { children: ReactNode }) {
       onWatchlist: (t) => watchlist.find((w) => sameTitle(w, t)),
       addToWatchlist,
       updateWatchItem,
+      patchMany,
       removeFromWatchlist,
       importWatchlist,
       sync,
     };
-  }, [all, ready, addEntry, updateEntry, deleteEntry, restoreEntry, purgeEntry, emptyTrash, importEntries, watchlist, addToWatchlist, updateWatchItem, removeFromWatchlist, importWatchlist, sync]);
+  }, [all, ready, addEntry, updateEntry, deleteEntry, restoreEntry, purgeEntry, emptyTrash, importEntries, watchlist, addToWatchlist, updateWatchItem, patchMany, removeFromWatchlist, importWatchlist, sync]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
