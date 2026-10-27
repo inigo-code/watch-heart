@@ -18,6 +18,18 @@ import { LOCK_AFTER_OPTIONS } from '@/lock/lockTiming';
 import { useSettings } from '@/settings/SettingsProvider';
 import type { AccentKey } from '@/settings/SettingsProvider';
 import { useDiary } from '@/store/DiaryStore';
+import { useSync } from '@/sync/SyncProvider';
+import type { SyncStatus } from '@/sync/SyncProvider';
+
+const SYNC_LABEL: Record<SyncStatus, string> = {
+  unconfigured: 'Not set up',
+  'signed-out': 'Sign in',
+  idle: 'On',
+  syncing: 'Syncing…',
+  waiting: 'Changes waiting',
+  synced: 'Up to date',
+  error: 'Needs attention',
+};
 
 const errorText = (e: unknown) => (e instanceof Error ? e.message : String(e));
 
@@ -30,6 +42,7 @@ export default function SettingsScreen() {
   const { settings, update, reset } = useSettings();
   const lock = useAppLock();
   const diary = useDiary();
+  const sync = useSync();
   const [busy, setBusy] = useState<Busy>(null);
   const [keyText, setKeyText] = useState(settings.tmdbKey);
   const [showKey, setShowKey] = useState(false);
@@ -110,6 +123,17 @@ export default function SettingsScreen() {
       contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 32 }]}
       keyboardShouldPersistTaps="handled"
     >
+      <Section theme={theme} title="Account">
+        <Row
+          theme={theme}
+          icon="cloud-outline"
+          label={sync.email ?? 'Account & sync'}
+          value={SYNC_LABEL[sync.status]}
+          onPress={() => router.push('/account')}
+          last
+        />
+      </Section>
+
       <Section theme={theme} title="You">
         <View style={styles.inputRow}>
           <Ionicons name="person-outline" size={18} color={theme.textMuted} />

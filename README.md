@@ -17,10 +17,13 @@ and turn every month into an Instagram story.
   a 1080×1920 story to Instagram (or anywhere) or save it to Photos. Also: screen time, average rating,
   top genre, the mix of films, series and anime, and a rating histogram.
 - **Story card.** Share a single review as a "just watched" ticket.
+- **Watchlist.** Bookmark titles from Find or a shared link, then let “Pick for me” choose tonight’s feature. Logging a title takes it off the list.
+- **From Letterboxd.** Import your Letterboxd export (.zip) with ratings, reviews, likes and watchlist.
+- **Account and sync (optional).** Email sign-in with codes, sync across devices, sign out, delete account.
 - **Yours.** Projector (dark) or Paper (light) look, five accents, app lock with fingerprint or screen lock,
   30-day Trash with undo, JSON backup and restore, CSV export, and a Letterboxd-ready CSV for films.
 
-Everything lives on the phone. There are no accounts and no servers.
+Everything lives on the phone. Optionally, sign in to back up the diary and watchlist and keep them in sync across devices (free Supabase project; see [supabase/SETUP.md](supabase/SETUP.md)).
 
 ## Free data sources
 
@@ -61,7 +64,8 @@ fills in `updates.url` for over-the-air updates.
 
 - `src/app`: screens (Expo Router). `(tabs)` holds Diary, Find and Recap.
 - `src/api`: TMDB, AniList and TVmaze clients.
-- `src/store`: the diary (SQLite on the phone) and its types.
+- `src/store`: the diary and watchlist (SQLite on the phone) and their types.
+- `src/sync`, `supabase/`: accounts and cloud sync (Supabase), and the server schema.
 - `src/story`: the Instagram story canvas, review card, palettes and share/save.
 - `src/components`: film-styled UI (posters, stars, ticket stubs, reel headers, hero).
 - `src/lock`, `modules/app-privacy`: App lock, from Prompt Heart.

@@ -36,7 +36,8 @@ export default function EntryScreen() {
   const remove = () => {
     deleteEntry(entry.id);
     toast(`Moved “${entry.title}” to Trash`, { label: 'Undo', onPress: () => restoreEntry(entry.id) });
-    router.back();
+    if (router.canGoBack()) router.back();
+    else router.replace('/');
   };
 
   return (

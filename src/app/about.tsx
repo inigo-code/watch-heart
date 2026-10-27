@@ -38,7 +38,8 @@ export default function AboutScreen() {
       </Section>
 
       <Text style={[styles.privacy, { color: theme.textMuted }]}>
-        Your diary lives only on this phone. Searches go straight to TMDB, AniList or TVmaze; nothing else leaves the app.
+        Your diary lives on this phone. If you sign in, it’s also kept in your private account so your devices stay in sync; nobody
+        else can read it. Searches go straight to TMDB, AniList or TVmaze.
       </Text>
     </ScrollView>
   );

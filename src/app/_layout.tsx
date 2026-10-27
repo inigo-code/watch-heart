@@ -16,6 +16,7 @@ import { fonts, useTheme } from '@/lib/theme';
 import { AppLockProvider } from '@/lock/AppLockProvider';
 import { SettingsProvider } from '@/settings/SettingsProvider';
 import { DiaryStoreProvider } from '@/store/DiaryStore';
+import { SyncProvider } from '@/sync/SyncProvider';
 
 // Keep the splash up until the marquee and typewriter fonts are ready, so titles never flash in the fallback.
 SplashScreen.preventAutoHideAsync().catch(() => {});
@@ -33,11 +34,13 @@ export default function RootLayout() {
     <ShareIntentProvider options={{ disabled: shareDisabled, resetOnBackground: true }}>
     <SettingsProvider>
       <DiaryStoreProvider>
-        <ToastProvider>
-          <AppLockProvider>
-            <Navigator />
-          </AppLockProvider>
-        </ToastProvider>
+        <SyncProvider>
+          <ToastProvider>
+            <AppLockProvider>
+              <Navigator />
+            </AppLockProvider>
+          </ToastProvider>
+        </SyncProvider>
       </DiaryStoreProvider>
     </SettingsProvider>
     </ShareIntentProvider>
@@ -73,6 +76,7 @@ function Navigator() {
         <Stack.Screen name="entry/[id]" options={{ title: '', headerTransparent: true }} />
         <Stack.Screen name="card/[id]" options={{ title: 'STORY CARD' }} />
         <Stack.Screen name="settings" options={{ title: 'SETTINGS' }} />
+        <Stack.Screen name="account" options={{ title: 'ACCOUNT & SYNC' }} />
         <Stack.Screen name="trash" options={{ title: 'TRASH' }} />
         <Stack.Screen name="about" options={{ title: 'ABOUT' }} />
         <Stack.Screen name="share" options={{ title: '' }} />

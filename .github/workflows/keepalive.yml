@@ -1,0 +1,26 @@
+# Keeps the free Supabase project from pausing (it pauses after a week with no activity).
+# Makes one tiny read each day. The URL and publishable key are public (they ship inside the app) and
+# are set as repository variables SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY. Row Level Security means
+# this request returns no data, but it counts as activity.
+name: Supabase keep-alive
+
+on:
+  schedule:
+    - cron: '41 6 * * *' # every day at 06:41 UTC
+  workflow_dispatch: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    if: vars.SUPABASE_URL != ''
+    steps:
+      - name: Ping Supabase
+        env:
+          SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          SUPABASE_PUBLISHABLE_KEY: ${{ vars.SUPABASE_PUBLISHABLE_KEY }}
+        run: |
+          status=$(curl -s -o /dev/null -w "%{http_code}" "$SUPABASE_URL/rest/v1/entries?select=id&limit=1" \
+            -H "apikey: $SUPABASE_PUBLISHABLE_KEY" -H "Authorization: Bearer $SUPABASE_PUBLISHABLE_KEY")
+          echo "Supabase responded with HTTP $status"
+          test "$status" = "200"

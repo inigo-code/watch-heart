@@ -135,7 +135,8 @@ export default function LogScreen() {
     else addEntry(final);
     if (settings.haptics) Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
     toast(editing ? 'Entry updated' : `Logged · ${friendlyDate(final.watchedOn)}${queued ? ' · off your watchlist' : ''}`);
-    router.back();
+    if (router.canGoBack()) router.back();
+    else router.replace('/');
   };
 
   const saveForLater = () => {
@@ -158,7 +159,8 @@ export default function LogScreen() {
       credit: draft.credit,
     });
     toast('Saved to your watchlist');
-    router.back();
+    if (router.canGoBack()) router.back();
+    else router.replace('/');
   };
 
   const remove = () => {
