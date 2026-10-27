@@ -23,6 +23,8 @@ export type Title = {
   episodes?: number | null;
   /** Director for films, network or studio for series and anime. */
   credit?: string | null;
+  /** When TMDB details were fetched, if they came from a saved record (see Entry.fetchedAt). */
+  fetchedAt?: number | null;
 };
 
 /** One viewing in the diary. */
@@ -53,6 +55,11 @@ export type Entry = {
   tags: string[];
   createdAt: number;
   updatedAt: number;
+  /**
+   * When the TMDB details (poster, genres, running time, credit) were last fetched. TMDB allows keeping
+   * them for 6 months, so older ones are refreshed (src/lib/tmdbFreshness.ts). 0 = removed, refresh when possible.
+   */
+  fetchedAt?: number | null;
   /** Set when moved to Trash. */
   deletedAt: number | null;
 };
@@ -76,4 +83,9 @@ export type WatchItem = {
   /** Why it's on the list, e.g. "Recommended by Sam". */
   note: string;
   addedAt: number;
+  /**
+   * When the TMDB details (poster, genres, running time, credit) were last fetched. TMDB allows keeping
+   * them for 6 months, so older ones are refreshed (src/lib/tmdbFreshness.ts). 0 = removed, refresh when possible.
+   */
+  fetchedAt?: number | null;
 };

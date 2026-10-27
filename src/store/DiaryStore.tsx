@@ -258,6 +258,7 @@ export function DiaryStoreProvider({ children }: { children: ReactNode }) {
         credit: t.credit ?? null,
         note,
         addedAt: Date.now(),
+        fetchedAt: t.source === 'tmdb' ? (t.fetchedAt ?? Date.now()) : null,
       };
       // Saving a title that's already on the list replaces the old item.
       const replaced = watchRef.current.filter((w) => sameTitle(w, item)).map((w) => w.id);
@@ -456,5 +457,6 @@ export function titleOf(w: WatchItem): Title {
     genres: w.genres,
     runtime: w.runtime,
     credit: w.credit,
+    fetchedAt: w.fetchedAt ?? w.addedAt,
   };
 }

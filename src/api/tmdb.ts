@@ -43,21 +43,30 @@ type Result = {
   backdrop_path: string | null;
   overview?: string;
   genre_ids?: number[];
+  original_language?: string;
+  popularity?: number;
 };
 
 const year = (date?: string) => (date && /^\d{4}/.test(date) ? Number(date.slice(0, 4)) : null);
 export const poster = (path: string | null, size = 'w342') => (path ? `${IMG}/${size}${path}` : null);
 
-function toTitle(r: Result, kind: 'movie' | 'tv'): Title {
-  const title = (kind === 'movie' ? r.title : r.name) ?? '';
-  const original = kind === 'movie' ? r.original_title : r.original_name;
+const ANIMATION = 16;
+
+/** Japanese animation: TMDB files anime as Animation with Japanese as the original language. */
+function isAnime(r: Result & { genres?: { id: number }[] }) {
+  return r.original_language === 'ja' && (r.genre_ids?.includes(ANIMATION) || r.genres?.some((g) => g.id === ANIMATION) === true);
+}
+
+function toTitle(r: Result & { genres?: { id: number }[] }, type: 'movie' | 'tv'): Title {
+  const title = (type === 'movie' ? r.title : r.name) ?? '';
+  const original = type === 'movie' ? r.original_title : r.original_name;
   return {
-    kind,
+    kind: isAnime(r) ? 'anime' : type,
     source: 'tmdb',
-    sourceId: `${kind}:${r.id}`,
+    sourceId: `${type}:${r.id}`,
     title,
     originalTitle: original && original !== title ? original : undefined,
-    year: year(kind === 'movie' ? r.release_date : r.first_air_date),
+    year: year(type === 'movie' ? r.release_date : r.first_air_date),
     posterUrl: poster(r.poster_path),
     backdropUrl: poster(r.backdrop_path, 'w780'),
     overview: r.overview,
@@ -78,39 +87,68 @@ export async function trendingTmdb(key: string, kind: 'movie' | 'tv', signal?: A
   return data.results.map((r) => toTitle(r, kind));
 }
 
+const byPopularity = (a: Result, b: Result) => (b.popularity ?? 0) - (a.popularity ?? 0);
+
+/** Anime series and films matching the search, most popular first. */
+export async function searchAnimeTmdb(key: string, query: string, signal?: AbortSignal): Promise<Title[]> {
+  const params = { query, include_adult: 'false' };
+  const [tv, movie] = await Promise.all([
+    get<{ results: Result[] }>(key, '/search/tv', params, signal),
+    get<{ results: Result[] }>(key, '/search/movie', params, signal),
+  ]);
+  const hits: [Result, 'tv' | 'movie'][] = [...tv.results.map((r) => [r, 'tv'] as [Result, 'tv']), ...movie.results.map((r) => [r, 'movie'] as [Result, 'movie'])];
+  return hits
+    .filter(([r]) => isAnime(r))
+    .sort(([a], [b]) => byPopularity(a, b))
+    .map(([r, type]) => toTitle(r, type));
+}
+
+/** The most popular anime right now: series first, with the biggest films mixed in. */
+export async function trendingAnimeTmdb(key: string, signal?: AbortSignal): Promise<Title[]> {
+  const params = { with_genres: String(ANIMATION), with_original_language: 'ja', sort_by: 'popularity.desc', include_adult: 'false' };
+  const [tv, movie] = await Promise.all([
+    get<{ results: Result[] }>(key, '/discover/tv', params, signal),
+    get<{ results: Result[] }>(key, '/discover/movie', params, signal),
+  ]);
+  return [...tv.results.slice(0, 18).map((r) => toTitle(r, 'tv')), ...movie.results.slice(0, 7).map((r) => toTitle(r, 'movie'))];
+}
+
 type MovieDetails = Result & {
   runtime: number | null;
-  genres: { name: string }[];
+  genres: { id: number; name: string }[];
+  production_companies?: { name: string }[];
   credits?: { crew: { job: string; name: string }[] };
 };
 type TvDetails = Result & {
   episode_run_time: number[];
-  genres: { name: string }[];
+  genres: { id: number; name: string }[];
+  production_companies?: { name: string }[];
   number_of_episodes: number | null;
   networks: { name: string }[];
   created_by: { name: string }[];
 };
 
-/** Running time, full genres and director (films) or network (series). */
+/** Running time, full genres, and director (films), studio (anime) or network (series). */
 export async function detailsTmdb(key: string, t: Title, signal?: AbortSignal): Promise<Title> {
   const [kind, id] = t.sourceId.split(':') as ['movie' | 'tv', string];
   if (kind === 'movie') {
     const d = await get<MovieDetails>(key, `/movie/${id}`, { append_to_response: 'credits' }, signal);
+    const base = toTitle(d, 'movie');
     return {
-      ...toTitle(d, 'movie'),
+      ...base,
       genres: d.genres.map((g) => g.name),
       runtime: d.runtime || null,
-      credit: d.credits?.crew.find((c) => c.job === 'Director')?.name ?? null,
+      credit: (base.kind === 'anime' ? d.production_companies?.[0]?.name : null) ?? d.credits?.crew.find((c) => c.job === 'Director')?.name ?? null,
     };
   }
   const d = await get<TvDetails>(key, `/tv/${id}`, {}, signal);
+  const base = toTitle(d, 'tv');
   return {
-    ...toTitle(d, 'tv'),
-    kind: t.kind,
+    ...base,
     genres: d.genres.map((g) => g.name),
     runtime: d.episode_run_time?.[0] ?? null,
     episodes: d.number_of_episodes,
-    credit: d.networks?.[0]?.name ?? d.created_by?.[0]?.name ?? null,
+    credit: (base.kind === 'anime' ? d.production_companies?.[0]?.name : null) ?? d.networks?.[0]?.name ?? d.created_by?.[0]?.name ?? null,
   };
 }
 

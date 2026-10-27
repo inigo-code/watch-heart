@@ -13,6 +13,7 @@ import { Platform } from 'react-native';
 import { ToastProvider } from '@/components/Toast';
 import { UpdatePrompt } from '@/components/UpdatePrompt';
 import { fonts, useTheme } from '@/lib/theme';
+import { useTmdbFreshness } from '@/lib/tmdbFreshness';
 import { AppLockProvider } from '@/lock/AppLockProvider';
 import { SettingsProvider } from '@/settings/SettingsProvider';
 import { DiaryStoreProvider } from '@/store/DiaryStore';
@@ -55,6 +56,7 @@ function Navigator() {
   const theme = useTheme();
   const pathname = usePathname();
   const { hasShareIntent } = useShareIntentContext();
+  useTmdbFreshness();
 
   // On Android, a shared link arrives through the native module rather than a deep link,
   // so open the Share screen whenever something has been shared and not yet handled.

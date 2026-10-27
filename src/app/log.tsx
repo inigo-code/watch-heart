@@ -52,6 +52,7 @@ function blankDraft(t: Title): EntryDraft {
     review: '',
     spoilers: false,
     tags: [],
+    fetchedAt: t.source === 'tmdb' ? (t.fetchedAt ?? Date.now()) : null,
   };
 }
 
@@ -157,6 +158,7 @@ export default function LogScreen() {
       genres: draft.genres,
       runtime: draft.runtime,
       credit: draft.credit,
+      fetchedAt: draft.fetchedAt,
     });
     toast('Saved to your watchlist');
     if (router.canGoBack()) router.back();

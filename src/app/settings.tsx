@@ -108,7 +108,7 @@ export default function SettingsScreen() {
       key,
       items,
       (item, m) => {
-        const patch = { source: m.source, sourceId: m.sourceId, posterUrl: m.posterUrl, backdropUrl: m.backdropUrl, genres: m.genres, runtime: m.runtime, credit: m.credit ?? null };
+        const patch = { source: m.source, sourceId: m.sourceId, posterUrl: m.posterUrl, backdropUrl: m.backdropUrl, genres: m.genres, runtime: m.runtime, credit: m.credit ?? null, fetchedAt: Date.now() };
         if (item.list === 'diary') diary.updateEntry(item.id, patch);
         else diary.updateWatchItem(item.id, patch);
       },
@@ -202,11 +202,11 @@ export default function SettingsScreen() {
 
       <Section
         theme={theme}
-        title="Film search (TMDB)"
+        title="Film and anime search (TMDB)"
         footer={
           builtInKey
             ? 'This build has a key built in, so search already works. Paste your own to use it instead.'
-            : 'TMDB keys are free for personal use. Anime (AniList) and series (TVmaze) search work without one; TMDB adds films and better series posters.'
+            : 'TMDB keys are free for personal use. TMDB powers film and anime search; series search works without a key (TVmaze), and TMDB adds better series posters.'
         }
       >
         <View style={styles.inputRow}>

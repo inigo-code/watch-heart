@@ -11,12 +11,20 @@ export const DEVELOPER = {
 
 export const SUPPORT_EMAIL = 'inigo@tosstheworld.org';
 
-/** Where the free data comes from. TMDB's terms require the notice below wherever its data is shown. */
+/**
+ * AniList's terms bar "anime and manga list or tracker services" from its API, so Watch Heart only
+ * uses it with written permission from AniList (contact@anilist.co). Until then anime comes from TMDB.
+ * Flip this to true once they say yes, and publish an update.
+ */
+export const ANILIST_ALLOWED = false;
+
+/** Where the free data comes from. TMDB's terms require its logo and the notice below in the app. */
 export const DATA_SOURCES = {
   tmdb: {
     label: 'TMDB',
     url: 'https://www.themoviedb.org',
-    notice: 'This product uses the TMDB API but is not endorsed or certified by TMDB.',
+    // The wording TMDB's API Terms of Use ask for.
+    notice: 'Watch Heart uses TMDB and the TMDB APIs but is not endorsed, certified, or otherwise approved by TMDB.',
     keyUrl: 'https://www.themoviedb.org/settings/api',
   },
   anilist: { label: 'AniList', url: 'https://anilist.co' },

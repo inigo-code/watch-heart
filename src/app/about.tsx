@@ -1,12 +1,12 @@
 import * as Linking from 'expo-linking';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BrandTitle } from '@/components/BrandTitle';
 import { Sprockets } from '@/components/Film';
 import { Row, Section } from '@/components/SettingsUI';
 import { UpdateRow, describeRunning } from '@/components/UpdateRow';
-import { APP_TAGLINE, DATA_SOURCES, DEVELOPER, SUPPORT_EMAIL } from '@/lib/app';
+import { ANILIST_ALLOWED, APP_TAGLINE, DATA_SOURCES, DEVELOPER, SUPPORT_EMAIL } from '@/lib/app';
 import { font, fonts, useTheme } from '@/lib/theme';
 
 export default function AboutScreen() {
@@ -29,10 +29,22 @@ export default function AboutScreen() {
         <UpdateRow theme={theme} last />
       </Section>
 
-      <Section theme={theme} title="Credits" footer={`${DATA_SOURCES.tmdb.notice} ${DATA_SOURCES.tvmaze.notice}`}>
-        <Row theme={theme} icon="film-outline" label="Films and series" value="TMDB" onPress={() => Linking.openURL(DATA_SOURCES.tmdb.url)} />
-        <Row theme={theme} icon="sparkles-outline" label="Anime" value="AniList" onPress={() => Linking.openURL(DATA_SOURCES.anilist.url)} />
-        <Row theme={theme} icon="tv-outline" label="Series (no key)" value="TVmaze" onPress={() => Linking.openURL(DATA_SOURCES.tvmaze.url)} last />
+      <Pressable
+        onPress={() => Linking.openURL(DATA_SOURCES.tmdb.url)}
+        accessibilityRole="link"
+        accessibilityLabel="TMDB, The Movie Database"
+        style={[styles.tmdb, { backgroundColor: theme.card, borderColor: theme.border }]}
+      >
+        <Image source={require('../../assets/tmdb-logo.png')} style={styles.tmdbLogo} resizeMode="contain" accessibilityIgnoresInvertColors />
+        <Text style={[styles.tmdbNotice, { color: theme.textMuted }]}>{DATA_SOURCES.tmdb.notice}</Text>
+      </Pressable>
+
+      <Section theme={theme} title="Credits" footer={DATA_SOURCES.tvmaze.notice}>
+        <Row theme={theme} icon="film-outline" label="Films, series and anime" value="TMDB" onPress={() => Linking.openURL(DATA_SOURCES.tmdb.url)} />
+        {ANILIST_ALLOWED && (
+          <Row theme={theme} icon="sparkles-outline" label="Anime (without a TMDB key)" value="AniList" onPress={() => Linking.openURL(DATA_SOURCES.anilist.url)} />
+        )}
+        <Row theme={theme} icon="tv-outline" label="Series (without a TMDB key)" value="TVmaze" onPress={() => Linking.openURL(DATA_SOURCES.tvmaze.url)} last />
       </Section>
 
       <Section theme={theme} title="Made by">
@@ -42,7 +54,7 @@ export default function AboutScreen() {
 
       <Text style={[styles.privacy, { color: theme.textMuted }]}>
         Your diary lives on this phone. If you sign in, it’s also kept in your private account so your devices stay in sync; nobody
-        else can read it. Searches go straight to TMDB, AniList or TVmaze.
+        else can read it. Searches go straight to TMDB or TVmaze.
       </Text>
     </ScrollView>
   );
@@ -54,5 +66,9 @@ const styles = StyleSheet.create({
   cardBody: { alignItems: 'center', gap: 6, paddingVertical: 14 },
   tagline: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 1.5 },
   version: { fontFamily: fonts.mono, fontSize: font.caption },
+  tmdb: { borderRadius: 14, borderWidth: StyleSheet.hairlineWidth, padding: 16, gap: 10, alignItems: 'flex-start' },
+  // Smaller than Watch Heart's own title, as TMDB's terms ask.
+  tmdbLogo: { width: 110, height: 14 },
+  tmdbNotice: { fontFamily: fonts.mono, fontSize: font.caption, lineHeight: 17 },
   privacy: { fontFamily: fonts.mono, fontSize: font.footnote, lineHeight: 19, textAlign: 'center', paddingHorizontal: 12 },
 });

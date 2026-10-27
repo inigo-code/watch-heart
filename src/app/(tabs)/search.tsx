@@ -136,7 +136,7 @@ export default function SearchScreen() {
         contentContainerStyle={[styles.list, { paddingBottom: insets.bottom + 24 }]}
         ListHeaderComponent={
           !source ? (
-            <NeedsKey theme={theme} onManual={() => router.push({ pathname: '/log', params: { manual: kind } })} />
+            <NeedsKey theme={theme} kind={kind} onManual={() => router.push({ pathname: '/log', params: { manual: kind } })} />
           ) : error ? (
             <Text style={[styles.note, { color: theme.danger }]}>{error}</Text>
           ) : results.length > 0 ? (
@@ -224,15 +224,15 @@ export default function SearchScreen() {
   );
 }
 
-/** Film search needs a free TMDB key; explain how to get one, without blocking anything else. */
-function NeedsKey({ theme, onManual }: { theme: ReturnType<typeof useTheme>; onManual: () => void }) {
+/** Film (and anime) search needs a free TMDB key; explain how to get one, without blocking anything else. */
+function NeedsKey({ theme, kind, onManual }: { theme: ReturnType<typeof useTheme>; kind: MediaKind; onManual: () => void }) {
   return (
     <View style={[styles.keyCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
       <MaterialCommunityIcons name="key-chain-variant" size={28} color={theme.accent} />
-      <Text style={[styles.keyTitle, { color: theme.text }]}>FILM SEARCH NEEDS A FREE TMDB KEY</Text>
+      <Text style={[styles.keyTitle, { color: theme.text }]}>{kind === 'anime' ? 'ANIME' : 'FILM'} SEARCH NEEDS A FREE TMDB KEY</Text>
       <Text style={[styles.keyText, { color: theme.textMuted }]}>
-        TMDB is the free film database most apps use. Make an account at themoviedb.org, open Settings → API, copy your key, then paste it
-        into Watch Heart’s settings. Anime and series search already work without one.
+        TMDB is the free film and TV database most apps use. Make an account at themoviedb.org, open Settings → API, copy your key, then
+        paste it into Watch Heart’s settings. Series search already works without one.
       </Text>
       <View style={styles.keyButtons}>
         <Pressable onPress={() => router.push('/settings')} style={[styles.keyBtn, { backgroundColor: theme.accent }]} accessibilityRole="button">

@@ -29,13 +29,21 @@ Everything lives on the phone. Optionally, sign in to back up the diary and watc
 
 | Kind | Source | Key |
 | --- | --- | --- |
-| Anime | [AniList](https://anilist.co) GraphQL | None |
+| Films, series and anime | [TMDB](https://www.themoviedb.org) | Free personal key |
 | Series | [TVmaze](https://www.tvmaze.com) | None (fallback without TMDB) |
-| Films and series | [TMDB](https://www.themoviedb.org) | Free personal key |
+| Anime | [AniList](https://anilist.co) | Off until AniList gives permission (fallback without TMDB) |
 
-Film search needs a TMDB key. Either paste one into **Settings → Film search** in the app, or bake one into
-builds with `EXPO_PUBLIC_TMDB_KEY` (see `.env.example`). TMDB's terms ask for the attribution that's on the
-About screen.
+Film and anime search need a TMDB key. Either paste one into **Settings → Film and anime search** in the app,
+or bake one into builds with `EXPO_PUBLIC_TMDB_KEY` (see `.env.example`).
+
+Keeping to the terms:
+
+- **TMDB** (free for non-commercial use): the About screen shows TMDB's logo and its required notice, and
+  TMDB details are refreshed after about 5 months and never kept longer than 6 (`src/lib/tmdbFreshness.ts`).
+  Ads or paid features would need a commercial agreement with TMDB first.
+- **AniList** bars "anime and manga list or tracker services" from its API, so it stays off
+  (`ANILIST_ALLOWED` in `src/lib/app.ts`) unless AniList gives written permission.
+- **TVmaze** (CC BY-SA) only asks for a link back, which is on the About screen.
 
 ## Run it
 

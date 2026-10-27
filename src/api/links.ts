@@ -1,3 +1,4 @@
+import { ANILIST_ALLOWED } from '@/lib/app';
 import type { MediaKind, Title } from '@/store/types';
 
 import { animeById } from './anilist';
@@ -106,7 +107,8 @@ export async function resolveShared(text: string, key: string, signal?: AbortSig
       const t = await findImdb(key, link.id, signal);
       if (t) return { title: t };
     }
-    if (link?.site === 'anilist' || link?.site === 'mal') {
+    // AniList is only used with its permission; otherwise these links become a search by their title.
+    if (ANILIST_ALLOWED && (link?.site === 'anilist' || link?.site === 'mal')) {
       const t = await animeById(link.site === 'anilist' ? { id: link.id } : { idMal: link.id }, signal);
       if (t) return { title: t };
     }
