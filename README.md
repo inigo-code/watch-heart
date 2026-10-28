@@ -6,7 +6,7 @@
   <a href="../../releases/latest/download/watch-heart.apk"><img alt="Download APK" src="https://img.shields.io/badge/Download-Android%20APK-F2B84B?style=for-the-badge&logo=android&logoColor=white&labelColor=0B0A0D"></a>
   <a href="https://inigo-code.github.io/watch-heart-site/fdroid.html"><img alt="Get it with F-Droid" src="https://img.shields.io/badge/Get%20it%20with-F--Droid-1976D2?style=for-the-badge&logo=f-droid&logoColor=white&labelColor=0B0A0D"></a>
   <a href="https://inigo-code.github.io/watch-heart-site/"><img alt="Website" src="https://img.shields.io/badge/Website-Watch%20Heart-FF4D6D?style=for-the-badge&logo=githubpages&logoColor=white&labelColor=0B0A0D"></a>
-  <img alt="Version" src="https://img.shields.io/badge/version-1.0.0-F2B84B?style=for-the-badge&labelColor=0B0A0D">
+  <img alt="Version" src="https://img.shields.io/badge/version-1.1.0-F2B84B?style=for-the-badge&labelColor=0B0A0D">
   <img alt="Expo SDK 58" src="https://img.shields.io/badge/Expo-SDK%2058-000020?style=for-the-badge&logo=expo&logoColor=white">
   <img alt="React Native" src="https://img.shields.io/badge/React%20Native-0.88-61DAFB?style=for-the-badge&logo=react&logoColor=black">
   <img alt="Supabase" src="https://img.shields.io/badge/Sync-Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white">
@@ -68,6 +68,34 @@ keep a watchlist, and turn each month into an <b>Instagram story</b>. Free, with
       A dark projector look or a light paper one, five accents, fingerprint App lock, and a 30-day Trash with undo.
     </td>
   </tr>
+  <tr>
+    <td valign="top">
+      <h4>🏆 Your profile</h4>
+      Your favourite four, films, series, anime and hours, a year of watching day by day, how you rate, top genres, and thirteen achievements from wood to platinum.
+    </td>
+    <td valign="top">
+      <h4>👥 Watched with</h4>
+      Add who was there to any viewing. <b>Movie buddies</b> on your profile shows who you watch with most, and searching a name finds everything you saw together.
+    </td>
+    <td valign="top">
+      <h4>📺 Episode by episode</h4>
+      Tick off episodes as you go, season by season, and pick up where you left off from the Diary.
+    </td>
+  </tr>
+  <tr>
+    <td valign="top">
+      <h4>🍅 Scores at a glance</h4>
+      IMDb, Rotten Tomatoes and Metacritic scores on every title, next to your own stars.
+    </td>
+    <td valign="top">
+      <h4>📡 Where to watch</h4>
+      Which services stream, rent or sell a title in your country, from JustWatch.
+    </td>
+    <td valign="top">
+      <h4>🪪 Profile card</h4>
+      Your profile as an Instagram story in any of the six palettes. Your name, bio and photo follow you to your other phones.
+    </td>
+  </tr>
 </table>
 
 <br/>
@@ -78,6 +106,10 @@ keep a watchlist, and turn each month into an <b>Instagram story</b>. Free, with
 
 <p align="center">
   <img src="docs/stories.jpg" alt="October as six Instagram stories: Marquee, Velvet, Neon, Sakura, Noir and Paper palettes in the Film strip, Tickets and Spotlight layouts" width="100%" />
+</p>
+
+<p align="center">
+  <img src="docs/profile-reel.jpg" alt="A second reel: the profile with favourite four, a year of watching, movie buddies, achievements, a viewing watched with friends, and episode progress" width="100%" />
 </p>
 
 ## ⬇️ Install
@@ -142,6 +174,8 @@ Entries without a watch date go to an **Archive** at the end of the diary instea
 | Films, series and anime | [TMDB](https://www.themoviedb.org) | Free personal key |
 | Series and trending | [TVmaze](https://www.tvmaze.com) | None |
 | Anime | [AniList](https://anilist.co) | Off until AniList gives permission |
+| IMDb, Rotten Tomatoes and Metacritic scores | [OMDb](https://www.omdbapi.com) | Free personal key |
+| Where to watch | [JustWatch](https://www.justwatch.com), through TMDB | The TMDB key |
 
 Film and anime search need a TMDB key. Builds bake one in with `EXPO_PUBLIC_TMDB_KEY` (see `.env.example`), or paste your own into **Settings → Film and anime search** in the app. The app talks to `api.tmdb.org`, which also works on networks that block `api.themoviedb.org`.
 
@@ -150,6 +184,7 @@ Keeping to the terms:
 - **TMDB** (free for non-commercial use): the About screen shows TMDB's logo and its required notice, and TMDB details are refreshed after about 5 months and never kept longer than 6 (`src/lib/tmdbFreshness.ts`). Ads or paid features would need a commercial agreement with TMDB first.
 - **AniList** bars "anime and manga list or tracker services" from its API, so it stays off (`ANILIST_ALLOWED` in `src/lib/app.ts`) unless AniList gives written permission.
 - **TVmaze** (CC BY-SA) only asks for a link back, which is on the About screen.
+- **JustWatch** streaming data comes through TMDB and is credited to JustWatch wherever it's shown.
 
 <sub>Watch Heart uses TMDB and the TMDB APIs but is not endorsed, certified, or otherwise approved by TMDB.</sub>
 
