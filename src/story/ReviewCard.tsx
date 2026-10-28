@@ -4,6 +4,7 @@ import { forwardRef, useEffect, useState } from 'react';
 // React Native's Image, not expo-image: see StoryCanvas.
 import { Image, StyleSheet, Text, View } from 'react-native';
 
+import { admit, namesLine } from '@/lib/companions';
 import { friendlyDate } from '@/lib/dates';
 import { plainText } from '@/lib/richText';
 import { KIND_LABEL } from '@/lib/stats';
@@ -73,6 +74,11 @@ export const ReviewCard = forwardRef<StoryHandle, Props>(function ReviewCard({ e
             {CREDIT[entry.kind]} <Text style={{ color: p.text }}>{entry.credit.toUpperCase()}</Text>
           </Text>
         )}
+        {!!entry.companions?.length && (
+          <Text style={[styles.meta, { color: p.muted }]} numberOfLines={1}>
+            WITH <Text style={{ color: p.text }}>{namesLine(entry.companions).toUpperCase()}</Text>
+          </Text>
+        )}
 
         <View style={styles.rating}>
           {stars}
@@ -87,7 +93,7 @@ export const ReviewCard = forwardRef<StoryHandle, Props>(function ReviewCard({ e
 
         <View style={{ flex: 1 }} />
         <View style={[styles.stub, { borderColor: p.muted + '66' }]}>
-          <Text style={[styles.stubText, { color: p.muted }]}>ADMIT ONE</Text>
+          <Text style={[styles.stubText, { color: p.muted }]}>{admit(entry.companions?.length ?? 0)}</Text>
           <View style={[styles.stubTear, { borderColor: p.muted + '66' }]} />
           <Text style={[styles.stubText, { color: p.text }]}>{friendlyDate(entry.watchedOn).toUpperCase()}</Text>
         </View>

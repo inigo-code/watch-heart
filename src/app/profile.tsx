@@ -319,6 +319,40 @@ export default function ProfileScreen() {
           </View>
         )}
 
+        {/* Movie buddies */}
+        {s.buddies.length > 0 && (
+          <Block theme={theme} title="Movie buddies">
+            <View style={[styles.buddies, { backgroundColor: theme.card, borderColor: theme.border }]}>
+              {s.buddies.slice(0, 6).map((b, i) => (
+                <Pressable
+                  key={b.name}
+                  onPress={() => router.navigate({ pathname: '/', params: { q: b.name } })}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Everything you watched with ${b.name}`}
+                  style={({ pressed }) => [styles.buddy, i > 0 && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: theme.border }, pressed && { opacity: 0.7 }]}
+                >
+                  <View style={[styles.buddyMark, { backgroundColor: i === 0 ? theme.accent : theme.elevated }]}>
+                    <Text style={[styles.buddyInitial, { color: i === 0 ? theme.accentText : theme.text }]}>{b.name[0]?.toUpperCase()}</Text>
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.buddyName, { color: theme.text }]}>{b.name}</Text>
+                    <Text style={[styles.hint, { color: theme.textMuted }]}>
+                      {[
+                        `${b.count} ${b.count === 1 ? 'viewing' : 'viewings'}`,
+                        b.topGenre ? `mostly ${b.topGenre.toLowerCase()}` : null,
+                        `last ${friendlyDate(b.lastOn).toLowerCase()}`,
+                      ]
+                        .filter(Boolean)
+                        .join(' · ')}
+                    </Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={16} color={theme.textMuted} />
+                </Pressable>
+              ))}
+            </View>
+          </Block>
+        )}
+
         {/* Achievements */}
         <Block theme={theme} title={`Achievements · ${s.achievements.filter((a) => a.tier).length} of ${s.achievements.length} unlocked`}>
           <Achievements list={s.achievements} theme={theme} />
@@ -445,6 +479,11 @@ const styles = StyleSheet.create({
   bar: { width: '70%', borderRadius: 3 },
   barLabel: { fontFamily: fonts.mono, fontSize: 10 },
   tops: { gap: 10 },
+  buddies: { borderWidth: 1, borderRadius: 12, overflow: 'hidden' },
+  buddy: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 14, paddingVertical: 12 },
+  buddyMark: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
+  buddyInitial: { fontFamily: fonts.display, fontSize: font.title },
+  buddyName: { fontSize: font.body, fontWeight: '700' },
   top: { borderWidth: 1, borderRadius: 12, padding: 14, gap: 10 },
   topRow: { flexDirection: 'row', justifyContent: 'space-between', gap: 8 },
   topName: { flex: 1, fontSize: font.footnote, fontWeight: '600' },

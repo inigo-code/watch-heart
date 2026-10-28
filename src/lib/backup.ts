@@ -89,11 +89,12 @@ export async function exportCsv(entries: Entry[]) {
     e.genres.join(', '),
     e.runtime,
     e.tags.join(', '),
+    (e.companions ?? []).join(', '),
     e.review,
   ]);
   await share(
     `${APP_SLUG}-diary-${stamp()}.csv`,
-    csv([['Watched', 'Kind', 'Title', 'Year', 'Rating', 'Liked', 'Rewatch', 'Progress', 'Genres', 'Minutes', 'Tags', 'Review'], ...rows]),
+    csv([['Watched', 'Kind', 'Title', 'Year', 'Rating', 'Liked', 'Rewatch', 'Progress', 'Genres', 'Minutes', 'Tags', 'Watched with', 'Review'], ...rows]),
     'text/csv',
     'Export diary',
   );

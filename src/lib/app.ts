@@ -36,11 +36,11 @@ export const DATA_SOURCES = {
  * update worth telling people about; an update that leaves it alone shows nothing.
  */
 export const WHATS_NEW = {
-  id: '2026-10-28d',
+  id: '2026-10-29',
   items: [
-    'IMDb, Rotten Tomatoes and Metacritic scores on every title, next to TMDB’s',
-    'Your profile syncs: name, bio, photo, favourite four and yearly goal',
-    'Profile photos come out bright and clear (pick yours again if it looked dim)',
-    'Name and bio have a Save button; Settings opens with your profile',
+    'Watched with: add who was there to any entry; suggestions remember your regulars',
+    'Movie buddies on your profile, and a new achievement for movie nights together',
+    'Story cards say who you watched with, and the ticket admits the whole group',
+    'Search the diary by a name to see everything you watched together',
   ],
 };

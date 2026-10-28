@@ -73,6 +73,8 @@ export type Entry = {
   undated?: boolean;
   /** Episodes this viewing covers, as "s1e3", when they were ticked off in the episode tracker. */
   episodes?: string[];
+  /** Who you watched it with, as you typed their names ("Sam", "Priya"). */
+  companions?: string[];
 };
 
 export type EntryDraft = Omit<Entry, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt'>;

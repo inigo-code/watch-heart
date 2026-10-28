@@ -1,3 +1,5 @@
+import { buddies } from '@/lib/companions';
+import type { Buddy } from '@/lib/companions';
 import { isoDate, parseIso } from '@/lib/dates';
 import { computeStats, episodesIn } from '@/lib/stats';
 import type { Entry, MediaKind } from '@/store/types';
@@ -41,6 +43,8 @@ export type ProfileStats = {
   busiestMonth: { key: string; count: number } | null;
   /** Viewings dated this calendar year. */
   thisYear: number;
+  /** The people you watch with, most viewings first. */
+  buddies: Buddy[];
   achievements: Achievement[];
 };
 
@@ -135,6 +139,7 @@ export function profileStats(all: Entry[], todayIso: string): ProfileStats {
   const hours = Math.round(stats.minutes / 60);
   const horror = all.filter((e) => e.genres.includes('Horror')).length;
   const ghibli = all.filter((e) => /ghibli/i.test(e.credit ?? '')).length;
+  const people = buddies(all);
 
   const achievements = [
     achieve('projector', 'The Projector', (n) => `Watch ${n} films`, 'film', titles.movie, [5, 25, 100, 250, 500]),
@@ -148,6 +153,7 @@ export function profileStats(all: Entry[], todayIso: string): ProfileStats {
     achieve('rewatch', 'Again!', (n) => `${n} rewatches`, 'repeat', stats.rewatches, [1, 5, 20, 50, 100]),
     achieve('night', 'After Midnight', (n) => `${n} horror titles`, 'moon', horror, [1, 5, 15, 40, 100]),
     achieve('ghibli', 'Spirited', (n) => `${n} Studio Ghibli films`, 'leaf', ghibli, [1, 3, 6, 12, 20]),
+    achieve('buddy', 'Movie Night Regular', (n) => `${n} viewings with the same person`, 'people', people[0]?.count ?? 0, [3, 10, 25, 50, 100]),
     achieve('rounded', 'All-Rounder', (n) => `${n} of each: film, series, anime`, 'apps', Math.min(titles.movie, titles.tv, titles.anime), [1, 5, 15, 40, 100]),
   ];
 
@@ -169,6 +175,7 @@ export function profileStats(all: Entry[], todayIso: string): ProfileStats {
     binge: bingeDay ? { date: bingeDay[0], episodes: bingeDay[1] } : null,
     busiestMonth: busiest ? { key: busiest[0], count: busiest[1] } : null,
     thisYear: dated.filter((e) => e.watchedOn.startsWith(year)).length,
+    buddies: people,
     achievements,
   };
 }

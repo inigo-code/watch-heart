@@ -1,6 +1,6 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, SectionList, StyleSheet, Text, TextInput, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -53,7 +53,7 @@ function matches(e: Entry, filter: Filter, q: string) {
   else if (filter === 'reviewed' && !e.review.trim()) return false;
   else if (filter === 'rewatch' && !e.rewatch) return false;
   if (!q) return true;
-  const hay = `${e.title} ${e.originalTitle ?? ''} ${e.review} ${e.tags.join(' ')} ${e.credit ?? ''} ${e.progress}`.toLowerCase();
+  const hay = `${e.title} ${e.originalTitle ?? ''} ${e.review} ${e.tags.join(' ')} ${e.credit ?? ''} ${e.progress} ${(e.companions ?? []).join(' ')}`.toLowerCase();
   return hay.includes(q);
 }
 
@@ -67,6 +67,13 @@ export default function DiaryScreen() {
   const { entries, ready, deleteEntry, restoreEntry } = useDiary();
   const [filter, setFilter] = useState<Filter>('all');
   const [query, setQuery] = useState('');
+  // Opened on a search from elsewhere (a name on an entry, a movie buddy): show it.
+  const { q } = useLocalSearchParams<{ q?: string }>();
+  const [seenQ, setSeenQ] = useState<string | undefined>(undefined);
+  if (q !== seenQ) {
+    setSeenQ(q);
+    if (q) setQuery(q);
+  }
   const [menu, setMenu] = useState<Entry | null>(null);
   const grid = settings.diaryLayout === 'grid';
   const tile = (width - 32 - GAP * (GRID_COLS - 1)) / GRID_COLS;

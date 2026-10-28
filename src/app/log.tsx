@@ -9,6 +9,7 @@ import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Swit
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { details, tmdbKey } from '@/api';
+import { CompanionField } from '@/components/CompanionField';
 import { Chip, StarInput } from '@/components/Film';
 import { Hero } from '@/components/Hero';
 import { trackable } from '@/api/episodes';
@@ -16,6 +17,7 @@ import { TitleExtras } from '@/components/TitleExtras';
 import { TitlePicker } from '@/components/TitlePicker';
 import { useToast } from '@/components/Toast';
 import { daysAgo, friendlyDate, isoDate, parseIso, today } from '@/lib/dates';
+import { buddies } from '@/lib/companions';
 import { applyFormat } from '@/lib/richText';
 import { KIND_LABEL } from '@/lib/stats';
 import { KIND_COLORS, font, fonts, useTheme } from '@/lib/theme';
@@ -68,7 +70,9 @@ export default function LogScreen() {
   const toast = useToast();
   const params = useLocalSearchParams<Params>();
   const { settings } = useSettings();
-  const { getEntry, viewingsOf, addEntry, updateEntry, deleteEntry, restoreEntry, onWatchlist, addToWatchlist } = useDiary();
+  const { entries, getEntry, viewingsOf, addEntry, updateEntry, deleteEntry, restoreEntry, onWatchlist, addToWatchlist } = useDiary();
+  // People you've watched with before, most often first, as suggestions.
+  const known = useMemo(() => buddies(entries).map((b) => b.name), [entries]);
 
   const editing = params.id ? getEntry(params.id) : undefined;
   const manual = !editing && !params.again && !params.title;
@@ -330,6 +334,10 @@ export default function LogScreen() {
               </Pressable>
             </View>
             <Text style={[styles.hint, { color: theme.textMuted }]}>Slide across the stars; the left half of a star is a half. Tap your rating again to clear it.</Text>
+          </Field>
+
+          <Field theme={theme} label="Watched with">
+            <CompanionField names={draft.companions ?? []} onChange={(companions) => set({ companions })} known={known} theme={theme} />
           </Field>
 
           <ToggleLine

@@ -79,6 +79,17 @@ export default function EntryScreen() {
                 {entry.liked && <Ionicons name="heart" size={22} color={theme.like} accessibilityLabel="Liked" />}
               </View>
               {!!entry.progress && <Text style={[styles.progress, { color: theme.text }]}>{entry.progress}</Text>}
+              {!!entry.companions?.length && (
+                <View style={styles.with}>
+                  <Ionicons name="people" size={15} color={theme.textMuted} />
+                  <Text style={[styles.withLabel, { color: theme.textMuted }]}>WITH</Text>
+                  {entry.companions.map((n) => (
+                    <Pressable key={n} onPress={() => router.navigate({ pathname: '/', params: { q: n } })} accessibilityRole="button" accessibilityLabel={`Everything you watched with ${n}`}>
+                      <Text style={[styles.withName, { color: theme.accent }]}>{n}</Text>
+                    </Pressable>
+                  ))}
+                </View>
+              )}
             </View>
           </View>
 
@@ -178,6 +189,9 @@ function Action({ theme, icon, label, onPress, primary }: {
 }
 
 const styles = StyleSheet.create({
+  with: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 8, marginTop: 6 },
+  withLabel: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 1.5 },
+  withName: { fontSize: font.body, fontWeight: '700', textDecorationLine: 'underline' },
   missing: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32 },
   missingText: { fontFamily: fonts.mono, fontSize: font.body, textAlign: 'center' },
   body: { padding: 16, gap: 20 },
