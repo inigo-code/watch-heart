@@ -9,6 +9,7 @@ import { Keyboard, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput,
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Poster } from '@/components/Film';
+import { SectionLabel } from '@/components/SectionLabel';
 import { Achievements } from '@/components/profile/Achievements';
 import { ActivityGraph, ActivityKey } from '@/components/profile/ActivityGraph';
 import { FavouritePicker } from '@/components/profile/FavouritePicker';
@@ -385,7 +386,7 @@ export default function ProfileScreen() {
 function Block({ theme, title, children }: { theme: Theme; title: string; children: ReactNode }) {
   return (
     <View style={styles.block}>
-      <Text style={[styles.blockTitle, { color: theme.textMuted }]}>{title.toUpperCase()}</Text>
+      <SectionLabel theme={theme}>{title}</SectionLabel>
       {children}
     </View>
   );
@@ -419,7 +420,7 @@ function TopList({ theme, title, items }: { theme: Theme; title: string; items: 
   const max = items[0].count;
   return (
     <View style={[styles.top, { backgroundColor: theme.card, borderColor: theme.border }]}>
-      <Text style={[styles.blockTitle, { color: theme.textMuted }]}>{title.toUpperCase()}</Text>
+      <SectionLabel theme={theme}>{title}</SectionLabel>
       {items.map((it) => (
         <View key={it.name} style={{ gap: 3 }}>
           <View style={styles.topRow}>
@@ -450,7 +451,6 @@ const styles = StyleSheet.create({
   name: { fontFamily: fonts.display, fontSize: font.marquee, letterSpacing: 1, alignSelf: 'stretch', textAlign: 'center', marginTop: 10, paddingVertical: 0 },
   bio: { fontFamily: fonts.mono, fontSize: font.footnote, lineHeight: 18, alignSelf: 'stretch', textAlign: 'center', paddingVertical: 2 },
   block: { gap: 10 },
-  blockTitle: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 1.5 },
   favs: { flexDirection: 'row', justifyContent: 'space-between' },
   fav: { borderRadius: 6 },
   emptyFav: { width: 74, height: 111, borderRadius: 6, borderWidth: 1.5, borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center' },

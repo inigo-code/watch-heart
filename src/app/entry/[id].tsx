@@ -8,6 +8,7 @@ import { Stars } from '@/components/Film';
 import { Hero } from '@/components/Hero';
 import { trackable } from '@/api/episodes';
 import { RichText } from '@/components/RichText';
+import { SectionLabel } from '@/components/SectionLabel';
 import { TitleExtras } from '@/components/TitleExtras';
 import { useToast } from '@/components/Toast';
 import { dayParts, friendlyDate } from '@/lib/dates';
@@ -97,7 +98,7 @@ export default function EntryScreen() {
 
           {!!entry.review && (
             <View style={styles.reviewWrap}>
-              <Text style={[styles.label, { color: theme.textMuted }]}>REVIEW</Text>
+              <SectionLabel theme={theme}>REVIEW</SectionLabel>
               {hideReview ? (
                 <Pressable onPress={() => setReveal(true)} style={[styles.spoiler, { backgroundColor: theme.card, borderColor: theme.border }]} accessibilityRole="button">
                   <Ionicons name="eye-off-outline" size={18} color={theme.textMuted} />
@@ -139,7 +140,7 @@ export default function EntryScreen() {
 
           {viewings.length > 1 && (
             <View style={styles.viewings}>
-              <Text style={[styles.label, { color: theme.textMuted }]}>YOUR VIEWINGS ({viewings.length})</Text>
+              <SectionLabel theme={theme}>YOUR VIEWINGS ({viewings.length})</SectionLabel>
               {viewings.map((v) => (
                 <Pressable
                   key={v.id}
@@ -205,7 +206,6 @@ const styles = StyleSheet.create({
   unrated: { fontFamily: fonts.mono, fontSize: font.body },
   progress: { fontFamily: fonts.mono, fontSize: font.footnote },
   reviewWrap: { gap: 8 },
-  label: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 1.5 },
   review: { fontSize: font.headline, lineHeight: 26 },
   spoiler: { flexDirection: 'row', alignItems: 'center', gap: 10, borderWidth: 1, borderRadius: 10, padding: 16 },
   spoilerText: { fontFamily: fonts.mono, fontSize: font.body },

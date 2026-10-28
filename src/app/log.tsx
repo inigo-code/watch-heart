@@ -12,6 +12,7 @@ import { details, tmdbKey } from '@/api';
 import { CompanionField } from '@/components/CompanionField';
 import { Chip, StarInput } from '@/components/Film';
 import { Hero } from '@/components/Hero';
+import { SectionLabel } from '@/components/SectionLabel';
 import { trackable } from '@/api/episodes';
 import { TitleExtras } from '@/components/TitleExtras';
 import { TitlePicker } from '@/components/TitlePicker';
@@ -436,7 +437,7 @@ export default function LogScreen() {
 function Field({ theme, label, children }: { theme: Theme; label: string; children: ReactNode }) {
   return (
     <View style={styles.field}>
-      <Text style={[styles.label, { color: theme.textMuted }]}>{label.toUpperCase()}</Text>
+      <SectionLabel theme={theme}>{label}</SectionLabel>
       {children}
     </View>
   );
@@ -469,7 +470,6 @@ const styles = StyleSheet.create({
   manual: { padding: 16, gap: 18 },
   form: { padding: 16, gap: 20 },
   field: { gap: 8 },
-  label: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 1.5 },
   row: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   input: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: font.body },
   titleInput: { fontFamily: fonts.display, fontSize: 28, paddingVertical: 6 },

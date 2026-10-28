@@ -5,6 +5,7 @@ import type { ReactNode } from 'react';
 import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { ActionSheet } from '@/components/ActionSheet';
+import { SectionLabel } from '@/components/SectionLabel';
 import { useToast } from '@/components/Toast';
 import { font, fonts, useTheme } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
@@ -317,7 +318,7 @@ function SignedIn({ theme }: { theme: Theme }) {
   return (
     <>
       <Card theme={theme}>
-        <Text style={[styles.label, { color: theme.textMuted }]}>SIGNED IN AS</Text>
+        <SectionLabel theme={theme}>SIGNED IN AS</SectionLabel>
         <Text style={[styles.email, { color: theme.text }]}>{email}</Text>
         <Text style={[styles.p, { color: theme.textMuted }]}>
           {entries.length} {entries.length === 1 ? 'entry' : 'entries'} and {watchlist.length} on the watchlist, kept in your account.
@@ -379,7 +380,6 @@ const styles = StyleSheet.create({
   card: { padding: 18, borderRadius: 14, borderWidth: StyleSheet.hairlineWidth, gap: 12 },
   h: { fontFamily: fonts.display, fontSize: 28, letterSpacing: 1 },
   p: { fontFamily: fonts.mono, fontSize: font.footnote, lineHeight: 19 },
-  label: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 1.5, marginBottom: -6 },
   email: { fontSize: font.headline, fontWeight: '800' },
   input: { fontSize: font.headline, height: 50, borderRadius: 10, borderWidth: 1, paddingHorizontal: 16 },
   code: { fontFamily: fonts.monoBold, fontSize: font.title2, letterSpacing: 8, textAlign: 'center' },

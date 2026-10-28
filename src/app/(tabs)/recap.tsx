@@ -5,6 +5,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } fr
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Chip } from '@/components/Film';
+import { SectionLabel } from '@/components/SectionLabel';
 import { Segmented } from '@/components/SettingsUI';
 import { formatRuntime, monthKey, monthName, today } from '@/lib/dates';
 import { computeStats } from '@/lib/stats';
@@ -120,7 +121,7 @@ export default function RecapScreen() {
 }
 
 function Label({ theme, children }: { theme: Theme; children: string }) {
-  return <Text style={[styles.label, { color: theme.textMuted }]}>{children.toUpperCase()}</Text>;
+  return <SectionLabel theme={theme}>{children}</SectionLabel>;
 }
 
 /** The period in numbers: tiles, the mix of films/series/anime, and how you rated. */
@@ -199,7 +200,6 @@ const styles = StyleSheet.create({
   sub: { fontFamily: fonts.mono, fontSize: font.footnote },
   periods: { gap: 8 },
   controls: { gap: 10 },
-  label: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 1.5, marginTop: 4 },
   toggles: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   empty: { alignItems: 'center', gap: 10, paddingTop: 60, paddingHorizontal: 20 },
   emptyTitle: { fontFamily: fonts.display, fontSize: 28, letterSpacing: 1, textAlign: 'center' },

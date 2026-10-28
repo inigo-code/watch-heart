@@ -2,6 +2,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import type { ReactNode } from 'react';
 import { ActivityIndicator, Platform, Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 
+import { SectionLabel } from '@/components/SectionLabel';
 import { font, fonts, shadow } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
 
@@ -10,7 +11,7 @@ import type { Theme } from '@/lib/theme';
 export function Section({ theme, title, children, footer }: { theme: Theme; title: string; children: ReactNode; footer?: string }) {
   return (
     <View style={styles.section}>
-      <Text style={[styles.sectionTitle, { color: theme.textMuted }]}>{title}</Text>
+      <SectionLabel theme={theme}>{title}</SectionLabel>
       <View style={[styles.group, { backgroundColor: theme.card, borderColor: theme.border }]}>{children}</View>
       {footer && <Text style={[styles.footer, { color: theme.textMuted }]}>{footer}</Text>}
     </View>
@@ -148,7 +149,6 @@ export function ControlRow({ theme, label, value, children, last }: {
 
 const styles = StyleSheet.create({
   section: { gap: 8 },
-  sectionTitle: { fontSize: font.caption, fontFamily: fonts.monoBold, textTransform: 'uppercase', letterSpacing: 1.5, paddingHorizontal: 6 },
   group: { borderRadius: 14, borderWidth: StyleSheet.hairlineWidth, overflow: 'hidden' },
   footer: { fontSize: font.caption, fontFamily: fonts.mono, paddingHorizontal: 6, lineHeight: 17 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, minHeight: 52, paddingVertical: 8 },

@@ -4,6 +4,7 @@ import * as Linking from 'expo-linking';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { SectionLabel } from '@/components/SectionLabel';
 import { tmdbKey } from '@/api';
 import { omdbKey as omdbKeyFor, omdbRatings, watchRegion } from '@/api/omdb';
 import type { OmdbRatings } from '@/api/omdb';
@@ -73,7 +74,7 @@ export function TitleExtras({ source, sourceId, imdbId, theme }: Props) {
       </View>
       {imdbUrl && !omdbKey && <Text style={[styles.note, { color: theme.textMuted }]}>Add a free OMDb key in Settings to see the IMDb rating here.</Text>}
 
-      <Text style={[styles.label, { color: theme.textMuted }]}>WHERE TO WATCH · {region}</Text>
+      <SectionLabel theme={theme}>WHERE TO WATCH · {region}</SectionLabel>
       {w && (w.stream.length || w.free.length || w.rent.length || w.buy.length) ? (
         <View style={{ gap: 10 }}>
           <Providers theme={theme} title="Stream" list={w.stream} link={w.link} />
@@ -128,7 +129,6 @@ const styles = StyleSheet.create({
   imdb: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#F5C518', borderRadius: 10, paddingHorizontal: 14, alignSelf: 'center', height: 40 },
   imdbText: { fontWeight: '900', fontSize: font.body, color: '#000000' },
   note: { fontFamily: fonts.mono, fontSize: font.caption, lineHeight: 16 },
-  label: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 1.5, marginTop: 4 },
   providerRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   providerKind: { fontFamily: fonts.monoBold, fontSize: font.caption, width: 54, letterSpacing: 1 },
   logos: { gap: 8 },

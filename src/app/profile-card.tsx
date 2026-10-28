@@ -1,11 +1,12 @@
 import { useMemo, useRef } from 'react';
-import { ScrollView, StyleSheet, Text, useWindowDimensions } from 'react-native';
+import { ScrollView, StyleSheet, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { SectionLabel } from '@/components/SectionLabel';
 import { ProfileCard } from '@/components/profile/ProfileCard';
 import { today } from '@/lib/dates';
 import { profileStats } from '@/lib/profileStats';
-import { font, fonts, useTheme } from '@/lib/theme';
+import { useTheme } from '@/lib/theme';
 import { useSettings } from '@/settings/SettingsProvider';
 import { useDiary } from '@/store/DiaryStore';
 import { PALETTES } from '@/story/palettes';
@@ -38,7 +39,7 @@ export default function ProfileCardScreen() {
         />
       </StoryPreview>
       <ShareButtons target={ref} ready theme={theme} />
-      <Text style={[styles.label, { color: theme.textMuted }]}>PALETTE</Text>
+      <SectionLabel theme={theme}>PALETTE</SectionLabel>
       <PalettePicker value={settings.story.palette} onChange={(palette) => update({ story: { ...settings.story, palette } })} theme={theme} />
     </ScrollView>
   );
@@ -46,5 +47,4 @@ export default function ProfileCardScreen() {
 
 const styles = StyleSheet.create({
   content: { padding: 16, gap: 16, alignItems: 'stretch' },
-  label: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 1.5 },
 });

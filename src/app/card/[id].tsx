@@ -4,6 +4,7 @@ import { ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-n
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Chip } from '@/components/Film';
+import { SectionLabel } from '@/components/SectionLabel';
 import { font, fonts, useTheme } from '@/lib/theme';
 import { useSettings } from '@/settings/SettingsProvider';
 import { useDiary } from '@/store/DiaryStore';
@@ -38,11 +39,11 @@ export default function CardScreen() {
         <ReviewCard ref={ref} entry={entry} palette={settings.story.palette} showReview={showReview} onReady={onReady} />
       </StoryPreview>
       <ShareButtons target={ref} ready={ready} theme={theme} />
-      <Text style={[styles.label, { color: theme.textMuted }]}>PALETTE</Text>
+      <SectionLabel theme={theme}>PALETTE</SectionLabel>
       <PalettePicker value={settings.story.palette} onChange={(palette) => update({ story: { ...settings.story, palette } })} theme={theme} />
       {!!entry.review && (
         <>
-          <Text style={[styles.label, { color: theme.textMuted }]}>SHOW</Text>
+          <SectionLabel theme={theme}>SHOW</SectionLabel>
           <View style={styles.row}>
             <Chip theme={theme} icon="reader-outline" label="Review" active={showReview} onPress={() => setShowReview((v) => !v)} />
           </View>
@@ -56,7 +57,6 @@ export default function CardScreen() {
 const styles = StyleSheet.create({
   content: { padding: 16, gap: 14 },
   missing: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  label: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 1.5, marginTop: 4 },
   row: { flexDirection: 'row', gap: 8 },
   note: { fontFamily: fonts.mono, fontSize: font.footnote },
 });

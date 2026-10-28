@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Poster } from '@/components/Film';
+import { SectionLabel } from '@/components/SectionLabel';
 import { useToast } from '@/components/Toast';
 import { friendlyDate, today } from '@/lib/dates';
 import { continueWatching, counts, nextUp } from '@/lib/tracking';
@@ -48,7 +49,7 @@ export function ContinueWatching({ items, theme }: { items: WatchItem[]; theme: 
       ).map(([label, list]) =>
         list.length ? (
           <View key={label} style={{ gap: 8 }}>
-            <Text style={[styles.label, { color: theme.textMuted }]}>{label}</Text>
+            <SectionLabel theme={theme}>{label}</SectionLabel>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.cards}>
               {list.map((w) => {
                 const t = w.track!;
@@ -120,7 +121,7 @@ export function ContinueWatching({ items, theme }: { items: WatchItem[]; theme: 
       )}
       {finished.length > 0 && (
         <View style={{ gap: 8 }}>
-          <Text style={[styles.label, { color: theme.textMuted }]}>FINISHED AND DROPPED</Text>
+          <SectionLabel theme={theme}>FINISHED AND DROPPED</SectionLabel>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.cards}>
             {finished.map((w) => (
               <Pressable key={w.id} onPress={() => open(w)} accessibilityRole="button" accessibilityLabel={`${w.title}, ${w.track!.status}`}>
@@ -140,11 +141,6 @@ const styles = StyleSheet.create({
     fontFamily: fonts.display,
     fontSize: font.title2,
     letterSpacing: 1,
-  },
-  label: {
-    fontFamily: fonts.monoBold,
-    fontSize: font.caption,
-    letterSpacing: 1.5,
   },
   cards: { gap: 10 },
   card: {

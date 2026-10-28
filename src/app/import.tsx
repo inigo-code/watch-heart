@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ImportLogo, logoFor } from '@/components/ImportLogo';
 import type { LogoKey } from '@/components/ImportLogo';
+import { SectionLabel } from '@/components/SectionLabel';
 import { useToast } from '@/components/Toast';
 import { tmdbKey } from '@/api';
 import { pickImport } from '@/lib/import';
@@ -180,7 +181,7 @@ export default function ImportScreen() {
 
       <PosterStatus theme={theme} haveKey={!!key} running={posters.running} doneCount={posters.done} total={posters.total} foundCount={posters.found} />
 
-      <Text style={[styles.label, { color: theme.textMuted }]}>HOW TO EXPORT</Text>
+      <SectionLabel theme={theme}>HOW TO EXPORT</SectionLabel>
       {GUIDES.map((g) => {
         const expanded = open === g.app;
         return (
@@ -253,7 +254,6 @@ const styles = StyleSheet.create({
   sourceName: { fontSize: font.body, fontWeight: '700' },
   meta: { fontFamily: fonts.mono, fontSize: font.caption, lineHeight: 17 },
   link: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 1 },
-  label: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 1.5, marginTop: 6 },
   guide: { borderWidth: StyleSheet.hairlineWidth, borderRadius: 12, padding: 14, gap: 8 },
   guideHead: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   steps: { fontFamily: fonts.mono, fontSize: font.footnote, lineHeight: 19 },
