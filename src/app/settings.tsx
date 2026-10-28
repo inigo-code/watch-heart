@@ -8,6 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ControlRow, Row, Section, Segmented, ToggleRow } from '@/components/SettingsUI';
 import { useToast } from '@/components/Toast';
 import { UpdateCard } from '@/components/UpdateRow';
+import { ActionSheet } from '@/components/ActionSheet';
 import { omdbKey, watchRegion } from '@/api/omdb';
 import { APP_NAME, DATA_SOURCES } from '@/lib/app';
 import { tmdbKey } from '@/api';
@@ -48,6 +49,7 @@ export default function SettingsScreen() {
   const [busy, setBusy] = useState<Busy>(null);
   const [keyText, setKeyText] = useState(settings.tmdbKey);
   const [showKey, setShowKey] = useState(false);
+  const [confirmReset, setConfirmReset] = useState(false);
   const builtInKey = !!process.env.EXPO_PUBLIC_TMDB_KEY;
   const posters = useUpkeepProgress();
 
@@ -139,9 +141,7 @@ export default function SettingsScreen() {
                   accessibilityState={{ selected: active }}
                   style={[styles.swatchRing, { borderColor: active ? color : 'transparent' }]}
                 >
-                  <View style={[styles.swatch, { backgroundColor: color }]}>
-                    {active && <Ionicons name="checkmark" size={20} color={onColor} />}
-                  </View>
+                  <View style={[styles.swatch, { backgroundColor: color }]}>{active && <Ionicons name="checkmark" size={20} color={onColor} />}</View>
                 </Pressable>
               );
             })}
@@ -161,7 +161,14 @@ export default function SettingsScreen() {
             ]}
           />
         </ControlRow>
-        <ToggleRow theme={theme} icon="pulse-outline" label="Vibrate on log and like" value={settings.haptics} onChange={(haptics) => update({ haptics })} last />
+        <ToggleRow
+          theme={theme}
+          icon="pulse-outline"
+          label="Vibrate on log and like"
+          value={settings.haptics}
+          onChange={(haptics) => update({ haptics })}
+          last
+        />
       </Section>
 
       <Section
@@ -216,7 +223,14 @@ export default function SettingsScreen() {
           <Ionicons name="globe-outline" size={18} color={theme.textMuted} />
           <TextInput
             value={settings.watchRegion}
-            onChangeText={(t) => update({ watchRegion: t.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 2) })}
+            onChangeText={(t) =>
+              update({
+                watchRegion: t
+                  .toUpperCase()
+                  .replace(/[^A-Z]/g, '')
+                  .slice(0, 2),
+              })
+            }
             placeholder={`Country for where to watch (now ${watchRegion('')})`}
             placeholderTextColor={theme.textMuted}
             autoCapitalize="characters"
@@ -232,7 +246,14 @@ export default function SettingsScreen() {
         title="Security"
         footer={`App lock uses your fingerprint, face or phone screen lock, and hides your diary in the recent-apps screen. ${APP_NAME} never sees your fingerprint or PIN.`}
       >
-        <ToggleRow theme={theme} icon="lock-closed-outline" label="App lock" value={settings.appLock} onChange={(on) => void toggleLock(on)} last={!settings.appLock} />
+        <ToggleRow
+          theme={theme}
+          icon="lock-closed-outline"
+          label="App lock"
+          value={settings.appLock}
+          onChange={(on) => void toggleLock(on)}
+          last={!settings.appLock}
+        />
         {settings.appLock && (
           <ControlRow theme={theme} label="Lock after leaving the app" last>
             <Segmented
@@ -268,7 +289,12 @@ export default function SettingsScreen() {
               if (!backup) return null;
               const r = diary.importEntries(backup.entries);
               const queued = diary.importWatchlist(backup.watchlist ?? []);
-              const parts = [`${r.added} added`, r.updated ? `${r.updated} updated` : '', r.skipped ? `${r.skipped} already here` : '', queued ? `${queued} to watchlist` : ''];
+              const parts = [
+                `${r.added} added`,
+                r.updated ? `${r.updated} updated` : '',
+                r.skipped ? `${r.skipped} already here` : '',
+                queued ? `${queued} to watchlist` : '',
+              ];
               return `Imported: ${parts.filter(Boolean).join(', ')}`;
             })
           }
@@ -329,18 +355,24 @@ export default function SettingsScreen() {
 
       <Section theme={theme} title="About">
         <Row theme={theme} icon="information-circle-outline" label={`About ${APP_NAME}`} onPress={() => router.push('/about')} />
-        <Row
-          theme={theme}
-          icon="refresh-outline"
-          label="Reset settings"
-          destructive
-          last
-          onPress={() => {
-            reset();
-            toast('Settings reset to defaults');
-          }}
-        />
+        <Row theme={theme} icon="refresh-outline" label="Reset settings" destructive last onPress={() => setConfirmReset(true)} />
       </Section>
+      <ActionSheet
+        visible={confirmReset}
+        title="Reset settings? The look, diary layout, story style, search and tips go back to their defaults. Your diary, watchlist, profile, account, keys and App lock stay as they are."
+        onClose={() => setConfirmReset(false)}
+        actions={[
+          {
+            label: 'Reset settings',
+            icon: 'refresh-outline',
+            destructive: true,
+            onPress: () => {
+              reset();
+              toast('Settings reset to defaults');
+            },
+          },
+        ]}
+      />
     </ScrollView>
   );
 }

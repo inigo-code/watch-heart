@@ -36,10 +36,10 @@ export const DATA_SOURCES = {
  * update worth telling people about; an update that leaves it alone shows nothing.
  */
 export const WHATS_NEW = {
-  id: '1.1.0',
+  id: '1.1.1',
   items: [
-    'Your photo on the home screen, with a dot that shows your sync',
-    'Profile photos picked with the phone’s photo picker, cropped square and sharp',
-    'Watched with, Movie buddies and headings that stand out',
+    'Delete account, Empty trash and Move to trash are proper buttons',
+    'Reset settings asks before it resets anything',
+    'One Save button for your name and bio',
   ],
 };

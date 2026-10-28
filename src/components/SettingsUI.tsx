@@ -38,6 +38,8 @@ export function Row({ theme, icon, leading, label, value, onPress, busy, destruc
     <Pressable
       onPress={onPress}
       disabled={!onPress || busy}
+      accessibilityRole={onPress ? 'button' : undefined}
+      accessibilityState={{ busy }}
       style={({ pressed }) => [
         styles.row,
         !last && { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: theme.border },

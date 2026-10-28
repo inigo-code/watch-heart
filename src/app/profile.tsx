@@ -1,6 +1,6 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Image } from 'expo-image';
-import { Stack, router } from 'expo-router';
+import { router } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { ActivityIndicator, Keyboard, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
@@ -106,16 +106,6 @@ export default function ProfileScreen() {
 
   return (
     <View style={{ flex: 1 }}>
-      <Stack.Screen
-        options={{
-          headerRight: () =>
-            dirty ? (
-              <Pressable onPress={() => saveText()} hitSlop={10} accessibilityRole="button" accessibilityLabel="Save profile">
-                <Text style={[styles.headerSave, { color: theme.accent }]}>SAVE</Text>
-              </Pressable>
-            ) : null,
-        }}
-      />
       <ScrollView
         style={{ backgroundColor: theme.bg }}
         contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 40 }]}
@@ -431,7 +421,6 @@ const styles = StyleSheet.create({
   who: { alignItems: 'center', gap: 4, paddingTop: 8 },
   save: { flexDirection: 'row', alignItems: 'center', gap: 6, height: 40, paddingHorizontal: 22, borderRadius: 20, marginTop: 8 },
   saveText: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 1.5 },
-  headerSave: { fontFamily: fonts.monoBold, fontSize: font.body, letterSpacing: 1, paddingHorizontal: 8 },
   photoRing: { width: 112, height: 112, borderRadius: 56, borderWidth: 3, alignItems: 'center', justifyContent: 'center' },
   photo: { width: 104, height: 104, borderRadius: 52 },
   initial: { fontFamily: fonts.display, fontSize: 54 },

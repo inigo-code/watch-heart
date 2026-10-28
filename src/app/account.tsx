@@ -5,6 +5,7 @@ import type { ReactNode } from 'react';
 import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { ActionSheet } from '@/components/ActionSheet';
+import { DangerButton } from '@/components/DangerButton';
 import { SectionLabel } from '@/components/SectionLabel';
 import { useToast } from '@/components/Toast';
 import { font, fonts, useTheme } from '@/lib/theme';
@@ -44,7 +45,14 @@ function Card({ theme, children }: { theme: Theme; children: ReactNode }) {
   return <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>{children}</View>;
 }
 
-function Button({ theme, label, onPress, busy, disabled, kind = 'primary' }: {
+function Button({
+  theme,
+  label,
+  onPress,
+  busy,
+  disabled,
+  kind = 'primary',
+}: {
   theme: Theme;
   label: string;
   onPress: () => void;
@@ -345,9 +353,14 @@ function SignedIn({ theme }: { theme: Theme }) {
       </Card>
 
       <Button theme={theme} kind="secondary" label="Sign out" busy={busy && sheet === null} onPress={() => setSheet('sign-out')} />
-      <Pressable onPress={() => setSheet('delete')} accessibilityRole="button" style={styles.deleteLink}>
-        <Text style={[styles.switch, { color: theme.danger }]}>Delete account</Text>
-      </Pressable>
+      <DangerButton
+        theme={theme}
+        label="Delete account"
+        icon="person-remove-outline"
+        busy={busy && sheet === 'delete'}
+        onPress={() => setSheet('delete')}
+        style={{ marginTop: 8 }}
+      />
 
       <ActionSheet
         visible={sheet === 'sign-out'}
@@ -367,9 +380,7 @@ function SignedIn({ theme }: { theme: Theme }) {
         visible={sheet === 'delete'}
         title="Delete your account and everything in it from the cloud? Your diary stays on this phone, but your other devices stop syncing. This can't be undone."
         onClose={() => setSheet(null)}
-        actions={[
-          { label: 'Delete my account', icon: 'trash-outline', destructive: true, onPress: () => void act(deleteAccount, 'Account deleted') },
-        ]}
+        actions={[{ label: 'Delete my account', icon: 'trash-outline', destructive: true, onPress: () => void act(deleteAccount, 'Account deleted') }]}
       />
     </>
   );
@@ -390,5 +401,4 @@ const styles = StyleSheet.create({
   error: { fontFamily: fonts.mono, fontSize: font.footnote },
   statusRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   statusText: { fontSize: font.headline, fontWeight: '700' },
-  deleteLink: { paddingVertical: 8 },
 });

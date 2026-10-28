@@ -1,9 +1,9 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { Stack } from 'expo-router';
 import { useState } from 'react';
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { DangerButton } from '@/components/DangerButton';
 import { ActionSheet } from '@/components/ActionSheet';
 import { Poster } from '@/components/Film';
 import { useToast } from '@/components/Toast';
@@ -26,23 +26,16 @@ export default function TrashScreen() {
 
   return (
     <View style={[styles.screen, { backgroundColor: theme.bg }]}>
-      <Stack.Screen
-        options={{
-          headerRight: () =>
-            trash.length > 0 ? (
-              <Pressable onPress={() => setConfirm({ kind: 'all' })} hitSlop={12} accessibilityRole="button" accessibilityLabel="Empty trash">
-                <Text style={{ color: theme.danger, fontFamily: fonts.monoBold, fontSize: font.body }}>EMPTY</Text>
-              </Pressable>
-            ) : null,
-        }}
-      />
       <FlatList
         data={trash}
         keyExtractor={(e) => e.id}
         contentContainerStyle={[styles.list, { paddingBottom: insets.bottom + 24 }]}
         ListHeaderComponent={
           trash.length === 0 ? undefined : (
-            <Text style={[styles.note, { color: theme.textMuted }]}>Deleted entries wait here for {TRASH_DAYS} days.</Text>
+            <View style={{ gap: 12, marginBottom: 4 }}>
+              <Text style={[styles.note, { color: theme.textMuted }]}>Deleted entries wait here for {TRASH_DAYS} days.</Text>
+              <DangerButton theme={theme} label={`Empty trash (${trash.length})`} onPress={() => setConfirm({ kind: 'all' })} />
+            </View>
           )
         }
         renderItem={({ item }) => (
@@ -85,7 +78,7 @@ export default function TrashScreen() {
 
       <ActionSheet
         visible={confirm !== null}
-        title={confirm?.kind === 'all' ? `Delete all ${trash.length} entries forever? This can't be undone.` : "Delete forever? This can't be undone."}
+        title={confirm?.kind === 'all' ? (trash.length === 1 ? "Delete the entry in Trash forever? This can't be undone." : `Delete all ${trash.length} entries in Trash forever? This can't be undone.`) : "Delete forever? This can't be undone."}
         onClose={() => setConfirm(null)}
         actions={[
           {

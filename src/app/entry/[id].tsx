@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Stars } from '@/components/Film';
 import { Hero } from '@/components/Hero';
 import { trackable } from '@/api/episodes';
+import { DangerButton } from '@/components/DangerButton';
 import { RichText } from '@/components/RichText';
 import { SectionLabel } from '@/components/SectionLabel';
 import { TitleExtras } from '@/components/TitleExtras';
@@ -155,10 +156,7 @@ export default function EntryScreen() {
             </View>
           )}
 
-          <Pressable onPress={remove} accessibilityRole="button" style={styles.delete}>
-            <Ionicons name="trash-outline" size={16} color={theme.danger} />
-            <Text style={[styles.deleteText, { color: theme.danger }]}>MOVE TO TRASH</Text>
-          </Pressable>
+          <DangerButton theme={theme} label="Move to trash" onPress={remove} />
         </View>
       </ScrollView>
     </View>
@@ -217,6 +215,4 @@ const styles = StyleSheet.create({
   viewings: { gap: 4 },
   viewing: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 10, borderBottomWidth: StyleSheet.hairlineWidth },
   viewingDate: { fontFamily: fonts.mono, fontSize: font.body, flex: 1 },
-  delete: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 10 },
-  deleteText: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 1 },
 });
