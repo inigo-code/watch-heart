@@ -1,6 +1,11 @@
 // IMDb's own rating has no free official API. OMDb (omdbapi.com) serves it with a free personal key
 // (1,000 lookups a day), which you paste into Settings; it also has Rotten Tomatoes and Metacritic scores.
 
+/** The key to use: your own from Settings, else one built in at build time (EXPO_PUBLIC_OMDB_KEY), else none. */
+export function omdbKey(userKey: string): string {
+  return userKey.trim() || (process.env.EXPO_PUBLIC_OMDB_KEY ?? '').trim();
+}
+
 export type OmdbRatings = { imdb: { rating: string; votes: string } | null; rottenTomatoes: string | null; metacritic: string | null };
 
 export async function omdbRatings(key: string, imdbId: string, signal?: AbortSignal): Promise<OmdbRatings> {

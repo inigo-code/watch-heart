@@ -25,7 +25,7 @@ export const ProfileCard = forwardRef<StoryHandle, Props>(function ProfileCard({
       <LinearGradient colors={p.bg} style={StyleSheet.absoluteFill} />
       <Text style={[styles.kicker, { color: p.accent }]}>★ MY WATCH DIARY ★</Text>
       <View style={[styles.photoRing, { borderColor: p.accent }]}>
-        {photo ? <Image source={{ uri: photo }} style={styles.photo} /> : <Text style={[styles.initial, { color: p.text }]}>{(name.trim()[0] ?? '♥').toUpperCase()}</Text>}
+        {photo ? <Image source={{ uri: photo }} style={styles.photo} fadeDuration={0} /> : <Text style={[styles.initial, { color: p.text }]}>{(name.trim()[0] ?? '♥').toUpperCase()}</Text>}
       </View>
       <Text style={[styles.name, { color: p.text }]} numberOfLines={1}>
         {(name.trim() || 'Watch Heart').toUpperCase()}
@@ -45,7 +45,7 @@ export const ProfileCard = forwardRef<StoryHandle, Props>(function ProfileCard({
         <View style={styles.favs}>
           {Array.from({ length: 4 }, (_, i) => favourites[i]).map((f, i) => (
             <View key={i} style={[styles.poster, { backgroundColor: p.card }]}>
-              {f?.posterUrl ? <Image source={{ uri: f.posterUrl }} style={StyleSheet.absoluteFill} /> : f ? <Text style={[styles.posterTitle, { color: p.muted }]}>{f.title}</Text> : null}
+              {f?.posterUrl ? <Image source={{ uri: f.posterUrl }} style={StyleSheet.absoluteFill} fadeDuration={0} /> : f ? <Text style={[styles.posterTitle, { color: p.muted }]}>{f.title}</Text> : null}
             </View>
           ))}
         </View>

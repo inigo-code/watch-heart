@@ -8,7 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ControlRow, Row, Section, Segmented, ToggleRow } from '@/components/SettingsUI';
 import { useToast } from '@/components/Toast';
 import { UpdateCard } from '@/components/UpdateRow';
-import { watchRegion } from '@/api/omdb';
+import { omdbKey, watchRegion } from '@/api/omdb';
 import { APP_NAME, DATA_SOURCES } from '@/lib/app';
 import { tmdbKey } from '@/api';
 import { exportBackup, exportCsv, exportLetterboxd, pickBackup } from '@/lib/backup';
@@ -102,18 +102,7 @@ export default function SettingsScreen() {
       contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 32 }]}
       keyboardShouldPersistTaps="handled"
     >
-      <Section theme={theme} title="Account">
-        <Row
-          theme={theme}
-          icon="cloud-outline"
-          label={sync.email ?? 'Account & sync'}
-          value={SYNC_LABEL[sync.status]}
-          onPress={() => router.push('/account')}
-          last
-        />
-      </Section>
-
-      <Section theme={theme} title="You">
+      <Section theme={theme} title="Your profile">
         <Row
           theme={theme}
           icon="person-circle-outline"
@@ -208,7 +197,7 @@ export default function SettingsScreen() {
       <Section
         theme={theme}
         title="Ratings and streaming"
-        footer={`IMDb has no free official API. A free OMDb key (1,000 lookups a day) adds IMDb, Rotten Tomatoes and Metacritic scores to every title. Where to watch uses ${watchRegion(settings.watchRegion)}${settings.watchRegion ? '' : ', your phone’s country'}; type another country code to change it.`}
+        footer={`${omdbKey('') ? 'IMDb, Rotten Tomatoes and Metacritic scores are on, with the key built into this build; paste your own to use it instead.' : 'IMDb has no free official API. A free OMDb key (1,000 lookups a day) adds IMDb, Rotten Tomatoes and Metacritic scores to every title.'} Where to watch uses ${watchRegion(settings.watchRegion)}${settings.watchRegion ? '' : ', your phone’s country'}; type another country code to change it.`}
       >
         <View style={styles.inputRow}>
           <Ionicons name="star-half-outline" size={18} color={theme.textMuted} />
@@ -323,6 +312,17 @@ export default function SettingsScreen() {
           }
         />
         <Row theme={theme} icon="trash-outline" label="Trash" value={String(diary.trash.length)} onPress={() => router.push('/trash')} last />
+      </Section>
+
+      <Section theme={theme} title="Account and sync">
+        <Row
+          theme={theme}
+          icon="cloud-outline"
+          label={sync.email ?? 'Account & sync'}
+          value={SYNC_LABEL[sync.status]}
+          onPress={() => router.push('/account')}
+          last
+        />
       </Section>
 
       <UpdateCard theme={theme} />

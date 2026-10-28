@@ -26,7 +26,16 @@ export function PhotoShrinker({ source, onDone, onFail }: { source: string; onDo
   };
   return (
     <View ref={frame} collapsable={false} pointerEvents="none" style={styles.frame}>
-      <Image source={{ uri: source }} style={styles.photo} resizeMode="cover" onLoad={() => setTimeout(shrink, 50)} onError={() => onFail(new Error('The picture couldn’t be opened.'))} />
+      {/* No fade-in (Android fades images in over 300 ms, and a capture mid-fade comes out dim), and a
+          moment after loading so the picture is fully drawn. */}
+      <Image
+        source={{ uri: source }}
+        style={styles.photo}
+        resizeMode="cover"
+        fadeDuration={0}
+        onLoad={() => setTimeout(shrink, 250)}
+        onError={() => onFail(new Error('The picture couldn’t be opened.'))}
+      />
     </View>
   );
 }

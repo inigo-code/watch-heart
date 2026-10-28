@@ -2,10 +2,10 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import * as DocumentPicker from 'expo-document-picker';
 import { File, Paths } from 'expo-file-system';
 import { Image } from 'expo-image';
-import { router } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { Stack, router } from 'expo-router';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
-import { Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Keyboard, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Poster } from '@/components/Film';
@@ -22,6 +22,7 @@ import type { Theme } from '@/lib/theme';
 import { useSettings } from '@/settings/SettingsProvider';
 import type { Favourite } from '@/settings/SettingsProvider';
 import { useDiary } from '@/store/DiaryStore';
+import { useSync } from '@/sync/SyncProvider';
 
 const GOALS = [25, 52, 100, 150, 365];
 
@@ -31,6 +32,30 @@ export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const toast = useToast();
   const { settings, update } = useSettings();
+  const sync = useSync();
+
+  // Name and bio are drafts until you save (or leave the screen, which saves them too).
+  const [name, setName] = useState(settings.name);
+  const [bio, setBio] = useState(settings.bio);
+  const dirty = name.trim() !== settings.name || bio.trim() !== settings.bio;
+  const draft = useRef({ name, bio, dirty, settings });
+  useEffect(() => {
+    draft.current = { name, bio, dirty, settings };
+  });
+  const saveText = (quiet = false) => {
+    const d = draft.current;
+    if (!d.dirty) return;
+    update({ name: d.name.trim(), bio: d.bio.trim() });
+    if (quiet) return;
+    Keyboard.dismiss();
+    toast(sync.email ? 'Profile saved · syncing to your account' : 'Profile saved');
+  };
+  // Leaving the screen keeps what you typed. (The draft is read from the ref, so this runs once, on leaving.)
+  const saveOnLeave = useRef(saveText);
+  useEffect(() => {
+    saveOnLeave.current = saveText;
+  });
+  useEffect(() => () => saveOnLeave.current(true), []);
   const { entries } = useDiary();
   const [picking, setPicking] = useState<number | null>(null);
   // A photo being made small enough to sync (a new pick, or a big one saved before photos were shrunk).
@@ -86,6 +111,16 @@ export default function ProfileScreen() {
 
   return (
     <View style={{ flex: 1 }}>
+      <Stack.Screen
+        options={{
+          headerRight: () =>
+            dirty ? (
+              <Pressable onPress={() => saveText()} hitSlop={10} accessibilityRole="button" accessibilityLabel="Save profile">
+                <Text style={[styles.headerSave, { color: theme.accent }]}>SAVE</Text>
+              </Pressable>
+            ) : null,
+        }}
+      />
       {shrinking && (
         <PhotoShrinker
           source={shrinking}
@@ -119,8 +154,10 @@ export default function ProfileScreen() {
             </View>
           </Pressable>
           <TextInput
-            value={settings.name}
-            onChangeText={(name) => update({ name })}
+            value={name}
+            onChangeText={setName}
+            onSubmitEditing={() => saveText()}
+            returnKeyType="done"
             placeholder="YOUR NAME"
             placeholderTextColor={theme.textMuted}
             style={[styles.name, { color: theme.text }]}
@@ -128,8 +165,8 @@ export default function ProfileScreen() {
             textAlign="center"
           />
           <TextInput
-            value={settings.bio}
-            onChangeText={(bio) => update({ bio })}
+            value={bio}
+            onChangeText={setBio}
             placeholder="A line about you, e.g. Ghibli first, horror second"
             placeholderTextColor={theme.textMuted}
             style={[styles.bio, { color: theme.textMuted }]}
@@ -137,6 +174,16 @@ export default function ProfileScreen() {
             multiline
             textAlign="center"
           />
+          {dirty && (
+            <Pressable
+              onPress={() => saveText()}
+              accessibilityRole="button"
+              style={({ pressed }) => [styles.save, { backgroundColor: theme.accent, opacity: pressed ? 0.85 : 1 }]}
+            >
+              <Ionicons name="checkmark" size={18} color={theme.accentText} />
+              <Text style={[styles.saveText, { color: theme.accentText }]}>SAVE</Text>
+            </Pressable>
+          )}
         </View>
 
         {/* Favourite four */}
@@ -359,6 +406,9 @@ function TopList({ theme, title, items }: { theme: Theme; title: string; items: 
 const styles = StyleSheet.create({
   content: { padding: 16, gap: 22 },
   who: { alignItems: 'center', gap: 4, paddingTop: 8 },
+  save: { flexDirection: 'row', alignItems: 'center', gap: 6, height: 40, paddingHorizontal: 22, borderRadius: 20, marginTop: 8 },
+  saveText: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 1.5 },
+  headerSave: { fontFamily: fonts.monoBold, fontSize: font.body, letterSpacing: 1, paddingHorizontal: 8 },
   photoRing: { width: 112, height: 112, borderRadius: 56, borderWidth: 3, alignItems: 'center', justifyContent: 'center' },
   photo: { width: 104, height: 104, borderRadius: 52 },
   initial: { fontFamily: fonts.display, fontSize: 54 },

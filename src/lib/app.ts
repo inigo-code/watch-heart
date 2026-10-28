@@ -36,9 +36,11 @@ export const DATA_SOURCES = {
  * update worth telling people about; an update that leaves it alone shows nothing.
  */
 export const WHATS_NEW = {
-  id: '2026-10-28b',
+  id: '2026-10-28c',
   items: [
     'Your profile now syncs: name, bio, photo, favourite four and yearly goal follow you to every phone you sign in on',
-    'Profile photos are made small before they upload, so they sync in a moment',
+    'Profile photos come out bright and clear (pick yours again if it looked dim)',
+    'Name and bio have a Save button',
+    'Settings: your profile first; account and sync next to your data',
   ],
 };

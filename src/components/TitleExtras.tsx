@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { tmdbKey } from '@/api';
-import { omdbRatings, watchRegion } from '@/api/omdb';
+import { omdbKey as omdbKeyFor, omdbRatings, watchRegion } from '@/api/omdb';
 import type { OmdbRatings } from '@/api/omdb';
 import { extrasTmdb } from '@/api/tmdb';
 import type { Provider, TitleExtras as Extras } from '@/api/tmdb';
@@ -24,7 +24,7 @@ export function TitleExtras({ source, sourceId, imdbId, theme }: Props) {
   const { settings } = useSettings();
   const key = tmdbKey(settings.tmdbKey);
   const region = watchRegion(settings.watchRegion);
-  const omdbKey = settings.omdbKey.trim();
+  const omdbKey = omdbKeyFor(settings.omdbKey);
   const id = `${source}:${sourceId}:${region}:${omdbKey ? 'o' : ''}`;
   const [fetched, setFetched] = useState<{ id: string; value: { extras: Extras | null; omdb: OmdbRatings | null } } | null>(null);
   const data = cache.get(id) ?? (fetched?.id === id ? fetched.value : null);
