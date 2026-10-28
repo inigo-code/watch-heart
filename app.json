@@ -3,7 +3,7 @@
     "name": "Watch Heart",
     "slug": "watch-heart",
     "owner": "inigojo",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "scheme": "watchheart",
@@ -105,6 +105,14 @@
           "androidIntentFilters": [
             "text/*"
           ]
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Watch Heart uses a photo you choose for your profile picture.",
+          "cameraPermission": false,
+          "microphonePermission": false
         }
       ]
     ],

@@ -1,11 +1,9 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import * as DocumentPicker from 'expo-document-picker';
-import { File, Paths } from 'expo-file-system';
 import { Image } from 'expo-image';
 import { Stack, router } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
-import { Keyboard, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Keyboard, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Poster } from '@/components/Film';
@@ -13,9 +11,9 @@ import { SectionLabel } from '@/components/SectionLabel';
 import { Achievements } from '@/components/profile/Achievements';
 import { ActivityGraph, ActivityKey } from '@/components/profile/ActivityGraph';
 import { FavouritePicker } from '@/components/profile/FavouritePicker';
-import { PhotoShrinker, needsShrinking } from '@/components/profile/PhotoShrinker';
 import { useToast } from '@/components/Toast';
 import { MONTHS, friendlyDate, today } from '@/lib/dates';
+import { needsShrinking, pickProfilePhoto, removePhotoFile, squareJpeg } from '@/lib/profilePhoto';
 import { profileStats } from '@/lib/profileStats';
 import { KIND_LABEL } from '@/lib/stats';
 import { font, fonts, kindColor, useTheme } from '@/lib/theme';
@@ -59,40 +57,36 @@ export default function ProfileScreen() {
   useEffect(() => () => saveOnLeave.current(true), []);
   const { entries } = useDiary();
   const [picking, setPicking] = useState<number | null>(null);
-  // A photo being made small enough to sync (a new pick, or a big one saved before photos were shrunk).
-  const [shrinking, setShrinking] = useState<string | null>(() =>
-    Platform.OS !== 'web' && !settings.photoPath && needsShrinking(settings.photo) ? settings.photo : null,
-  );
+  const [busyPhoto, setBusyPhoto] = useState(false);
   const todayIso = today();
   const s = useMemo(() => profileStats(entries, todayIso), [entries, todayIso]);
   const year = todayIso.slice(0, 4);
 
+  /** A new photo: picked, cropped square and made small; it goes up with the next sync. */
+  const setPhoto = (uri: string) => {
+    const old = settings.photo;
+    update({ photo: uri, photoPath: null });
+    if (old !== uri) removePhotoFile(old);
+  };
   const choosePhoto = async () => {
     try {
-      const res = await DocumentPicker.getDocumentAsync({ type: 'image/*', copyToCacheDirectory: true });
-      if (res.canceled || !res.assets?.[0]) return;
-      const asset = res.assets[0];
-      if (Platform.OS === 'web') {
-        update({ photo: asset.uri, photoPath: null });
-        return;
-      }
-      setShrinking(asset.uri);
+      setBusyPhoto(true);
+      const uri = await pickProfilePhoto();
+      if (uri) setPhoto(uri);
     } catch (e) {
       toast(`Couldn’t use that picture: ${e instanceof Error ? e.message : String(e)}`);
+    } finally {
+      setBusyPhoto(false);
     }
   };
 
-  /** The small copy is ready: it becomes the photo (in the app's own files) and goes up with the next sync. */
-  const shrunk = (uri: string) => {
-    const old = settings.photo;
-    update({ photo: uri, photoPath: null });
-    setShrinking(null);
-    if (old && old !== uri && old.startsWith(Paths.document.uri)) {
-      try {
-        new File(old).delete();
-      } catch {}
-    }
-  };
+  // A big photo saved before photos were made small (too big to sync): made small once, quietly.
+  const fixedOld = useRef(false);
+  useEffect(() => {
+    if (fixedOld.current || Platform.OS === 'web' || settings.photoPath || !needsShrinking(settings.photo)) return;
+    fixedOld.current = true;
+    squareJpeg(settings.photo!).then(setPhoto, () => {});
+  });
 
   const setFavourite = (slot: number, f: Favourite | null) => {
     const next = [...settings.favourites];
@@ -122,16 +116,6 @@ export default function ProfileScreen() {
             ) : null,
         }}
       />
-      {shrinking && (
-        <PhotoShrinker
-          source={shrinking}
-          onDone={shrunk}
-          onFail={(e) => {
-            setShrinking(null);
-            toast(`Couldn’t use that picture: ${e instanceof Error ? e.message : String(e)}`);
-          }}
-        />
-      )}
       <ScrollView
         style={{ backgroundColor: theme.bg }}
         contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 40 }]}
@@ -151,7 +135,7 @@ export default function ProfileScreen() {
               <Text style={[styles.initial, { color: theme.text }]}>{(settings.name.trim()[0] ?? '♥').toUpperCase()}</Text>
             )}
             <View style={[styles.camera, { backgroundColor: theme.accent }]}>
-              <Ionicons name="camera" size={14} color={theme.accentText} />
+              {busyPhoto ? <ActivityIndicator size="small" color={theme.accentText} /> : <Ionicons name="camera" size={14} color={theme.accentText} />}
             </View>
           </Pressable>
           <TextInput
@@ -330,7 +314,11 @@ export default function ProfileScreen() {
                   onPress={() => router.navigate({ pathname: '/', params: { q: b.name } })}
                   accessibilityRole="button"
                   accessibilityLabel={`Everything you watched with ${b.name}`}
-                  style={({ pressed }) => [styles.buddy, i > 0 && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: theme.border }, pressed && { opacity: 0.7 }]}
+                  style={({ pressed }) => [
+                    styles.buddy,
+                    i > 0 && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: theme.border },
+                    pressed && { opacity: 0.7 },
+                  ]}
                 >
                   <View style={[styles.buddyMark, { backgroundColor: i === 0 ? theme.accent : theme.elevated }]}>
                     <Text style={[styles.buddyInitial, { color: i === 0 ? theme.accentText : theme.text }]}>{b.name[0]?.toUpperCase()}</Text>

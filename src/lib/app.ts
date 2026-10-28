@@ -36,11 +36,10 @@ export const DATA_SOURCES = {
  * update worth telling people about; an update that leaves it alone shows nothing.
  */
 export const WHATS_NEW = {
-  id: '2026-10-29',
+  id: '1.1.0',
   items: [
-    'Watched with: add who was there to any entry; suggestions remember your regulars',
-    'Movie buddies on your profile, and a new achievement for movie nights together',
-    'Story cards say who you watched with, and the ticket admits the whole group',
-    'Search the diary by a name to see everything you watched together',
+    'Your photo on the home screen, with a dot that shows your sync',
+    'Profile photos picked with the phone’s photo picker, cropped square and sharp',
+    'Watched with, Movie buddies and headings that stand out',
   ],
 };
