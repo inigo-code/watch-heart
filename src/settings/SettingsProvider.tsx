@@ -48,7 +48,15 @@ export type Settings = {
   watchRegion: string;
   /** The update whose "What's new" card was already shown. */
   seenUpdate: string | null;
+  /** When the profile (name, bio, photo, favourites, goal) last changed here, and when sync last matched it. */
+  profileUpdatedAt: number;
+  profileSyncedAt: number;
+  /** Where the photo above is in the cloud (null: not uploaded yet, or none). */
+  photoPath: string | null;
 };
+
+/** The settings that make up your profile, synced across devices when you're signed in. */
+export const PROFILE_KEYS = ['name', 'bio', 'photo', 'favourites', 'yearGoal'] as const;
 
 export const DEFAULT_SETTINGS: Settings = {
   themeMode: 'dark',
@@ -69,6 +77,9 @@ export const DEFAULT_SETTINGS: Settings = {
   omdbKey: '',
   watchRegion: '',
   seenUpdate: null,
+  profileUpdatedAt: 0,
+  profileSyncedAt: 0,
+  photoPath: null,
 };
 
 type SettingsContext = {
@@ -105,7 +116,15 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     if (loaded.current) storage.setItem(STORAGE_KEY, JSON.stringify(settings)).catch(() => {});
   }, [settings]);
 
-  const update = useCallback((patch: Partial<Settings>) => setSettings((s) => ({ ...s, ...patch })), []);
+  // Changing the profile here stamps it, so sync sends it (sync's own changes carry their stamp).
+  const update = useCallback(
+    (patch: Partial<Settings>) =>
+      setSettings((s) => {
+        const touched = patch.profileUpdatedAt === undefined && PROFILE_KEYS.some((k) => k in patch && patch[k] !== s[k]);
+        return { ...s, ...patch, ...(touched ? { profileUpdatedAt: Date.now() } : {}) };
+      }),
+    [],
+  );
   // Resetting keeps the app lock, your profile, goal and keys: those should only change deliberately.
   const reset = useCallback(
     () =>
@@ -121,6 +140,9 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
         tmdbKey: s.tmdbKey,
         omdbKey: s.omdbKey,
         seenUpdate: s.seenUpdate,
+        profileUpdatedAt: s.profileUpdatedAt,
+        profileSyncedAt: s.profileSyncedAt,
+        photoPath: s.photoPath,
       })),
     [],
   );

@@ -3,11 +3,13 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import type { ReactNode } from 'react';
 import { AppState } from 'react-native';
 
+import { useSettings } from '@/settings/SettingsProvider';
 import { useDiary } from '@/store/DiaryStore';
 import type { RemoteRecord, SyncStoreApi } from '@/store/DiaryStore';
 import type { Entry, WatchItem } from '@/store/types';
 
 import { AUTO_SYNC_COOLDOWN_MS, createAutoSync } from './autoSync';
+import { hasProfile, pullProfile, pushProfile, removeRemote } from './profileSync';
 import { supabase } from './supabase';
 
 const PAGE = 1000;
@@ -16,6 +18,8 @@ const RETRY_MS = 30_000;
 // Pull a little before the last cursor: rows committed by slower transactions can carry slightly
 // older server timestamps. Applying is idempotent, so re-reading a few rows is harmless.
 const PULL_OVERLAP_MS = 10_000;
+// A profile edit (typing a bio, say) is sent once you pause.
+const PROFILE_DEBOUNCE_MS = 2000;
 
 type Table = 'entries' | 'watchlist';
 type Row = { id: string; data: unknown; modified_at: number | string; removed: boolean; server_updated_at?: string };
@@ -133,6 +137,11 @@ async function pull(client: SupabaseClient, userId: string, store: SyncStoreApi)
 export function SyncProvider({ children }: { children: ReactNode }) {
   const { ready, sync: store } = useDiary();
   const { meta, localRevision, resetForUser, forgetAccount, clearLocal } = store;
+  const { settings, ready: settingsReady, update } = useSettings();
+  const settingsRef = useRef(settings);
+  useEffect(() => {
+    settingsRef.current = settings;
+  });
   const [session, setSession] = useState<Session | null>(null);
   const [state, setState] = useState<{ status: 'idle' | 'syncing' | 'synced' | 'error'; error: string | null; lastSyncedAt: number | null }>({
     status: 'idle',
@@ -167,6 +176,26 @@ export function SyncProvider({ children }: { children: ReactNode }) {
     if (ready && userId && meta.userId !== userId) resetForUser(userId);
   }, [ready, userId, meta.userId, resetForUser]);
 
+  const profileRunning = useRef(false);
+  const syncProfile = useCallback(async () => {
+    if (!supabase || !userId || !settingsReady || profileRunning.current) return;
+    profileRunning.current = true;
+    const s = settingsRef.current;
+    try {
+      const pulled = await pullProfile(supabase, userId, s);
+      if (pulled) update(pulled);
+      else if (s.profileUpdatedAt > s.profileSyncedAt || (s.photo && !s.photoPath) || (!s.profileSyncedAt && hasProfile(s))) {
+        const pushed = await pushProfile(supabase, userId, s);
+        // A photo changed while this one was uploading still needs its own upload.
+        update({ profileSyncedAt: pushed.profileSyncedAt, ...(settingsRef.current.photo === s.photo ? { photoPath: pushed.photoPath } : {}) });
+      }
+    } catch (e) {
+      console.warn('Profile sync failed', errorText(e));
+    } finally {
+      profileRunning.current = false;
+    }
+  }, [userId, settingsReady, update]);
+
   const runSync = useCallback(async () => {
     if (!supabase || !userId) return;
     if (running.current) {
@@ -182,6 +211,7 @@ export function SyncProvider({ children }: { children: ReactNode }) {
         await push(supabase, userId, storeRef.current, sent.current);
         await pull(supabase, userId, storeRef.current);
       } while (again.current);
+      await syncProfile();
       setState({ status: 'synced', error: null, lastSyncedAt: Date.now() });
     } catch (e) {
       setState((s) => ({ ...s, status: 'error', error: errorText(e) }));
@@ -189,11 +219,19 @@ export function SyncProvider({ children }: { children: ReactNode }) {
       running.current = false;
       autoSync.finished();
     }
-  }, [userId, autoSync]);
+  }, [userId, autoSync, syncProfile]);
 
   useEffect(() => {
     runSyncRef.current = runSync;
   }, [runSync]);
+
+  // Profile edits go out shortly after you stop changing them.
+  const profileDue = active && settingsReady && settings.profileUpdatedAt > settings.profileSyncedAt;
+  useEffect(() => {
+    if (!profileDue) return;
+    const timer = setTimeout(() => void syncProfile(), PROFILE_DEBOUNCE_MS);
+    return () => clearTimeout(timer);
+  }, [profileDue, settings.profileUpdatedAt, syncProfile]);
 
   // Nothing automatic while signed out, or after unmounting.
   useEffect(() => {
@@ -231,6 +269,7 @@ export function SyncProvider({ children }: { children: ReactNode }) {
       .channel(`sync-${userId}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'entries', filter: `user_id=eq.${userId}` }, onChange('entries'))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'watchlist', filter: `user_id=eq.${userId}` }, onChange('watchlist'))
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles', filter: `user_id=eq.${userId}` }, () => autoSync.request(400))
       .subscribe();
     return () => {
       client.removeChannel(channel);
@@ -305,6 +344,8 @@ export function SyncProvider({ children }: { children: ReactNode }) {
   const deleteAccount = useCallback(async () => {
     const c = client();
     if (!userId) throw new Error('Sign in first.');
+    // Files can only be removed through Storage, so the photos go first; the rest goes with the account.
+    await removeRemote(c, userId).catch(() => {});
     const { error } = await c.rpc('delete_my_account');
     if (error) {
       throw new Error(

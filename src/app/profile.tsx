@@ -12,6 +12,7 @@ import { Poster } from '@/components/Film';
 import { Achievements } from '@/components/profile/Achievements';
 import { ActivityGraph, ActivityKey } from '@/components/profile/ActivityGraph';
 import { FavouritePicker } from '@/components/profile/FavouritePicker';
+import { PhotoShrinker, needsShrinking } from '@/components/profile/PhotoShrinker';
 import { useToast } from '@/components/Toast';
 import { MONTHS, friendlyDate, today } from '@/lib/dates';
 import { profileStats } from '@/lib/profileStats';
@@ -32,6 +33,10 @@ export default function ProfileScreen() {
   const { settings, update } = useSettings();
   const { entries } = useDiary();
   const [picking, setPicking] = useState<number | null>(null);
+  // A photo being made small enough to sync (a new pick, or a big one saved before photos were shrunk).
+  const [shrinking, setShrinking] = useState<string | null>(() =>
+    Platform.OS !== 'web' && !settings.photoPath && needsShrinking(settings.photo) ? settings.photo : null,
+  );
   const todayIso = today();
   const s = useMemo(() => profileStats(entries, todayIso), [entries, todayIso]);
   const year = todayIso.slice(0, 4);
@@ -42,21 +47,24 @@ export default function ProfileScreen() {
       if (res.canceled || !res.assets?.[0]) return;
       const asset = res.assets[0];
       if (Platform.OS === 'web') {
-        update({ photo: asset.uri });
+        update({ photo: asset.uri, photoPath: null });
         return;
       }
-      // Kept in the app's own files (a new name each time, so the picture refreshes everywhere).
-      const ext = (asset.name.split('.').pop() ?? 'jpg').toLowerCase();
-      const dest = new File(Paths.document, `profile-${Date.now()}.${ext}`);
-      new File(asset.uri).copy(dest);
-      if (settings.photo?.startsWith(Paths.document.uri)) {
-        try {
-          new File(settings.photo).delete();
-        } catch {}
-      }
-      update({ photo: dest.uri });
+      setShrinking(asset.uri);
     } catch (e) {
       toast(`Couldn’t use that picture: ${e instanceof Error ? e.message : String(e)}`);
+    }
+  };
+
+  /** The small copy is ready: it becomes the photo (in the app's own files) and goes up with the next sync. */
+  const shrunk = (uri: string) => {
+    const old = settings.photo;
+    update({ photo: uri, photoPath: null });
+    setShrinking(null);
+    if (old && old !== uri && old.startsWith(Paths.document.uri)) {
+      try {
+        new File(old).delete();
+      } catch {}
     }
   };
 
@@ -77,182 +85,219 @@ export default function ProfileScreen() {
   const onPace = goal ? Math.round((goal * dayOfYear) / 365) : 0;
 
   return (
-    <ScrollView style={{ backgroundColor: theme.bg }} contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 40 }]} keyboardShouldPersistTaps="handled">
-      {/* Who */}
-      <View style={styles.who}>
-        <Pressable onPress={choosePhoto} accessibilityRole="button" accessibilityLabel="Change your photo" style={[styles.photoRing, { borderColor: theme.accent }]}>
-          {settings.photo ? (
-            <Image source={settings.photo} style={styles.photo} contentFit="cover" />
-          ) : (
-            <Text style={[styles.initial, { color: theme.text }]}>{(settings.name.trim()[0] ?? '♥').toUpperCase()}</Text>
-          )}
-          <View style={[styles.camera, { backgroundColor: theme.accent }]}>
-            <Ionicons name="camera" size={14} color={theme.accentText} />
-          </View>
-        </Pressable>
-        <TextInput
-          value={settings.name}
-          onChangeText={(name) => update({ name })}
-          placeholder="YOUR NAME"
-          placeholderTextColor={theme.textMuted}
-          style={[styles.name, { color: theme.text }]}
-          maxLength={30}
-          textAlign="center"
+    <View style={{ flex: 1 }}>
+      {shrinking && (
+        <PhotoShrinker
+          source={shrinking}
+          onDone={shrunk}
+          onFail={(e) => {
+            setShrinking(null);
+            toast(`Couldn’t use that picture: ${e instanceof Error ? e.message : String(e)}`);
+          }}
         />
-        <TextInput
-          value={settings.bio}
-          onChangeText={(bio) => update({ bio })}
-          placeholder="A line about you, e.g. Ghibli first, horror second"
-          placeholderTextColor={theme.textMuted}
-          style={[styles.bio, { color: theme.textMuted }]}
-          maxLength={90}
-          multiline
-          textAlign="center"
-        />
-      </View>
-
-      {/* Favourite four */}
-      <Block theme={theme} title="Favourite four">
-        <View style={styles.favs}>
-          {[0, 1, 2, 3].map((i) => {
-            const f = settings.favourites[i];
-            return (
-              <Pressable
-                key={i}
-                onPress={() => setPicking(f || i <= settings.favourites.length ? Math.min(i, settings.favourites.length) : settings.favourites.length)}
-                onLongPress={() => f && setFavourite(i, null)}
-                accessibilityRole="button"
-                accessibilityLabel={f ? `${f.title}. Tap to change, hold to remove` : 'Add a favourite'}
-                style={styles.fav}
-              >
-                {f ? (
-                  <Poster uri={f.posterUrl} title={f.title} width={74} theme={theme} radius={6} />
-                ) : (
-                  <View style={[styles.emptyFav, { borderColor: theme.border }]}>
-                    <Ionicons name="add" size={26} color={theme.textMuted} />
-                  </View>
-                )}
-              </Pressable>
-            );
-          })}
-        </View>
-        <Text style={[styles.hint, { color: theme.textMuted }]}>Tap to choose from your diary. Hold one to remove it.</Text>
-      </Block>
-
-      {/* The numbers */}
-      <View style={styles.numbers}>
-        {(['movie', 'tv', 'anime'] as const).map((k) => (
-          <Count key={k} theme={theme} value={s.titles[k]} label={KIND_LABEL[k] === 'Film' ? 'FILMS' : KIND_LABEL[k].toUpperCase()} color={kindColor(k, theme)} />
-        ))}
-        <Count theme={theme} value={s.hours} label="HOURS" color={theme.accent} />
-      </View>
-      <View style={[styles.facts, { backgroundColor: theme.card, borderColor: theme.border }]}>
-        <Fact theme={theme} icon="albums-outline" text={`${s.viewings} viewings logged`} />
-        <Fact theme={theme} icon="tv-outline" text={`${s.episodes} episodes of series and anime`} />
-        <Fact theme={theme} icon="star-outline" text={s.avgStars ? `${s.avgStars} stars on average` : 'No ratings yet'} />
-        <Fact theme={theme} icon="heart-outline" text={`${s.loved} loved · ${s.reviews} reviews`} />
-        {s.binge && s.binge.episodes >= 3 && <Fact theme={theme} icon="flash-outline" text={`Longest binge: ${s.binge.episodes} on ${friendlyDate(s.binge.date)}`} />}
-        {s.busiestMonth && (
-          <Fact theme={theme} icon="calendar-outline" text={`Busiest month: ${MONTHS[Number(s.busiestMonth.key.slice(5)) - 1]} ${s.busiestMonth.key.slice(0, 4)} (${s.busiestMonth.count})`} />
-        )}
-      </View>
-
-      {/* Goal */}
-      <Block theme={theme} title={`${year} goal`}>
-        {goal ? (
-          <>
-            <View style={styles.goalHead}>
-              <Text style={[styles.goalValue, { color: theme.text }]}>
-                {s.thisYear}
-                <Text style={{ color: theme.textMuted }}> / {goal}</Text>
-              </Text>
-              <Text style={[styles.goalPct, { color: theme.accent }]}>{Math.round(pct * 100)}%</Text>
-            </View>
-            <View style={[styles.track, { backgroundColor: theme.elevated }]}>
-              <View style={[styles.fill, { width: `${pct * 100}%`, backgroundColor: theme.accent }]} />
-              <View style={[styles.pace, { left: `${Math.min(100, (onPace / goal) * 100)}%`, backgroundColor: theme.text }]} />
-            </View>
-            <Text style={[styles.hint, { color: theme.textMuted }]}>
-              {s.thisYear >= goal
-                ? 'Goal reached. Encore?'
-                : s.thisYear >= onPace
-                  ? `Ahead of pace by ${s.thisYear - onPace}. The line marks where you’d be today.`
-                  : `${onPace - s.thisYear} behind pace. The line marks where you’d be today.`}
-            </Text>
-          </>
-        ) : (
-          <Text style={[styles.hint, { color: theme.textMuted }]}>How many titles will you watch this year?</Text>
-        )}
-        <View style={styles.goalChips}>
-          {GOALS.map((g) => (
-            <Pressable
-              key={g}
-              onPress={() => update({ yearGoal: goal === g ? 0 : g })}
-              accessibilityRole="button"
-              accessibilityState={{ selected: goal === g }}
-              style={[styles.goalChip, { borderColor: goal === g ? theme.accent : theme.border, backgroundColor: goal === g ? theme.accent : 'transparent' }]}
-            >
-              <Text style={[styles.goalChipText, { color: goal === g ? theme.accentText : theme.text }]}>{g}</Text>
-            </Pressable>
-          ))}
-        </View>
-      </Block>
-
-      {/* Activity */}
-      <Block theme={theme} title="A year of watching">
-        <ActivityGraph weeks={s.weeks} theme={theme} />
-        <View style={styles.activityFoot}>
-          <Text style={[styles.hint, { color: theme.textMuted, flex: 1 }]}>
-            {s.activeDays} days with something logged · streak {s.currentStreak} · best {s.longestStreak}
-          </Text>
-          <ActivityKey theme={theme} />
-        </View>
-      </Block>
-
-      {/* Ratings */}
-      <Block theme={theme} title="How you rate">
-        <View style={styles.histogram}>
-          {s.ratings.slice(1).map((n, i) => {
-            const max = Math.max(1, ...s.ratings.slice(1));
-            return (
-              <View key={i} style={styles.barCol}>
-                <View style={[styles.bar, { height: 4 + (n / max) * 72, backgroundColor: n ? theme.star : theme.elevated }]} />
-                <Text style={[styles.barLabel, { color: theme.textMuted }]}>{(i + 1) % 2 === 0 ? (i + 1) / 2 : '½'}</Text>
-              </View>
-            );
-          })}
-        </View>
-      </Block>
-
-      {/* Tops */}
-      {(s.topGenres.length > 0 || s.topCredits.length > 0) && (
-        <View style={styles.tops}>
-          <TopList theme={theme} title="Top genres" items={s.topGenres} />
-          <TopList theme={theme} title="Directors and studios" items={s.topCredits} />
-        </View>
       )}
+      <ScrollView
+        style={{ backgroundColor: theme.bg }}
+        contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 40 }]}
+        keyboardShouldPersistTaps="handled"
+      >
+        {/* Who */}
+        <View style={styles.who}>
+          <Pressable
+            onPress={choosePhoto}
+            accessibilityRole="button"
+            accessibilityLabel="Change your photo"
+            style={[styles.photoRing, { borderColor: theme.accent }]}
+          >
+            {settings.photo ? (
+              <Image source={settings.photo} style={styles.photo} contentFit="cover" />
+            ) : (
+              <Text style={[styles.initial, { color: theme.text }]}>{(settings.name.trim()[0] ?? '♥').toUpperCase()}</Text>
+            )}
+            <View style={[styles.camera, { backgroundColor: theme.accent }]}>
+              <Ionicons name="camera" size={14} color={theme.accentText} />
+            </View>
+          </Pressable>
+          <TextInput
+            value={settings.name}
+            onChangeText={(name) => update({ name })}
+            placeholder="YOUR NAME"
+            placeholderTextColor={theme.textMuted}
+            style={[styles.name, { color: theme.text }]}
+            maxLength={30}
+            textAlign="center"
+          />
+          <TextInput
+            value={settings.bio}
+            onChangeText={(bio) => update({ bio })}
+            placeholder="A line about you, e.g. Ghibli first, horror second"
+            placeholderTextColor={theme.textMuted}
+            style={[styles.bio, { color: theme.textMuted }]}
+            maxLength={90}
+            multiline
+            textAlign="center"
+          />
+        </View>
 
-      {/* Achievements */}
-      <Block theme={theme} title={`Achievements · ${s.achievements.filter((a) => a.tier).length} of ${s.achievements.length} unlocked`}>
-        <Achievements list={s.achievements} theme={theme} />
-      </Block>
+        {/* Favourite four */}
+        <Block theme={theme} title="Favourite four">
+          <View style={styles.favs}>
+            {[0, 1, 2, 3].map((i) => {
+              const f = settings.favourites[i];
+              return (
+                <Pressable
+                  key={i}
+                  onPress={() => setPicking(f || i <= settings.favourites.length ? Math.min(i, settings.favourites.length) : settings.favourites.length)}
+                  onLongPress={() => f && setFavourite(i, null)}
+                  accessibilityRole="button"
+                  accessibilityLabel={f ? `${f.title}. Tap to change, hold to remove` : 'Add a favourite'}
+                  style={styles.fav}
+                >
+                  {f ? (
+                    <Poster uri={f.posterUrl} title={f.title} width={74} theme={theme} radius={6} />
+                  ) : (
+                    <View style={[styles.emptyFav, { borderColor: theme.border }]}>
+                      <Ionicons name="add" size={26} color={theme.textMuted} />
+                    </View>
+                  )}
+                </Pressable>
+              );
+            })}
+          </View>
+          <Text style={[styles.hint, { color: theme.textMuted }]}>Tap to choose from your diary. Hold one to remove it.</Text>
+        </Block>
 
-      <Pressable onPress={() => router.push('/profile-card')} accessibilityRole="button" style={({ pressed }) => [styles.share, { backgroundColor: theme.accent, opacity: pressed ? 0.85 : 1 }]}>
-        <Ionicons name="logo-instagram" size={20} color={theme.accentText} />
-        <Text style={[styles.shareText, { color: theme.accentText }]}>SHARE MY PROFILE CARD</Text>
-      </Pressable>
+        {/* The numbers */}
+        <View style={styles.numbers}>
+          {(['movie', 'tv', 'anime'] as const).map((k) => (
+            <Count
+              key={k}
+              theme={theme}
+              value={s.titles[k]}
+              label={KIND_LABEL[k] === 'Film' ? 'FILMS' : KIND_LABEL[k].toUpperCase()}
+              color={kindColor(k, theme)}
+            />
+          ))}
+          <Count theme={theme} value={s.hours} label="HOURS" color={theme.accent} />
+        </View>
+        <View style={[styles.facts, { backgroundColor: theme.card, borderColor: theme.border }]}>
+          <Fact theme={theme} icon="albums-outline" text={`${s.viewings} viewings logged`} />
+          <Fact theme={theme} icon="tv-outline" text={`${s.episodes} episodes of series and anime`} />
+          <Fact theme={theme} icon="star-outline" text={s.avgStars ? `${s.avgStars} stars on average` : 'No ratings yet'} />
+          <Fact theme={theme} icon="heart-outline" text={`${s.loved} loved · ${s.reviews} reviews`} />
+          {s.binge && s.binge.episodes >= 3 && (
+            <Fact theme={theme} icon="flash-outline" text={`Longest binge: ${s.binge.episodes} on ${friendlyDate(s.binge.date)}`} />
+          )}
+          {s.busiestMonth && (
+            <Fact
+              theme={theme}
+              icon="calendar-outline"
+              text={`Busiest month: ${MONTHS[Number(s.busiestMonth.key.slice(5)) - 1]} ${s.busiestMonth.key.slice(0, 4)} (${s.busiestMonth.count})`}
+            />
+          )}
+        </View>
 
-      <FavouritePicker
-        visible={picking !== null}
-        theme={theme}
-        entries={entries}
-        onClose={() => setPicking(null)}
-        onPick={(f) => {
-          if (picking !== null) setFavourite(picking, f);
-          setPicking(null);
-        }}
-      />
-    </ScrollView>
+        {/* Goal */}
+        <Block theme={theme} title={`${year} goal`}>
+          {goal ? (
+            <>
+              <View style={styles.goalHead}>
+                <Text style={[styles.goalValue, { color: theme.text }]}>
+                  {s.thisYear}
+                  <Text style={{ color: theme.textMuted }}> / {goal}</Text>
+                </Text>
+                <Text style={[styles.goalPct, { color: theme.accent }]}>{Math.round(pct * 100)}%</Text>
+              </View>
+              <View style={[styles.track, { backgroundColor: theme.elevated }]}>
+                <View style={[styles.fill, { width: `${pct * 100}%`, backgroundColor: theme.accent }]} />
+                <View style={[styles.pace, { left: `${Math.min(100, (onPace / goal) * 100)}%`, backgroundColor: theme.text }]} />
+              </View>
+              <Text style={[styles.hint, { color: theme.textMuted }]}>
+                {s.thisYear >= goal
+                  ? 'Goal reached. Encore?'
+                  : s.thisYear >= onPace
+                    ? `Ahead of pace by ${s.thisYear - onPace}. The line marks where you’d be today.`
+                    : `${onPace - s.thisYear} behind pace. The line marks where you’d be today.`}
+              </Text>
+            </>
+          ) : (
+            <Text style={[styles.hint, { color: theme.textMuted }]}>How many titles will you watch this year?</Text>
+          )}
+          <View style={styles.goalChips}>
+            {GOALS.map((g) => (
+              <Pressable
+                key={g}
+                onPress={() => update({ yearGoal: goal === g ? 0 : g })}
+                accessibilityRole="button"
+                accessibilityState={{ selected: goal === g }}
+                style={[styles.goalChip, { borderColor: goal === g ? theme.accent : theme.border, backgroundColor: goal === g ? theme.accent : 'transparent' }]}
+              >
+                <Text style={[styles.goalChipText, { color: goal === g ? theme.accentText : theme.text }]}>{g}</Text>
+              </Pressable>
+            ))}
+          </View>
+        </Block>
+
+        {/* Activity */}
+        <Block theme={theme} title="A year of watching">
+          <ActivityGraph weeks={s.weeks} theme={theme} />
+          <View style={styles.activityFoot}>
+            <Text style={[styles.hint, { color: theme.textMuted, flex: 1 }]}>
+              {s.activeDays} days with something logged · streak {s.currentStreak} · best {s.longestStreak}
+            </Text>
+            <ActivityKey theme={theme} />
+          </View>
+        </Block>
+
+        {/* Ratings */}
+        <Block theme={theme} title="How you rate">
+          <View style={styles.histogram}>
+            {s.ratings.slice(1).map((n, i) => {
+              const max = Math.max(1, ...s.ratings.slice(1));
+              return (
+                <View key={i} style={styles.barCol}>
+                  <View style={[styles.bar, { height: 4 + (n / max) * 72, backgroundColor: n ? theme.star : theme.elevated }]} />
+                  <Text style={[styles.barLabel, { color: theme.textMuted }]}>{(i + 1) % 2 === 0 ? (i + 1) / 2 : '½'}</Text>
+                </View>
+              );
+            })}
+          </View>
+        </Block>
+
+        {/* Tops */}
+        {(s.topGenres.length > 0 || s.topCredits.length > 0) && (
+          <View style={styles.tops}>
+            <TopList theme={theme} title="Top genres" items={s.topGenres} />
+            <TopList theme={theme} title="Directors and studios" items={s.topCredits} />
+          </View>
+        )}
+
+        {/* Achievements */}
+        <Block theme={theme} title={`Achievements · ${s.achievements.filter((a) => a.tier).length} of ${s.achievements.length} unlocked`}>
+          <Achievements list={s.achievements} theme={theme} />
+        </Block>
+
+        <Pressable
+          onPress={() => router.push('/profile-card')}
+          accessibilityRole="button"
+          style={({ pressed }) => [styles.share, { backgroundColor: theme.accent, opacity: pressed ? 0.85 : 1 }]}
+        >
+          <Ionicons name="logo-instagram" size={20} color={theme.accentText} />
+          <Text style={[styles.shareText, { color: theme.accentText }]}>SHARE MY PROFILE CARD</Text>
+        </Pressable>
+
+        <FavouritePicker
+          visible={picking !== null}
+          theme={theme}
+          entries={entries}
+          onClose={() => setPicking(null)}
+          onPick={(f) => {
+            if (picking !== null) setFavourite(picking, f);
+            setPicking(null);
+          }}
+        />
+      </ScrollView>
+    </View>
   );
 }
 

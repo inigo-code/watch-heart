@@ -114,7 +114,7 @@ Both ways install the same signed APK, so you can switch between them without lo
 ## 🔒 Your data
 
 - **On your phone first.** Your diary, watchlist and settings live on the phone and work without an account.
-- **Private sync.** With an account, your diary and watchlist sync through Supabase. Row Level Security means every account can read only its own rows.
+- **Private sync.** With an account, your diary, watchlist, episode progress and profile sync through Supabase. Row Level Security means every account can read only its own rows, and profile photos sit in a private bucket under your own folder.
 - **Leave any time.** Export a backup, a spreadsheet or a Letterboxd file, or [delete your account](https://inigo-code.github.io/watch-heart-site/delete-account.html) in the app.
 - **No ads, no analytics, no tracking.** See the [privacy policy](https://inigo-code.github.io/watch-heart-site/privacy.html).
 

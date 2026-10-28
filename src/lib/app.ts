@@ -36,12 +36,9 @@ export const DATA_SOURCES = {
  * update worth telling people about; an update that leaves it alone shows nothing.
  */
 export const WHATS_NEW = {
-  id: '2026-10-28',
+  id: '2026-10-28b',
   items: [
-    'Your profile: photo, bio, favourite four, stats and a year of activity',
-    'Track episodes and pick up where you left off',
-    'Where to watch, TMDB scores and IMDb ratings on every title',
-    'A yearly goal and achievements to unlock',
-    'Reviews keep their formatting; fix a wrong title or kind on any entry',
+    'Your profile now syncs: name, bio, photo, favourite four and yearly goal follow you to every phone you sign in on',
+    'Profile photos are made small before they upload, so they sync in a moment',
   ],
 };
