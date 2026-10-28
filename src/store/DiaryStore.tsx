@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import type { ReactNode } from 'react';
 
 import { newId } from '@/lib/id';
+import { plainText } from '@/lib/richText';
 import { storage } from '@/lib/storage';
 
 import { openDiary } from './db';
@@ -92,6 +93,9 @@ type DiaryStore = {
 
 const Ctx = createContext<DiaryStore | null>(null);
 
+const words = (s: string) => plainText(s).replace(/\s+/g, ' ').trim();
+const sameWords = (a: string, b: string) => !!a.trim() && words(a) === words(b);
+
 const byNewest = (a: Entry, b: Entry) => b.watchedOn.localeCompare(a.watchedOn) || b.createdAt - a.createdAt;
 const byAdded = (a: WatchItem, b: WatchItem) => b.addedAt - a.addedAt;
 
@@ -181,8 +185,8 @@ export function DiaryStoreProvider({ children }: { children: ReactNode }) {
       const entry: Entry = { ...draft, id: newId(), createdAt: now, updatedAt: now, deletedAt: null };
       setAll((list) => [...list, entry]);
       write((d) => d.save([entry]));
-      // Watching something takes it off the watchlist.
-      const done = watchRef.current.filter((w) => sameTitle(w, entry)).map((w) => w.id);
+      // Watching something takes it off the watchlist, except a show you're tracking episode by episode.
+      const done = entry.episodes ? [] : watchRef.current.filter((w) => sameTitle(w, entry) && !w.track).map((w) => w.id);
       if (done.length) {
         setWatchlist((list) => list.filter((w) => !done.includes(w.id)));
         write((d) => d.removeWatchlist(done));
@@ -225,7 +229,22 @@ export function DiaryStoreProvider({ children }: { children: ReactNode }) {
         const mine = byId.get(e.id);
         if (!mine) result.added++;
         else if (e.updatedAt > mine.updatedAt) result.updated++;
-        else {
+        else if (sameWords(mine.review, e.review) && mine.review !== e.review) {
+          // The same review with its formatting back (older imports dropped it): only the review changes.
+          const restored = { ...mine, review: e.review, updatedAt: Date.now() };
+          byId.set(e.id, restored);
+          changed.push(restored);
+          result.updated++;
+          continue;
+        } else if ((e.undated && !mine.undated) || (e.imdbId && !mine.imdbId)) {
+          // Marks older versions didn't keep on the phone: no watch date (so it goes back to the Archive)
+          // and the IMDb id. Nothing you wrote changes.
+          const restored = { ...mine, undated: mine.undated || e.undated, imdbId: mine.imdbId ?? e.imdbId, updatedAt: Date.now() };
+          byId.set(e.id, restored);
+          changed.push(restored);
+          result.updated++;
+          continue;
+        } else {
           result.skipped++;
           continue;
         }
@@ -290,31 +309,40 @@ export function DiaryStoreProvider({ children }: { children: ReactNode }) {
 
   const patchMany = useCallback<DiaryStore['patchMany']>(
     (entryPatches, watchPatches) => {
+      // Patched against the current lists, not the refs: a background job can call this in the same
+      // commit as the first load, before the refs catch up, and patching the stale (empty) ref would
+      // replace the whole diary with nothing.
       if (entryPatches.length) {
         const byId = new Map(entryPatches.map((p) => [p.id, p.patch]));
-        const changed: Entry[] = [];
-        allRef.current = allRef.current.map((e) => {
-          const patch = byId.get(e.id);
-          if (!patch) return e;
-          const next = { ...e, ...patch, id: e.id, updatedAt: Date.now() };
-          changed.push(next);
+        setAll((list) => {
+          const changed: Entry[] = [];
+          const next = list.map((e) => {
+            const patch = byId.get(e.id);
+            if (!patch) return e;
+            const updated = { ...e, ...patch, id: e.id, updatedAt: Date.now() };
+            changed.push(updated);
+            return updated;
+          });
+          allRef.current = next;
+          if (changed.length) write((d) => d.save(changed));
           return next;
         });
-        setAll(allRef.current);
-        if (changed.length) write((d) => d.save(changed));
       }
       if (watchPatches.length) {
         const byId = new Map(watchPatches.map((p) => [p.id, p.patch]));
-        const changed: WatchItem[] = [];
-        watchRef.current = watchRef.current.map((w) => {
-          const patch = byId.get(w.id);
-          if (!patch) return w;
-          const next = { ...w, ...patch, id: w.id };
-          changed.push(next);
+        setWatchlist((list) => {
+          const changed: WatchItem[] = [];
+          const next = list.map((w) => {
+            const patch = byId.get(w.id);
+            if (!patch) return w;
+            const updated = { ...w, ...patch, id: w.id };
+            changed.push(updated);
+            return updated;
+          });
+          watchRef.current = next;
+          if (changed.length) write((d) => d.saveWatchlist(changed));
           return next;
         });
-        setWatchlist(watchRef.current);
-        if (changed.length) write((d) => d.saveWatchlist(changed));
       }
       touch(
         entryPatches.map((p) => p.id),

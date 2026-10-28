@@ -32,6 +32,13 @@ export const fetchedTime = (r: Fresh, addedAt: number) => r.fetchedAt ?? addedAt
 const hasDetails = (r: Fresh) => !!(r.posterUrl || r.backdropUrl || r.genres.length || r.runtime || r.credit);
 const linked = (r: Fresh) => r.source === 'tmdb' && r.sourceId.includes(':');
 
+/**
+ * Records linked to a TMDB series but still marked as films: imports from film-only apps (Letterboxd
+ * lists TV miniseries too) were matched to the series without their kind changing.
+ */
+export const wrongKind = <T extends Pick<Entry, 'source' | 'sourceId' | 'kind'>>(records: T[]) =>
+  records.filter((r) => r.source === 'tmdb' && r.sourceId.startsWith('tv:') && r.kind === 'movie');
+
 /** The TMDB details removed when they're too old to keep and can't be refreshed. */
 export const stripped = () => ({ posterUrl: null, backdropUrl: null, genres: [] as string[], runtime: null, credit: null, fetchedAt: 0 });
 
@@ -93,7 +100,8 @@ export function useTmdbFreshness() {
   const [now] = useState(() => Date.now());
   const diaryPlan = planUpkeep([...entries, ...trash], (e) => e.createdAt, now, !!key);
   const watchPlan = planUpkeep(watchlist, (w) => w.addedAt, now, !!key);
-  const pending = diaryPlan.details.length + diaryPlan.match.length + watchPlan.details.length + watchPlan.match.length + diaryPlan.strip.length + watchPlan.strip.length;
+  const misKinded = wrongKind([...entries, ...trash]).length + wrongKind(watchlist).length;
+  const pending = diaryPlan.details.length + diaryPlan.match.length + watchPlan.details.length + watchPlan.match.length + diaryPlan.strip.length + watchPlan.strip.length + misKinded;
 
   useEffect(() => {
     if (!ready || !settingsReady || running.current) return;
@@ -112,6 +120,14 @@ export function useTmdbFreshness() {
       patchMany(
         d.strip.map((e) => ({ id: e.id, patch: stripped() })),
         w.strip.map((x) => ({ id: x.id, patch: stripped() })),
+      );
+    }
+    const dk = wrongKind([...es, ...ts]);
+    const wk = wrongKind(ws);
+    if (dk.length || wk.length) {
+      patchMany(
+        dk.map((e) => ({ id: e.id, patch: { kind: 'tv' as const } })),
+        wk.map((x) => ({ id: x.id, patch: { kind: 'tv' as const } })),
       );
     }
     if (!key) return;
@@ -186,8 +202,9 @@ async function match(key: string, r: Entry | WatchItem): Promise<Partial<Entry>>
     source: 'tmdb',
     sourceId: t.sourceId,
     originalTitle: r.originalTitle ?? t.originalTitle ?? null,
-    // Japanese animation found under Films or Series is anime.
-    kind: t.kind === 'anime' ? 'anime' : r.kind,
+    // What TMDB found decides between film and series (a film-only app's "film" can be a miniseries,
+    // and Japanese animation is anime); something you filed as anime yourself stays anime.
+    kind: r.kind === 'anime' ? 'anime' : t.kind,
     fetchedAt: Date.now(),
     matchTriedAt: null,
   };

@@ -30,3 +30,18 @@ export const DATA_SOURCES = {
   anilist: { label: 'AniList', url: 'https://anilist.co' },
   tvmaze: { label: 'TVmaze', url: 'https://www.tvmaze.com', notice: 'TV data from TVmaze, licensed CC BY-SA.' },
 } as const;
+
+/**
+ * Shown once after an update installs ("What's new in this cut"). Change the id and the lines with each
+ * update worth telling people about; an update that leaves it alone shows nothing.
+ */
+export const WHATS_NEW = {
+  id: '2026-10-28',
+  items: [
+    'Your profile: photo, bio, favourite four, stats and a year of activity',
+    'Track episodes and pick up where you left off',
+    'Where to watch, TMDB scores and IMDb ratings on every title',
+    'A yearly goal and achievements to unlock',
+    'Reviews keep their formatting; fix a wrong title or kind on any entry',
+  ],
+};

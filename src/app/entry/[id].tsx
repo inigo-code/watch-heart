@@ -6,6 +6,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Stars } from '@/components/Film';
 import { Hero } from '@/components/Hero';
+import { trackable } from '@/api/episodes';
+import { RichText } from '@/components/RichText';
+import { TitleExtras } from '@/components/TitleExtras';
 import { useToast } from '@/components/Toast';
 import { dayParts, friendlyDate } from '@/lib/dates';
 import { font, fonts, useTheme } from '@/lib/theme';
@@ -79,6 +82,8 @@ export default function EntryScreen() {
             </View>
           </View>
 
+          <TitleExtras source={entry.source} sourceId={entry.sourceId} imdbId={entry.imdbId} theme={theme} />
+
           {!!entry.review && (
             <View style={styles.reviewWrap}>
               <Text style={[styles.label, { color: theme.textMuted }]}>REVIEW</Text>
@@ -88,7 +93,7 @@ export default function EntryScreen() {
                   <Text style={[styles.spoilerText, { color: theme.textMuted }]}>Contains spoilers. Tap to read.</Text>
                 </Pressable>
               ) : (
-                <Text style={[styles.review, { color: theme.text }]}>{entry.review}</Text>
+                <RichText text={entry.review} theme={theme} style={{ ...styles.review, color: theme.text }} />
               )}
             </View>
           )}
@@ -106,6 +111,19 @@ export default function EntryScreen() {
           <View style={styles.actions}>
             <Action theme={theme} icon="sparkles-outline" label="STORY CARD" onPress={() => router.push({ pathname: '/card/[id]', params: { id: entry.id } })} primary />
             <Action theme={theme} icon="repeat" label="LOG AGAIN" onPress={() => router.push({ pathname: '/log', params: { again: entry.id } })} />
+            {trackable(entry) && (
+              <Action
+                theme={theme}
+                icon="list-outline"
+                label="EPISODES"
+                onPress={() =>
+                  router.push({
+                    pathname: '/track',
+                    params: { title: JSON.stringify({ kind: entry.kind, source: entry.source, sourceId: entry.sourceId, title: entry.title, year: entry.year, posterUrl: entry.posterUrl, backdropUrl: entry.backdropUrl, genres: entry.genres, runtime: entry.runtime, credit: entry.credit }) },
+                  })
+                }
+              />
+            )}
           </View>
 
           {viewings.length > 1 && (

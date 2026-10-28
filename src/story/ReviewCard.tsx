@@ -5,6 +5,7 @@ import { forwardRef, useEffect, useState } from 'react';
 import { Image, StyleSheet, Text, View } from 'react-native';
 
 import { friendlyDate } from '@/lib/dates';
+import { plainText } from '@/lib/richText';
 import { KIND_LABEL } from '@/lib/stats';
 import { fonts } from '@/lib/theme';
 import type { Entry } from '@/store/types';
@@ -24,7 +25,7 @@ export const ReviewCard = forwardRef<StoryHandle, Props>(function ReviewCard({ e
   const [loaded, setLoaded] = useState(!entry.posterUrl);
   useEffect(() => onReady?.(loaded), [loaded, onReady]);
   const backdrop = entry.backdropUrl ?? entry.posterUrl;
-  const review = showReview && !entry.spoilers ? entry.review.replace(/\s+/g, ' ').trim() : '';
+  const review = showReview && !entry.spoilers ? plainText(entry.review).replace(/\s+/g, ' ').trim() : '';
   const stars = [];
   for (let i = 1; i <= 5; i++) {
     if (entry.rating >= i * 2) stars.push(<Ionicons key={i} name="star" size={22} color={p.star} />);

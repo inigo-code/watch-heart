@@ -3,7 +3,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import DateTimePicker, { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 import * as Haptics from 'expo-haptics';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -11,8 +11,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { details, tmdbKey } from '@/api';
 import { Chip, StarInput } from '@/components/Film';
 import { Hero } from '@/components/Hero';
+import { trackable } from '@/api/episodes';
+import { TitleExtras } from '@/components/TitleExtras';
+import { TitlePicker } from '@/components/TitlePicker';
 import { useToast } from '@/components/Toast';
 import { daysAgo, friendlyDate, isoDate, parseIso, today } from '@/lib/dates';
+import { applyFormat } from '@/lib/richText';
 import { KIND_LABEL } from '@/lib/stats';
 import { KIND_COLORS, font, fonts, useTheme } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
@@ -82,7 +86,40 @@ export default function LogScreen() {
   const [tagText, setTagText] = useState(() => draft.tags.join(', '));
   const [yearText, setYearText] = useState(() => (draft.year ? String(draft.year) : ''));
   const [iosPicker, setIosPicker] = useState(false);
+  const [picking, setPicking] = useState(false);
+  const reviewSel = useRef({ start: 0, end: 0 });
   const set = (patch: Partial<EntryDraft>) => setDraft((d) => ({ ...d, ...patch }));
+
+  const format = (kind: 'bold' | 'italic' | 'quote') => {
+    const r = applyFormat(draft.review, reviewSel.current, kind);
+    reviewSel.current = r.selection;
+    set({ review: r.text });
+  };
+
+  /** A wrong match fixed: the picked title's details, with this entry's own date, rating and words. */
+  const repick = (t: Title) => {
+    setPicking(false);
+    set({
+      kind: t.kind,
+      source: t.source,
+      sourceId: t.sourceId,
+      title: t.title,
+      originalTitle: t.originalTitle ?? null,
+      year: t.year,
+      posterUrl: t.posterUrl,
+      backdropUrl: t.backdropUrl,
+      genres: t.genres,
+      runtime: t.runtime,
+      credit: t.credit ?? null,
+      fetchedAt: t.source === 'tmdb' ? Date.now() : null,
+      imdbId: null,
+      matchTriedAt: null,
+    });
+    setYearText(t.year ? String(t.year) : '');
+    details(t, tmdbKey(settings.tmdbKey)).then((full) =>
+      setDraft((d) => (d.sourceId === t.sourceId ? { ...d, genres: full.genres.length ? full.genres : d.genres, runtime: full.runtime ?? d.runtime, credit: full.credit ?? d.credit } : d)),
+    );
+  };
 
   // Search results leave out running time, full genres and the director; fetch them while you fill in the rest.
   useEffect(() => {
@@ -224,6 +261,30 @@ export default function LogScreen() {
         )}
 
         <View style={styles.form}>
+          {!manual && !editing && draft.sourceId ? <TitleExtras source={draft.source} sourceId={draft.sourceId} imdbId={draft.imdbId} theme={theme} /> : null}
+          {!editing && trackable(draft) && (
+            <Pressable
+              onPress={() => router.replace({ pathname: '/track', params: { title: params.title ?? JSON.stringify({ ...draft, originalTitle: draft.originalTitle ?? undefined }) } })}
+              accessibilityRole="button"
+              style={({ pressed }) => [styles.repick, { borderColor: theme.accent + '88', opacity: pressed ? 0.7 : 1 }]}
+            >
+              <Ionicons name="list-outline" size={18} color={theme.accent} />
+              <Text style={[styles.repickText, { color: theme.text }]}>Track it episode by episode instead</Text>
+            </Pressable>
+          )}
+          {editing && (
+            <Field theme={theme} label="Kind">
+              <View style={styles.row}>
+                {(['movie', 'tv', 'anime'] as MediaKind[]).map((k) => (
+                  <Chip key={k} theme={theme} label={KIND_LABEL[k]} color={KIND_COLORS[k]} active={draft.kind === k} onPress={() => set({ kind: k })} />
+                ))}
+              </View>
+              <Pressable onPress={() => setPicking(true)} accessibilityRole="button" style={({ pressed }) => [styles.repick, { borderColor: theme.border, opacity: pressed ? 0.7 : 1 }]}>
+                <Ionicons name="swap-horizontal" size={18} color={theme.accent} />
+                <Text style={[styles.repickText, { color: theme.text }]}>Wrong title or poster? Find the right one</Text>
+              </Pressable>
+            </Field>
+          )}
           {queued && (
             <View style={[styles.queued, { borderColor: theme.accent + '66', backgroundColor: theme.accentSoft }]}>
               <Ionicons name="bookmark" size={16} color={theme.accent} />
@@ -292,9 +353,28 @@ export default function LogScreen() {
           )}
 
           <Field theme={theme} label="Review">
+            <View style={styles.formatBar}>
+              {([
+                ['bold', 'B', { fontWeight: '800' }],
+                ['italic', 'I', { fontStyle: 'italic', fontWeight: '700' }],
+                ['quote', '❝', { fontWeight: '700' }],
+              ] as const).map(([kind, label, look]) => (
+                <Pressable
+                  key={kind}
+                  onPress={() => format(kind)}
+                  accessibilityRole="button"
+                  accessibilityLabel={kind === 'quote' ? 'Quote' : kind === 'bold' ? 'Bold' : 'Italic'}
+                  style={({ pressed }) => [styles.formatButton, { borderColor: theme.border, backgroundColor: pressed ? theme.elevated : theme.card }]}
+                >
+                  <Text style={[styles.formatLabel, look, { color: theme.text }]}>{label}</Text>
+                </Pressable>
+              ))}
+              <Text style={[styles.formatHint, { color: theme.textMuted }]}>Select words, then tap. A blank line starts a new paragraph.</Text>
+            </View>
             <TextInput
               value={draft.review}
               onChangeText={(review) => set({ review })}
+              onSelectionChange={(e) => (reviewSel.current = e.nativeEvent.selection)}
               placeholder="What stayed with you after the credits?"
               placeholderTextColor={theme.textMuted}
               multiline
@@ -340,6 +420,7 @@ export default function LogScreen() {
           )}
         </View>
       </ScrollView>
+      <TitlePicker visible={picking} theme={theme} initialQuery={draft.title} initialKind={draft.kind} onPick={repick} onClose={() => setPicking(false)} />
     </KeyboardAvoidingView>
   );
 }
@@ -398,6 +479,12 @@ const styles = StyleSheet.create({
   queuedText: { fontFamily: fonts.mono, fontSize: font.footnote, flex: 1 },
   later: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: 48, borderRadius: 24, borderWidth: 1, borderStyle: 'dashed' },
   laterText: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 1 },
+  repick: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderStyle: 'dashed', borderRadius: 10, paddingHorizontal: 12, minHeight: 46, marginTop: 4 },
+  repickText: { flex: 1, fontSize: font.footnote, fontWeight: '600' },
+  formatBar: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  formatButton: { width: 40, height: 36, borderRadius: 8, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
+  formatLabel: { fontSize: font.headline },
+  formatHint: { flex: 1, fontFamily: fonts.mono, fontSize: font.caption, lineHeight: 15 },
   delete: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 10 },
   deleteText: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 1 },
 });

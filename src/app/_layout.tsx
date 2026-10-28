@@ -86,6 +86,9 @@ function Navigator() {
         <Stack.Screen name="trash" options={{ title: 'TRASH' }} />
         <Stack.Screen name="import" options={{ title: 'IMPORT' }} />
         <Stack.Screen name="about" options={{ title: 'ABOUT' }} />
+        <Stack.Screen name="profile" options={{ title: 'PROFILE' }} />
+        <Stack.Screen name="track" options={{ title: 'EPISODES' }} />
+        <Stack.Screen name="profile-card" options={{ title: 'PROFILE CARD' }} />
         <Stack.Screen name="share" options={{ title: '' }} />
       </Stack>
     </>

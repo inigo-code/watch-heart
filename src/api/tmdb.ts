@@ -84,9 +84,13 @@ export async function searchTmdb(key: string, kind: 'movie' | 'tv', query: strin
   return data.results.map((r) => toTitle(r, kind));
 }
 
+/** This week's trending films or series. Anime has its own tab, so it's left out here. */
 export async function trendingTmdb(key: string, kind: 'movie' | 'tv', signal?: AbortSignal): Promise<Title[]> {
-  const data = await get<{ results: Result[] }>(key, `/trending/${kind}/week`, {}, signal);
-  return data.results.map((r) => toTitle(r, kind));
+  const pages = await Promise.all(['1', '2'].map((page) => get<{ results: Result[] }>(key, `/trending/${kind}/week`, { page }, signal)));
+  return pages
+    .flatMap((p) => p.results.map((r) => toTitle(r, kind)))
+    .filter((x) => x.kind !== 'anime')
+    .slice(0, 20);
 }
 
 const byPopularity = (a: Result, b: Result) => (b.popularity ?? 0) - (a.popularity ?? 0);
@@ -231,4 +235,37 @@ export async function matchTmdb(
     if (hit) return tmdbById(key, type, hit.sourceId.split(':')[1], signal);
   }
   return null;
+}
+
+export type Provider = { id: number; name: string; logo: string };
+export type WatchOptions = { link: string | null; stream: Provider[]; free: Provider[]; rent: Provider[]; buy: Provider[] };
+export type TitleExtras = { score: number | null; votes: number; imdbId: string | null; watch: WatchOptions | null };
+
+type ProviderRow = { provider_id: number; provider_name: string; logo_path: string | null; display_priority?: number };
+type RegionProviders = { link?: string; flatrate?: ProviderRow[]; free?: ProviderRow[]; ads?: ProviderRow[]; rent?: ProviderRow[]; buy?: ProviderRow[] };
+
+/**
+ * TMDB's community score, the IMDb id and where to watch in one country, in one request. Streaming data
+ * is JustWatch's, through TMDB; it has to be credited to JustWatch wherever it's shown.
+ */
+export async function extrasTmdb(key: string, sourceId: string, region: string, signal?: AbortSignal): Promise<TitleExtras> {
+  const [type, id] = sourceId.split(':') as ['movie' | 'tv', string];
+  const d = await get<{
+    vote_average?: number;
+    vote_count?: number;
+    imdb_id?: string | null;
+    external_ids?: { imdb_id?: string | null };
+    'watch/providers'?: { results?: Record<string, RegionProviders> };
+  }>(key, `/${type}/${id}`, { append_to_response: 'external_ids,watch/providers' }, signal);
+  const r = d['watch/providers']?.results?.[region];
+  const list = (rows?: ProviderRow[]) =>
+    [...(rows ?? [])]
+      .sort((a, b) => (a.display_priority ?? 99) - (b.display_priority ?? 99))
+      .map((p) => ({ id: p.provider_id, name: p.provider_name, logo: p.logo_path ? `${IMG}/w92${p.logo_path}` : '' }));
+  return {
+    score: d.vote_count ? Math.round((d.vote_average ?? 0) * 10) / 10 : null,
+    votes: d.vote_count ?? 0,
+    imdbId: d.imdb_id || d.external_ids?.imdb_id || null,
+    watch: r ? { link: r.link ?? null, stream: list(r.flatrate), free: [...list(r.free), ...list(r.ads)], rent: list(r.rent), buy: list(r.buy) } : null,
+  };
 }

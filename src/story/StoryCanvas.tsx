@@ -7,6 +7,7 @@ import type { ComponentRef, ReactNode } from 'react';
 import { Image, StyleSheet, Text, View } from 'react-native';
 
 import { dayParts } from '@/lib/dates';
+import { plainText } from '@/lib/richText';
 import { computeStats, kindSummary } from '@/lib/stats';
 import { fonts } from '@/lib/theme';
 import type { Entry } from '@/store/types';
@@ -282,7 +283,7 @@ function Tickets({ p, entries, total, options, settled }: LayoutProps) {
 /** The favourite, big, with everything else in a row beneath. */
 function Spotlight({ p, favourite, rest, total, options, settled }: Omit<LayoutProps, 'entries' | 'area'> & { favourite: Entry; rest: Entry[] }) {
   const extra = total - 1 - rest.length;
-  const quote = favourite.review && !favourite.spoilers ? favourite.review.replace(/\s+/g, ' ').trim() : '';
+  const quote = favourite.review && !favourite.spoilers ? plainText(favourite.review).replace(/\s+/g, ' ').trim() : '';
   return (
     <View style={{ alignItems: 'center', gap: 7 }}>
       <Text style={[styles.kicker, { color: p.accent }]}>★ FAVOURITE ★</Text>

@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BrandTitle } from '@/components/BrandTitle';
 import { Sprockets } from '@/components/Film';
 import { Row, Section } from '@/components/SettingsUI';
-import { UpdateRow, describeRunning } from '@/components/UpdateRow';
+import { UpdateCard, describeRunning } from '@/components/UpdateRow';
 import { ANILIST_ALLOWED, APP_TAGLINE, DATA_SOURCES, DEVELOPER, SUPPORT_EMAIL } from '@/lib/app';
 import { font, fonts, useTheme } from '@/lib/theme';
 
@@ -25,27 +25,22 @@ export default function AboutScreen() {
         <Sprockets color={theme.bg} count={14} hole={6} />
       </View>
 
-      <Section theme={theme} title="Updates" footer="New versions arrive by themselves and apply the next time the app opens. Check here to get one straight away.">
-        <UpdateRow theme={theme} last />
-      </Section>
+      <UpdateCard theme={theme} />
 
-      <Pressable
-        onPress={() => Linking.openURL(DATA_SOURCES.tmdb.url)}
-        accessibilityRole="link"
-        accessibilityLabel="TMDB, The Movie Database"
-        style={[styles.tmdb, { backgroundColor: theme.card, borderColor: theme.border }]}
-      >
-        <Image source={require('../../assets/tmdb-logo.png')} style={styles.tmdbLogo} resizeMode="contain" accessibilityIgnoresInvertColors />
-        <Text style={[styles.tmdbNotice, { color: theme.textMuted }]}>{DATA_SOURCES.tmdb.notice}</Text>
-      </Pressable>
-
-      <Section theme={theme} title="Credits" footer={DATA_SOURCES.tvmaze.notice}>
+      <Section theme={theme} title="Credits">
         <Row theme={theme} icon="film-outline" label="Films, series and anime" value="TMDB" onPress={() => Linking.openURL(DATA_SOURCES.tmdb.url)} />
         {ANILIST_ALLOWED && (
           <Row theme={theme} icon="sparkles-outline" label="Anime (without a TMDB key)" value="AniList" onPress={() => Linking.openURL(DATA_SOURCES.anilist.url)} />
         )}
         <Row theme={theme} icon="tv-outline" label="Series (without a TMDB key)" value="TVmaze" onPress={() => Linking.openURL(DATA_SOURCES.tvmaze.url)} last />
       </Section>
+
+      {/* TMDB's required credit: its logo and notice, smaller and quieter than Watch Heart's own name. */}
+      <Pressable onPress={() => Linking.openURL(DATA_SOURCES.tmdb.url)} accessibilityRole="link" accessibilityLabel="TMDB, The Movie Database" style={styles.tmdb}>
+        <Image source={require('../../assets/tmdb-logo.png')} style={styles.tmdbLogo} resizeMode="contain" accessibilityIgnoresInvertColors />
+        <Text style={[styles.tmdbNotice, { color: theme.textMuted }]}>{DATA_SOURCES.tmdb.notice}</Text>
+        <Text style={[styles.tmdbNotice, { color: theme.textMuted }]}>{DATA_SOURCES.tvmaze.notice}</Text>
+      </Pressable>
 
       <Section theme={theme} title="Made by">
         <Row theme={theme} icon="logo-github" label={DEVELOPER.name} value="GitHub" onPress={() => Linking.openURL(DEVELOPER.github)} />
@@ -66,9 +61,9 @@ const styles = StyleSheet.create({
   cardBody: { alignItems: 'center', gap: 6, paddingVertical: 14 },
   tagline: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 1.5 },
   version: { fontFamily: fonts.mono, fontSize: font.caption },
-  tmdb: { borderRadius: 14, borderWidth: StyleSheet.hairlineWidth, padding: 16, gap: 10, alignItems: 'flex-start' },
+  tmdb: { gap: 6, paddingHorizontal: 4, marginTop: -8 },
   // Smaller than Watch Heart's own title, as TMDB's terms ask.
-  tmdbLogo: { width: 110, height: 14 },
+  tmdbLogo: { width: 78, height: 10, opacity: 0.85 },
   tmdbNotice: { fontFamily: fonts.mono, fontSize: font.caption, lineHeight: 17 },
   privacy: { fontFamily: fonts.mono, fontSize: font.footnote, lineHeight: 19, textAlign: 'center', paddingHorizontal: 12 },
 });

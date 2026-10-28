@@ -5,7 +5,9 @@ import { useMemo, useState } from 'react';
 import { FlatList, Modal, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { trackable } from '@/api/episodes';
 import { ActionSheet } from '@/components/ActionSheet';
+import { ContinueWatching } from '@/components/ContinueWatching';
 import { Chip, KindBadge, Poster } from '@/components/Film';
 import { useToast } from '@/components/Toast';
 import { KIND_COLORS, font, fonts, shadow, useTheme } from '@/lib/theme';
@@ -37,12 +39,13 @@ export default function WatchlistScreen() {
   const [pick, setPick] = useState<WatchItem | null>(null);
   const tile = (width - 32 - GAP * (COLS - 1)) / COLS;
 
+  const queue = useMemo(() => watchlist.filter((w) => !w.track), [watchlist]);
   const shown = useMemo(() => {
-    const list = watchlist.filter((w) => filter === 'all' || w.kind === filter);
+    const list = queue.filter((w) => filter === 'all' || w.kind === filter);
     if (sort === 'title') return [...list].sort((a, b) => a.title.localeCompare(b.title));
     if (sort === 'year') return [...list].sort((a, b) => (b.year ?? 0) - (a.year ?? 0));
     return list;
-  }, [watchlist, filter, sort]);
+  }, [queue, filter, sort]);
 
   const log = (w: WatchItem) => router.push({ pathname: '/log', params: { title: JSON.stringify(titleOf(w)) } });
   const remove = (w: WatchItem) => {
@@ -57,15 +60,16 @@ export default function WatchlistScreen() {
 
   const header = (
     <View style={[styles.top, { paddingTop: insets.top + 10 }]}>
+      <ContinueWatching items={watchlist} theme={theme} />
       <View>
         <Text style={[styles.heading, { color: theme.text }]}>
           UP <Text style={{ color: theme.accent }}>NEXT</Text>
         </Text>
         <Text style={[styles.sub, { color: theme.textMuted }]}>
-          {watchlist.length ? `${watchlist.length} ${watchlist.length === 1 ? 'title' : 'titles'} on your watchlist` : 'Your watchlist'}
+          {queue.length ? `${queue.length} ${queue.length === 1 ? 'title' : 'titles'} on your watchlist` : 'Your watchlist'}
         </Text>
       </View>
-      {watchlist.length > 0 && (
+      {queue.length > 0 && (
         <>
           <Pressable
             onPress={spin}
@@ -122,7 +126,7 @@ export default function WatchlistScreen() {
           </Pressable>
         )}
         ListEmptyComponent={
-          watchlist.length === 0 ? (
+          queue.length === 0 ? (
             <View style={styles.empty}>
               <View style={[styles.emptyIcon, { backgroundColor: theme.accentSoft }]}>
                 <MaterialCommunityIcons name="bookmark-multiple-outline" size={38} color={theme.accent} />
@@ -149,6 +153,9 @@ export default function WatchlistScreen() {
           menu
             ? [
                 { label: 'Watched it: log now', icon: 'checkmark-done-outline', onPress: () => log(menu) },
+                ...(trackable(menu)
+                  ? [{ label: 'Track episodes', icon: 'list-outline' as const, onPress: () => router.push({ pathname: '/track', params: { id: menu.id } }) }]
+                  : []),
                 { label: 'Take off watchlist', icon: 'bookmark-outline', destructive: true, onPress: () => remove(menu) },
               ]
             : []

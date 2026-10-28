@@ -5,7 +5,7 @@ import type { Entry, WatchItem } from './types';
 
 // The diary lives in SQLite on the phone. (db.web.ts stands in for it in the web design preview.)
 const DATABASE_NAME = 'watchheart.db';
-const DATABASE_VERSION = 2;
+const DATABASE_VERSION = 3;
 
 /** Creates or upgrades the tables. */
 async function migrate(db: SQLiteDatabase) {
@@ -58,6 +58,14 @@ CREATE TABLE IF NOT EXISTS watchlist (
     version = 2;
   }
 
+  if (version === 2) {
+    // Fields added to entries after the table was made (when details were fetched, the IMDb id, an
+    // import without a watch date, episodes from the tracker) live in one JSON column, so new ones need
+    // no further upgrades. Before this they weren't saved on the phone at all.
+    await db.execAsync(`ALTER TABLE entries ADD COLUMN extra TEXT NOT NULL DEFAULT '{}';`);
+    version = 3;
+  }
+
   await db.execAsync(`PRAGMA user_version = ${DATABASE_VERSION}`);
 }
 
@@ -85,7 +93,26 @@ type Row = {
   created_at: number;
   updated_at: number;
   deleted_at: number | null;
+  extra: string | null;
 };
+
+/** The optional fields kept in the extra column. */
+const EXTRA_KEYS = ['fetchedAt', 'imdbId', 'matchTriedAt', 'undated', 'episodes'] as const;
+
+function extraOf(e: Entry): string {
+  const out: Record<string, unknown> = {};
+  for (const k of EXTRA_KEYS) if (e[k] !== undefined && e[k] !== null) out[k] = e[k];
+  return JSON.stringify(out);
+}
+
+function parseExtra(json: string | null): Partial<Entry> {
+  try {
+    const v = JSON.parse(json ?? '{}');
+    return v && typeof v === 'object' ? (v as Partial<Entry>) : {};
+  } catch {
+    return {};
+  }
+}
 
 const list = (json: string): string[] => {
   try {
@@ -121,14 +148,15 @@ function fromRow(r: Row): Entry {
     createdAt: r.created_at,
     updatedAt: r.updated_at,
     deletedAt: r.deleted_at,
+    ...parseExtra(r.extra),
   };
 }
 
 async function saveEntry(db: SQLiteDatabase, e: Entry) {
   await db.runAsync(
     `INSERT OR REPLACE INTO entries (id, kind, source, source_id, title, original_title, year, poster_url, backdrop_url, genres,
-      runtime, credit, watched_on, rating, liked, rewatch, progress, review, spoilers, tags, created_at, updated_at, deleted_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      runtime, credit, watched_on, rating, liked, rewatch, progress, review, spoilers, tags, created_at, updated_at, deleted_at, extra)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       e.id,
       e.kind,
@@ -153,6 +181,7 @@ async function saveEntry(db: SQLiteDatabase, e: Entry) {
       e.createdAt,
       e.updatedAt,
       e.deletedAt,
+      extraOf(e),
     ],
   );
 }

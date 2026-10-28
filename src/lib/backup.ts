@@ -4,6 +4,7 @@ import * as Sharing from 'expo-sharing';
 import { Platform } from 'react-native';
 
 import { APP_NAME, APP_SLUG } from '@/lib/app';
+import { toHtml } from '@/lib/richText';
 import type { Entry, WatchItem } from '@/store/types';
 
 const FORMAT = 'watchheart-backup';
@@ -63,7 +64,7 @@ export async function exportLetterboxd(entries: Entry[]): Promise<number> {
     e.rating ? e.rating / 2 : null,
     e.rewatch ? 'true' : 'false',
     e.tags.join(', '),
-    e.review,
+    toHtml(e.review),
   ]);
   await share(
     `${APP_SLUG}-letterboxd-${stamp()}.csv`,

@@ -71,6 +71,8 @@ export type Entry = {
    * shows these in the Archive, and recaps and stats leave them out.
    */
   undated?: boolean;
+  /** Episodes this viewing covers, as "s1e3", when they were ticked off in the episode tracker. */
+  episodes?: string[];
 };
 
 export type EntryDraft = Omit<Entry, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt'>;
@@ -101,4 +103,25 @@ export type WatchItem = {
   imdbId?: string | null;
   /** When a TMDB match was last looked for and not found (so it isn't retried on every launch). */
   matchTriedAt?: number | null;
+  /** Set when you track a series or anime episode by episode; it then shows under Continue watching. */
+  track?: Track;
+};
+
+export type TrackStatus = 'watching' | 'paused' | 'dropped' | 'completed';
+
+/** Episode by episode progress through a series, and what's known about its seasons. */
+export type Track = {
+  status: TrackStatus;
+  /** Episodes seen: "s1e3" -> the day, YYYY-MM-DD. */
+  seen: Record<string, string>;
+  /** Regular seasons (no specials) and their episode counts, from TMDB or TVmaze. */
+  seasons: { n: number; count: number }[];
+  /** The latest episode that has aired. */
+  lastAired: { season: number; number: number } | null;
+  /** The next one to air, when announced. */
+  nextAir: { season: number; number: number; date: string } | null;
+  ended: boolean;
+  /** When the show's details were last fetched. */
+  checkedAt: number;
+  startedAt: number;
 };

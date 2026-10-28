@@ -35,9 +35,9 @@ const light: typeof dark = {
   card: '#FBF8F1',
   elevated: '#FFFFFF',
   text: '#1A1714',
-  textMuted: '#7A7064',
+  textMuted: '#685F54',
   border: '#E0D6C5',
-  accent: '#B8862B',
+  accent: '#805A14',
   accentText: '#FFFFFF',
   accentSoft: '#F0E2C2',
   chip: '#E9E1D2',
@@ -81,12 +81,13 @@ export const shadow = {
 
 type AccentSpec = { label: string; note: string; light: [string, string, string]; dark: [string, string, string] };
 
-// [accent, text on accent, soft tint] for each look.
+// [accent, text on accent, soft tint] for each look. Every accent reads at 4.5:1 or better on its look's
+// page and cards (the light look's gold, neon and sakura are deeper inks than the dark look's for that).
 export const ACCENTS: Record<AccentKey, AccentSpec> = {
-  marquee: { label: 'Marquee', note: 'Gold bulbs over the box office', light: ['#B8862B', '#FFFFFF', '#F0E2C2'], dark: ['#F2B84B', '#120F08', '#33280F'] },
+  marquee: { label: 'Marquee', note: 'Gold bulbs over the box office', light: ['#805A14', '#FFFFFF', '#F0E2C2'], dark: ['#F2B84B', '#120F08', '#33280F'] },
   velvet: { label: 'Velvet', note: 'Red seats, red curtain', light: ['#B3203A', '#FFFFFF', '#F3D3D8'], dark: ['#FF4D6D', '#1A0509', '#3A1119'] },
-  neon: { label: 'Neon', note: 'Night city, cyberpunk', light: ['#0E8A9A', '#FFFFFF', '#CDEDF0'], dark: ['#3DE0F0', '#03191C', '#0F2E33'] },
-  sakura: { label: 'Sakura', note: 'For the otaku', light: ['#C2417F', '#FFFFFF', '#F6D7E6'], dark: ['#FF8FC7', '#22091A', '#3B1530'] },
+  neon: { label: 'Neon', note: 'Night city, cyberpunk', light: ['#0A6C78', '#FFFFFF', '#CDEDF0'], dark: ['#3DE0F0', '#03191C', '#0F2E33'] },
+  sakura: { label: 'Sakura', note: 'For the otaku', light: ['#A6336B', '#FFFFFF', '#F6D7E6'], dark: ['#FF8FC7', '#22091A', '#3B1530'] },
   noir: { label: 'Noir', note: 'Black and white classics', light: ['#2A2622', '#FFFFFF', '#E1DBD0'], dark: ['#E8E4DC', '#0B0A0D', '#2A2830'] },
 };
 
@@ -111,6 +112,6 @@ export const KIND_COLORS = {
 } as const;
 
 /** Darker inks for the same kinds, readable on screenplay paper. */
-const KIND_INK = { movie: '#9A6B12', tv: '#0B7A86', anime: '#B8306F' } as const;
+const KIND_INK = { movie: '#87600F', tv: '#0B7A86', anime: '#B8306F' } as const;
 
 export const kindColor = (kind: keyof typeof KIND_COLORS, theme: Theme) => (theme.dark ? KIND_COLORS : KIND_INK)[kind];

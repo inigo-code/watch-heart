@@ -10,6 +10,9 @@ const STORAGE_KEY = 'watchheart/settings';
 export type ThemeMode = 'system' | 'light' | 'dark';
 export type AccentKey = 'marquee' | 'velvet' | 'neon' | 'sakura' | 'noir';
 
+/** A title pinned to the profile: enough to show its poster and open it. */
+export type Favourite = { kind: MediaKind; source: string; sourceId: string; title: string; year: number | null; posterUrl: string | null };
+
 export type Settings = {
   themeMode: ThemeMode;
   accent: AccentKey;
@@ -33,6 +36,18 @@ export type Settings = {
   appLock: boolean;
   /** How long the app can be in the background before it locks again, in seconds (0 = straight away). */
   lockAfter: 0 | 60 | 300;
+  /** The profile: a line about you, a photo saved in the app's files, and four favourite titles. */
+  bio: string;
+  photo: string | null;
+  favourites: Favourite[];
+  /** Titles to watch this year (0 = no goal). */
+  yearGoal: number;
+  /** Your free OMDb key, for IMDb ratings on titles. */
+  omdbKey: string;
+  /** Country for "Where to watch", e.g. "IN" ('' = the phone's region). */
+  watchRegion: string;
+  /** The update whose "What's new" card was already shown. */
+  seenUpdate: string | null;
 };
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -47,6 +62,13 @@ export const DEFAULT_SETTINGS: Settings = {
   dismissedTips: [],
   appLock: false,
   lockAfter: 60,
+  bio: '',
+  photo: null,
+  favourites: [],
+  yearGoal: 0,
+  omdbKey: '',
+  watchRegion: '',
+  seenUpdate: null,
 };
 
 type SettingsContext = {
@@ -84,9 +106,22 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   }, [settings]);
 
   const update = useCallback((patch: Partial<Settings>) => setSettings((s) => ({ ...s, ...patch })), []);
-  // Resetting keeps the app lock, your name and your TMDB key: those should only change deliberately.
+  // Resetting keeps the app lock, your profile, goal and keys: those should only change deliberately.
   const reset = useCallback(
-    () => setSettings((s) => ({ ...DEFAULT_SETTINGS, appLock: s.appLock, lockAfter: s.lockAfter, name: s.name, tmdbKey: s.tmdbKey })),
+    () =>
+      setSettings((s) => ({
+        ...DEFAULT_SETTINGS,
+        appLock: s.appLock,
+        lockAfter: s.lockAfter,
+        name: s.name,
+        bio: s.bio,
+        photo: s.photo,
+        favourites: s.favourites,
+        yearGoal: s.yearGoal,
+        tmdbKey: s.tmdbKey,
+        omdbKey: s.omdbKey,
+        seenUpdate: s.seenUpdate,
+      })),
     [],
   );
 

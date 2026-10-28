@@ -1,3 +1,4 @@
+import { fromHtml } from '@/lib/richText';
 import type { Entry } from '@/store/types';
 
 import { halfStars, hash, importedEntry, importedWatch, records, toDay } from './common';
@@ -29,9 +30,8 @@ export function letterboxdFile(path: string): LetterboxdFile | null {
 }
 
 const filmKey = (r: Row) => `${(r.Name ?? '').toLowerCase()}|${r.Year ?? ''}`;
-/** Letterboxd reviews can carry a little HTML (<i>, <b>, <br>). */
-const plain = (s: string) =>
-  s.replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#039;/g, "'").trim();
+/** Letterboxd reviews carry a little HTML (<p>, <i>, <b>, <blockquote>); kept as Watch Heart's formatting. */
+const plain = fromHtml;
 const tagsOf = (r: Row) => (r.Tags ?? '').split(',').map((t) => t.trim()).filter(Boolean);
 
 export function fromLetterboxd(files: Partial<Record<LetterboxdFile, string>>): ImportResult {

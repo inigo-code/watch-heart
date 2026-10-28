@@ -7,7 +7,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ControlRow, Row, Section, Segmented, ToggleRow } from '@/components/SettingsUI';
 import { useToast } from '@/components/Toast';
-import { UpdateRow } from '@/components/UpdateRow';
+import { UpdateCard } from '@/components/UpdateRow';
+import { watchRegion } from '@/api/omdb';
 import { APP_NAME, DATA_SOURCES } from '@/lib/app';
 import { tmdbKey } from '@/api';
 import { exportBackup, exportCsv, exportLetterboxd, pickBackup } from '@/lib/backup';
@@ -113,17 +114,14 @@ export default function SettingsScreen() {
       </Section>
 
       <Section theme={theme} title="You">
-        <View style={styles.inputRow}>
-          <Ionicons name="person-outline" size={18} color={theme.textMuted} />
-          <TextInput
-            value={settings.name}
-            onChangeText={(name) => update({ name })}
-            placeholder="Your name (for the greeting)"
-            placeholderTextColor={theme.textMuted}
-            style={[styles.input, { color: theme.text }]}
-            maxLength={30}
-          />
-        </View>
+        <Row
+          theme={theme}
+          icon="person-circle-outline"
+          label={settings.name.trim() || 'Your profile'}
+          value="Stats, favourites, goal"
+          onPress={() => router.push('/profile')}
+          last
+        />
       </Section>
 
       <Section theme={theme} title="Look">
@@ -205,6 +203,39 @@ export default function SettingsScreen() {
           </Pressable>
         </View>
         <Row theme={theme} icon="open-outline" label="Get a free key at themoviedb.org" onPress={() => Linking.openURL(DATA_SOURCES.tmdb.keyUrl)} last />
+      </Section>
+
+      <Section
+        theme={theme}
+        title="Ratings and streaming"
+        footer={`IMDb has no free official API. A free OMDb key (1,000 lookups a day) adds IMDb, Rotten Tomatoes and Metacritic scores to every title. Where to watch uses ${watchRegion(settings.watchRegion)}${settings.watchRegion ? '' : ', your phone’s country'}; type another country code to change it.`}
+      >
+        <View style={styles.inputRow}>
+          <Ionicons name="star-half-outline" size={18} color={theme.textMuted} />
+          <TextInput
+            value={settings.omdbKey}
+            onChangeText={(omdbKey) => update({ omdbKey: omdbKey.trim() })}
+            placeholder="Paste your OMDb API key"
+            placeholderTextColor={theme.textMuted}
+            autoCapitalize="none"
+            autoCorrect={false}
+            style={[styles.input, { color: theme.text, fontFamily: fonts.mono }]}
+          />
+        </View>
+        <Row theme={theme} icon="open-outline" label="Get a free key at omdbapi.com" onPress={() => Linking.openURL('https://www.omdbapi.com/apikey.aspx')} />
+        <View style={styles.inputRow}>
+          <Ionicons name="globe-outline" size={18} color={theme.textMuted} />
+          <TextInput
+            value={settings.watchRegion}
+            onChangeText={(t) => update({ watchRegion: t.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 2) })}
+            placeholder={`Country for where to watch (now ${watchRegion('')})`}
+            placeholderTextColor={theme.textMuted}
+            autoCapitalize="characters"
+            autoCorrect={false}
+            maxLength={2}
+            style={[styles.input, { color: theme.text, fontFamily: fonts.mono }]}
+          />
+        </View>
       </Section>
 
       <Section
@@ -294,8 +325,9 @@ export default function SettingsScreen() {
         <Row theme={theme} icon="trash-outline" label="Trash" value={String(diary.trash.length)} onPress={() => router.push('/trash')} last />
       </Section>
 
+      <UpdateCard theme={theme} />
+
       <Section theme={theme} title="About">
-        <UpdateRow theme={theme} />
         <Row theme={theme} icon="information-circle-outline" label={`About ${APP_NAME}`} onPress={() => router.push('/about')} />
         <Row
           theme={theme}
