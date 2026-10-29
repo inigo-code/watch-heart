@@ -9,7 +9,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { tmdbKey } from '@/api';
 import { watchRegion } from '@/api/omdb';
-import { nowPlayingTmdb, trendingAllTmdb } from '@/api/tmdb';
+import { discoverTmdb, nowPlayingTmdb, trendingAllTmdb } from '@/api/tmdb';
 import { AppHeader, greetingLine } from '@/components/AppHeader';
 import { KindBadge, Poster } from '@/components/Film';
 import { RegionalRows } from '@/components/home/RegionalRows';
@@ -19,6 +19,7 @@ import { useToast } from '@/components/Toast';
 import { today } from '@/lib/dates';
 import { countryName } from '@/lib/discover';
 import { useHour } from '@/lib/greeting';
+import { homeLanguage, regionalFeatured } from '@/lib/regional';
 import { favouriteSeeds, forYou } from '@/lib/home';
 import { font, fonts, useTheme } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
@@ -43,6 +44,10 @@ export default function HomeScreen() {
   const [trending, setTrending] = useState<Title[] | null>(null);
   const [cinema, setCinema] = useState<{ region: string; titles: Title[] } | null>(null);
   const [picks, setPicks] = useState<{ seeds: string; titles: Title[] } | null>(null);
+  const lang = homeLanguage(region, settings.homeLanguage);
+  const regional = regionalFeatured(region, lang);
+  const regionalKey = regional ? JSON.stringify(regional.q) : '';
+  const [local, setLocal] = useState<{ key: string; titles: Title[] } | null>(null);
 
   useEffect(() => {
     if (!key) return;
@@ -56,6 +61,20 @@ export default function HomeScreen() {
       .then((titles) => setCinema({ region, titles }))
       .catch(() => setCinema({ region, titles: [] }));
   }, [key, region]);
+
+  // The slider's first cards: new films in your language, or from your country.
+  useEffect(() => {
+    if (!key || !regional) return;
+    let live = true;
+    discoverTmdb(key, regional.q, 1)
+      .then((r) => live && setLocal({ key: regionalKey, titles: r.results.filter((t) => t.backdropUrl && t.posterUrl).slice(0, 2) }))
+      .catch(() => live && setLocal({ key: regionalKey, titles: [] }));
+    return () => {
+      live = false;
+    };
+    // The query is compared by its JSON (`regionalKey`), not by identity.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key, regionalKey]);
 
   const seeds = useMemo(() => favouriteSeeds(entries), [entries]);
   const seedKey = seeds.map((s) => s.sourceId).join(',');
@@ -73,8 +92,14 @@ export default function HomeScreen() {
   const seen = (t: Title) => viewingsOf(t.source, t.sourceId).length > 0;
   const up = continueWatching(watchlist, today());
   const continuing = [...up.ongoing, ...up.oldFriends].slice(0, 10);
-  const featured = (trending ?? []).filter((t) => t.backdropUrl).slice(0, 5);
-  const rest = (trending ?? []).filter((t) => !featured.includes(t));
+  // Wait for both, so the slider doesn't shift when the regional cards arrive.
+  const localTitles = !regional ? [] : local?.key === regionalKey ? local.titles : null;
+  const top = (trending ?? []).filter((t) => t.backdropUrl && !localTitles?.some((l) => l.sourceId === t.sourceId)).slice(0, 4);
+  const featured: Slide[] =
+    trending && localTitles
+      ? [...localTitles.map((t) => ({ t, kicker: regional!.kicker })), ...top.map((t, i) => ({ t, kicker: `#${i + 1} THIS WEEK` }))]
+      : [];
+  const rest = (trending ?? []).filter((t) => !top.includes(t));
   const forYouTitles = picks?.seeds === seedKey ? picks.titles : null;
   const cinemaTitles = cinema?.region === region ? cinema.titles : null;
 
@@ -87,7 +112,7 @@ export default function HomeScreen() {
 
       {nights[0] && <MovieNightCard night={nights[0]} theme={theme} showTitle />}
 
-      {featured.length ? <FeaturedCarousel titles={featured} theme={theme} /> : <View style={[styles.featuredSkeleton, { backgroundColor: theme.card }]} />}
+      {featured.length ? <FeaturedCarousel slides={featured} theme={theme} /> : <View style={[styles.featuredSkeleton, { backgroundColor: theme.card }]} />}
 
       {continuing.length > 0 && (
         <View style={styles.block}>
@@ -159,7 +184,7 @@ export default function HomeScreen() {
         </Pressable>
       )}
 
-      <RegionalRows region={region} theme={theme} seen={seen} />
+      <RegionalRows key={lang?.code ?? ''} region={region} mine={lang} theme={theme} seen={seen} />
 
       <View style={styles.block}>
         <RowHead title="Trending this week" theme={theme} more="More" onMore={() => router.navigate('/search')} />
@@ -185,16 +210,17 @@ export default function HomeScreen() {
   );
 }
 
-/** The week's top title, big: its backdrop, name, and a way to log it or save it for later. */
-/** The week's top titles as cards you swipe through, with a dot for each. */
-function FeaturedCarousel({ titles, theme }: { titles: Title[]; theme: Theme }) {
+type Slide = { t: Title; kicker: string };
+
+/** New films from where you are, then the week's top titles, as cards you swipe through, with a dot for each. */
+function FeaturedCarousel({ slides, theme }: { slides: Slide[]; theme: Theme }) {
   const { width } = useWindowDimensions();
   const [index, setIndex] = useState(0);
   return (
     <View style={styles.carousel}>
       <FlatList
-        data={titles}
-        keyExtractor={(t) => t.sourceId}
+        data={slides}
+        keyExtractor={(s) => s.t.sourceId}
         horizontal
         pagingEnabled
         showsHorizontalScrollIndicator={false}
@@ -202,16 +228,16 @@ function FeaturedCarousel({ titles, theme }: { titles: Title[]; theme: Theme }) 
         style={{ marginHorizontal: -16 }}
         onScroll={(e) => setIndex(Math.round(e.nativeEvent.contentOffset.x / width))}
         scrollEventThrottle={32}
-        renderItem={({ item, index: i }) => (
+        renderItem={({ item }) => (
           <View style={{ width, paddingHorizontal: 16 }}>
-            <Featured t={item} rank={i + 1} theme={theme} />
+            <Featured t={item.t} kicker={item.kicker} theme={theme} />
           </View>
         )}
       />
-      {titles.length > 1 && (
-        <View style={styles.dots} accessibilityLabel={`${index + 1} of ${titles.length}`}>
-          {titles.map((t, i) => (
-            <View key={t.sourceId} style={[styles.dot, { backgroundColor: i === index ? theme.accent : theme.border, width: i === index ? 18 : 6 }]} />
+      {slides.length > 1 && (
+        <View style={styles.dots} accessibilityLabel={`${index + 1} of ${slides.length}`}>
+          {slides.map((s, i) => (
+            <View key={s.t.sourceId} style={[styles.dot, { backgroundColor: i === index ? theme.accent : theme.border, width: i === index ? 18 : 6 }]} />
           ))}
         </View>
       )}
@@ -219,7 +245,8 @@ function FeaturedCarousel({ titles, theme }: { titles: Title[]; theme: Theme }) 
   );
 }
 
-function Featured({ t, rank, theme }: { t: Title; rank: number; theme: Theme }) {
+/** One card: its backdrop, name, and a way to log it or save it for later. */
+function Featured({ t, kicker, theme }: { t: Title; kicker: string; theme: Theme }) {
   const toast = useToast();
   const { width } = useWindowDimensions();
   const { onWatchlist, addToWatchlist, removeFromWatchlist, viewingsOf } = useDiary();
@@ -232,7 +259,7 @@ function Featured({ t, rank, theme }: { t: Title; rank: number; theme: Theme }) 
         onPressIn={() => warmTitle(t)}
         onPress={() => openTitle(t)}
         accessibilityRole="button"
-        accessibilityLabel={`${t.title}, number ${rank} this week`}
+        accessibilityLabel={`${t.title}, ${kicker.toLowerCase()}`}
         style={StyleSheet.absoluteFill}
       >
         <Image source={t.backdropUrl} style={StyleSheet.absoluteFill} contentFit="cover" cachePolicy="memory-disk" transition={200} />
@@ -240,7 +267,9 @@ function Featured({ t, rank, theme }: { t: Title; rank: number; theme: Theme }) 
       </Pressable>
       <View style={styles.featuredBody} pointerEvents="box-none">
         <View style={styles.kickerRow} pointerEvents="none">
-          <Text style={[styles.kicker, { color: theme.accent }]}>#{rank} THIS WEEK</Text>
+          <Text style={[styles.kicker, { color: theme.accent }]} numberOfLines={1}>
+            {kicker}
+          </Text>
           <KindBadge kind={t.kind} theme={theme} small />
         </View>
         <Text style={styles.featuredTitle} numberOfLines={2} pointerEvents="none">

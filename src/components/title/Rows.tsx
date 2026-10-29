@@ -33,11 +33,11 @@ export function openTitle(t: Title) {
   else router.push({ pathname: '/log', params: { title: JSON.stringify(t) } });
 }
 
-/** A sideways row of posters, each opening its title's page. `seen` marks the ones in your diary. */
+/** A sideways row of posters, each opening its title's page. `seen` marks the ones in your diary. Titles with no poster are left out. */
 export function TitleRow({ titles, theme, seen, width = 104 }: { titles: Title[]; theme: Theme; seen?: (t: Title) => boolean; width?: number }) {
   return (
     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>
-      {titles.map((t) => (
+      {titles.filter((t) => t.posterUrl).map((t) => (
         <Pressable
           key={`${t.source}:${t.sourceId}`}
           onPressIn={() => warmTitle(t)}
@@ -130,7 +130,7 @@ const styles = StyleSheet.create({
   name: { fontSize: font.footnote, fontWeight: '700', marginTop: 6, lineHeight: 17 },
   sub: { fontFamily: fonts.mono, fontSize: font.caption, marginTop: 1 },
   // Seen ones step back, so what you haven't watched stands out.
-  watched: { opacity: 0.4 },
+  watched: { opacity: 0.25 },
   seen: { position: 'absolute', top: 6, right: 6, width: 22, height: 22, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
   person: { width: 88 },
   initials: { alignItems: 'center', justifyContent: 'center' },

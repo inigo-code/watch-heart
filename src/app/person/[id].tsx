@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
   filterRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   filter: { borderWidth: 1, borderRadius: 14, height: 28, paddingHorizontal: 10, alignItems: 'center', justifyContent: 'center' },
   filterText: { fontFamily: fonts.monoBold, fontSize: 10, letterSpacing: 1 },
-  watched: { opacity: 0.4 },
+  watched: { opacity: 0.25 },
   tick: { position: 'absolute', top: 6, right: 6, width: 22, height: 22, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
   cellTitle: { fontSize: font.footnote, fontWeight: '700', marginTop: 6, lineHeight: 17 },
   cellRole: { fontFamily: fonts.mono, fontSize: font.caption },

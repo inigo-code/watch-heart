@@ -7,6 +7,8 @@ import type { BrowseQuery } from '@/api/tmdb';
 import { browse } from '@/components/discover/DiscoverHome';
 import { RowHead, TitleRow } from '@/components/title/Rows';
 import { countryName } from '@/lib/discover';
+import { INDIAN_LANGUAGES } from '@/lib/regional';
+import type { Language } from '@/lib/regional';
 import { font, fonts } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
 import { useSettings } from '@/settings/SettingsProvider';
@@ -14,23 +16,15 @@ import type { Title } from '@/store/types';
 
 const NOW = new Date().getFullYear();
 
-// Regional cinema, picked by a language chip: the biggest film industries first.
-const INDIAN_LANGUAGES = [
-  { code: 'ml', name: 'Malayalam' },
-  { code: 'ta', name: 'Tamil' },
-  { code: 'hi', name: 'Hindi' },
-  { code: 'te', name: 'Telugu' },
-  { code: 'kn', name: 'Kannada' },
-  { code: 'bn', name: 'Bengali' },
-];
 
 /**
  * Home's rows for where you are. In India: FDFS (new Indian releases), favourites in a language you pick,
- * and hidden gems. Elsewhere, one row of what's popular from your country (none for the US, which Trending
+ * and hidden gems (your language from Settings leads the chips). Elsewhere, one row of what's popular from your country (none for the US, which Trending
  * already is).
  */
-export function RegionalRows({ region, theme, seen }: { region: string; theme: Theme; seen: (t: Title) => boolean }) {
-  const [lang, setLang] = useState(INDIAN_LANGUAGES[0]);
+export function RegionalRows({ region, mine, theme, seen }: { region: string; mine: Language | null; theme: Theme; seen: (t: Title) => boolean }) {
+  const languages = mine ? [mine, ...INDIAN_LANGUAGES.filter((l) => l.code !== mine.code)] : INDIAN_LANGUAGES;
+  const [lang, setLang] = useState(languages[0]);
   if (region === 'IN') {
     const favourites: BrowseQuery = { kind: 'movie', lang: lang.code, sort: 'rating', minVotes: lang.code === 'bn' || lang.code === 'kn' ? 40 : 100 };
     return (
@@ -50,7 +44,7 @@ export function RegionalRows({ region, theme, seen }: { region: string; theme: T
           name={`${lang.name} favourites`}
           above={
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
-              {INDIAN_LANGUAGES.map((l) => {
+              {languages.map((l) => {
                 const on = l.code === lang.code;
                 return (
                   <Pressable

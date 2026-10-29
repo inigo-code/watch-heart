@@ -64,6 +64,8 @@ export type Settings = {
   watchRegion: string;
   /** The update whose "What's new" card was already shown. */
   seenUpdate: string | null;
+  /** Your language for Home's regional picks, e.g. "ta" ('' = any). Only used where the country has several. */
+  homeLanguage: string;
   /** Movie nights you planned, with the reminder's id (null: planned without one). */
   movieNights: MovieNight[];
   /** When the profile (name, bio, photo, favourites, goal) last changed here, and when sync last matched it. */
@@ -97,6 +99,7 @@ export const DEFAULT_SETTINGS: Settings = {
   sharing: { diary: true, reviews: true, lists: true },
   omdbKey: '',
   watchRegion: '',
+  homeLanguage: '',
   seenUpdate: null,
   movieNights: [],
   profileUpdatedAt: 0,

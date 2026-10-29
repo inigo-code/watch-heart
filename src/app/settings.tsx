@@ -2,7 +2,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
 import * as Linking from 'expo-linking';
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { KeyboardSafe } from '@/components/KeyboardSafe';
@@ -12,6 +12,9 @@ import { useFriends } from '@/friends/FriendsProvider';
 import { useToast } from '@/components/Toast';
 import { UpdateCard } from '@/components/UpdateRow';
 import { ActionSheet } from '@/components/ActionSheet';
+import { Chip } from '@/components/Film';
+import { COUNTRIES, countryName, flag } from '@/lib/discover';
+import { languagesFor } from '@/lib/regional';
 import { omdbKey, watchRegion } from '@/api/omdb';
 import { APP_NAME, DATA_SOURCES } from '@/lib/app';
 import { tmdbKey } from '@/api';
@@ -54,6 +57,10 @@ export default function SettingsScreen() {
   const [keyText, setKeyText] = useState(settings.tmdbKey);
   const [showKey, setShowKey] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
+  const [pickingCountry, setPickingCountry] = useState(false);
+  const region = watchRegion(settings.watchRegion);
+  const phoneRegion = watchRegion('');
+  const languages = languagesFor(region);
   const builtInKey = !!process.env.EXPO_PUBLIC_TMDB_KEY;
   const posters = useUpkeepProgress();
 
@@ -212,6 +219,31 @@ export default function SettingsScreen() {
 
         <Section
           theme={theme}
+          title="Region and language"
+          footer={`Home starts with new films ${languages.length && settings.homeLanguage ? 'in your language' : 'from your country'}, and Where to watch shows streaming services there.`}
+        >
+          <Row
+            theme={theme}
+            icon="globe-outline"
+            label="Country"
+            value={`${countryName(region)}${settings.watchRegion ? '' : ' (phone)'}`}
+            onPress={() => setPickingCountry(true)}
+            last={!languages.length}
+          />
+          {languages.length > 0 && (
+            <ControlRow theme={theme} label="Language" last>
+              <View style={styles.chips}>
+                <Chip theme={theme} label="Any" active={!languages.some((l) => l.code === settings.homeLanguage)} onPress={() => update({ homeLanguage: '' })} />
+                {languages.map((l) => (
+                  <Chip key={l.code} theme={theme} label={l.name} active={settings.homeLanguage === l.code} onPress={() => update({ homeLanguage: l.code })} />
+                ))}
+              </View>
+            </ControlRow>
+          )}
+        </Section>
+
+        <Section
+          theme={theme}
           title="Film and anime search (TMDB)"
           footer={
             builtInKey
@@ -243,7 +275,7 @@ export default function SettingsScreen() {
         <Section
           theme={theme}
           title="Ratings and streaming"
-          footer={`${omdbKey('') ? 'IMDb, Rotten Tomatoes and Metacritic scores are on, with the key built into this build; paste your own to use it instead.' : 'IMDb has no free official API. A free OMDb key (1,000 lookups a day) adds IMDb, Rotten Tomatoes and Metacritic scores to every title.'} Where to watch uses ${watchRegion(settings.watchRegion)}${settings.watchRegion ? '' : ', your phone’s country'}; type another country code to change it.`}
+          footer={`${omdbKey('') ? 'IMDb, Rotten Tomatoes and Metacritic scores are on, with the key built into this build; paste your own to use it instead.' : 'IMDb has no free official API. A free OMDb key (1,000 lookups a day) adds IMDb, Rotten Tomatoes and Metacritic scores to every title.'}`}
         >
           <View style={styles.inputRow}>
             <Ionicons name="star-half-outline" size={18} color={theme.textMuted} />
@@ -257,27 +289,7 @@ export default function SettingsScreen() {
               style={[styles.input, { color: theme.text, fontFamily: fonts.mono }]}
             />
           </View>
-          <Row theme={theme} icon="open-outline" label="Get a free key at omdbapi.com" onPress={() => Linking.openURL('https://www.omdbapi.com/apikey.aspx')} />
-          <View style={styles.inputRow}>
-            <Ionicons name="globe-outline" size={18} color={theme.textMuted} />
-            <TextInput
-              value={settings.watchRegion}
-              onChangeText={(t) =>
-                update({
-                  watchRegion: t
-                    .toUpperCase()
-                    .replace(/[^A-Z]/g, '')
-                    .slice(0, 2),
-                })
-              }
-              placeholder={`Country for where to watch (now ${watchRegion('')})`}
-              placeholderTextColor={theme.textMuted}
-              autoCapitalize="characters"
-              autoCorrect={false}
-              maxLength={2}
-              style={[styles.input, { color: theme.text, fontFamily: fonts.mono }]}
-            />
-          </View>
+          <Row theme={theme} icon="open-outline" label="Get a free key at omdbapi.com" onPress={() => Linking.openURL('https://www.omdbapi.com/apikey.aspx')} last />
         </Section>
 
         <Section
@@ -398,6 +410,21 @@ export default function SettingsScreen() {
           <Row theme={theme} icon="refresh-outline" label="Reset settings" destructive last onPress={() => setConfirmReset(true)} />
         </Section>
         <ActionSheet
+        visible={pickingCountry}
+        title="Your country"
+        onClose={() => setPickingCountry(false)}
+        actions={[
+          { label: `Your phone’s: ${countryName(phoneRegion)}`, icon: 'phone-portrait-outline', onPress: () => update({ watchRegion: '' }) },
+          ...[...new Set([region, ...COUNTRIES])]
+            .sort((a, b) => countryName(a).localeCompare(countryName(b)))
+            .map((c) => ({
+              label: `${countryName(c)}${c === settings.watchRegion ? '  ✓' : ''}`,
+              leading: <Text style={styles.flag}>{flag(c)}</Text>,
+              onPress: () => update({ watchRegion: c }),
+            })),
+        ]}
+      />
+      <ActionSheet
           visible={confirmReset}
           title="Reset settings? The look, diary layout, story style, search and tips go back to their defaults. Your diary, watchlist, profile, account, keys and App lock stay as they are."
           onClose={() => setConfirmReset(false)}
@@ -422,6 +449,8 @@ const styles = StyleSheet.create({
   content: { padding: 16, gap: 24 },
   inputRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, minHeight: 52 },
   input: { flex: 1, fontSize: font.body, paddingVertical: 12 },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  flag: { fontSize: 18, width: 24, textAlign: 'center' },
   swatches: { flexDirection: 'row', gap: 10 },
   swatchRing: { width: 46, height: 46, borderRadius: 23, borderWidth: 2.5, alignItems: 'center', justifyContent: 'center' },
   swatch: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center' },

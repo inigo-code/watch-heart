@@ -58,7 +58,7 @@ export default function BrowseScreen() {
     if (!key) return;
     const controller = new AbortController();
     discoverTmdb(key, query, 1, controller.signal)
-      .then((r) => setData({ q: qKey, items: r.results, page: 1, pages: r.pages, error: null }))
+      .then((r) => setData({ q: qKey, items: r.results.filter((t) => t.posterUrl), page: 1, pages: r.pages, error: null }))
       .catch((e) => {
         if (controller.signal.aborted) return;
         const message = e instanceof Error && e.message !== 'Network request failed' ? e.message : 'No connection. Check your internet and try again.';
@@ -76,7 +76,7 @@ export default function BrowseScreen() {
         setData((d) =>
           d && d.q === qKey
             ? // Popularity shifts between pages, so a title can turn up twice.
-              { ...d, page: d.page + 1, items: [...d.items, ...r.results.filter((t) => !d.items.some((p) => p.sourceId === t.sourceId))] }
+              { ...d, page: d.page + 1, items: [...d.items, ...r.results.filter((t) => t.posterUrl && !d.items.some((p) => p.sourceId === t.sourceId))] }
             : d,
         ),
       )
@@ -370,7 +370,7 @@ const styles = StyleSheet.create({
   kindText: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 1.5 },
   filterBtn: { width: 38, height: 38, borderRadius: 19, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
   note: { fontFamily: fonts.mono, fontSize: font.footnote, textAlign: 'center', paddingVertical: 32 },
-  watched: { opacity: 0.4 },
+  watched: { opacity: 0.25 },
   tick: { position: 'absolute', top: 6, right: 6, width: 22, height: 22, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
   cellTitle: { fontSize: font.footnote, fontWeight: '700', marginTop: 6, lineHeight: 17 },
   cellYear: { fontFamily: fonts.mono, fontSize: font.caption },
