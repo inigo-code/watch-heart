@@ -4,7 +4,7 @@ import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { FlatList, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { tmdbKey } from '@/api';
@@ -12,6 +12,7 @@ import { watchRegion } from '@/api/omdb';
 import { nowPlayingTmdb, trendingAllTmdb } from '@/api/tmdb';
 import { AppHeader, greetingLine } from '@/components/AppHeader';
 import { KindBadge, Poster } from '@/components/Film';
+import { RegionalRows } from '@/components/home/RegionalRows';
 import { RowHead, TitleRow, openTitle, warmTitle } from '@/components/title/Rows';
 import { useToast } from '@/components/Toast';
 import { today } from '@/lib/dates';
@@ -70,8 +71,8 @@ export default function HomeScreen() {
   const seen = (t: Title) => viewingsOf(t.source, t.sourceId).length > 0;
   const up = continueWatching(watchlist, today());
   const continuing = [...up.ongoing, ...up.oldFriends].slice(0, 10);
-  const featured = trending?.find((t) => t.backdropUrl) ?? null;
-  const rest = (trending ?? []).filter((t) => t !== featured);
+  const featured = (trending ?? []).filter((t) => t.backdropUrl).slice(0, 5);
+  const rest = (trending ?? []).filter((t) => !featured.includes(t));
   const forYouTitles = picks?.seeds === seedKey ? picks.titles : null;
   const cinemaTitles = cinema?.region === region ? cinema.titles : null;
 
@@ -82,7 +83,7 @@ export default function HomeScreen() {
     >
       <AppHeader theme={theme} line={greetingLine(hour, settings.name)} />
 
-      {featured ? <Featured t={featured} theme={theme} /> : <View style={[styles.featuredSkeleton, { backgroundColor: theme.card }]} />}
+      {featured.length ? <FeaturedCarousel titles={featured} theme={theme} /> : <View style={[styles.featuredSkeleton, { backgroundColor: theme.card }]} />}
 
       {continuing.length > 0 && (
         <View style={styles.block}>
@@ -154,6 +155,8 @@ export default function HomeScreen() {
         </Pressable>
       )}
 
+      <RegionalRows region={region} theme={theme} seen={seen} />
+
       <View style={styles.block}>
         <RowHead title="Trending this week" theme={theme} more="More" onMore={() => router.navigate('/search')} />
         {trending ? <TitleRow titles={rest} theme={theme} seen={seen} width={112} /> : <Skeleton theme={theme} width={112} />}
@@ -179,7 +182,40 @@ export default function HomeScreen() {
 }
 
 /** The week's top title, big: its backdrop, name, and a way to log it or save it for later. */
-function Featured({ t, theme }: { t: Title; theme: Theme }) {
+/** The week's top titles as cards you swipe through, with a dot for each. */
+function FeaturedCarousel({ titles, theme }: { titles: Title[]; theme: Theme }) {
+  const { width } = useWindowDimensions();
+  const [index, setIndex] = useState(0);
+  return (
+    <View style={styles.carousel}>
+      <FlatList
+        data={titles}
+        keyExtractor={(t) => t.sourceId}
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        // Full width, so each card snaps to the middle; the screen's side padding is taken back for it.
+        style={{ marginHorizontal: -16 }}
+        onScroll={(e) => setIndex(Math.round(e.nativeEvent.contentOffset.x / width))}
+        scrollEventThrottle={32}
+        renderItem={({ item, index: i }) => (
+          <View style={{ width, paddingHorizontal: 16 }}>
+            <Featured t={item} rank={i + 1} theme={theme} />
+          </View>
+        )}
+      />
+      {titles.length > 1 && (
+        <View style={styles.dots} accessibilityLabel={`${index + 1} of ${titles.length}`}>
+          {titles.map((t, i) => (
+            <View key={t.sourceId} style={[styles.dot, { backgroundColor: i === index ? theme.accent : theme.border, width: i === index ? 18 : 6 }]} />
+          ))}
+        </View>
+      )}
+    </View>
+  );
+}
+
+function Featured({ t, rank, theme }: { t: Title; rank: number; theme: Theme }) {
   const toast = useToast();
   const { width } = useWindowDimensions();
   const { onWatchlist, addToWatchlist, removeFromWatchlist, viewingsOf } = useDiary();
@@ -192,7 +228,7 @@ function Featured({ t, theme }: { t: Title; theme: Theme }) {
         onPressIn={() => warmTitle(t)}
         onPress={() => openTitle(t)}
         accessibilityRole="button"
-        accessibilityLabel={`${t.title}, number one this week`}
+        accessibilityLabel={`${t.title}, number ${rank} this week`}
         style={StyleSheet.absoluteFill}
       >
         <Image source={t.backdropUrl} style={StyleSheet.absoluteFill} contentFit="cover" cachePolicy="memory-disk" transition={200} />
@@ -200,7 +236,7 @@ function Featured({ t, theme }: { t: Title; theme: Theme }) {
       </Pressable>
       <View style={styles.featuredBody} pointerEvents="box-none">
         <View style={styles.kickerRow} pointerEvents="none">
-          <Text style={[styles.kicker, { color: theme.accent }]}>#1 THIS WEEK</Text>
+          <Text style={[styles.kicker, { color: theme.accent }]}>#{rank} THIS WEEK</Text>
           <KindBadge kind={t.kind} theme={theme} small />
         </View>
         <Text style={styles.featuredTitle} numberOfLines={2} pointerEvents="none">
@@ -259,6 +295,9 @@ const styles = StyleSheet.create({
   episodeText: { fontFamily: fonts.monoBold, fontSize: 10, letterSpacing: 0.5 },
   featured: { borderRadius: 16, overflow: 'hidden', justifyContent: 'flex-end' },
   featuredSkeleton: { height: 220, borderRadius: 16 },
+  carousel: { gap: 10 },
+  dots: { flexDirection: 'row', justifyContent: 'center', gap: 6 },
+  dot: { height: 6, borderRadius: 3 },
   featuredBody: { padding: 14, gap: 6 },
   kickerRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   kicker: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 2 },

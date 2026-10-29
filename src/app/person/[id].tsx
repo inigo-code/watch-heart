@@ -43,7 +43,11 @@ export default function PersonScreen() {
   if (!person) {
     return (
       <View style={[styles.center, { backgroundColor: theme.bg }]}>
-        {failed ? <Text style={[styles.meta, { color: theme.textMuted }]}>Couldn’t load this person. Check your connection.</Text> : <ActivityIndicator color={theme.accent} />}
+        {failed ? (
+          <Text style={[styles.meta, { color: theme.textMuted }]}>Couldn’t load this person. Check your connection.</Text>
+        ) : (
+          <ActivityIndicator color={theme.accent} />
+        )}
       </View>
     );
   }
@@ -68,7 +72,9 @@ export default function PersonScreen() {
             <Face uri={person.photo} name={person.name} theme={theme} size={110} />
             <View style={{ flex: 1, gap: 4 }}>
               <Text style={[styles.name, { color: theme.text }]}>{person.name.toUpperCase()}</Text>
-              {!!person.department && <Text style={[styles.dept, { color: theme.accent }]}>{person.department === 'Acting' ? 'ACTOR' : person.department.toUpperCase()}</Text>}
+              {!!person.department && (
+                <Text style={[styles.dept, { color: theme.accent }]}>{person.department === 'Acting' ? 'ACTOR' : person.department.toUpperCase()}</Text>
+              )}
               {!!person.born && (
                 <Text style={[styles.meta, { color: theme.textMuted }]}>
                   Born {person.born.slice(0, 4)}
@@ -99,7 +105,10 @@ export default function PersonScreen() {
                   onPress={() => setFilter(f)}
                   accessibilityRole="tab"
                   accessibilityState={{ selected: filter === f }}
-                  style={[styles.filter, { borderColor: filter === f ? theme.accent : theme.border, backgroundColor: filter === f ? theme.accent : 'transparent' }]}
+                  style={[
+                    styles.filter,
+                    { borderColor: filter === f ? theme.accent : theme.border, backgroundColor: filter === f ? theme.accent : 'transparent' },
+                  ]}
                 >
                   <Text style={[styles.filterText, { color: filter === f ? theme.accentText : theme.text }]}>{f.toUpperCase()}</Text>
                 </Pressable>
@@ -116,7 +125,7 @@ export default function PersonScreen() {
           style={({ pressed }) => [{ width: cell }, pressed && { opacity: 0.8 }]}
         >
           <View>
-            <Poster uri={item.posterUrl} title={item.title} width={cell} theme={theme} radius={6} />
+            <Poster uri={item.posterUrl} title={item.title} width={cell} theme={theme} radius={6} style={seen(item) && styles.watched} />
             {seen(item) && (
               <View style={[styles.tick, { backgroundColor: theme.accent }]}>
                 <Ionicons name="checkmark" size={13} color={theme.accentText} />
@@ -147,6 +156,7 @@ const styles = StyleSheet.create({
   filterRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   filter: { borderWidth: 1, borderRadius: 14, height: 28, paddingHorizontal: 10, alignItems: 'center', justifyContent: 'center' },
   filterText: { fontFamily: fonts.monoBold, fontSize: 10, letterSpacing: 1 },
+  watched: { opacity: 0.4 },
   tick: { position: 'absolute', top: 6, right: 6, width: 22, height: 22, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
   cellTitle: { fontSize: font.footnote, fontWeight: '700', marginTop: 6, lineHeight: 17 },
   cellRole: { fontFamily: fonts.mono, fontSize: font.caption },

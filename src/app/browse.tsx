@@ -162,7 +162,7 @@ export default function BrowseScreen() {
               style={({ pressed }) => [{ width: cell }, pressed && { opacity: 0.8 }]}
             >
               <View>
-                <Poster uri={item.posterUrl} title={item.title} width={cell} theme={theme} radius={6} />
+                <Poster uri={item.posterUrl} title={item.title} width={cell} theme={theme} radius={6} style={seen && styles.watched} />
                 {seen && (
                   <View style={[styles.tick, { backgroundColor: theme.accent }]}>
                     <Ionicons name="checkmark" size={13} color={theme.accentText} />
@@ -370,6 +370,7 @@ const styles = StyleSheet.create({
   kindText: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 1.5 },
   filterBtn: { width: 38, height: 38, borderRadius: 19, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
   note: { fontFamily: fonts.mono, fontSize: font.footnote, textAlign: 'center', paddingVertical: 32 },
+  watched: { opacity: 0.4 },
   tick: { position: 'absolute', top: 6, right: 6, width: 22, height: 22, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
   cellTitle: { fontSize: font.footnote, fontWeight: '700', marginTop: 6, lineHeight: 17 },
   cellYear: { fontFamily: fonts.mono, fontSize: font.caption },

@@ -55,11 +55,13 @@ export function Synopsis({
   const [more, setMore] = useState(false);
   const text = about?.overview || overview;
   const series = !!about && about.seasons.length > 0;
-  if (!text && !about?.tagline) return null;
+  // TMDB sometimes has a tagline run together ("LoveHateDreamsLifeWork…"): a long one with no spaces is skipped.
+  const tagline = about?.tagline && (/\s/.test(about.tagline.trim()) || about.tagline.length <= 18) ? about.tagline : null;
+  if (!text && !tagline) return null;
   return (
     <View style={styles.block}>
       {label && <RowHead title={label} theme={theme} more="Title page" onMore={onMore} />}
-      {!!about?.tagline && <Text style={[styles.tagline, { color: theme.textMuted }]}>“{about.tagline}”</Text>}
+      {!!tagline && <Text style={[styles.tagline, { color: theme.textMuted }]}>“{tagline}”</Text>}
       {!!text && (
         <Pressable
           onPress={() => {

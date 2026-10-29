@@ -61,10 +61,22 @@ export function TitleExtras({ source, sourceId, imdbId, theme }: Props) {
   return (
     <View style={styles.wrap}>
       <View style={styles.scores}>
-        {e.score !== null && <Score theme={theme} label="TMDB" value={`${e.score}`} sub={`${compact(e.votes)} votes`} />}
-        {data?.omdb?.imdb && <Score theme={theme} label="IMDb" value={data.omdb.imdb.rating} sub={`${data.omdb.imdb.votes} votes`} color="#F5C518" onPress={imdbUrl ? () => Linking.openURL(imdbUrl) : undefined} />}
+        {data?.omdb?.imdb && (
+          <Score
+            theme={theme}
+            label="IMDb"
+            value={data.omdb.imdb.rating}
+            sub={`${data.omdb.imdb.votes} votes`}
+            color="#F5C518"
+            onPress={imdbUrl ? () => Linking.openURL(imdbUrl) : undefined}
+          />
+        )}
         {data?.omdb?.rottenTomatoes && <Score theme={theme} label="Rotten Tomatoes" value={data.omdb.rottenTomatoes} />}
         {data?.omdb?.metacritic && <Score theme={theme} label="Metacritic" value={data.omdb.metacritic.split('/')[0]} />}
+        {/* TMDB's own score only when there's nothing better known to show. */}
+        {e.score !== null && !data?.omdb?.imdb && !data?.omdb?.rottenTomatoes && (
+          <Score theme={theme} label="TMDB" value={`${e.score}`} sub={`${compact(e.votes)} votes`} />
+        )}
         {imdbUrl && !data?.omdb?.imdb && (
           <Pressable onPress={() => Linking.openURL(imdbUrl)} accessibilityRole="link" style={({ pressed }) => [styles.imdb, { opacity: pressed ? 0.8 : 1 }]}>
             <Text style={styles.imdbText}>IMDb</Text>
@@ -92,7 +104,21 @@ export function TitleExtras({ source, sourceId, imdbId, theme }: Props) {
 
 const compact = (n: number) => (n >= 1000 ? `${Math.round(n / 100) / 10}k` : String(n));
 
-function Score({ theme, label, value, sub, color, onPress }: { theme: Theme; label: string; value: string; sub?: string; color?: string; onPress?: () => void }) {
+function Score({
+  theme,
+  label,
+  value,
+  sub,
+  color,
+  onPress,
+}: {
+  theme: Theme;
+  label: string;
+  value: string;
+  sub?: string;
+  color?: string;
+  onPress?: () => void;
+}) {
   return (
     <Pressable onPress={onPress} disabled={!onPress} style={[styles.score, { backgroundColor: theme.card, borderColor: color ?? theme.border }]}>
       <Text style={[styles.scoreLabel, { color: color ?? theme.textMuted }]}>{label.toUpperCase()}</Text>
@@ -106,7 +132,9 @@ function Providers({ theme, title, list, link }: { theme: Theme; title: string; 
   if (!list.length) return null;
   return (
     <View style={styles.providerRow}>
-      <Text style={[styles.providerKind, { color: theme.text }]}>{title.toUpperCase()}</Text>
+      <Text style={[styles.providerKind, { color: theme.text }]} numberOfLines={1}>
+        {title.toUpperCase()}
+      </Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.logos}>
         {list.map((p) => (
           <Pressable key={p.id} onPress={link ? () => Linking.openURL(link) : undefined} accessibilityRole="link" accessibilityLabel={p.name}>
@@ -122,15 +150,25 @@ const styles = StyleSheet.create({
   loading: { paddingVertical: 12, alignItems: 'flex-start' },
   wrap: { gap: 12 },
   scores: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, alignItems: 'stretch' },
-  score: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8, minWidth: 84 },
+  score: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8, minWidth: 92, maxWidth: 140 },
   scoreLabel: { fontFamily: fonts.monoBold, fontSize: 10, letterSpacing: 1 },
-  scoreValue: { fontFamily: fonts.display, fontSize: 28, includeFontPadding: false },
+  scoreValue: { fontFamily: fonts.display, fontSize: 28, lineHeight: 32, includeFontPadding: false },
   scoreSub: { fontFamily: fonts.mono, fontSize: 10 },
-  imdb: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#F5C518', borderRadius: 10, paddingHorizontal: 14, alignSelf: 'center', height: 40 },
+  imdb: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#F5C518',
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    alignSelf: 'center',
+    height: 40,
+  },
   imdbText: { fontWeight: '900', fontSize: font.body, color: '#000000' },
   note: { fontFamily: fonts.mono, fontSize: font.caption, lineHeight: 16 },
   providerRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  providerKind: { fontFamily: fonts.monoBold, fontSize: font.caption, width: 54, letterSpacing: 1 },
+  // Wide enough for STREAM in the typewriter face on any phone.
+  providerKind: { fontFamily: fonts.monoBold, fontSize: font.caption, width: 66, letterSpacing: 1 },
   logos: { gap: 8 },
   logo: { width: 40, height: 40, borderRadius: 10 },
   credit: { fontFamily: fonts.mono, fontSize: 10 },

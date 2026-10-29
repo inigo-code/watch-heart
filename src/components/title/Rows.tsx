@@ -47,7 +47,7 @@ export function TitleRow({ titles, theme, seen, width = 104 }: { titles: Title[]
           style={({ pressed }) => [{ width }, pressed && { opacity: 0.8 }]}
         >
           <View>
-            <Poster uri={t.posterUrl} title={t.title} width={width} theme={theme} radius={6} />
+            <Poster uri={t.posterUrl} title={t.title} width={width} theme={theme} radius={6} style={seen?.(t) && styles.watched} />
             {seen?.(t) && (
               <View style={[styles.seen, { backgroundColor: theme.accent }]}>
                 <Ionicons name="checkmark" size={13} color={theme.accentText} />
@@ -129,6 +129,8 @@ const styles = StyleSheet.create({
   row: { gap: 12, paddingRight: 16 },
   name: { fontSize: font.footnote, fontWeight: '700', marginTop: 6, lineHeight: 17 },
   sub: { fontFamily: fonts.mono, fontSize: font.caption, marginTop: 1 },
+  // Seen ones step back, so what you haven't watched stands out.
+  watched: { opacity: 0.4 },
   seen: { position: 'absolute', top: 6, right: 6, width: 22, height: 22, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
   person: { width: 88 },
   initials: { alignItems: 'center', justifyContent: 'center' },

@@ -55,7 +55,7 @@ export function Hero({ t, theme, topInset = 0, children }: { t: HeroTitle; theme
           )}
           {!!meta && <Text style={[styles.meta, { color: theme.textMuted }]}>{meta}</Text>}
           {!!t.credit && (
-            <Text style={[styles.meta, { color: theme.textMuted }]} numberOfLines={1}>
+            <Text style={[styles.meta, { color: theme.textMuted }]} numberOfLines={2}>
               {CREDIT_LABEL[t.kind]} <Text style={{ color: theme.text, fontFamily: fonts.monoBold }}>{t.credit}</Text>
             </Text>
           )}
