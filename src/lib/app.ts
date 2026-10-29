@@ -49,6 +49,7 @@ export const WHATS_NEW = {
     'A new Home tab: this week’s top titles, picks for you, trending, in cinemas, and in India: FDFS and regional favourites',
     'Choose your country and language in Settings, and Home starts with new films in it',
     'Your own poster: tap a diary entry’s poster to choose from all of TMDB’s',
+    'Every viewing as a cinema ticket: talkies, multiplex or FDFS, to save or share',
     'Sharper stories: shared at 1440×2560, with posters at full quality',
     'Moving an entry to Trash asks first',
     'Plan a movie night from any title, and get a reminder when it’s time',

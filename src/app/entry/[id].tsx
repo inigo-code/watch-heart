@@ -202,6 +202,7 @@ export default function EntryScreen() {
               onPress={() => router.push({ pathname: '/card/[id]', params: { id: entry.id } })}
               primary
             />
+            <Action theme={theme} icon="ticket-outline" label="TICKET" onPress={() => router.push({ pathname: '/ticket/[id]', params: { id: entry.id } })} />
             <Action theme={theme} icon="repeat" label="LOG AGAIN" onPress={() => router.push({ pathname: '/log', params: { again: entry.id } })} />
             <Action theme={theme} icon="albums-outline" label={onLists.length ? `LISTS (${onLists.length})` : 'ADD TO LIST'} onPress={() => setListing(true)} />
             {trackable(entry) && (

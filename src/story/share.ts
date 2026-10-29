@@ -4,13 +4,19 @@ import type { RefObject } from 'react';
 import { Platform } from 'react-native';
 import { captureRef } from 'react-native-view-shot';
 
-import { EXPORT_H, EXPORT_W } from './export';
+import { EXPORT_H, EXPORT_W, PX_PER_POINT } from './export';
 import type { StoryHandle } from './StoryCanvas';
 
 /** Draws the story into a 1440×2560 PNG (a sharper Instagram story size) and returns its file uri. */
 export async function captureStory(ref: RefObject<StoryHandle | null>): Promise<string> {
   if (!ref.current) throw new Error('The story isn’t ready yet.');
   return captureRef(ref, { format: 'png', quality: 1, width: EXPORT_W, height: EXPORT_H, result: 'tmpfile' });
+}
+
+/** Draws a `w`×`h`-point image (a ticket) into a PNG at four pixels a point and returns its file uri. */
+export async function captureImage(ref: RefObject<StoryHandle | null>, w: number, h: number): Promise<string> {
+  if (!ref.current) throw new Error('The image isn’t ready yet.');
+  return captureRef(ref, { format: 'png', quality: 1, width: w * PX_PER_POINT, height: h * PX_PER_POINT, result: 'tmpfile' });
 }
 
 /**

@@ -287,6 +287,7 @@ export default function DiaryScreen() {
                 { label: 'Edit entry', icon: 'create-outline', onPress: () => router.push({ pathname: '/log', params: { id: menu.id } }) },
                 { label: 'Log again', icon: 'repeat', onPress: () => router.push({ pathname: '/log', params: { again: menu.id } }) },
                 { label: 'Share as story card', icon: 'sparkles-outline', onPress: () => router.push({ pathname: '/card/[id]', params: { id: menu.id } }) },
+                { label: 'Share ticket', icon: 'ticket-outline', onPress: () => router.push({ pathname: '/ticket/[id]', params: { id: menu.id } }) },
                 { label: 'Add to a list', icon: 'albums-outline', onPress: () => setListing(menu) },
                 ...(menu.source === 'tmdb' && menu.sourceId
                   ? [{ label: 'Choose a poster', icon: 'images-outline' as const, onPress: () => router.push({ pathname: '/poster/[id]', params: { id: menu.id } }) }]
