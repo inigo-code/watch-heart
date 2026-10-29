@@ -24,7 +24,7 @@ export const homeLanguage = (region: string, setting: string) => languagesFor(re
  * top titles. None for the US, whose films already lead Trending.
  */
 export function regionalFeatured(region: string, lang: Language | null): { q: BrowseQuery; kicker: string } | null {
-  if (lang) return { q: { kind: 'movie', country: region, lang: lang.code, days: [-42, 3] }, kicker: `NEW IN ${lang.name.toUpperCase()}` };
+  if (lang) return { q: { kind: 'movie', country: region, lang: lang.code, days: [-42, 3], notGenres: ['Documentary', 'Music'] }, kicker: `NEW IN ${lang.name.toUpperCase()}` };
   if (region === 'US') return null;
-  return { q: { kind: 'movie', country: region, days: [-42, 3] }, kicker: `NEW FROM ${countryName(region).toUpperCase()}` };
+  return { q: { kind: 'movie', country: region, days: [-42, 3], notGenres: ['Documentary', 'Music'] }, kicker: `NEW FROM ${countryName(region).toUpperCase()}` };
 }

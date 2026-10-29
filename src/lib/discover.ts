@@ -9,7 +9,7 @@ const NOW = new Date().getFullYear();
 
 /** The ready-made shelves. Each opens on the kind it suits; the results can switch to another. */
 export const SHELVES: Shelf[] = [
-  { id: 'new', name: 'New this month', note: 'Released in the last six weeks', q: { kind: 'movie', days: [-45, 0] } },
+  { id: 'new', name: 'New this month', note: 'Released in the last six weeks', q: { kind: 'movie', days: [-45, 0], notGenres: ['Documentary', 'Music'] } },
   { id: 'airing', name: 'Anime airing now', note: 'Episodes out this fortnight', q: { kind: 'anime', airing: true } },
   { id: 'crowd', name: 'Crowd favourites', note: 'The best rated, by thousands of votes', q: { kind: 'movie', sort: 'rating', minVotes: 3000 } },
   {

@@ -41,7 +41,9 @@ export default function BrowseScreen() {
   const key = tmdbKey(settings.tmdbKey);
   const region = watchRegion(settings.watchRegion);
   const { viewingsOf } = useDiary();
-  const [query, setQuery] = useState<BrowseQuery>(() => JSON.parse(params.q) as BrowseQuery);
+  // The shelf as it opened: what makes it this shelf (India, a release window…), which Clear goes back to.
+  const [base] = useState<BrowseQuery>(() => JSON.parse(params.q) as BrowseQuery);
+  const [query, setQuery] = useState<BrowseQuery>(base);
   const [name, setName] = useState(params.name ?? 'Discover');
   const [filtering, setFiltering] = useState(params.filters === '1');
   // Results belong to the query they were fetched for; a new query starts again from the first page.
@@ -181,6 +183,7 @@ export default function BrowseScreen() {
         visible={filtering}
         theme={theme}
         query={query}
+        base={base}
         tmdb={key}
         region={region}
         onClose={() => setFiltering(false)}
@@ -194,11 +197,12 @@ export default function BrowseScreen() {
   );
 }
 
-/** The filter builder: kind, genres, decade, language, score, length and streaming service. */
+/** The filter builder: kind, genres, decade, language, score, length and streaming service, on top of the shelf. */
 function Filters({
   visible,
   theme,
   query,
+  base,
   tmdb,
   region,
   onClose,
@@ -207,6 +211,7 @@ function Filters({
   visible: boolean;
   theme: Theme;
   query: BrowseQuery;
+  base: BrowseQuery;
   tmdb: string;
   region: string;
   onClose: () => void;
@@ -234,6 +239,10 @@ function Filters({
   const set = (patch: Partial<BrowseQuery>) => setDraft((d) => ({ ...d, ...patch }));
   const genres = BROWSE_GENRES.filter((g) => genreId(g.name, draft.kind) !== undefined && !(draft.kind === 'anime' && g.name === 'Animation'));
   const decade = draft.from && draft.to && draft.to - draft.from === 9 ? draft.from : null;
+  // Only the kinds this shelf can have (no anime among Indian films), and no decades on a shelf that is
+  // already a time (new releases, classics, this year's best).
+  const kinds = kindsFor(base);
+  const timed = !!(base.days || base.from || base.to);
   const toggleGenre = (name: string) => {
     const g = draft.genres ?? [];
     set({ genres: g.includes(name) ? g.filter((x) => x !== name) : [...g, name] });
@@ -244,13 +253,17 @@ function Filters({
       <View style={[styles.sheet, { backgroundColor: theme.bg, paddingBottom: insets.bottom + 12 }]}>
         <View style={styles.sheetHead}>
           <Text style={[styles.sheetTitle, { color: theme.text }]}>FILTERS</Text>
-          <Pressable onPress={() => setDraft({ kind: draft.kind, sort: draft.sort })} accessibilityRole="button" hitSlop={8}>
+          <Pressable
+            onPress={() => setDraft({ ...base, kind: draft.kind, sort: draft.sort, genres: base.genres?.filter((g) => genreId(g, draft.kind) !== undefined) })}
+            accessibilityRole="button"
+            hitSlop={8}
+          >
             <Text style={[styles.clear, { color: theme.textMuted }]}>CLEAR</Text>
           </Pressable>
         </View>
         <ScrollView contentContainerStyle={styles.sheetBody}>
           <Group theme={theme} title="Kind">
-            {(['movie', 'tv', 'anime'] as MediaKind[]).map((k) => (
+            {kinds.map((k) => (
               <Chip
                 key={k}
                 theme={theme}
@@ -273,17 +286,19 @@ function Filters({
               <Chip key={g.name} theme={theme} label={g.name} active={draft.genres?.includes(g.name)} onPress={() => toggleGenre(g.name)} />
             ))}
           </Group>
-          <Group theme={theme} title="Decade">
-            {DECADES.map((d) => (
-              <Chip
-                key={d}
-                theme={theme}
-                label={`${d}s`}
-                active={decade === d}
-                onPress={() => set(decade === d ? { from: undefined, to: undefined } : { from: d, to: d + 9, days: undefined })}
-              />
-            ))}
-          </Group>
+          {!timed && (
+            <Group theme={theme} title="Decade">
+              {DECADES.map((d) => (
+                <Chip
+                  key={d}
+                  theme={theme}
+                  label={`${d}s`}
+                  active={decade === d}
+                  onPress={() => set(decade === d ? { from: undefined, to: undefined } : { from: d, to: d + 9 })}
+                />
+              ))}
+            </Group>
+          )}
           {draft.kind !== 'anime' && (
             <Group theme={theme} title="Original language">
               {LANGUAGES.map((l) => (

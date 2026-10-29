@@ -15,18 +15,20 @@ import { useSettings } from '@/settings/SettingsProvider';
 import type { Title } from '@/store/types';
 
 const NOW = new Date().getFullYear();
+// Documentaries and concert films crowd out the features in these rows.
+const NOT_DOCS = ['Documentary', 'Music'];
 
 
 /**
  * Home's rows for where you are. In India: FDFS (new Indian releases), favourites in a language you pick,
- * and hidden gems (your language from Settings leads the chips). Elsewhere, one row of what's popular from your country (none for the US, which Trending
+ * and hidden gems (your language from Settings comes first in each). Elsewhere, one row of what's popular from your country (none for the US, which Trending
  * already is).
  */
 export function RegionalRows({ region, mine, theme, seen }: { region: string; mine: Language | null; theme: Theme; seen: (t: Title) => boolean }) {
   const languages = mine ? [mine, ...INDIAN_LANGUAGES.filter((l) => l.code !== mine.code)] : INDIAN_LANGUAGES;
   const [lang, setLang] = useState(languages[0]);
   if (region === 'IN') {
-    const favourites: BrowseQuery = { kind: 'movie', lang: lang.code, sort: 'rating', minVotes: lang.code === 'bn' || lang.code === 'kn' ? 40 : 100 };
+    const favourites: BrowseQuery = { kind: 'movie', lang: lang.code, sort: 'rating', minVotes: lang.code === 'bn' || lang.code === 'kn' ? 40 : 100, notGenres: NOT_DOCS };
     return (
       <>
         <QueryRow
@@ -34,7 +36,7 @@ export function RegionalRows({ region, mine, theme, seen }: { region: string; mi
           seen={seen}
           title="FDFS · New Indian releases"
           sub="First day, first show: out in the last four weeks"
-          q={{ kind: 'movie', country: 'IN', days: [-28, 7] }}
+          q={{ kind: 'movie', country: 'IN', days: [-28, 7], notGenres: NOT_DOCS, preferLang: mine?.code }}
         />
         <QueryRow
           theme={theme}
@@ -66,14 +68,14 @@ export function RegionalRows({ region, mine, theme, seen }: { region: string; mi
           seen={seen}
           title="Indian hidden gems"
           sub="Rated highly, seen by few"
-          q={{ kind: 'movie', country: 'IN', sort: 'rating', minScore: 7.3, minVotes: 50, maxVotes: 800, notGenres: ['Documentary', 'Music'] }}
+          q={{ kind: 'movie', country: 'IN', sort: 'rating', minScore: 7.3, minVotes: 50, maxVotes: 800, notGenres: NOT_DOCS, preferLang: mine?.code }}
         />
       </>
     );
   }
   if (region === 'US') return null;
   return (
-    <QueryRow theme={theme} seen={seen} title={`Popular from ${countryName(region)}`} q={{ kind: 'movie', country: region, from: NOW - 2, minVotes: 20 }} />
+    <QueryRow theme={theme} seen={seen} title={`Popular from ${countryName(region)}`} q={{ kind: 'movie', country: region, from: NOW - 2, minVotes: 20, notGenres: NOT_DOCS }} />
   );
 }
 

@@ -528,6 +528,8 @@ export type BrowseQuery = {
   /** Series with an episode out this fortnight. */
   airing?: boolean;
   lang?: string;
+  /** Titles in this language first (on the first page), then the rest. Ignored when `lang` is set. */
+  preferLang?: string;
   country?: string;
   provider?: number;
   region?: string;
@@ -549,6 +551,11 @@ export function discoverTmdb(key: string, q: BrowseQuery, page: number, signal?:
 }
 
 async function loadDiscover(key: string, q: BrowseQuery, page: number, signal?: AbortSignal): Promise<{ results: Title[]; pages: number }> {
+  if (q.preferLang && !q.lang && q.kind !== 'anime' && page === 1) {
+    const { preferLang, ...rest } = q;
+    const [first, all] = await Promise.all([loadDiscover(key, { ...rest, lang: preferLang }, 1, signal), loadDiscover(key, rest, 1, signal)]);
+    return { results: [...first.results, ...all.results.filter((t) => !first.results.some((f) => f.sourceId === t.sourceId))], pages: all.pages };
+  }
   const type = q.kind === 'movie' ? 'movie' : 'tv';
   const dateField = type === 'movie' ? 'primary_release_date' : 'first_air_date';
   const ids = (q.genres ?? []).map((g) => genreId(g, q.kind));
@@ -581,16 +588,23 @@ async function loadDiscover(key: string, q: BrowseQuery, page: number, signal?: 
     p.with_watch_monetization_types = 'flatrate|free|ads';
   }
   if (q.minScore) p['vote_average.gte'] = String(q.minScore);
-  // A rating sort with no floor is topped by titles with three votes.
-  const minVotes = q.minVotes ?? (q.sort === 'rating' || q.minScore ? 150 : undefined);
+  // A rating sort with no floor is topped by titles with three votes. Titles out for a few weeks have few
+  // votes yet, so a release window gets a lower floor (lowest for one country or language: new Indian films
+  // have a handful; worldwide, a low floor lets in shorts with two perfect votes).
+  const floor = !q.days ? 150 : q.country || q.lang ? 5 : 50;
+  const minVotes = q.minVotes ?? (q.sort === 'rating' || q.minScore ? floor : undefined);
   if (minVotes) p['vote_count.gte'] = String(minVotes);
   if (q.maxVotes) p['vote_count.lte'] = String(q.maxVotes);
   if (q.maxRuntime) p['with_runtime.lte'] = String(q.maxRuntime);
   if (type === 'tv' && q.status !== undefined) p.with_status = String(q.status);
   if (type === 'tv' && q.tvType !== undefined) p.with_type = String(q.tvType);
   p.sort_by = q.sort === 'rating' ? 'vote_average.desc' : q.sort === 'newest' ? `${dateField}.desc` : 'popularity.desc';
-  // Newest first would otherwise start with titles that haven't come out yet.
-  if (q.sort === 'newest' && !q.to && !q.days) p[`${dateField}.lte`] = isoDaysFromNow(0);
+  // Newest first would otherwise start with titles that haven't come out yet (this year's, or next week's).
+  if (q.sort === 'newest') {
+    const today = isoDaysFromNow(0);
+    const lte = p[`${dateField}.lte`];
+    if (!lte || lte > today) p[`${dateField}.lte`] = today;
+  }
   const d = await get<{ results: Result[]; total_pages: number }>(key, `/discover/${type}`, p, signal);
   return { results: d.results.map((r) => toTitle(r, type)), pages: Math.min(d.total_pages, 500) };
 }
