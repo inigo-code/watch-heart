@@ -222,7 +222,8 @@ async function match(key: string, r: Entry | WatchItem): Promise<Partial<Entry>>
 function details(t: Title, r: Entry | WatchItem): Partial<Entry> {
   return {
     year: r.year ?? t.year,
-    posterUrl: t.posterUrl ?? r.posterUrl,
+    // A poster you chose stays yours.
+    posterUrl: ('posterPick' in r && r.posterPick) || t.posterUrl || r.posterUrl,
     backdropUrl: t.backdropUrl ?? r.backdropUrl,
     genres: t.genres.length ? t.genres : r.genres,
     runtime: t.runtime ?? r.runtime,

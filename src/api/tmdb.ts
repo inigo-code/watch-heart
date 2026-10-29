@@ -196,6 +196,26 @@ export function tmdbById(key: string, kind: 'movie' | 'tv', id: string, signal?:
   return detailsTmdb(key, stub, signal);
 }
 
+/**
+ * Every poster TMDB has for a title, to choose from: its own first, then English and textless ones, then
+ * the title's own language, then the rest, the best rated first in each. Kept for an hour.
+ */
+export function postersTmdb(key: string, sourceId: string): Promise<{ main: string | null; posters: string[] }> {
+  return cached(`posters:${sourceId}`, 60 * MINUTE, async () => {
+    const [type, id] = sourceId.split(':');
+    const kind = type === 'tv' ? 'tv' : 'movie';
+    const [d, images] = await Promise.all([
+      get<{ poster_path: string | null; original_language?: string }>(key, `/${kind}/${id}`),
+      // No language: every poster, not only the English ones.
+      get<{ posters: { file_path: string; iso_639_1: string | null; vote_average: number }[] }>(key, `/${kind}/${id}/images`, { language: '' }),
+    ]);
+    const rank = (lang: string | null) => (lang === 'en' ? 0 : lang === null ? 1 : lang === d.original_language ? 2 : 3);
+    const sorted = [...images.posters].sort((a, b) => rank(a.iso_639_1) - rank(b.iso_639_1) || b.vote_average - a.vote_average);
+    const paths = [...new Set([d.poster_path, ...sorted.map((p) => p.file_path)].filter((p): p is string => !!p))];
+    return { main: poster(d.poster_path), posters: paths.map((p) => poster(p) as string) };
+  });
+}
+
 /** Looks up an IMDb id (tt1234567) on TMDB; null when TMDB doesn't know it. */
 export async function findImdb(key: string, imdbId: string, signal?: AbortSignal): Promise<Title | null> {
   const data = await get<{ movie_results: Result[]; tv_results: Result[] }>(key, `/find/${imdbId}`, { external_source: 'imdb_id' }, signal);

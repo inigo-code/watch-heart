@@ -1,7 +1,8 @@
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import type { ReactNode } from 'react';
-import { StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 
 import { KindBadge, Poster } from '@/components/Film';
 import { formatRuntime } from '@/lib/dates';
@@ -27,7 +28,7 @@ const CREDIT_LABEL: Record<MediaKind, string> = { movie: 'DIRECTED BY', tv: 'ON'
  * The top of a title's page: its backdrop fading into the screen like the lights going down, the poster
  * in front, and the title on the marquee.
  */
-export function Hero({ t, theme, topInset = 0, children }: { t: HeroTitle; theme: Theme; topInset?: number; children?: ReactNode }) {
+export function Hero({ t, theme, topInset = 0, onPoster, children }: { t: HeroTitle; theme: Theme; topInset?: number; onPoster?: () => void; children?: ReactNode }) {
   const { width } = useWindowDimensions();
   const backdrop = t.backdropUrl ?? t.posterUrl;
   const height = Math.round(width * 0.56) + topInset;
@@ -42,7 +43,16 @@ export function Hero({ t, theme, topInset = 0, children }: { t: HeroTitle; theme
         <LinearGradient colors={['rgba(0,0,0,0.45)', 'transparent', theme.bg]} locations={[0, 0.35, 1]} style={StyleSheet.absoluteFill} />
       </View>
       <View style={styles.row}>
-        <Poster uri={t.posterUrl} title={t.title} width={110} theme={theme} radius={6} style={[styles.poster, { borderColor: theme.border }]} />
+        {onPoster ? (
+          <Pressable onPress={onPoster} accessibilityRole="button" accessibilityLabel="Choose a poster" style={({ pressed }) => pressed && { opacity: 0.85 }}>
+            <Poster uri={t.posterUrl} title={t.title} width={110} theme={theme} radius={6} style={[styles.poster, { borderColor: theme.border }]} />
+            <View style={[styles.posterBadge, { backgroundColor: theme.accent }]}>
+              <Ionicons name="images-outline" size={14} color={theme.accentText} />
+            </View>
+          </Pressable>
+        ) : (
+          <Poster uri={t.posterUrl} title={t.title} width={110} theme={theme} radius={6} style={[styles.poster, { borderColor: theme.border }]} />
+        )}
         <View style={styles.info}>
           <KindBadge kind={t.kind} theme={theme} />
           <Text style={[styles.title, { color: theme.text }]} numberOfLines={3}>
@@ -74,6 +84,7 @@ export function Hero({ t, theme, topInset = 0, children }: { t: HeroTitle; theme
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', gap: 14, paddingHorizontal: 16, marginTop: -70, alignItems: 'flex-end' },
   poster: { borderWidth: StyleSheet.hairlineWidth, boxShadow: '0 8px 24px rgba(0,0,0,0.5)' },
+  posterBadge: { position: 'absolute', right: 6, bottom: 6, width: 26, height: 26, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
   info: { flex: 1, gap: 4, paddingBottom: 2 },
   title: { fontFamily: fonts.display, fontSize: 34, lineHeight: 35, letterSpacing: 0.5, includeFontPadding: false },
   original: { fontFamily: fonts.mono, fontSize: font.footnote },

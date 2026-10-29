@@ -103,6 +103,7 @@ function Navigator() {
         <Stack.Screen name="log" options={{ title: '', presentation: 'modal', animation: 'slide_from_bottom' }} />
         <Stack.Screen name="entry/[id]" options={{ title: '', headerTransparent: true }} />
         <Stack.Screen name="card/[id]" options={{ title: 'STORY CARD' }} />
+        <Stack.Screen name="poster/[id]" options={{ title: 'CHOOSE A POSTER' }} />
         <Stack.Screen name="settings" options={{ title: 'SETTINGS' }} />
         <Stack.Screen name="account" options={{ title: 'ACCOUNT & SYNC' }} />
         <Stack.Screen name="trash" options={{ title: 'TRASH' }} />

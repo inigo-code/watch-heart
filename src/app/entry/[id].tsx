@@ -90,7 +90,12 @@ export default function EntryScreen() {
         }}
       />
       <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 32 }}>
-        <Hero t={entry} theme={theme} topInset={insets.top} />
+        <Hero
+          t={entry}
+          theme={theme}
+          topInset={insets.top}
+          onPoster={entry.source === 'tmdb' && entry.sourceId ? () => router.push({ pathname: '/poster/[id]', params: { id: entry.id } }) : undefined}
+        />
 
         <View style={styles.body}>
           <View style={[styles.ticket, { backgroundColor: theme.card, borderColor: theme.border }]}>

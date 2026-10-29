@@ -62,6 +62,8 @@ export type Entry = {
   fetchedAt?: number | null;
   /** IMDb id (tt…) when the import knew it, for an exact TMDB match. */
   imdbId?: string | null;
+  /** A poster you chose from TMDB's others for this title; refreshes keep it instead of TMDB's own. */
+  posterPick?: string | null;
   /** When a TMDB match was last looked for and not found (so it isn't retried on every launch). */
   matchTriedAt?: number | null;
   /** Set when moved to Trash. */
