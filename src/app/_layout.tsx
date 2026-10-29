@@ -15,10 +15,12 @@ import { UpdatePrompt } from '@/components/UpdatePrompt';
 import { fonts, useTheme } from '@/lib/theme';
 import { useTmdbFreshness } from '@/lib/tmdbFreshness';
 import { AppLockProvider } from '@/lock/AppLockProvider';
+import { FriendsProvider } from '@/friends/FriendsProvider';
 import { ListsProvider } from '@/lists/ListsProvider';
 import { SettingsProvider } from '@/settings/SettingsProvider';
 import { DiaryStoreProvider } from '@/store/DiaryStore';
 import { SyncProvider } from '@/sync/SyncProvider';
+import { WidgetSync } from '@/widget/WidgetSync';
 
 // Keep the splash up until the marquee and typewriter fonts are ready, so titles never flash in the fallback.
 SplashScreen.preventAutoHideAsync().catch(() => {});
@@ -42,11 +44,14 @@ export default function RootLayout() {
       <DiaryStoreProvider>
         <ListsProvider>
         <SyncProvider>
+        <FriendsProvider>
           <ToastProvider>
             <AppLockProvider>
               <Navigator />
+              <WidgetSync />
             </AppLockProvider>
           </ToastProvider>
+        </FriendsProvider>
         </SyncProvider>
         </ListsProvider>
       </DiaryStoreProvider>
@@ -100,6 +105,9 @@ function Navigator() {
         <Stack.Screen name="credits/[id]" options={{ title: 'CAST & CREW' }} />
         <Stack.Screen name="person/[id]" options={{ title: '' }} />
         <Stack.Screen name="browse" options={{ title: 'DISCOVER' }} />
+        <Stack.Screen name="friends" options={{ title: 'FRIENDS' }} />
+        <Stack.Screen name="friend/[id]" options={{ title: '' }} />
+        <Stack.Screen name="friend-list" options={{ title: 'LIST' }} />
       </Stack>
     </>
   );

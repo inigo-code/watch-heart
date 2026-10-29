@@ -13,6 +13,9 @@ sync. They take about 10 minutes, once.
 
 **SQL Editor → New query**, paste all of [schema.sql](schema.sql), **Run**. It's safe to run again.
 
+A project set up before lists or friends existed only needs the new parts: run [lists.sql](lists.sql) and
+[friends.sql](friends.sql) the same way (each is safe to run again).
+
 ## 3. Email codes (sign-up and forgot password)
 
 Reuse Prompt Heart's Resend setup; the domain is already verified, so there's nothing new to set up there.

@@ -42,6 +42,8 @@ export type Settings = {
   favourites: Favourite[];
   /** Titles to watch this year (0 = no goal). */
   yearGoal: number;
+  /** What friends can see: your diary and ratings, your reviews, your lists. Synced with the profile. */
+  sharing: Sharing;
   /** Your free OMDb key, for IMDb ratings on titles. */
   omdbKey: string;
   /** Country for "Where to watch", e.g. "IN" ('' = the phone's region). */
@@ -56,7 +58,9 @@ export type Settings = {
 };
 
 /** The settings that make up your profile, synced across devices when you're signed in. */
-export const PROFILE_KEYS = ['name', 'bio', 'photo', 'favourites', 'yearGoal'] as const;
+export const PROFILE_KEYS = ['name', 'bio', 'photo', 'favourites', 'yearGoal', 'sharing'] as const;
+
+export type Sharing = { diary: boolean; reviews: boolean; lists: boolean };
 
 export const DEFAULT_SETTINGS: Settings = {
   themeMode: 'dark',
@@ -74,6 +78,7 @@ export const DEFAULT_SETTINGS: Settings = {
   photo: null,
   favourites: [],
   yearGoal: 0,
+  sharing: { diary: true, reviews: true, lists: true },
   omdbKey: '',
   watchRegion: '',
   seenUpdate: null,
@@ -137,6 +142,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
         photo: s.photo,
         favourites: s.favourites,
         yearGoal: s.yearGoal,
+        sharing: s.sharing,
         tmdbKey: s.tmdbKey,
         omdbKey: s.omdbKey,
         seenUpdate: s.seenUpdate,

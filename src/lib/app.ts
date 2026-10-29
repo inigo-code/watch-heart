@@ -36,10 +36,11 @@ export const DATA_SOURCES = {
  * update worth telling people about; an update that leaves it alone shows nothing.
  */
 export const WHATS_NEW = {
-  id: '1.1.4',
+  id: '1.2.0',
   items: [
-    'Diary entries show the synopsis, cast and crew, and what to watch next',
-    'Discover is one page for films, series and anime; switch kind on the results',
-    'Text fields stay above the keyboard',
+    'Friends: share your invite code, then see each other’s diaries, reviews and lists',
+    'Title pages show which friends have seen it, their ratings and reviews',
+    'An Up next widget for your home screen: your next episode, a tap away',
+    'You choose what friends see, in Settings',
   ],
 };

@@ -6,7 +6,7 @@
   <a href="../../releases/latest/download/watch-heart.apk"><img alt="Download APK" src="https://img.shields.io/badge/Download-Android%20APK-F2B84B?style=for-the-badge&logo=android&logoColor=white&labelColor=0B0A0D"></a>
   <a href="https://inigo-code.github.io/watch-heart-site/fdroid.html"><img alt="Get it with F-Droid" src="https://img.shields.io/badge/Get%20it%20with-F--Droid-1976D2?style=for-the-badge&logo=f-droid&logoColor=white&labelColor=0B0A0D"></a>
   <a href="https://inigo-code.github.io/watch-heart-site/"><img alt="Website" src="https://img.shields.io/badge/Website-Watch%20Heart-FF4D6D?style=for-the-badge&logo=githubpages&logoColor=white&labelColor=0B0A0D"></a>
-  <img alt="Version" src="https://img.shields.io/badge/version-1.1.0-F2B84B?style=for-the-badge&labelColor=0B0A0D">
+  <img alt="Version" src="https://img.shields.io/badge/version-1.2.0-F2B84B?style=for-the-badge&labelColor=0B0A0D">
   <img alt="Expo SDK 58" src="https://img.shields.io/badge/Expo-SDK%2058-000020?style=for-the-badge&logo=expo&logoColor=white">
   <img alt="React Native" src="https://img.shields.io/badge/React%20Native-0.88-61DAFB?style=for-the-badge&logo=react&logoColor=black">
   <img alt="Supabase" src="https://img.shields.io/badge/Sync-Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white">
@@ -33,7 +33,7 @@ keep a watchlist, and turn each month into an <b>Instagram story</b>. Free, with
     </td>
     <td width="33%" valign="top">
       <h4>🔎 Find anything</h4>
-      Films, series and anime in one search, with what's trending this week before you type. Anime is recognised and tagged automatically.
+      Films, series and anime in one search, with what's trending this week before you type, and <b>Discover</b> to browse by service, genre, decade, language or country.
     </td>
     <td width="33%" valign="top">
       <h4>⭐ Half stars, real reviews</h4>
@@ -96,6 +96,34 @@ keep a watchlist, and turn each month into an <b>Instagram story</b>. Free, with
       Your profile as an Instagram story in any of the six palettes. Your name, bio and photo follow you to your other phones.
     </td>
   </tr>
+  <tr>
+    <td valign="top">
+      <h4>📋 Your own lists</h4>
+      <i>Best of 2026</i>, <i>Ghibli ranked</i>: make lists from your diary or any title, number them if you like, and share one as a story.
+    </td>
+    <td valign="top">
+      <h4>🎭 Title pages</h4>
+      Synopsis, cast and crew, trailer, seasons, <i>You might like</i> and <i>By the same director</i>. Tap anyone for their filmography, with what you've seen ticked.
+    </td>
+    <td valign="top">
+      <h4>💬 More than stars</h4>
+      Tag a viewing with up to five vibes, where you watched, on what, which service, and your favourite character. Your profile counts them up.
+    </td>
+  </tr>
+  <tr>
+    <td valign="top">
+      <h4>🤝 Friends</h4>
+      Share your invite code to see each other's diaries, reviews and lists, and which friends have seen a title before you press play. You choose what they see.
+    </td>
+    <td valign="top">
+      <h4>📱 Up next widget</h4>
+      Your next episode, or the top of your watchlist, on your home screen. Tap to pick up where you left off; + to log something.
+    </td>
+    <td valign="top">
+      <h4>🗂️ Discover</h4>
+      Hidden gems, miniseries to binge, anime airing now and a shelf for the season, then switch any of them between films, series and anime.
+    </td>
+  </tr>
 </table>
 
 <br/>
@@ -147,6 +175,7 @@ Both ways install the same signed APK, so you can switch between them without lo
 
 - **On your phone first.** Your diary, watchlist and settings live on the phone and work without an account.
 - **Private sync.** With an account, your diary, watchlist, episode progress and profile sync through Supabase. Row Level Security means every account can read only its own rows, and profile photos sit in a private bucket under your own folder.
+- **Friends see only what you share.** Friends are made by invite code, both ways. They never read your tables: a few server functions check the friendship and return just what you share (diary, reviews, lists; each can be switched off). Who you watched with and your tags are never shared.
 - **Leave any time.** Export a backup, a spreadsheet or a Letterboxd file, or [delete your account](https://inigo-code.github.io/watch-heart-site/delete-account.html) in the app.
 - **No ads, no analytics, no tracking.** See the [privacy policy](https://inigo-code.github.io/watch-heart-site/privacy.html).
 
@@ -195,7 +224,7 @@ npm install
 npx expo start
 ```
 
-Scan the QR code with **Expo Go** on Android. Everything works in Expo Go except share-in and the App lock privacy screen (a small native module in `modules/app-privacy`, as in Prompt Heart), which need a development build:
+Scan the QR code with **Expo Go** on Android. Everything works in Expo Go except share-in, the home-screen widget and the App lock privacy screen (a small native module in `modules/app-privacy`, as in Prompt Heart), which need a development build:
 
 ```bash
 npx eas-cli@latest build --profile development --platform android
@@ -217,12 +246,14 @@ Accounts and sync need a free Supabase project; see [supabase/SETUP.md](supabase
 
 ### Code map
 
-- `src/app`: screens (Expo Router). `(tabs)` holds Diary, Find, Watchlist and Recap.
+- `src/app`: screens (Expo Router). `(tabs)` holds Diary, Find, Watchlist and Recap; `title`, `person` and `browse` are the title pages and Discover.
 - `src/api`: TMDB, TVmaze and AniList clients, and link resolving for share-in.
 - `src/store`: the diary and watchlist (SQLite on the phone) and their types.
 - `src/lib/import`: the importers, one per app, and file detection.
 - `src/lib/tmdbFreshness.ts`: background poster matching and TMDB upkeep.
 - `src/sync`, `supabase/`: accounts and cloud sync, and the server schema.
+- `src/friends`, `supabase/friends.sql`: invite codes, friends, and what friends can see.
+- `src/widget`, `index.ts`: the Up next home-screen widget (react-native-android-widget).
 - `src/story`: the Instagram story canvas, review card, palettes and share/save.
 - `src/components`: film-styled UI (posters, stars, ticket stubs, reel headers).
 - `src/lock`, `modules/app-privacy`: App lock, from Prompt Heart.

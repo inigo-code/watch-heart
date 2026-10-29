@@ -13,6 +13,7 @@ import { AddToList } from '@/components/lists/AddToList';
 import { SectionLabel } from '@/components/SectionLabel';
 import { TitleExtras } from '@/components/TitleExtras';
 import { Synopsis, TitleMore, useAbout } from '@/components/title/AboutTitle';
+import { FriendsOnTitle } from '@/components/title/FriendsOnTitle';
 import { useToast } from '@/components/Toast';
 import { friendlyDate } from '@/lib/dates';
 import { font, fonts, useTheme } from '@/lib/theme';
@@ -152,6 +153,8 @@ export default function TitleScreen() {
           <Synopsis about={a} overview={t.overview ?? ''} theme={theme} />
 
           <TitleExtras source={t.source} sourceId={t.sourceId} theme={theme} />
+
+          <FriendsOnTitle source={t.source} sourceId={t.sourceId} theme={theme} />
 
           {a && <TitleMore id={id} t={t} about={a} theme={theme} />}
         </View>

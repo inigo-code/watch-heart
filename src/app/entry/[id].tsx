@@ -13,6 +13,7 @@ import { RichText } from '@/components/RichText';
 import { SectionLabel } from '@/components/SectionLabel';
 import { TitleExtras } from '@/components/TitleExtras';
 import { Synopsis, TitleMore, useAbout } from '@/components/title/AboutTitle';
+import { FriendsOnTitle } from '@/components/title/FriendsOnTitle';
 import { Face, openTitle } from '@/components/title/Rows';
 import { useToast } from '@/components/Toast';
 import { dayParts, friendlyDate } from '@/lib/dates';
@@ -236,6 +237,8 @@ export default function EntryScreen() {
               ))}
             </View>
           )}
+
+          <FriendsOnTitle source={entry.source} sourceId={entry.sourceId} theme={theme} />
 
           {about && (
             <>

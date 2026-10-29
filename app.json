@@ -3,7 +3,7 @@
     "name": "Watch Heart",
     "slug": "watch-heart",
     "owner": "inigojo",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "scheme": "watchheart",
@@ -113,6 +113,30 @@
           "photosPermission": "Watch Heart uses a photo you choose for your profile picture.",
           "cameraPermission": false,
           "microphonePermission": false
+        }
+      ],
+      [
+        "react-native-android-widget",
+        {
+          "fonts": [
+            "./node_modules/@expo-google-fonts/bebas-neue/400Regular/BebasNeue_400Regular.ttf",
+            "./node_modules/@expo-google-fonts/courier-prime/700Bold/CourierPrime_700Bold.ttf"
+          ],
+          "widgets": [
+            {
+              "name": "UpNext",
+              "label": "Up next",
+              "description": "Your next episode, or the top of your watchlist. Tap to open it; + to log something.",
+              "minWidth": "250dp",
+              "minHeight": "180dp",
+              "targetCellWidth": 4,
+              "targetCellHeight": 2,
+              "maxResizeHeight": "400dp",
+              "resizeMode": "horizontal|vertical",
+              "previewImage": "./assets/widget-preview/up-next.png",
+              "updatePeriodMillis": 0
+            }
+          ]
         }
       ]
     ],

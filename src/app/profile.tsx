@@ -10,6 +10,8 @@ import { KeyboardSafe } from '@/components/KeyboardSafe';
 import { Poster } from '@/components/Film';
 import { ListCover } from '@/components/lists/ListCover';
 import { RatingChart } from '@/components/RatingChart';
+import { Face } from '@/components/title/Rows';
+import { useFriends } from '@/friends/FriendsProvider';
 import { SectionLabel } from '@/components/SectionLabel';
 import { Achievements } from '@/components/profile/Achievements';
 import { ActivityGraph, ActivityKey } from '@/components/profile/ActivityGraph';
@@ -40,6 +42,7 @@ export default function ProfileScreen() {
 }
 
 function ProfileBody() {
+  const friends = useFriends();
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const toast = useToast();
@@ -318,6 +321,42 @@ function ProfileBody() {
           </View>
         )}
 
+        {/* Friends */}
+        <Block theme={theme} title={friends.friends.length ? `Friends (${friends.friends.length})` : 'Friends'}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.listsRow}>
+            {friends.friends.map((f) => (
+              <Pressable
+                key={f.id}
+                onPress={() => router.push({ pathname: '/friend/[id]', params: { id: f.id } })}
+                accessibilityRole="button"
+                style={({ pressed }) => [styles.friend, pressed && { opacity: 0.8 }]}
+              >
+                <Face uri={friends.photos[f.id] ?? null} name={f.name} theme={theme} size={64} round />
+                <Text style={[styles.buddyName, { color: theme.text }]} numberOfLines={1}>
+                  {f.name}
+                </Text>
+              </Pressable>
+            ))}
+            <Pressable
+              onPress={() => router.push('/friends')}
+              accessibilityRole="button"
+              style={({ pressed }) => [styles.friend, { opacity: pressed ? 0.7 : 1 }]}
+            >
+              <View style={[styles.friendAdd, { borderColor: theme.border }]}>
+                <Ionicons name={friends.friends.length ? 'people-outline' : 'person-add-outline'} size={24} color={theme.accent} />
+              </View>
+              <Text style={[styles.buddyName, { color: theme.text }]} numberOfLines={1}>
+                {friends.friends.length ? 'All friends' : 'Add friends'}
+              </Text>
+            </Pressable>
+          </ScrollView>
+          {!friends.friends.length && (
+            <Text style={[styles.hint, { color: theme.textMuted }]}>
+              {friends.available ? 'Share your invite code to see each other’s diaries, reviews and lists.' : 'Sign in to add friends with an invite code.'}
+            </Text>
+          )}
+        </Block>
+
         {/* Your lists */}
         <Block theme={theme} title="Your lists">
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.listsRow}>
@@ -506,6 +545,8 @@ const styles = StyleSheet.create({
   goalChipText: { fontFamily: fonts.monoBold, fontSize: font.footnote },
   activityFoot: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   vibes: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  friend: { width: 72, alignItems: 'center', gap: 6 },
+  friendAdd: { width: 64, height: 64, borderRadius: 32, borderWidth: 1, borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center' },
   vibe: { flexDirection: 'row', alignItems: 'center', gap: 6, borderWidth: 1, borderRadius: 16, paddingHorizontal: 12, height: 32 },
   vibeName: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 1 },
   vibeCount: { fontFamily: fonts.mono, fontSize: font.caption },

@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { KeyboardSafe } from '@/components/KeyboardSafe';
 import { ControlRow, Row, Section, Segmented, ToggleRow } from '@/components/SettingsUI';
+import { useFriends } from '@/friends/FriendsProvider';
 import { useToast } from '@/components/Toast';
 import { UpdateCard } from '@/components/UpdateRow';
 import { ActionSheet } from '@/components/ActionSheet';
@@ -44,6 +45,7 @@ export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
   const toast = useToast();
   const { settings, update, reset } = useSettings();
+  const friends = useFriends();
   const lock = useAppLock();
   const diary = useDiary();
   const sync = useSync();
@@ -113,9 +115,43 @@ export default function SettingsScreen() {
             label={settings.name.trim() || 'Your profile'}
             value="Stats, favourites, goal"
             onPress={() => router.push('/profile')}
+          />
+          <Row
+            theme={theme}
+            icon="people-outline"
+            label="Friends"
+            value={friends.available ? (friends.friends.length ? `${friends.friends.length}` : 'Invite code') : 'Needs an account'}
+            onPress={() => router.push('/friends')}
             last
           />
         </Section>
+
+        {friends.available && (
+          <Section theme={theme} title="What friends can see" footer="Friends never see who you watched with, or your tags. Spoiler-marked reviews stay hidden until they tap.">
+            <ToggleRow
+              theme={theme}
+              icon="ticket-outline"
+              label="Your diary and ratings"
+              value={settings.sharing.diary}
+              onChange={(diary) => update({ sharing: { ...settings.sharing, diary } })}
+            />
+            <ToggleRow
+              theme={theme}
+              icon="chatbubble-outline"
+              label="Your reviews"
+              value={settings.sharing.reviews}
+              onChange={(reviews) => update({ sharing: { ...settings.sharing, reviews } })}
+            />
+            <ToggleRow
+              theme={theme}
+              icon="albums-outline"
+              label="Your lists"
+              value={settings.sharing.lists}
+              onChange={(lists) => update({ sharing: { ...settings.sharing, lists } })}
+              last
+            />
+          </Section>
+        )}
 
         <Section theme={theme} title="Look">
           <ControlRow theme={theme} label="Screen">

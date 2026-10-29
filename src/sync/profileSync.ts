@@ -2,12 +2,13 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { File, Paths } from 'expo-file-system';
 import { Platform } from 'react-native';
 
-import type { Favourite, Settings } from '@/settings/SettingsProvider';
+import { DEFAULT_SETTINGS } from '@/settings/SettingsProvider';
+import type { Favourite, Settings, Sharing } from '@/settings/SettingsProvider';
 
 // The profile is one record per account: the "profiles" row (name, bio, favourites, goal) and a small
 // JPEG in the private "avatars" bucket, under the account's own folder. Newest edit wins, like the diary.
 
-type ProfileData = { name: string; bio: string; favourites: Favourite[]; yearGoal: number };
+type ProfileData = { name: string; bio: string; favourites: Favourite[]; yearGoal: number; sharing: Sharing };
 type ProfileRow = { data: Partial<ProfileData> | null; photo_path: string | null; modified_at: number | string };
 
 const BUCKET = 'avatars';
@@ -31,6 +32,7 @@ export async function pullProfile(client: SupabaseClient, userId: string, s: Set
     bio: d.bio ?? s.bio,
     favourites: Array.isArray(d.favourites) ? d.favourites.slice(0, 4) : s.favourites,
     yearGoal: typeof d.yearGoal === 'number' ? d.yearGoal : s.yearGoal,
+    sharing: { ...DEFAULT_SETTINGS.sharing, ...(d.sharing ?? s.sharing) },
     profileUpdatedAt: at,
     profileSyncedAt: at,
   };
@@ -62,7 +64,7 @@ export async function pushProfile(client: SupabaseClient, userId: string, s: Set
       photoPath = path;
     } else if (!s.photo) photoPath = null;
   }
-  const data: ProfileData = { name: s.name, bio: s.bio, favourites: s.favourites, yearGoal: s.yearGoal };
+  const data: ProfileData = { name: s.name, bio: s.bio, favourites: s.favourites, yearGoal: s.yearGoal, sharing: s.sharing };
   // A profile made before sync existed has no stamp yet; 1 still loses to any real edit elsewhere.
   const at = s.profileUpdatedAt || 1;
   const { error } = await client.from('profiles').upsert({ user_id: userId, data, photo_path: photoPath, modified_at: at }, { onConflict: 'user_id' });
