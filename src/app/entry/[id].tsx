@@ -9,6 +9,7 @@ import { Hero } from '@/components/Hero';
 import { trackable } from '@/api/episodes';
 import { DangerButton } from '@/components/DangerButton';
 import { AddToList } from '@/components/lists/AddToList';
+import { ConfirmTrash } from '@/components/ConfirmTrash';
 import { RichText } from '@/components/RichText';
 import { SectionLabel } from '@/components/SectionLabel';
 import { TitleExtras } from '@/components/TitleExtras';
@@ -33,6 +34,7 @@ export default function EntryScreen() {
   const entry = getEntry(id);
   const [reveal, setReveal] = useState(false);
   const [listing, setListing] = useState(false);
+  const [trashing, setTrashing] = useState(false);
   const { listsWith } = useLists();
   const { about } = useAbout(entry?.source === 'tmdb' ? entry.sourceId : null);
 
@@ -257,10 +259,11 @@ export default function EntryScreen() {
             </>
           )}
 
-          <DangerButton theme={theme} label="Move to trash" onPress={remove} />
+          <DangerButton theme={theme} label="Move to trash" onPress={() => setTrashing(true)} />
         </View>
       </ScrollView>
       <AddToList item={listing ? entry : null} theme={theme} onClose={() => setListing(false)} />
+      <ConfirmTrash title={trashing ? entry.title : null} onConfirm={remove} onClose={() => setTrashing(false)} />
     </View>
   );
 }

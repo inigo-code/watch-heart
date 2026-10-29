@@ -12,10 +12,11 @@ import { computeStats, kindSummary } from '@/lib/stats';
 import { fonts } from '@/lib/theme';
 import type { Entry } from '@/store/types';
 
+import { sharp } from './export';
 import { PALETTES } from './palettes';
 import type { Palette, PaletteKey, StoryLayout } from './palettes';
 
-/** The story is laid out at 360×640 and captured at 1080×1920 (Instagram's story size). */
+/** The story is laid out at 360×640 and captured at 1440×2560 (see export.ts). */
 export const STORY_W = 360;
 export const STORY_H = 640;
 // Instagram covers the top and bottom of a story with its own UI; keep the important parts inside.
@@ -182,9 +183,10 @@ function StoryPoster({ e, w, p, settled, radius = 3 }: { e: Entry; w: number; p:
     <View style={{ width: w, height: w * 1.5, borderRadius: radius, overflow: 'hidden', backgroundColor: p.card }}>
       {e.posterUrl ? (
         <Image
-          source={{ uri: e.posterUrl }}
+          source={{ uri: sharp(e.posterUrl, w) }}
           style={StyleSheet.absoluteFill}
           resizeMode="cover"
+          resizeMethod="scale"
           onLoadEnd={() => settled(e.posterUrl as string)}
           onError={() => settled(e.posterUrl as string)}
         />

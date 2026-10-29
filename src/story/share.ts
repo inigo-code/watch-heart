@@ -4,12 +4,13 @@ import type { RefObject } from 'react';
 import { Platform } from 'react-native';
 import { captureRef } from 'react-native-view-shot';
 
+import { EXPORT_H, EXPORT_W } from './export';
 import type { StoryHandle } from './StoryCanvas';
 
-/** Draws the story view into a 1080×1920 PNG (Instagram's story size) and returns its file uri. */
+/** Draws the story into a 1440×2560 PNG (a sharper Instagram story size) and returns its file uri. */
 export async function captureStory(ref: RefObject<StoryHandle | null>): Promise<string> {
   if (!ref.current) throw new Error('The story isn’t ready yet.');
-  return captureRef(ref, { format: 'png', quality: 1, width: 1080, height: 1920, result: 'tmpfile' });
+  return captureRef(ref, { format: 'png', quality: 1, width: EXPORT_W, height: EXPORT_H, result: 'tmpfile' });
 }
 
 /**

@@ -37,8 +37,8 @@ export default function CardScreen() {
 
   return (
     <ScrollView style={{ backgroundColor: theme.bg }} contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 32 }]}>
-      <StoryPreview width={Math.min(width - 32, 300)} theme={theme}>
-        <ReviewCard ref={ref} entry={entry} palette={settings.story.palette} showReview={showReview} onReady={onReady} />
+      <StoryPreview width={Math.min(width - 32, 300)} theme={theme} target={ref}>
+        <ReviewCard entry={entry} palette={settings.story.palette} showReview={showReview} onReady={onReady} />
       </StoryPreview>
       <ShareButtons target={ref} ready={ready} theme={theme} />
       <SectionLabel theme={theme}>PALETTE</SectionLabel>

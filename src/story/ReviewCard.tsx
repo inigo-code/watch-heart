@@ -11,6 +11,7 @@ import { KIND_LABEL } from '@/lib/stats';
 import { fonts } from '@/lib/theme';
 import type { Entry } from '@/store/types';
 
+import { sharp } from './export';
 import { PALETTES } from './palettes';
 import type { PaletteKey } from './palettes';
 import { STORY_H, STORY_W } from './StoryCanvas';
@@ -38,7 +39,7 @@ export const ReviewCard = forwardRef<StoryHandle, Props>(function ReviewCard({ e
       <LinearGradient colors={p.bg} style={StyleSheet.absoluteFill} />
       {backdrop && (
         <>
-          <Image source={{ uri: backdrop }} style={[styles.backdrop, { opacity: 0.6 }]} resizeMode="cover" blurRadius={entry.backdropUrl ? 2 : 20} />
+          <Image source={{ uri: sharp(backdrop, 360) }} style={[styles.backdrop, { opacity: 0.6 }]} resizeMode="cover" resizeMethod="scale" blurRadius={entry.backdropUrl ? 2 : 20} />
           <LinearGradient colors={['transparent', p.bg[p.bg.length - 1]]} locations={[0.1, 0.95]} style={styles.backdrop} />
         </>
       )}
@@ -49,9 +50,10 @@ export const ReviewCard = forwardRef<StoryHandle, Props>(function ReviewCard({ e
           <View style={[styles.poster, { backgroundColor: p.card }]}>
             {entry.posterUrl ? (
               <Image
-                source={{ uri: entry.posterUrl }}
+                source={{ uri: sharp(entry.posterUrl, 168) }}
                 style={StyleSheet.absoluteFill}
                 resizeMode="cover"
+                resizeMethod="scale"
                 onLoadEnd={() => setLoaded(true)}
                 onError={() => setLoaded(true)}
               />

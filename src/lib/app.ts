@@ -48,6 +48,8 @@ export const WHATS_NEW = {
   items: [
     'A new Home tab: this week’s top titles, picks for you, trending, in cinemas, and in India: FDFS and regional favourites',
     'Choose your country and language in Settings, and Home starts with new films in it',
+    'Sharper stories: shared at 1440×2560, with posters at full quality',
+    'Moving an entry to Trash asks first',
     'Plan a movie night from any title, and get a reminder when it’s time',
     'An Up next widget for your home screen: your next episode, a tap away',
     'The Diary’s header stays put while you scroll, and Back to the top waits at the end',

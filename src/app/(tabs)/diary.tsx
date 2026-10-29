@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ActionSheet } from '@/components/ActionSheet';
 import { AddToList } from '@/components/lists/AddToList';
+import { ConfirmTrash } from '@/components/ConfirmTrash';
 import { PosterTile, ReelHeader, TicketStub } from '@/components/Diary';
 import { Chip } from '@/components/Film';
 import { TipCard } from '@/components/TipCard';
@@ -65,6 +66,7 @@ export default function DiaryScreen() {
     if (q) setQuery(q);
   }
   const [menu, setMenu] = useState<Entry | null>(null);
+  const [trashing, setTrashing] = useState<Entry | null>(null);
   const [listing, setListing] = useState<Entry | null>(null);
   const listRef = useRef<SectionList<Entry[], { month: string; count: number; data: Entry[][] }>>(null);
   const grid = settings.diaryLayout === 'grid';
@@ -286,12 +288,13 @@ export default function DiaryScreen() {
                 { label: 'Log again', icon: 'repeat', onPress: () => router.push({ pathname: '/log', params: { again: menu.id } }) },
                 { label: 'Share as story card', icon: 'sparkles-outline', onPress: () => router.push({ pathname: '/card/[id]', params: { id: menu.id } }) },
                 { label: 'Add to a list', icon: 'albums-outline', onPress: () => setListing(menu) },
-                { label: 'Move to Trash', icon: 'trash-outline', destructive: true, onPress: () => remove(menu) },
+                { label: 'Move to Trash', icon: 'trash-outline', destructive: true, onPress: () => setTrashing(menu) },
               ]
             : []
         }
       />
       <AddToList item={listing} theme={theme} onClose={() => setListing(null)} />
+      <ConfirmTrash title={trashing?.title ?? null} onConfirm={() => trashing && remove(trashing)} onClose={() => setTrashing(null)} />
     </View>
   );
 }

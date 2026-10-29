@@ -6,6 +6,7 @@ import { Image, StyleSheet, Text, View } from 'react-native';
 import type { ProfileStats } from '@/lib/profileStats';
 import { fonts } from '@/lib/theme';
 import type { Favourite } from '@/settings/SettingsProvider';
+import { sharp } from '@/story/export';
 import { STORY_H, STORY_W } from '@/story/StoryCanvas';
 import type { StoryHandle } from '@/story/StoryCanvas';
 import type { Palette } from '@/story/palettes';
@@ -25,7 +26,7 @@ export const ProfileCard = forwardRef<StoryHandle, Props>(function ProfileCard({
       <LinearGradient colors={p.bg} style={StyleSheet.absoluteFill} />
       <Text style={[styles.kicker, { color: p.accent }]}>★ MY WATCH DIARY ★</Text>
       <View style={[styles.photoRing, { borderColor: p.accent }]}>
-        {photo ? <Image source={{ uri: photo }} style={styles.photo} fadeDuration={0} /> : <Text style={[styles.initial, { color: p.text }]}>{(name.trim()[0] ?? '♥').toUpperCase()}</Text>}
+        {photo ? <Image source={{ uri: photo }} style={styles.photo} fadeDuration={0} resizeMethod="scale" /> : <Text style={[styles.initial, { color: p.text }]}>{(name.trim()[0] ?? '♥').toUpperCase()}</Text>}
       </View>
       <Text style={[styles.name, { color: p.text }]} numberOfLines={1}>
         {(name.trim() || 'Watch Heart').toUpperCase()}
@@ -45,7 +46,7 @@ export const ProfileCard = forwardRef<StoryHandle, Props>(function ProfileCard({
         <View style={styles.favs}>
           {Array.from({ length: 4 }, (_, i) => favourites[i]).map((f, i) => (
             <View key={i} style={[styles.poster, { backgroundColor: p.card }]}>
-              {f?.posterUrl ? <Image source={{ uri: f.posterUrl }} style={StyleSheet.absoluteFill} fadeDuration={0} /> : f ? <Text style={[styles.posterTitle, { color: p.muted }]}>{f.title}</Text> : null}
+              {f?.posterUrl ? <Image source={{ uri: sharp(f.posterUrl, 70) }} style={StyleSheet.absoluteFill} fadeDuration={0} resizeMethod="scale" /> : f ? <Text style={[styles.posterTitle, { color: p.muted }]}>{f.title}</Text> : null}
             </View>
           ))}
         </View>

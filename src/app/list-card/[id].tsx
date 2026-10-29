@@ -28,8 +28,8 @@ export default function ListCardScreen() {
 
   return (
     <ScrollView style={{ backgroundColor: theme.bg }} contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 32 }]}>
-      <StoryPreview width={Math.min(width - 32, 300)} theme={theme}>
-        <ListStoryCard ref={ref} list={list} palette={PALETTES[settings.story.palette]} name={settings.name} />
+      <StoryPreview width={Math.min(width - 32, 300)} theme={theme} target={ref}>
+        <ListStoryCard list={list} palette={PALETTES[settings.story.palette]} name={settings.name} />
       </StoryPreview>
       <ShareButtons target={ref} ready theme={theme} />
       <SectionLabel theme={theme}>Palette</SectionLabel>

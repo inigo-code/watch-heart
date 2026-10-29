@@ -26,9 +26,8 @@ export default function ProfileCardScreen() {
 
   return (
     <ScrollView style={{ backgroundColor: theme.bg }} contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 32 }]}>
-      <StoryPreview width={Math.min(width - 32, 300)} theme={theme}>
+      <StoryPreview width={Math.min(width - 32, 300)} theme={theme} target={ref}>
         <ProfileCard
-          ref={ref}
           name={settings.name}
           bio={settings.bio}
           photo={settings.photo}

@@ -12,6 +12,7 @@ import { details, tmdbKey } from '@/api';
 import { KeyboardSafe } from '@/components/KeyboardSafe';
 import { CompanionField } from '@/components/CompanionField';
 import { DangerButton } from '@/components/DangerButton';
+import { ConfirmTrash } from '@/components/ConfirmTrash';
 import { Chip, StarInput } from '@/components/Film';
 import { Hero } from '@/components/Hero';
 import { SectionLabel } from '@/components/SectionLabel';
@@ -108,6 +109,7 @@ function LogForm() {
   const [yearText, setYearText] = useState(() => (draft.year ? String(draft.year) : ''));
   const [iosPicker, setIosPicker] = useState(false);
   const [picking, setPicking] = useState(false);
+  const [trashing, setTrashing] = useState(false);
   const reviewSel = useRef({ start: 0, end: 0 });
   const set = (patch: Partial<EntryDraft>) => setDraft((d) => ({ ...d, ...patch }));
 
@@ -440,10 +442,11 @@ function LogForm() {
           )}
 
           {editing && (
-            <DangerButton theme={theme} label="Move to trash" onPress={remove} />
+            <DangerButton theme={theme} label="Move to trash" onPress={() => setTrashing(true)} />
           )}
         </View>
       </ScrollView>
+      <ConfirmTrash title={trashing && editing ? editing.title : null} onConfirm={remove} onClose={() => setTrashing(false)} />
       <TitlePicker visible={picking} theme={theme} initialQuery={draft.title} initialKind={draft.kind} onPick={repick} onClose={() => setPicking(false)} />
     </KeyboardSafe>
   );

@@ -2,7 +2,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useState } from 'react';
 import type { ReactNode, RefObject } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, PixelRatio, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { useToast } from '@/components/Toast';
 import { font, fonts } from '@/lib/theme';
@@ -11,20 +11,30 @@ import type { Theme } from '@/lib/theme';
 import { PALETTES } from './palettes';
 import type { PaletteKey } from './palettes';
 import { captureStory, saveImage, shareImage } from './share';
+import { EXPORT_W } from './export';
 import { STORY_H, STORY_W } from './StoryCanvas';
 import type { StoryHandle } from './StoryCanvas';
 
 // Shared pieces of the story screens: the scaled-down preview, the palette picker and the share buttons.
 
 /**
- * Shows a full-size story at `width`. The scale is on this wrapper, not the story itself, so the
- * captured image is always the full 360×640 layout.
+ * Shows a story at `width`. `target` is the box that gets captured: exactly 1440×2560 pixels on any phone,
+ * with the 360×640 story scaled up inside it, so the image is drawn sharp at full size rather than drawn at
+ * the phone's own resolution and stretched. The box itself is scaled down to fit the preview.
  */
-export function StoryPreview({ width, theme, children }: { width: number; theme: Theme; children: ReactNode }) {
-  const scale = width / STORY_W;
+export function StoryPreview({ width, theme, target, children }: { width: number; theme: Theme; target: RefObject<StoryHandle | null>; children: ReactNode }) {
+  const boxW = EXPORT_W / PixelRatio.get();
+  const up = boxW / STORY_W;
+  const down = width / boxW;
   return (
-    <View style={[styles.preview, { width, height: STORY_H * scale, borderColor: theme.border }]}>
-      <View style={{ width: STORY_W, height: STORY_H, transform: [{ scale }], transformOrigin: 'top left' }}>{children}</View>
+    <View style={[styles.preview, { width, height: STORY_H * (width / STORY_W), borderColor: theme.border }]}>
+      <View
+        ref={target}
+        collapsable={false}
+        style={{ width: boxW, height: STORY_H * up, transform: [{ scale: down }], transformOrigin: 'top left', overflow: 'hidden' }}
+      >
+        <View style={{ width: STORY_W, height: STORY_H, transform: [{ scale: up }], transformOrigin: 'top left' }}>{children}</View>
+      </View>
     </View>
   );
 }

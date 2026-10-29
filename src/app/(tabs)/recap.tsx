@@ -93,8 +93,8 @@ export default function RecapScreen() {
             <Text style={[styles.emptyText, { color: theme.textMuted }]}>Nothing logged in {isYear(period) ? period : monthName(period)}.</Text>
           ) : (
             <>
-              <StoryPreview width={previewWidth} theme={theme}>
-                <StoryCanvas ref={storyRef} entries={chosen} title={title} subtitle={subtitle} options={options} onReady={onReady} />
+              <StoryPreview width={previewWidth} theme={theme} target={storyRef}>
+                <StoryCanvas entries={chosen} title={title} subtitle={subtitle} options={options} onReady={onReady} />
               </StoryPreview>
 
               <ShareButtons target={storyRef} ready={ready} theme={theme} />

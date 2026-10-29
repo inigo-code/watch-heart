@@ -5,6 +5,7 @@ import { Image, StyleSheet, Text, View } from 'react-native';
 
 import { fonts } from '@/lib/theme';
 import type { UserList } from '@/lists/ListsProvider';
+import { sharp } from '@/story/export';
 import { STORY_H, STORY_W } from '@/story/StoryCanvas';
 import type { StoryHandle } from '@/story/StoryCanvas';
 import type { Palette } from '@/story/palettes';
@@ -36,7 +37,7 @@ export const ListStoryCard = forwardRef<StoryHandle, { list: UserList; palette: 
               <View key={i} style={[styles.row, { backgroundColor: p.card }]}>
                 <Text style={[styles.rank, { color: i < 3 ? p.accent : p.muted }]}>{i + 1}</Text>
                 {it.posterUrl ? (
-                  <Image source={{ uri: it.posterUrl }} style={styles.thumb} fadeDuration={0} />
+                  <Image source={{ uri: sharp(it.posterUrl, 24) }} style={styles.thumb} fadeDuration={0} resizeMethod="scale" />
                 ) : (
                   <View style={[styles.thumb, { backgroundColor: p.strip }]} />
                 )}
@@ -52,7 +53,7 @@ export const ListStoryCard = forwardRef<StoryHandle, { list: UserList; palette: 
             {items.map((it, i) => (
               <View key={i} style={[styles.poster, { backgroundColor: p.card }]}>
                 {it.posterUrl ? (
-                  <Image source={{ uri: it.posterUrl }} style={StyleSheet.absoluteFill} fadeDuration={0} />
+                  <Image source={{ uri: sharp(it.posterUrl, 74) }} style={StyleSheet.absoluteFill} fadeDuration={0} resizeMethod="scale" />
                 ) : (
                   <Text style={[styles.posterTitle, { color: p.muted }]}>{it.title}</Text>
                 )}
