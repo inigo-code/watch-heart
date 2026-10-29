@@ -46,6 +46,7 @@ export const DATA_SOURCES = {
 export const WHATS_NEW = {
   id: '1.2.0',
   items: [
+    'A new Home tab: this week’s top title, picks for you, what’s trending and what’s in cinemas',
     'An Up next widget for your home screen: your next episode, a tap away',
     'The Diary’s header stays put while you scroll, and Back to the top waits at the end',
     'Discover has collections for the time of year: Diwali, Halloween, Christmas and more',

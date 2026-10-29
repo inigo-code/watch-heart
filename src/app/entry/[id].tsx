@@ -67,7 +67,7 @@ export default function EntryScreen() {
     deleteEntry(entry.id);
     toast(`Moved “${entry.title}” to Trash`, { label: 'Undo', onPress: () => restoreEntry(entry.id) });
     if (router.canGoBack()) router.back();
-    else router.replace('/');
+    else router.replace('/diary');
   };
 
   return (
@@ -117,7 +117,7 @@ export default function EntryScreen() {
                   {entry.companions.map((n) => (
                     <Pressable
                       key={n}
-                      onPress={() => router.navigate({ pathname: '/', params: { q: n } })}
+                      onPress={() => router.navigate({ pathname: '/diary', params: { q: n } })}
                       accessibilityRole="button"
                       accessibilityLabel={`Everything you watched with ${n}`}
                     >

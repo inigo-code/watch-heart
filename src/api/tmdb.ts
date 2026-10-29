@@ -594,3 +594,19 @@ async function loadDiscover(key: string, q: BrowseQuery, page: number, signal?: 
   const d = await get<{ results: Result[]; total_pages: number }>(key, `/discover/${type}`, p, signal);
   return { results: d.results.map((r) => toTitle(r, type)), pages: Math.min(d.total_pages, 500) };
 }
+
+/** This week's trending films and series together (anime included), most talked about first. Kept for an hour. */
+export function trendingAllTmdb(key: string): Promise<Title[]> {
+  return cached('trending:all', 60 * MINUTE, async () => {
+    const d = await get<{ results: (Result & { media_type?: string })[] }>(key, '/trending/all/week');
+    return d.results.filter((r) => r.media_type === 'movie' || r.media_type === 'tv').map((r) => toTitle(r, r.media_type as 'movie' | 'tv'));
+  });
+}
+
+/** Films in cinemas in a country now, most popular first. Kept for six hours. */
+export function nowPlayingTmdb(key: string, region: string): Promise<Title[]> {
+  return cached(`now-playing:${region}`, 6 * 60 * MINUTE, async () => {
+    const d = await get<{ results: Result[] }>(key, '/movie/now_playing', { region });
+    return [...d.results].sort(byPopularity).map((r) => toTitle(r, 'movie'));
+  });
+}

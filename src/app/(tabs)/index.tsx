@@ -1,384 +1,271 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { router, useLocalSearchParams } from 'expo-router';
-import { useMemo, useRef, useState } from 'react';
-import { Pressable, ScrollView, SectionList, StyleSheet, Text, TextInput, View, useWindowDimensions } from 'react-native';
+import { Image } from 'expo-image';
+import { LinearGradient } from 'expo-linear-gradient';
+import { router } from 'expo-router';
+import { useEffect, useMemo, useState } from 'react';
+import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { ActionSheet } from '@/components/ActionSheet';
-import { Avatar } from '@/components/Avatar';
-import { AddToList } from '@/components/lists/AddToList';
-import { BrandTitle } from '@/components/BrandTitle';
-import { PosterTile, ReelHeader, TicketStub } from '@/components/Diary';
-import { Chip } from '@/components/Film';
-import { TipCard } from '@/components/TipCard';
+import { tmdbKey } from '@/api';
+import { watchRegion } from '@/api/omdb';
+import { nowPlayingTmdb, trendingAllTmdb } from '@/api/tmdb';
+import { AppHeader, greetingLine } from '@/components/AppHeader';
+import { KindBadge, Poster } from '@/components/Film';
+import { RowHead, TitleRow, openTitle, warmTitle } from '@/components/title/Rows';
 import { useToast } from '@/components/Toast';
-import { monthKey, today } from '@/lib/dates';
+import { today } from '@/lib/dates';
+import { countryName } from '@/lib/discover';
 import { useHour } from '@/lib/greeting';
-import { computeStats } from '@/lib/stats';
-import { KIND_COLORS, font, fonts, shadow, useTheme } from '@/lib/theme';
+import { favouriteSeeds, forYou } from '@/lib/home';
+import { font, fonts, useTheme } from '@/lib/theme';
+import type { Theme } from '@/lib/theme';
+import { continueWatching, nextUp } from '@/lib/tracking';
 import { useSettings } from '@/settings/SettingsProvider';
 import { useDiary } from '@/store/DiaryStore';
-import { useSync } from '@/sync/SyncProvider';
-import type { Entry } from '@/store/types';
+import type { Title } from '@/store/types';
 
-type Filter = 'all' | 'movie' | 'tv' | 'anime' | 'liked' | 'reviewed' | 'rewatch';
-
-const FILTERS: { key: Filter; label: string; color?: string; icon?: keyof typeof Ionicons.glyphMap }[] = [
-  { key: 'all', label: 'All' },
-  { key: 'movie', label: 'Films', color: KIND_COLORS.movie },
-  { key: 'tv', label: 'Series', color: KIND_COLORS.tv },
-  { key: 'anime', label: 'Anime', color: KIND_COLORS.anime },
-  { key: 'liked', label: 'Liked', icon: 'heart' },
-  { key: 'reviewed', label: 'Reviewed', icon: 'reader-outline' },
-  { key: 'rewatch', label: 'Rewatches', icon: 'repeat' },
-];
-
-/** Section key for undated entries (sorts after every month). */
-const ARCHIVE = 'archive';
-
-const GRID_COLS = 4;
-const GAP = 10;
-
-/** A line under the title that changes with the hour, like the next showing on a marquee. */
-function tagline(hour: number, name: string) {
-  const who = name.trim() ? `, ${name.trim()}` : '';
-  if (hour >= 5 && hour < 12) return `Morning${who}. Coffee and a classic?`;
-  if (hour >= 12 && hour < 17) return `Afternoon${who}. Matinee time.`;
-  if (hour >= 17 && hour < 22) return `Evening${who}. Lights down, phones away.`;
-  return `Still up${who}? One more episode…`;
-}
-
-function matches(e: Entry, filter: Filter, q: string) {
-  if (filter === 'movie' || filter === 'tv' || filter === 'anime') {
-    if (e.kind !== filter) return false;
-  } else if (filter === 'liked' && !e.liked) return false;
-  else if (filter === 'reviewed' && !e.review.trim()) return false;
-  else if (filter === 'rewatch' && !e.rewatch) return false;
-  if (!q) return true;
-  const hay =
-    `${e.title} ${e.originalTitle ?? ''} ${e.review} ${e.tags.join(' ')} ${e.credit ?? ''} ${e.progress} ${(e.companions ?? []).join(' ')}`.toLowerCase();
-  return hay.includes(q);
-}
-
-export default function DiaryScreen() {
+/**
+ * Home: something to watch tonight, the moment the app opens. The week's top title, then a few rows: the
+ * series you're in the middle of, picks from what you loved, what's trending, and what's in cinemas.
+ */
+export default function HomeScreen() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
-  const toast = useToast();
   const hour = useHour();
-  const { width } = useWindowDimensions();
-  const { settings, update } = useSettings();
-  const sync = useSync();
-  const { entries, ready, deleteEntry, restoreEntry } = useDiary();
-  const [filter, setFilter] = useState<Filter>('all');
-  const [query, setQuery] = useState('');
-  // Opened on a search from elsewhere (a name on an entry, a movie buddy): show it.
-  const { q } = useLocalSearchParams<{ q?: string }>();
-  const [seenQ, setSeenQ] = useState<string | undefined>(undefined);
-  if (q !== seenQ) {
-    setSeenQ(q);
-    if (q) setQuery(q);
-  }
-  const [menu, setMenu] = useState<Entry | null>(null);
-  const [listing, setListing] = useState<Entry | null>(null);
-  const listRef = useRef<SectionList<Entry[], { month: string; count: number; data: Entry[][] }>>(null);
-  const grid = settings.diaryLayout === 'grid';
-  const tile = (width - 32 - GAP * (GRID_COLS - 1)) / GRID_COLS;
+  const { settings } = useSettings();
+  const key = tmdbKey(settings.tmdbKey);
+  const region = watchRegion(settings.watchRegion);
+  const { entries, watchlist, viewingsOf } = useDiary();
+  const [trending, setTrending] = useState<Title[] | null>(null);
+  const [cinema, setCinema] = useState<{ region: string; titles: Title[] } | null>(null);
+  const [picks, setPicks] = useState<{ seeds: string; titles: Title[] } | null>(null);
 
-  const yearStats = useMemo(() => computeStats(entries.filter((e) => !e.undated && e.watchedOn.startsWith(today().slice(0, 4)))), [entries]);
+  useEffect(() => {
+    if (!key) return;
+    trendingAllTmdb(key)
+      .then(setTrending)
+      .catch(() => setTrending([]));
+  }, [key]);
+  useEffect(() => {
+    if (!key) return;
+    nowPlayingTmdb(key, region)
+      .then((titles) => setCinema({ region, titles }))
+      .catch(() => setCinema({ region, titles: [] }));
+  }, [key, region]);
 
-  const sections = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    const months = new Map<string, Entry[]>();
-    for (const e of entries) {
-      if (!matches(e, filter, q)) continue;
-      // Imports without a watch date (an old MyAnimeList list, say) share one reel at the end.
-      const k = e.undated ? ARCHIVE : monthKey(e.watchedOn);
-      months.set(k, [...(months.get(k) ?? []), e]);
-    }
-    return [...months.entries()]
-      .sort(([a], [b]) => (a === ARCHIVE ? 1 : b === ARCHIVE ? -1 : 0))
-      .map(([month, list]) => ({
-        month,
-        count: list.length,
-        // The poster wall lays a month out in rows; the ticket list has one entry per row.
-        data: grid
-          ? Array.from({ length: Math.ceil(list.length / GRID_COLS) }, (_, i) => list.slice(i * GRID_COLS, (i + 1) * GRID_COLS))
-          : list.map((e) => [e]),
-      }));
-  }, [entries, filter, query, grid]);
+  const seeds = useMemo(() => favouriteSeeds(entries), [entries]);
+  const seedKey = seeds.map((s) => s.sourceId).join(',');
+  useEffect(() => {
+    if (!key || !seedKey) return;
+    let live = true;
+    forYou(key, seeds, entries, watchlist).then((titles) => live && setPicks({ seeds: seedKey, titles }));
+    return () => {
+      live = false;
+    };
+    // The picks follow your favourites; a new viewing of something else doesn't need a refetch.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key, seedKey]);
 
-  const remove = (e: Entry) => {
-    deleteEntry(e.id);
-    toast(`Moved “${e.title}” to Trash`, { label: 'Undo', onPress: () => restoreEntry(e.id) });
-  };
-
-  const showTip = ready && entries.length > 0 && !settings.dismissedTips.includes('reel-story');
-  const dismissTip = () => update({ dismissedTips: [...settings.dismissedTips, 'reel-story'] });
-  const hours = Math.round(yearStats.minutes / 60);
-
-  const header = (
-    <View style={[styles.top, { paddingTop: insets.top + 10 }]}>
-      <View style={styles.titleRow}>
-        <BrandTitle theme={theme} size={38} />
-        <View style={styles.headerIcons}>
-          <Pressable
-            onPress={() => router.push('/profile')}
-            hitSlop={6}
-            accessibilityRole="button"
-            accessibilityLabel="Your profile"
-            style={({ pressed }) => [styles.avatarBtn, pressed && { opacity: 0.75 }]}
-          >
-            <Avatar
-              theme={theme}
-              uri={settings.photo}
-              name={settings.name}
-              size={36}
-              status={sync.status === 'signed-out' || sync.status === 'unconfigured' ? undefined : sync.status}
-            />
-          </Pressable>
-          <Pressable
-            onPress={() => router.push('/settings')}
-            hitSlop={6}
-            accessibilityRole="button"
-            accessibilityLabel="Settings"
-            style={({ pressed }) => [styles.iconBtn, { backgroundColor: pressed ? theme.chip : 'transparent' }]}
-          >
-            <Ionicons name="settings-outline" size={22} color={theme.text} />
-          </Pressable>
-        </View>
-      </View>
-      <Text style={[styles.tagline, { color: theme.textMuted }]}>{tagline(hour, settings.name)}</Text>
-
-      {entries.length > 0 && (
-        <View style={[styles.marquee, { borderColor: theme.accent + '55', backgroundColor: theme.accentSoft }]}>
-          <MarqueeStat theme={theme} value={String(yearStats.total)} label={`IN ${today().slice(0, 4)}`} />
-          <View style={[styles.marqueeRule, { backgroundColor: theme.accent + '44' }]} />
-          <MarqueeStat theme={theme} value={`${hours}h`} label="WATCHED" />
-          <View style={[styles.marqueeRule, { backgroundColor: theme.accent + '44' }]} />
-          <MarqueeStat theme={theme} value={yearStats.avgStars ? `${yearStats.avgStars}★` : '—'} label="AVG" />
-          <View style={[styles.marqueeRule, { backgroundColor: theme.accent + '44' }]} />
-          <MarqueeStat theme={theme} value={String(yearStats.liked)} label="LOVED" />
-        </View>
-      )}
-
-      {entries.length > 0 && (
-        <View style={[styles.search, { backgroundColor: theme.chip }]}>
-          <Ionicons name="search" size={18} color={theme.textMuted} />
-          <TextInput
-            value={query}
-            onChangeText={setQuery}
-            placeholder="Search your diary"
-            placeholderTextColor={theme.textMuted}
-            style={[styles.searchInput, { color: theme.text }]}
-            returnKeyType="search"
-          />
-          {!!query && (
-            <Pressable onPress={() => setQuery('')} hitSlop={8} accessibilityLabel="Clear search">
-              <Ionicons name="close-circle" size={18} color={theme.textMuted} />
-            </Pressable>
-          )}
-        </View>
-      )}
-
-      {entries.length > 0 && (
-        <View style={styles.toolbar}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips} style={{ flex: 1 }}>
-            {FILTERS.map((f) => (
-              <Chip key={f.key} theme={theme} label={f.label} color={f.color} icon={f.icon} active={filter === f.key} onPress={() => setFilter(f.key)} />
-            ))}
-          </ScrollView>
-          <Pressable
-            onPress={() => update({ diaryLayout: grid ? 'list' : 'grid' })}
-            hitSlop={6}
-            accessibilityRole="button"
-            accessibilityLabel={grid ? 'Show as tickets' : 'Show as poster wall'}
-            style={({ pressed }) => [styles.layoutBtn, { borderColor: theme.border, opacity: pressed ? 0.7 : 1 }]}
-          >
-            <Ionicons name={grid ? 'list' : 'grid'} size={18} color={theme.text} />
-          </Pressable>
-        </View>
-      )}
-    </View>
-  );
-
-  const tip = showTip ? (
-    <View style={styles.tip}>
-      <TipCard theme={theme} title="Every month is a reel" onDismiss={dismissTip}>
-        Tap STORY on a month to turn it into an Instagram story. Long-press a ticket to edit, log again or delete it.
-      </TipCard>
-    </View>
-  ) : undefined;
-
-  const rows = sections.reduce((n, sec) => n + sec.data.length, 0);
-  const first = sections[0]?.data[0]?.[0];
-  const toTop = () => listRef.current?.scrollToLocation({ sectionIndex: 0, itemIndex: 0, viewOffset: 80, animated: true });
-  // At the end of a long diary (the oldest entry): a way back up to the newest.
-  const footer =
-    rows > 6 && first ? (
-      <View style={styles.end}>
-        <Text style={[styles.endText, { color: theme.textMuted }]}>{filter === 'all' && !query.trim() ? 'You’ve reached the beginning' : 'That’s all of them'}</Text>
-        <Pressable
-          onPress={toTop}
-          accessibilityRole="button"
-          accessibilityLabel={`Back to the top, to ${first.title}`}
-          style={({ pressed }) => [styles.endBtn, { borderColor: theme.border, backgroundColor: pressed ? theme.chip : 'transparent' }]}
-        >
-          <Ionicons name="arrow-up" size={18} color={theme.accent} />
-          <Text style={[styles.endBtnText, { color: theme.text }]}>BACK TO THE TOP</Text>
-        </Pressable>
-      </View>
-    ) : undefined;
+  const seen = (t: Title) => viewingsOf(t.source, t.sourceId).length > 0;
+  const up = continueWatching(watchlist, today());
+  const continuing = [...up.ongoing, ...up.oldFriends].slice(0, 10);
+  const featured = trending?.find((t) => t.backdropUrl) ?? null;
+  const rest = (trending ?? []).filter((t) => t !== featured);
+  const forYouTitles = picks?.seeds === seedKey ? picks.titles : null;
+  const cinemaTitles = cinema?.region === region ? cinema.titles : null;
 
   return (
-    <View style={[styles.screen, { backgroundColor: theme.bg }]}>
-      {header}
-      <SectionList
-        ref={listRef}
-        style={styles.scroller}
-        sections={sections}
-        keyExtractor={(row) => row.map((e) => e.id).join('|')}
-        stickySectionHeadersEnabled={false}
-        keyboardShouldPersistTaps="handled"
-        keyboardDismissMode="on-drag"
-        // A screenful first, then the rest in small batches, so a long diary opens at once.
-        initialNumToRender={8}
-        maxToRenderPerBatch={8}
-        windowSize={9}
-        ListHeaderComponent={tip}
-        contentContainerStyle={[styles.list, { paddingBottom: insets.bottom + 110 }]}
-        renderSectionHeader={({ section }) => (
-          <ReelHeader
-            month={section.month}
-            count={section.count}
-            theme={theme}
-            onShare={() => router.navigate({ pathname: '/recap', params: { period: section.month } })}
-          />
-        )}
-        renderItem={({ item: row }) =>
-          grid ? (
-            <View style={[styles.gridRow, { marginTop: GAP }]}>
-              {row.map((e) => (
-                <PosterTile key={e.id} entry={e} theme={theme} width={tile} onPress={() => router.push({ pathname: '/entry/[id]', params: { id: e.id } })} />
-              ))}
-            </View>
-          ) : (
-            <View style={{ marginTop: 10 }}>
-              <TicketStub
-                entry={row[0]}
-                theme={theme}
-                onPress={() => router.push({ pathname: '/entry/[id]', params: { id: row[0].id } })}
-                onLongPress={() => setMenu(row[0])}
-              />
-            </View>
-          )
-        }
-        ListFooterComponent={footer}
-        onScrollToIndexFailed={() => {}}
-        ListEmptyComponent={
-          !ready ? undefined : entries.length === 0 ? (
-            <View style={styles.empty}>
-              <View style={[styles.emptyIcon, { backgroundColor: theme.accentSoft }]}>
-                <MaterialCommunityIcons name="projector" size={40} color={theme.accent} />
-              </View>
-              <Text style={[styles.emptyTitle, { color: theme.text }]}>THE SCREEN IS DARK</Text>
-              <Text style={[styles.emptyText, { color: theme.textMuted }]}>Log the last film, series or anime you watched, and your diary starts rolling.</Text>
-              <Pressable
-                onPress={() => router.navigate('/search')}
-                accessibilityRole="button"
-                style={({ pressed }) => [styles.emptyBtn, { backgroundColor: theme.accent, opacity: pressed ? 0.85 : 1 }]}
-              >
-                <MaterialCommunityIcons name="movie-search-outline" size={18} color={theme.accentText} />
-                <Text style={[styles.emptyBtnText, { color: theme.accentText }]}>FIND A TITLE</Text>
-              </Pressable>
-            </View>
-          ) : (
-            <View style={styles.empty}>
-              <Text style={[styles.emptyTitle, { color: theme.text }]}>NO MATCHES</Text>
-              <Text style={[styles.emptyText, { color: theme.textMuted }]}>Try another search or filter.</Text>
-            </View>
-          )
-        }
-      />
+    <ScrollView
+      style={{ backgroundColor: theme.bg }}
+      contentContainerStyle={[styles.content, { paddingTop: insets.top + 10, paddingBottom: insets.bottom + 32 }]}
+    >
+      <AppHeader theme={theme} line={greetingLine(hour, settings.name)} />
 
-      {entries.length > 0 && (
+      {featured ? <Featured t={featured} theme={theme} /> : <View style={[styles.featuredSkeleton, { backgroundColor: theme.card }]} />}
+
+      {continuing.length > 0 && (
+        <View style={styles.block}>
+          <RowHead title="Continue watching" theme={theme} more="All" onMore={() => router.navigate('/watchlist')} />
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>
+            {continuing.map((w) => {
+              const next = nextUp(w.track!);
+              return (
+                <Pressable
+                  key={w.id}
+                  onPress={() => router.push({ pathname: '/track', params: { id: w.id } })}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${w.title}${next ? `, next: season ${next.season} episode ${next.number}` : ''}`}
+                  style={({ pressed }) => [{ width: 104 }, pressed && { opacity: 0.8 }]}
+                >
+                  <Poster uri={w.posterUrl} title={w.title} width={104} theme={theme} radius={6} />
+                  {next && (
+                    <View style={[styles.episode, { backgroundColor: theme.accent }]}>
+                      <Text style={[styles.episodeText, { color: theme.accentText }]}>
+                        S{next.season} · E{next.number}
+                      </Text>
+                    </View>
+                  )}
+                  <Text style={[styles.name, { color: theme.text }]} numberOfLines={1}>
+                    {w.title}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </ScrollView>
+        </View>
+      )}
+
+      {seeds.length > 0 ? (
+        <View style={styles.block}>
+          <RowHead title="For you" theme={theme} />
+          <Text style={[styles.because, { color: theme.textMuted }]} numberOfLines={1}>
+            Because you loved {seeds[0].title}
+            {seeds.length > 1 ? ` and ${seeds.length - 1} more` : ''}
+          </Text>
+          {forYouTitles ? (
+            forYouTitles.length ? (
+              <TitleRow titles={forYouTitles} theme={theme} seen={seen} />
+            ) : (
+              <Text style={[styles.because, { color: theme.textMuted }]}>Nothing new to suggest yet. Rate a few more titles.</Text>
+            )
+          ) : (
+            <Skeleton theme={theme} />
+          )}
+        </View>
+      ) : (
         <Pressable
           onPress={() => router.navigate('/search')}
           accessibilityRole="button"
-          accessibilityLabel="Log something you watched"
-          style={({ pressed }) => [
-            styles.fab,
-            { backgroundColor: theme.accent, bottom: 20, boxShadow: shadow.glow(theme.accent), transform: [{ scale: pressed ? 0.95 : 1 }] },
-          ]}
+          style={({ pressed }) => [styles.invite, { borderColor: theme.border, backgroundColor: pressed ? theme.chip : theme.card }]}
         >
-          <MaterialCommunityIcons name="movie-open-plus-outline" size={28} color={theme.accentText} />
+          <MaterialCommunityIcons name="star-four-points-outline" size={24} color={theme.accent} />
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.inviteTitle, { color: theme.text }]}>Picks just for you</Text>
+            <Text style={[styles.because, { color: theme.textMuted }]}>
+              {entries.length
+                ? 'Give a title four stars or a heart, and titles like it appear here.'
+                : 'Log what you watch, and this fills with titles picked for you.'}
+            </Text>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color={theme.textMuted} />
         </Pressable>
       )}
 
-      <ActionSheet
-        visible={menu !== null}
-        title={menu ? `${menu.title}${menu.year ? ` (${menu.year})` : ''}` : undefined}
-        onClose={() => setMenu(null)}
-        actions={
-          menu
-            ? [
-                { label: 'Edit entry', icon: 'create-outline', onPress: () => router.push({ pathname: '/log', params: { id: menu.id } }) },
-                { label: 'Log again', icon: 'repeat', onPress: () => router.push({ pathname: '/log', params: { again: menu.id } }) },
-                { label: 'Share as story card', icon: 'sparkles-outline', onPress: () => router.push({ pathname: '/card/[id]', params: { id: menu.id } }) },
-                { label: 'Add to a list', icon: 'albums-outline', onPress: () => setListing(menu) },
-                { label: 'Move to Trash', icon: 'trash-outline', destructive: true, onPress: () => remove(menu) },
-              ]
-            : []
-        }
-      />
-      <AddToList item={listing} theme={theme} onClose={() => setListing(null)} />
+      <View style={styles.block}>
+        <RowHead title="Trending this week" theme={theme} more="More" onMore={() => router.navigate('/search')} />
+        {trending ? <TitleRow titles={rest} theme={theme} seen={seen} width={112} /> : <Skeleton theme={theme} width={112} />}
+      </View>
+
+      {(cinemaTitles === null || cinemaTitles.length > 0) && (
+        <View style={styles.block}>
+          <RowHead title={`In cinemas · ${countryName(region)}`} theme={theme} />
+          {cinemaTitles ? <TitleRow titles={cinemaTitles} theme={theme} seen={seen} /> : <Skeleton theme={theme} />}
+        </View>
+      )}
+
+      <Pressable
+        onPress={() => router.navigate({ pathname: '/search', params: { mode: 'discover' } })}
+        accessibilityRole="button"
+        style={({ pressed }) => [styles.discover, { backgroundColor: pressed ? theme.chip : 'transparent', borderColor: theme.border }]}
+      >
+        <Ionicons name="compass" size={18} color={theme.accent} />
+        <Text style={[styles.discoverText, { color: theme.text }]}>DISCOVER MORE</Text>
+      </Pressable>
+    </ScrollView>
+  );
+}
+
+/** The week's top title, big: its backdrop, name, and a way to log it or save it for later. */
+function Featured({ t, theme }: { t: Title; theme: Theme }) {
+  const toast = useToast();
+  const { width } = useWindowDimensions();
+  const { onWatchlist, addToWatchlist, removeFromWatchlist, viewingsOf } = useDiary();
+  const saved = onWatchlist(t);
+  const logged = viewingsOf(t.source, t.sourceId).length > 0;
+  const height = Math.round((width - 32) * 0.62);
+  return (
+    <View style={[styles.featured, { height, backgroundColor: theme.card }]}>
+      <Pressable
+        onPressIn={() => warmTitle(t)}
+        onPress={() => openTitle(t)}
+        accessibilityRole="button"
+        accessibilityLabel={`${t.title}, number one this week`}
+        style={StyleSheet.absoluteFill}
+      >
+        <Image source={t.backdropUrl} style={StyleSheet.absoluteFill} contentFit="cover" cachePolicy="memory-disk" transition={200} />
+        <LinearGradient colors={['transparent', 'rgba(0,0,0,0.85)']} style={StyleSheet.absoluteFill} />
+      </Pressable>
+      <View style={styles.featuredBody} pointerEvents="box-none">
+        <View style={styles.kickerRow} pointerEvents="none">
+          <Text style={[styles.kicker, { color: theme.accent }]}>#1 THIS WEEK</Text>
+          <KindBadge kind={t.kind} theme={theme} small />
+        </View>
+        <Text style={styles.featuredTitle} numberOfLines={2} pointerEvents="none">
+          {t.title.toUpperCase()}
+        </Text>
+        <View style={styles.featuredActions}>
+          <Pressable
+            onPress={() => router.push({ pathname: '/log', params: { title: JSON.stringify(t) } })}
+            accessibilityRole="button"
+            style={({ pressed }) => [styles.logBtn, { backgroundColor: theme.accent, opacity: pressed ? 0.85 : 1 }]}
+          >
+            <Ionicons name="add" size={18} color={theme.accentText} />
+            <Text style={[styles.logText, { color: theme.accentText }]}>{logged ? 'LOG AGAIN' : 'LOG IT'}</Text>
+          </Pressable>
+          <Pressable
+            onPress={() => {
+              if (saved) {
+                removeFromWatchlist(saved.id);
+                toast('Taken off your watchlist');
+              } else {
+                addToWatchlist(t);
+                toast('Added to your watchlist');
+              }
+            }}
+            accessibilityRole="button"
+            accessibilityLabel={saved ? 'Take off your watchlist' : 'Add to your watchlist'}
+            style={({ pressed }) => [styles.saveBtn, { opacity: pressed ? 0.8 : 1 }]}
+          >
+            <Ionicons name={saved ? 'bookmark' : 'bookmark-outline'} size={20} color="#FFFFFF" />
+          </Pressable>
+        </View>
+      </View>
     </View>
   );
 }
 
-function MarqueeStat({ theme, value, label }: { theme: ReturnType<typeof useTheme>; value: string; label: string }) {
+/** Grey poster shapes while a row loads, so the page keeps its shape. */
+function Skeleton({ theme, width = 104 }: { theme: Theme; width?: number }) {
   return (
-    <View style={styles.marqueeStat}>
-      <Text style={[styles.marqueeValue, { color: theme.text }]} numberOfLines={1}>
-        {value}
-      </Text>
-      <Text style={[styles.marqueeLabel, { color: theme.accent }]}>{label}</Text>
+    <View style={styles.row} accessibilityLabel="Loading">
+      {[0, 1, 2, 3].map((i) => (
+        <View key={i} style={{ width, height: width * 1.5, borderRadius: 6, backgroundColor: theme.card }} />
+      ))}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1 },
-  list: { paddingHorizontal: 16 },
-  // The header sits above the list, so it carries the list's side padding itself.
-  top: { gap: 12, paddingBottom: 6, paddingHorizontal: 16 },
-  scroller: { flex: 1 },
-  tip: { paddingTop: 10 },
-  titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  iconBtn: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
-  headerIcons: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  avatarBtn: { padding: 4 },
-  tagline: { fontFamily: fonts.mono, fontSize: font.footnote, marginTop: -8 },
-  marquee: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderRadius: 12, paddingVertical: 10 },
-  marqueeStat: { flex: 1, alignItems: 'center' },
-  marqueeValue: { fontFamily: fonts.display, fontSize: 28, lineHeight: 30, includeFontPadding: false },
-  marqueeLabel: { fontFamily: fonts.monoBold, fontSize: 10, letterSpacing: 1.2 },
-  marqueeRule: { width: 1, alignSelf: 'stretch' },
-  search: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, height: 44, borderRadius: 12 },
-  searchInput: { flex: 1, fontSize: font.body, height: '100%' },
-  toolbar: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  chips: { gap: 8, paddingRight: 8 },
-  layoutBtn: { width: 36, height: 32, borderRadius: 10, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
-  gridRow: { flexDirection: 'row', gap: GAP },
-  empty: { alignItems: 'center', gap: 10, paddingTop: 64, paddingHorizontal: 28 },
-  end: { alignItems: 'center', gap: 12, paddingTop: 36, paddingBottom: 8 },
-  endText: { fontFamily: fonts.mono, fontSize: font.footnote },
-  endBtn: { flexDirection: 'row', alignItems: 'center', gap: 8, height: 44, paddingHorizontal: 20, borderRadius: 22, borderWidth: 1 },
-  endBtnText: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 1.5 },
-  emptyIcon: { width: 84, height: 84, borderRadius: 42, alignItems: 'center', justifyContent: 'center', marginBottom: 6 },
-  emptyTitle: { fontFamily: fonts.display, fontSize: 32, letterSpacing: 1.5 },
-  emptyText: { fontFamily: fonts.mono, fontSize: font.body, textAlign: 'center', lineHeight: 21 },
-  emptyBtn: { flexDirection: 'row', alignItems: 'center', gap: 8, height: 46, paddingHorizontal: 20, borderRadius: 23, marginTop: 10 },
-  emptyBtnText: { fontFamily: fonts.monoBold, fontSize: font.body, letterSpacing: 1 },
-  fab: { position: 'absolute', right: 20, width: 62, height: 62, borderRadius: 31, alignItems: 'center', justifyContent: 'center' },
+  content: { paddingHorizontal: 16, gap: 24 },
+  block: { gap: 10 },
+  row: { flexDirection: 'row', gap: 12, paddingRight: 16 },
+  name: { fontSize: font.footnote, fontWeight: '700', marginTop: 6 },
+  because: { fontFamily: fonts.mono, fontSize: font.caption, marginTop: -4 },
+  episode: { position: 'absolute', left: 6, bottom: 6, borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2 },
+  episodeText: { fontFamily: fonts.monoBold, fontSize: 10, letterSpacing: 0.5 },
+  featured: { borderRadius: 16, overflow: 'hidden', justifyContent: 'flex-end' },
+  featuredSkeleton: { height: 220, borderRadius: 16 },
+  featuredBody: { padding: 14, gap: 6 },
+  kickerRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  kicker: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 2 },
+  featuredTitle: { fontFamily: fonts.display, fontSize: 34, lineHeight: 36, color: '#FFFFFF', letterSpacing: 1 },
+  featuredActions: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 4 },
+  logBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, height: 40, paddingHorizontal: 18, borderRadius: 20 },
+  logText: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 1.5 },
+  saveBtn: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.18)' },
+  invite: { flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, borderRadius: 14, padding: 14 },
+  inviteTitle: { fontSize: font.body, fontWeight: '700' },
+  discover: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: 46, borderRadius: 23, borderWidth: 1 },
+  discoverText: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 1.5 },
 });

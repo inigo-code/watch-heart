@@ -197,7 +197,7 @@ function LogForm() {
     if (settings.haptics) Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
     toast(editing ? 'Entry updated' : `Logged · ${friendlyDate(final.watchedOn)}${queued ? ' · off your watchlist' : ''}`);
     if (router.canGoBack()) router.back();
-    else router.replace('/');
+    else router.replace('/diary');
   };
 
   const saveForLater = () => {
@@ -222,7 +222,7 @@ function LogForm() {
     });
     toast('Saved to your watchlist');
     if (router.canGoBack()) router.back();
-    else router.replace('/');
+    else router.replace('/diary');
   };
 
   const remove = () => {

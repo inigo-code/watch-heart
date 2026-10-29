@@ -394,7 +394,7 @@ function ProfileBody() {
               {s.buddies.slice(0, 6).map((b, i) => (
                 <Pressable
                   key={b.name}
-                  onPress={() => router.navigate({ pathname: '/', params: { q: b.name } })}
+                  onPress={() => router.navigate({ pathname: '/diary', params: { q: b.name } })}
                   accessibilityRole="button"
                   accessibilityLabel={`Everything you watched with ${b.name}`}
                   style={({ pressed }) => [

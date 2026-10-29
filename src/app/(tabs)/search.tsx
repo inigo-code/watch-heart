@@ -38,7 +38,7 @@ export default function SearchScreen() {
   const kind = settings.searchKind;
   const key = tmdbKey(settings.tmdbKey);
   const source = sourceFor(kind, key);
-  const params = useLocalSearchParams<{ q?: string; kind?: MediaKind }>();
+  const params = useLocalSearchParams<{ q?: string; kind?: MediaKind; mode?: 'discover' | 'trending' }>();
   const [query, setQuery] = useState(params.q ?? '');
   // Arriving from a share (or anywhere with ?q=) fills in the search and picks the kind.
   const [lastQ, setLastQ] = useState(params.q);
@@ -54,7 +54,12 @@ export default function SearchScreen() {
   const [error, setError] = useState<string | null>(null);
   const q = query.trim();
   // Before you type: this week's trending titles, or ways to browse (Discover).
-  const [mode, setMode] = useState<'trending' | 'discover'>('trending');
+  const [mode, setMode] = useState<'trending' | 'discover'>(params.mode === 'discover' ? 'discover' : 'trending');
+  const [lastMode, setLastMode] = useState(params.mode);
+  if (params.mode !== lastMode) {
+    setLastMode(params.mode);
+    if (params.mode) setMode(params.mode);
+  }
   const discovering = !q && mode === 'discover' && source === 'tmdb';
 
   // Search as you type, after a short pause; with no query, show what's trending.
