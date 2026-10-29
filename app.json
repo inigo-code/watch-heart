@@ -141,7 +141,8 @@
       ]
     ],
     "experiments": {
-      "typedRoutes": true
+      "typedRoutes": true,
+      "reactCompiler": true
     },
     "runtimeVersion": {
       "policy": "fingerprint"

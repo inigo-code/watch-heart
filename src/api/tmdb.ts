@@ -1,3 +1,4 @@
+import { MINUTE, cached } from '@/api/cache';
 import type { MediaKind, Title } from '@/store/types';
 
 // TMDB: free for non-commercial use with your own key (themoviedb.org/settings/api).
@@ -317,13 +318,17 @@ function crewOf(rows: CrewRow[], creators: { id: number; name: string; profile_p
   return out;
 }
 
-// Kept for the session, so going back and forth between titles doesn't ask again.
-const aboutCache = new Map<string, TitleAbout>();
+/**
+ * Everything the title page shows, in one request: details, cast and crew, trailer, recommendations. Kept
+ * for the session, and shared while it loads: a title touched in a list starts loading before its page opens.
+ * A screen that leaves doesn't cancel it, since another may be waiting on the same answer.
+ */
+export function aboutTmdb(key: string, sourceId: string, signal?: AbortSignal): Promise<TitleAbout> {
+  void signal;
+  return cached(`about:${sourceId}`, 12 * 60 * MINUTE, () => loadAbout(key, sourceId));
+}
 
-/** Everything the title page shows, in one request: details, cast and crew, trailer, recommendations. */
-export async function aboutTmdb(key: string, sourceId: string, signal?: AbortSignal): Promise<TitleAbout> {
-  const hit = aboutCache.get(sourceId);
-  if (hit) return hit;
+async function loadAbout(key: string, sourceId: string, signal?: AbortSignal): Promise<TitleAbout> {
   const [type, id] = sourceId.split(':') as ['movie' | 'tv', string];
   type Common = { tagline?: string; overview?: string; videos?: { results: Video[] }; recommendations?: { results: Recommended[] } };
   let about: TitleAbout;
@@ -385,7 +390,6 @@ export async function aboutTmdb(key: string, sourceId: string, signal?: AbortSig
       makers: (d.created_by ?? []).map((c) => ({ id: c.id, name: c.name })),
     };
   }
-  aboutCache.set(sourceId, about);
   return about;
 }
 
@@ -460,7 +464,12 @@ export async function madeBy(key: string, personId: number, type: 'movie' | 'tv'
 }
 
 /** The streaming services TMDB knows in a country, most watched there first (JustWatch's data). */
-export async function regionProviders(key: string, region: string, signal?: AbortSignal): Promise<Provider[]> {
+export function regionProviders(key: string, region: string, signal?: AbortSignal): Promise<Provider[]> {
+  void signal;
+  return cached(`providers:${region}`, 24 * 60 * MINUTE, () => loadProviders(key, region));
+}
+
+async function loadProviders(key: string, region: string, signal?: AbortSignal): Promise<Provider[]> {
   const d = await get<{ results: (ProviderRow & { display_priorities?: Record<string, number> })[] }>(key, '/watch/providers/movie', { watch_region: region }, signal);
   // Stores (rent or buy), kids' and ad-supported copies of a service aren't something to browse by.
   return d.results
@@ -509,6 +518,8 @@ export type BrowseQuery = {
   genres?: string[];
   /** BROWSE_GENRES names to leave out. */
   notGenres?: string[];
+  /** TMDB keyword ids, any of which matches (christmas, new year's eve…). */
+  keywords?: number[];
   /** Released from this year to this year, inclusive. */
   from?: number;
   to?: number;
@@ -531,8 +542,13 @@ export type BrowseQuery = {
   sort?: BrowseSort;
 };
 
-/** One page of titles matching a Discover query. */
-export async function discoverTmdb(key: string, q: BrowseQuery, page: number, signal?: AbortSignal): Promise<{ results: Title[]; pages: number }> {
+/** One page of titles matching a Discover query (kept for 15 minutes). */
+export function discoverTmdb(key: string, q: BrowseQuery, page: number, signal?: AbortSignal): Promise<{ results: Title[]; pages: number }> {
+  void signal;
+  return cached(`discover:${JSON.stringify(q)}:${page}`, 15 * MINUTE, () => loadDiscover(key, q, page));
+}
+
+async function loadDiscover(key: string, q: BrowseQuery, page: number, signal?: AbortSignal): Promise<{ results: Title[]; pages: number }> {
   const type = q.kind === 'movie' ? 'movie' : 'tv';
   const dateField = type === 'movie' ? 'primary_release_date' : 'first_air_date';
   const ids = (q.genres ?? []).map((g) => genreId(g, q.kind));
@@ -541,6 +557,7 @@ export async function discoverTmdb(key: string, q: BrowseQuery, page: number, si
   const genres = [...new Set([...(q.kind === 'anime' ? [ANIMATION] : []), ...(ids as number[])])];
   const p: Record<string, string> = { include_adult: 'false', page: String(page) };
   if (genres.length) p.with_genres = genres.join(',');
+  if (q.keywords?.length) p.with_keywords = q.keywords.join('|');
   const without = (q.notGenres ?? []).map((g) => genreId(g, q.kind)).filter((id): id is number => id !== undefined);
   if (without.length) p.without_genres = without.join(',');
   if (q.kind === 'anime') p.with_original_language = 'ja';

@@ -1,3 +1,4 @@
+import { MINUTE, cached } from '@/api/cache';
 import { ANILIST_ALLOWED } from '@/lib/app';
 import type { MediaKind, Title } from '@/store/types';
 
@@ -25,8 +26,13 @@ export async function search(kind: MediaKind, query: string, key: string, signal
   return [];
 }
 
-/** What's popular, shown before you type: trending this week (TMDB, AniList) or popular on TV today (TVmaze). */
-export async function trending(kind: MediaKind, key: string, signal?: AbortSignal): Promise<Title[]> {
+/** What's popular, shown before you type: trending this week (TMDB, AniList) or popular on TV today (TVmaze). Kept for 15 minutes. */
+export function trending(kind: MediaKind, key: string, signal?: AbortSignal): Promise<Title[]> {
+  void signal;
+  return cached(`trending:${kind}:${sourceFor(kind, key)}`, 15 * MINUTE, () => loadTrending(kind, key));
+}
+
+async function loadTrending(kind: MediaKind, key: string, signal?: AbortSignal): Promise<Title[]> {
   const source = sourceFor(kind, key);
   if (source === 'anilist') return trendingAnime(signal);
   if (source === 'tmdb') return kind === 'anime' ? trendingAnimeTmdb(key, signal) : trendingTmdb(key, kind, signal);

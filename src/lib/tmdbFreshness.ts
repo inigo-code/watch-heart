@@ -103,8 +103,16 @@ export function useTmdbFreshness() {
   const misKinded = wrongKind([...entries, ...trash]).length + wrongKind(watchlist).length;
   const pending = diaryPlan.details.length + diaryPlan.match.length + watchPlan.details.length + watchPlan.match.length + diaryPlan.strip.length + watchPlan.strip.length + misKinded;
 
+  // Upkeep waits until a few seconds after launch, so it never competes with the first screen.
+  const [settled, setSettled] = useState(false);
   useEffect(() => {
-    if (!ready || !settingsReady || running.current) return;
+    if (!ready || !settingsReady) return;
+    const timer = setTimeout(() => setSettled(true), 4000);
+    return () => clearTimeout(timer);
+  }, [ready, settingsReady]);
+
+  useEffect(() => {
+    if (!ready || !settingsReady || !settled || running.current) return;
     const forced = force !== lastForce.current;
     lastForce.current = force;
     const firstForKey = refreshedFor.current !== key;
@@ -183,7 +191,7 @@ export function useTmdbFreshness() {
     // Planned from the latest diary when started; restarts when the pending count, key or a manual
     // "find posters" request changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ready, settingsReady, key, pending, force]);
+  }, [settled, ready, settingsReady, key, pending, force]);
 }
 
 /** Fresh TMDB details for a linked record; your own title wording is kept. */

@@ -1,9 +1,9 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useState } from 'react';
-import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { KeyboardSafe } from '@/components/KeyboardSafe';
+import { BottomSheet } from '@/components/BottomSheet';
 import { useToast } from '@/components/Toast';
 import { font, fonts } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
@@ -13,10 +13,13 @@ import { sameTitle } from '@/store/DiaryStore';
 
 /** Put a title on your lists: tick the lists it belongs on, or start a new one with it. */
 export function AddToList({ item, theme, onClose }: { item: ListItem | null; theme: Theme; onClose: () => void }) {
+  // The last title stays on the sheet while it slides away.
+  const [last, setLast] = useState(item);
+  if (item && item !== last) setLast(item);
   return (
-    <Modal visible={item !== null} transparent animationType="fade" onRequestClose={onClose}>
-      {item && <Sheet item={item} theme={theme} onClose={onClose} />}
-    </Modal>
+    <BottomSheet visible={item !== null} onClose={onClose}>
+      {last && <Sheet item={last} theme={theme} onClose={onClose} />}
+    </BottomSheet>
   );
 }
 
@@ -47,63 +50,58 @@ function Sheet({ item, theme, onClose }: { item: ListItem; theme: Theme; onClose
   };
 
   return (
-    <KeyboardSafe>
-      <Pressable style={[styles.backdrop, { backgroundColor: theme.overlay }]} onPress={onClose}>
-        <View style={[styles.sheet, { backgroundColor: theme.card, paddingBottom: insets.bottom + 16 }]} onStartShouldSetResponder={() => true}>
-          <View style={[styles.grabber, { backgroundColor: theme.border }]} />
-          <Text style={[styles.title, { color: theme.text }]} numberOfLines={2}>
-            ADD “{item.title.toUpperCase()}” TO…
-          </Text>
-          <ScrollView style={{ maxHeight: 320 }} contentContainerStyle={{ gap: 4 }}>
-            {lists.length === 0 && <Text style={[styles.note, { color: theme.textMuted }]}>No lists yet. Name your first one below.</Text>}
-            {lists.map((l) => {
-              const on = l.items.some((x) => sameTitle(x, item));
-              return (
-                <Pressable
-                  key={l.id}
-                  onPress={() => toggle(l.id)}
-                  accessibilityRole="checkbox"
-                  accessibilityState={{ checked: on }}
-                  style={({ pressed }) => [styles.row, { backgroundColor: pressed ? theme.chip : 'transparent' }]}
-                >
-                  <Ionicons name={on ? 'checkbox' : 'square-outline'} size={22} color={on ? theme.accent : theme.textMuted} />
-                  <Text style={[styles.rowName, { color: theme.text }]} numberOfLines={1}>
-                    {l.name}
-                  </Text>
-                  <Text style={[styles.note, { color: theme.textMuted }]}>{l.items.length}</Text>
-                </Pressable>
-              );
-            })}
-          </ScrollView>
-          <View style={[styles.newRow, { borderColor: theme.border, backgroundColor: theme.bg }]}>
-            <Ionicons name="add" size={20} color={theme.accent} />
-            <TextInput
-              value={name}
-              onChangeText={setName}
-              onSubmitEditing={create}
-              returnKeyType="done"
-              placeholder="New list, e.g. Comfort rewatches"
-              placeholderTextColor={theme.textMuted}
-              style={[styles.input, { color: theme.text }]}
-              maxLength={60}
-            />
-            {!!name.trim() && (
-              <Pressable onPress={create} accessibilityRole="button" style={[styles.create, { backgroundColor: theme.accent }]}>
-                <Text style={[styles.createText, { color: theme.accentText }]}>CREATE</Text>
-              </Pressable>
-            )}
-          </View>
-          <Pressable onPress={onClose} accessibilityRole="button" style={[styles.done, { backgroundColor: theme.chip }]}>
-            <Text style={[styles.doneText, { color: theme.text }]}>DONE</Text>
+    <View style={[styles.sheet, { backgroundColor: theme.card, paddingBottom: insets.bottom + 16 }]}>
+      <View style={[styles.grabber, { backgroundColor: theme.border }]} />
+      <Text style={[styles.title, { color: theme.text }]} numberOfLines={2}>
+        ADD “{item.title.toUpperCase()}” TO…
+      </Text>
+      <ScrollView style={{ maxHeight: 320 }} contentContainerStyle={{ gap: 4 }}>
+        {lists.length === 0 && <Text style={[styles.note, { color: theme.textMuted }]}>No lists yet. Name your first one below.</Text>}
+        {lists.map((l) => {
+          const on = l.items.some((x) => sameTitle(x, item));
+          return (
+            <Pressable
+              key={l.id}
+              onPress={() => toggle(l.id)}
+              accessibilityRole="checkbox"
+              accessibilityState={{ checked: on }}
+              style={({ pressed }) => [styles.row, { backgroundColor: pressed ? theme.chip : 'transparent' }]}
+            >
+              <Ionicons name={on ? 'checkbox' : 'square-outline'} size={22} color={on ? theme.accent : theme.textMuted} />
+              <Text style={[styles.rowName, { color: theme.text }]} numberOfLines={1}>
+                {l.name}
+              </Text>
+              <Text style={[styles.note, { color: theme.textMuted }]}>{l.items.length}</Text>
+            </Pressable>
+          );
+        })}
+      </ScrollView>
+      <View style={[styles.newRow, { borderColor: theme.border, backgroundColor: theme.bg }]}>
+        <Ionicons name="add" size={20} color={theme.accent} />
+        <TextInput
+          value={name}
+          onChangeText={setName}
+          onSubmitEditing={create}
+          returnKeyType="done"
+          placeholder="New list, e.g. Comfort rewatches"
+          placeholderTextColor={theme.textMuted}
+          style={[styles.input, { color: theme.text }]}
+          maxLength={60}
+        />
+        {!!name.trim() && (
+          <Pressable onPress={create} accessibilityRole="button" style={[styles.create, { backgroundColor: theme.accent }]}>
+            <Text style={[styles.createText, { color: theme.accentText }]}>CREATE</Text>
           </Pressable>
-        </View>
+        )}
+      </View>
+      <Pressable onPress={onClose} accessibilityRole="button" style={[styles.done, { backgroundColor: theme.chip }]}>
+        <Text style={[styles.doneText, { color: theme.text }]}>DONE</Text>
       </Pressable>
-    </KeyboardSafe>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  backdrop: { flex: 1, justifyContent: 'flex-end' },
   sheet: { borderTopLeftRadius: 22, borderTopRightRadius: 22, padding: 16, gap: 12 },
   grabber: { alignSelf: 'center', width: 40, height: 4, borderRadius: 2 },
   title: { fontFamily: fonts.display, fontSize: font.title2, letterSpacing: 0.5 },

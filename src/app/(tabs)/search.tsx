@@ -9,7 +9,7 @@ import { search, sourceFor, tmdbKey, trending } from '@/api';
 import { watchRegion } from '@/api/omdb';
 import { DiscoverHome } from '@/components/discover/DiscoverHome';
 import { Poster } from '@/components/Film';
-import { openTitle } from '@/components/title/Rows';
+import { openTitle, warmTitle } from '@/components/title/Rows';
 import { useToast } from '@/components/Toast';
 import { DATA_SOURCES } from '@/lib/app';
 import { KIND_COLORS, font, fonts, useTheme } from '@/lib/theme';
@@ -124,18 +124,22 @@ export default function SearchScreen() {
           )}
         </View>
         {!q && source === 'tmdb' && (
-          <View style={[styles.modes, { borderColor: theme.border }]}>
-            {(['trending', 'discover'] as const).map((m) => (
-              <Pressable
-                key={m}
-                onPress={() => setMode(m)}
-                accessibilityRole="tab"
-                accessibilityState={{ selected: mode === m }}
-                style={[styles.mode, mode === m && { borderBottomColor: theme.accent }]}
-              >
-                <Text style={[styles.modeText, { color: mode === m ? theme.accent : theme.textMuted }]}>{m === 'discover' ? 'DISCOVER' : 'TRENDING'}</Text>
-              </Pressable>
-            ))}
+          <View style={[styles.modes, { backgroundColor: theme.chip }]} accessibilityRole="tablist">
+            {(['trending', 'discover'] as const).map((m) => {
+              const on = mode === m;
+              return (
+                <Pressable
+                  key={m}
+                  onPress={() => setMode(m)}
+                  accessibilityRole="tab"
+                  accessibilityState={{ selected: on }}
+                  style={[styles.mode, on && { backgroundColor: theme.accent }]}
+                >
+                  <Ionicons name={m === 'discover' ? 'compass' : 'flame'} size={16} color={on ? theme.accentText : theme.textMuted} />
+                  <Text style={[styles.modeText, { color: on ? theme.accentText : theme.textMuted }]}>{m === 'discover' ? 'DISCOVER' : 'TRENDING'}</Text>
+                </Pressable>
+              );
+            })}
           </View>
         )}
         {/* Discover covers films, series and anime alike; the kind is for trending and search. */}
@@ -191,6 +195,7 @@ export default function SearchScreen() {
           return (
             <View style={[styles.row, { borderBottomColor: theme.border }]}>
               <Pressable
+                onPressIn={() => warmTitle(item)}
                 onPress={() => about(item)}
                 accessibilityRole="button"
                 accessibilityLabel={`${item.title}${item.year ? `, ${item.year}` : ''}`}
@@ -298,8 +303,8 @@ const styles = StyleSheet.create({
   section: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 1.5, paddingVertical: 8 },
   note: { fontFamily: fonts.mono, fontSize: font.footnote, paddingVertical: 12, lineHeight: 19 },
   rowBtn: { padding: 8 },
-  modes: { flexDirection: 'row', gap: 22, borderBottomWidth: StyleSheet.hairlineWidth },
-  mode: { paddingVertical: 10, borderBottomWidth: 2, borderBottomColor: 'transparent' },
+  modes: { flexDirection: 'row', borderRadius: 22, padding: 4, gap: 4 },
+  mode: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, height: 36, borderRadius: 18 },
   modeText: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 1.5 },
   rowMain: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10, borderRadius: 8 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 4, borderBottomWidth: StyleSheet.hairlineWidth },

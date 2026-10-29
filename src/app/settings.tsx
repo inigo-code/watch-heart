@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { KeyboardSafe } from '@/components/KeyboardSafe';
 import { ControlRow, Row, Section, Segmented, ToggleRow } from '@/components/SettingsUI';
+import { HeartAppsMark } from '@/components/HeartApps';
 import { useFriends } from '@/friends/FriendsProvider';
 import { useToast } from '@/components/Toast';
 import { UpdateCard } from '@/components/UpdateRow';
@@ -393,6 +394,7 @@ export default function SettingsScreen() {
 
         <Section theme={theme} title="About">
           <Row theme={theme} icon="information-circle-outline" label={`About ${APP_NAME}`} onPress={() => router.push('/about')} />
+          <Row theme={theme} leading={<HeartAppsMark size={30} />} label="Heart Apps" value="More apps" onPress={() => router.push('/about')} />
           <Row theme={theme} icon="refresh-outline" label="Reset settings" destructive last onPress={() => setConfirmReset(true)} />
         </Section>
         <ActionSheet

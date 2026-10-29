@@ -11,6 +11,7 @@ import { SectionLabel } from '@/components/SectionLabel';
 import { Face } from '@/components/title/Rows';
 import { useToast } from '@/components/Toast';
 import { font, fonts } from '@/lib/theme';
+import { easeNextLayout } from '@/lib/motion';
 import type { Theme } from '@/lib/theme';
 import { CONTEXTS, DEVICES, FORMATS, MAX_VIBES, VIBES, hasViewingDetails } from '@/lib/viewing';
 import { useSettings } from '@/settings/SettingsProvider';
@@ -62,7 +63,10 @@ export function ViewingDetails({ draft, onChange, theme }: { draft: Details; onC
   return (
     <View style={[styles.wrap, { borderColor: theme.border, backgroundColor: theme.card }]}>
       <Pressable
-        onPress={() => setOpen((o) => !o)}
+        onPress={() => {
+          easeNextLayout();
+          setOpen((o) => !o);
+        }}
         accessibilityRole="button"
         accessibilityState={{ expanded: open }}
         style={styles.head}
@@ -70,9 +74,7 @@ export function ViewingDetails({ draft, onChange, theme }: { draft: Details; onC
         <Ionicons name="sparkles-outline" size={18} color={theme.accent} />
         <View style={{ flex: 1 }}>
           <Text style={[styles.title, { color: theme.text }]}>More about this viewing</Text>
-          <Text style={[styles.sub, { color: theme.textMuted }]}>
-            {count ? `${count} picked` : 'Vibes, screen, place, service, favourite character'}
-          </Text>
+          <Text style={[styles.sub, { color: theme.textMuted }]}>{count ? `${count} picked` : 'Vibes, screen, place, service, favourite character'}</Text>
         </View>
         <Ionicons name={open ? 'chevron-up' : 'chevron-down'} size={20} color={theme.textMuted} />
       </Pressable>
@@ -87,7 +89,14 @@ export function ViewingDetails({ draft, onChange, theme }: { draft: Details; onC
 
           <Group theme={theme} title="Watched on" note="Pick one">
             {DEVICES.map((d) => (
-              <Chip key={d.key} theme={theme} icon={d.icon} label={d.label} active={draft.device === d.key} onPress={() => onChange({ device: draft.device === d.key ? null : d.key })} />
+              <Chip
+                key={d.key}
+                theme={theme}
+                icon={d.icon}
+                label={d.label}
+                active={draft.device === d.key}
+                onPress={() => onChange({ device: draft.device === d.key ? null : d.key })}
+              />
             ))}
           </Group>
 
@@ -143,7 +152,12 @@ export function ViewingDetails({ draft, onChange, theme }: { draft: Details; onC
                   );
                 })}
                 {!people.length && draft.character && (
-                  <Pressable onPress={() => onChange({ character: null })} accessibilityRole="button" accessibilityLabel={`Remove ${draft.character.name}`} style={styles.person}>
+                  <Pressable
+                    onPress={() => onChange({ character: null })}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Remove ${draft.character.name}`}
+                    style={styles.person}
+                  >
                     <View style={[styles.ring, { borderColor: theme.accent }]}>
                       <Face uri={draft.character.photo} name={draft.character.name} theme={theme} size={64} round />
                     </View>

@@ -16,6 +16,7 @@ import { friendDiary, friendListCache, friendLists, removeFriend } from '@/frien
 import type { FriendEntry } from '@/friends/friendsApi';
 import { useFriends } from '@/friends/FriendsProvider';
 import { friendlyDate } from '@/lib/dates';
+import { easeNextLayout } from '@/lib/motion';
 import { font, fonts, useTheme } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
 import type { UserList } from '@/lists/ListsProvider';
@@ -23,7 +24,17 @@ import { useDiary } from '@/store/DiaryStore';
 import type { Title } from '@/store/types';
 
 const asTitle = (e: { kind: Title['kind']; source: string; sourceId: string; title: string; year: number | null; posterUrl: string | null }) =>
-  ({ kind: e.kind, source: e.source, sourceId: e.sourceId, title: e.title, year: e.year, posterUrl: e.posterUrl, backdropUrl: null, genres: [], runtime: null }) as Title;
+  ({
+    kind: e.kind,
+    source: e.source,
+    sourceId: e.sourceId,
+    title: e.title,
+    year: e.year,
+    posterUrl: e.posterUrl,
+    backdropUrl: null,
+    genres: [],
+    runtime: null,
+  }) as Title;
 
 /** A friend: who they are, their favourites, their diary (with reviews, spoilers hidden) and their lists. */
 export default function FriendScreen() {
@@ -219,7 +230,14 @@ function DiaryRow({ e, theme }: { e: FriendEntry; theme: Theme }) {
         {!!e.vibes?.length && <Text style={[styles.vibes, { color: theme.accent }]}>{e.vibes.join(' · ').toUpperCase()}</Text>}
         {!!e.review &&
           (hidden ? (
-            <Pressable onPress={() => setReveal(true)} accessibilityRole="button" style={styles.spoiler}>
+            <Pressable
+              onPress={() => {
+                easeNextLayout();
+                setReveal(true);
+              }}
+              accessibilityRole="button"
+              style={styles.spoiler}
+            >
               <Ionicons name="eye-off-outline" size={14} color={theme.textMuted} />
               <Text style={[styles.hint, { color: theme.textMuted }]}>Contains spoilers. Tap to read.</Text>
             </Pressable>

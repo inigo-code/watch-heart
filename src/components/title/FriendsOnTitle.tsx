@@ -10,6 +10,7 @@ import { titleFriends, titleInFriendLists } from '@/friends/friendsApi';
 import type { FriendEntry } from '@/friends/friendsApi';
 import { useFriends } from '@/friends/FriendsProvider';
 import { friendlyDate } from '@/lib/dates';
+import { easeNextLayout } from '@/lib/motion';
 import { font, fonts } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
 import type { UserList } from '@/lists/ListsProvider';
@@ -78,7 +79,11 @@ export function FriendsOnTitle({ source, sourceId, theme }: { source: string; so
                   {name(id)}
                 </Text>
                 <View style={styles.personMeta}>
-                  {p.latest.rating ? <Stars rating={p.latest.rating} size={10} color={theme.star} /> : <Text style={[styles.small, { color: theme.textMuted }]}>seen</Text>}
+                  {p.latest.rating ? (
+                    <Stars rating={p.latest.rating} size={10} color={theme.star} />
+                  ) : (
+                    <Text style={[styles.small, { color: theme.textMuted }]}>seen</Text>
+                  )}
                   {p.latest.liked && <Ionicons name="heart" size={10} color={theme.like} />}
                 </View>
                 {p.times > 1 && <Text style={[styles.small, { color: theme.textMuted }]}>{p.times}×</Text>}
@@ -134,7 +139,14 @@ function Review({ e, who, photo, theme }: { e: FriendEntry; who: string; photo: 
         <Text style={[styles.small, { color: theme.textMuted, marginLeft: 'auto' }]}>{friendlyDate(e.watchedOn)}</Text>
       </View>
       {e.spoilers && !reveal ? (
-        <Pressable onPress={() => setReveal(true)} accessibilityRole="button" style={styles.spoiler}>
+        <Pressable
+          onPress={() => {
+            easeNextLayout();
+            setReveal(true);
+          }}
+          accessibilityRole="button"
+          style={styles.spoiler}
+        >
           <Ionicons name="eye-off-outline" size={15} color={theme.textMuted} />
           <Text style={[styles.small, { color: theme.textMuted }]}>Contains spoilers. Tap to read.</Text>
         </Pressable>

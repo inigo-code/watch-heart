@@ -17,6 +17,7 @@ import { FriendsOnTitle } from '@/components/title/FriendsOnTitle';
 import { Face, openTitle } from '@/components/title/Rows';
 import { useToast } from '@/components/Toast';
 import { dayParts, friendlyDate } from '@/lib/dates';
+import { easeNextLayout } from '@/lib/motion';
 import { viewingLine } from '@/lib/viewing';
 import { font, fonts, useTheme } from '@/lib/theme';
 import { useLists } from '@/lists/ListsProvider';
@@ -160,7 +161,10 @@ export default function EntryScreen() {
               <SectionLabel theme={theme}>REVIEW</SectionLabel>
               {hideReview ? (
                 <Pressable
-                  onPress={() => setReveal(true)}
+                  onPress={() => {
+                    easeNextLayout();
+                    setReveal(true);
+                  }}
                   style={[styles.spoiler, { backgroundColor: theme.card, borderColor: theme.border }]}
                   accessibilityRole="button"
                 >

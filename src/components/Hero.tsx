@@ -38,7 +38,7 @@ export function Hero({ t, theme, topInset = 0, children }: { t: HeroTitle; theme
   return (
     <View>
       <View style={{ height, backgroundColor: theme.elevated }}>
-        {backdrop && <Image source={backdrop} style={StyleSheet.absoluteFill} contentFit="cover" transition={250} blurRadius={t.backdropUrl ? 0 : 18} />}
+        {backdrop && <Image source={backdrop} style={StyleSheet.absoluteFill} contentFit="cover" cachePolicy="memory-disk" transition={250} blurRadius={t.backdropUrl ? 0 : 18} />}
         <LinearGradient colors={['rgba(0,0,0,0.45)', 'transparent', theme.bg]} locations={[0, 0.35, 1]} style={StyleSheet.absoluteFill} />
       </View>
       <View style={styles.row}>

@@ -26,7 +26,8 @@ export function Poster({ uri, title, width, theme, radius = 6, style }: {
   return (
     <View style={[{ width, height, borderRadius: radius, backgroundColor: theme.elevated, overflow: 'hidden' }, style]}>
       {uri && !failed ? (
-        <Image source={uri} style={StyleSheet.absoluteFill} contentFit="cover" transition={180} cachePolicy="disk" onError={() => setFailed(true)} />
+        // Kept in memory as well as on disk, so scrolling back up is instant, with no second fade-in.
+        <Image source={uri} recyclingKey={uri} style={StyleSheet.absoluteFill} contentFit="cover" transition={150} cachePolicy="memory-disk" onError={() => setFailed(true)} />
       ) : (
         <View style={styles.slate}>
           <Ionicons name="film-outline" size={Math.max(14, width * 0.26)} color={theme.textMuted} />

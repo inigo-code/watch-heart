@@ -14,6 +14,8 @@ export default function TabsLayout() {
         tabBarInactiveTintColor: theme.textMuted,
         tabBarStyle: { backgroundColor: theme.dark ? '#000000' : theme.card, borderTopColor: theme.border },
         tabBarLabelStyle: { fontFamily: fonts.monoBold, fontSize: 11, letterSpacing: 1 },
+        // Switching tabs slides the new one in slightly, so the change reads as movement, not a flash.
+        animation: 'shift',
       }}
     >
       <Tabs.Screen

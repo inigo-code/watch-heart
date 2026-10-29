@@ -9,6 +9,7 @@ import { aboutTmdb, madeBy } from '@/api/tmdb';
 import type { TitleAbout } from '@/api/tmdb';
 import { PeopleRow, RowHead, TitleRow } from '@/components/title/Rows';
 import { font, fonts } from '@/lib/theme';
+import { easeNextLayout } from '@/lib/motion';
 import type { Theme } from '@/lib/theme';
 import { useSettings } from '@/settings/SettingsProvider';
 import { useDiary } from '@/store/DiaryStore';
@@ -38,7 +39,19 @@ export function useAbout(id: string | null): { about: TitleAbout | null; error: 
 }
 
 /** The tagline and synopsis (folded to four lines), and for series, whether it's still running. */
-export function Synopsis({ about, overview, theme, label, onMore }: { about: TitleAbout | null; overview: string; theme: Theme; label?: string; onMore?: () => void }) {
+export function Synopsis({
+  about,
+  overview,
+  theme,
+  label,
+  onMore,
+}: {
+  about: TitleAbout | null;
+  overview: string;
+  theme: Theme;
+  label?: string;
+  onMore?: () => void;
+}) {
   const [more, setMore] = useState(false);
   const text = about?.overview || overview;
   const series = !!about && about.seasons.length > 0;
@@ -48,7 +61,14 @@ export function Synopsis({ about, overview, theme, label, onMore }: { about: Tit
       {label && <RowHead title={label} theme={theme} more="Title page" onMore={onMore} />}
       {!!about?.tagline && <Text style={[styles.tagline, { color: theme.textMuted }]}>“{about.tagline}”</Text>}
       {!!text && (
-        <Pressable onPress={() => setMore((m) => !m)} accessibilityRole="button" accessibilityHint={more ? 'Shows less' : 'Shows the whole synopsis'}>
+        <Pressable
+          onPress={() => {
+            easeNextLayout();
+            setMore((m) => !m);
+          }}
+          accessibilityRole="button"
+          accessibilityHint={more ? 'Shows less' : 'Shows the whole synopsis'}
+        >
           <Text style={[styles.overview, { color: theme.text }]} numberOfLines={more ? undefined : 4}>
             {text}
           </Text>
@@ -57,7 +77,11 @@ export function Synopsis({ about, overview, theme, label, onMore }: { about: Tit
       )}
       {series && about && (
         <Text style={[styles.facts, { color: theme.textMuted }]}>
-          {[about.status, `${about.seasons.length} ${about.seasons.length === 1 ? 'season' : 'seasons'}`, about.title.episodes ? `${about.title.episodes} episodes` : null]
+          {[
+            about.status,
+            `${about.seasons.length} ${about.seasons.length === 1 ? 'season' : 'seasons'}`,
+            about.title.episodes ? `${about.title.episodes} episodes` : null,
+          ]
             .filter(Boolean)
             .join(' · ')}
         </Text>
@@ -105,7 +129,10 @@ export function TitleMore({ id, t, about, theme }: { id: string; t: Title; about
                   onPress={() => setCrewTab(tab.crew)}
                   accessibilityRole="tab"
                   accessibilityState={{ selected: on }}
-                  style={[styles.tab, { borderColor: on ? theme.accent : theme.border, backgroundColor: on ? theme.accent : 'transparent', opacity: tab.n ? 1 : 0.4 }]}
+                  style={[
+                    styles.tab,
+                    { borderColor: on ? theme.accent : theme.border, backgroundColor: on ? theme.accent : 'transparent', opacity: tab.n ? 1 : 0.4 },
+                  ]}
                 >
                   <Text style={[styles.tabText, { color: on ? theme.accentText : theme.text }]}>{tab.label.toUpperCase()}</Text>
                 </Pressable>

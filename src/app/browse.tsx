@@ -1,16 +1,17 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, FlatList, Modal, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { ActivityIndicator, FlatList, Dimensions, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { tmdbKey } from '@/api';
 import { watchRegion } from '@/api/omdb';
 import { BROWSE_GENRES, discoverTmdb, genreId, regionProviders } from '@/api/tmdb';
 import type { BrowseQuery, BrowseSort, Provider } from '@/api/tmdb';
+import { BottomSheet } from '@/components/BottomSheet';
 import { Chip, Poster } from '@/components/Film';
 import { SectionLabel } from '@/components/SectionLabel';
-import { openTitle } from '@/components/title/Rows';
+import { openTitle, warmTitle } from '@/components/title/Rows';
 import { DECADES, LANGUAGES, kindsFor } from '@/lib/discover';
 import { KIND_COLORS, font, fonts, useTheme } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
@@ -154,6 +155,7 @@ export default function BrowseScreen() {
           const seen = viewingsOf(item.source, item.sourceId).length > 0;
           return (
             <Pressable
+              onPressIn={() => warmTitle(item)}
               onPress={() => openTitle(item)}
               accessibilityRole="button"
               accessibilityLabel={`${item.title}${item.year ? `, ${item.year}` : ''}${seen ? ', in your diary' : ''}`}
@@ -238,8 +240,7 @@ function Filters({
   };
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <Pressable style={styles.scrim} onPress={onClose} accessibilityLabel="Close filters" />
+    <BottomSheet visible={visible} onClose={onClose}>
       <View style={[styles.sheet, { backgroundColor: theme.bg, paddingBottom: insets.bottom + 12 }]}>
         <View style={styles.sheetHead}>
           <Text style={[styles.sheetTitle, { color: theme.text }]}>FILTERS</Text>
@@ -349,7 +350,7 @@ function Filters({
           <Text style={[styles.applyText, { color: theme.accentText }]}>SHOW RESULTS</Text>
         </Pressable>
       </View>
-    </Modal>
+    </BottomSheet>
   );
 }
 
@@ -372,8 +373,7 @@ const styles = StyleSheet.create({
   tick: { position: 'absolute', top: 6, right: 6, width: 22, height: 22, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
   cellTitle: { fontSize: font.footnote, fontWeight: '700', marginTop: 6, lineHeight: 17 },
   cellYear: { fontFamily: fonts.mono, fontSize: font.caption },
-  scrim: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' },
-  sheet: { maxHeight: '85%', borderTopLeftRadius: 20, borderTopRightRadius: 20 },
+  sheet: { maxHeight: Dimensions.get('window').height * 0.85, borderTopLeftRadius: 20, borderTopRightRadius: 20 },
   sheetHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingTop: 16, paddingBottom: 8 },
   sheetTitle: { fontFamily: fonts.display, fontSize: 28, letterSpacing: 1 },
   clear: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 1 },

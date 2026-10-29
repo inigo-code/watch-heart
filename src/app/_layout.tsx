@@ -17,12 +17,13 @@ import { useTmdbFreshness } from '@/lib/tmdbFreshness';
 import { AppLockProvider } from '@/lock/AppLockProvider';
 import { FriendsProvider } from '@/friends/FriendsProvider';
 import { ListsProvider } from '@/lists/ListsProvider';
-import { SettingsProvider } from '@/settings/SettingsProvider';
-import { DiaryStoreProvider } from '@/store/DiaryStore';
+import { SettingsProvider, useSettings } from '@/settings/SettingsProvider';
+import { DiaryStoreProvider, useDiary } from '@/store/DiaryStore';
 import { SyncProvider } from '@/sync/SyncProvider';
 import { WidgetSync } from '@/widget/WidgetSync';
 
-// Keep the splash up until the marquee and typewriter fonts are ready, so titles never flash in the fallback.
+// Keep the splash up until the fonts, settings and diary are in, so the first thing on screen is the diary
+// itself: no titles in the fallback font, no empty Diary that fills a moment later.
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
 // Receiving shares needs the native module, which web and Expo Go don't have.
@@ -30,9 +31,6 @@ const shareDisabled = Platform.OS === 'web' || Constants.executionEnvironment ==
 
 export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts({ BebasNeue_400Regular, CourierPrime_400Regular, CourierPrime_700Bold });
-  useEffect(() => {
-    if (fontsLoaded || fontError) SplashScreen.hideAsync().catch(() => {});
-  }, [fontsLoaded, fontError]);
 
   // Draw nothing (the splash stays up) until the fonts are in. Android measures text once, so text
   // laid out in the fallback font keeps the wrong width: a gap in the title, cut-off tab labels.
@@ -64,7 +62,19 @@ function Navigator() {
   const theme = useTheme();
   const pathname = usePathname();
   const { hasShareIntent } = useShareIntentContext();
+  const { ready } = useDiary();
+  const { ready: settingsReady } = useSettings();
   useTmdbFreshness();
+
+  // The splash lifts once the diary and settings are loaded, or after 2.5 s whatever happens.
+  useEffect(() => {
+    if (ready && settingsReady) {
+      SplashScreen.hideAsync().catch(() => {});
+      return;
+    }
+    const timer = setTimeout(() => SplashScreen.hideAsync().catch(() => {}), 2500);
+    return () => clearTimeout(timer);
+  }, [ready, settingsReady]);
 
   // On Android, a shared link arrives through the native module rather than a deep link,
   // so open the Share screen whenever something has been shared and not yet handled.
@@ -83,10 +93,12 @@ function Navigator() {
           headerTitleStyle: { fontFamily: fonts.display, fontSize: 24 },
           headerShadowVisible: false,
           contentStyle: { backgroundColor: theme.bg },
+          // One way of moving everywhere: pages come in from the right; the log form rises from below.
+          animation: 'slide_from_right',
         }}
       >
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="log" options={{ title: '', presentation: 'modal' }} />
+        <Stack.Screen name="log" options={{ title: '', presentation: 'modal', animation: 'slide_from_bottom' }} />
         <Stack.Screen name="entry/[id]" options={{ title: '', headerTransparent: true }} />
         <Stack.Screen name="card/[id]" options={{ title: 'STORY CARD' }} />
         <Stack.Screen name="settings" options={{ title: 'SETTINGS' }} />

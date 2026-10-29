@@ -7,7 +7,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { BROWSE_GENRES, regionProviders } from '@/api/tmdb';
 import type { BrowseQuery, Provider } from '@/api/tmdb';
 import { SectionLabel } from '@/components/SectionLabel';
-import { COUNTRIES, DECADES, LANGUAGES, SHELVES, countryName, flag, seasonalShelf } from '@/lib/discover';
+import { COUNTRIES, DECADES, LANGUAGES, SHELVES, countryName, flag, seasonalShelves } from '@/lib/discover';
 import { font, fonts } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
 
@@ -36,7 +36,7 @@ export function DiscoverHome({ theme, tmdb, region }: { theme: Theme; tmdb: stri
     return () => controller.abort();
   }, [tmdb, region]);
 
-  const seasonal = seasonalShelf();
+  const seasonal = seasonalShelves();
   const kind = 'movie';
 
   return (
@@ -62,20 +62,21 @@ export function DiscoverHome({ theme, tmdb, region }: { theme: Theme; tmdb: stri
 
       <View style={styles.section}>
         <SectionLabel theme={theme}>Collections</SectionLabel>
-        {seasonal && (
+        {seasonal.map((sh) => (
           <Pressable
-            onPress={() => browse(seasonal.q, seasonal.name)}
+            key={sh.id}
+            onPress={() => browse(sh.q, sh.name)}
             accessibilityRole="button"
             style={({ pressed }) => [styles.feature, { backgroundColor: theme.card, borderColor: theme.accent, opacity: pressed ? 0.85 : 1 }]}
           >
-            <Ionicons name={seasonal.id === 'halloween' ? 'moon' : seasonal.id === 'valentine' ? 'heart' : 'snow'} size={26} color={theme.accent} />
+            <Ionicons name={sh.icon} size={26} color={theme.accent} />
             <View style={{ flex: 1 }}>
-              <Text style={[styles.featureName, { color: theme.text }]}>{seasonal.name.toUpperCase()}</Text>
-              <Text style={[styles.note, { color: theme.textMuted }]}>{seasonal.note}</Text>
+              <Text style={[styles.featureName, { color: theme.text }]}>{sh.name.toUpperCase()}</Text>
+              <Text style={[styles.note, { color: theme.textMuted }]}>{sh.note}</Text>
             </View>
             <Ionicons name="chevron-forward" size={18} color={theme.textMuted} />
           </Pressable>
-        )}
+        ))}
         <View style={[styles.shelves, { borderColor: theme.border, backgroundColor: theme.card }]}>
           {SHELVES.map((s, i) => (
             <Pressable
@@ -118,8 +119,8 @@ export function DiscoverHome({ theme, tmdb, region }: { theme: Theme; tmdb: stri
       >
         <Ionicons name="options-outline" size={20} color={theme.accent} />
         <View style={{ flex: 1 }}>
-          <Text style={[styles.shelfName, { color: theme.text }]}>Build your own</Text>
-          <Text style={[styles.note, { color: theme.textMuted }]}>Mix genre, decade, language, score, length and service</Text>
+          <Text style={[styles.shelfName, { color: theme.text }]}>Build your own mix</Text>
+          <Text style={[styles.note, { color: theme.textMuted }]}>Combine filters, e.g. Korean thrillers from the 2000s, rated 7+, on Netflix</Text>
         </View>
         <Ionicons name="chevron-forward" size={16} color={theme.textMuted} />
       </Pressable>

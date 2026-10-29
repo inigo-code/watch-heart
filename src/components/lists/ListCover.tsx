@@ -26,7 +26,7 @@ export function ListCover({ items, theme, width = 132 }: { items: ListItem[]; th
           source={p.posterUrl}
           style={[styles.poster, { width: w, height: h, left: i * step, zIndex: 10 - i, borderColor: theme.bg }]}
           contentFit="cover"
-          cachePolicy="disk"
+          cachePolicy="memory-disk"
         />
       ))}
     </View>

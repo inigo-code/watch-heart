@@ -7,8 +7,22 @@ import { Poster } from '@/components/Film';
 import { SectionLabel } from '@/components/SectionLabel';
 import { font, fonts } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
+import { tmdbKey } from '@/api';
+import { aboutTmdb } from '@/api/tmdb';
 import type { Person } from '@/api/tmdb';
 import type { Title } from '@/store/types';
+
+/**
+ * Starts loading a title's page (its details, and the backdrop picture) when it's touched, so by the time the
+ * tap lifts and the page opens, most of it is already here.
+ */
+export function warmTitle(t: Title) {
+  if (t.source !== 'tmdb' || !t.sourceId) return;
+  const key = tmdbKey('');
+  if (key) aboutTmdb(key, t.sourceId).catch(() => {});
+  const picture = t.backdropUrl ?? t.posterUrl;
+  if (picture) Image.prefetch(picture, 'memory-disk').catch(() => {});
+}
 
 /**
  * A title's page, for TMDB titles; anything else (TVmaze, AniList, typed in) has no page yet, so it opens
@@ -26,6 +40,7 @@ export function TitleRow({ titles, theme, seen, width = 104 }: { titles: Title[]
       {titles.map((t) => (
         <Pressable
           key={`${t.source}:${t.sourceId}`}
+          onPressIn={() => warmTitle(t)}
           onPress={() => openTitle(t)}
           accessibilityRole="button"
           accessibilityLabel={`${t.title}${t.year ? `, ${t.year}` : ''}`}

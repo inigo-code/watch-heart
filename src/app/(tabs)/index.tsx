@@ -198,22 +198,32 @@ export default function DiaryScreen() {
           </Pressable>
         </View>
       )}
-
-      {showTip && (
-        <TipCard theme={theme} title="Every month is a reel" onDismiss={dismissTip}>
-          Tap STORY on a month to turn it into an Instagram story. Long-press a ticket to edit, log again or delete it.
-        </TipCard>
-      )}
     </View>
   );
 
+  const tip = showTip ? (
+    <View style={styles.tip}>
+      <TipCard theme={theme} title="Every month is a reel" onDismiss={dismissTip}>
+        Tap STORY on a month to turn it into an Instagram story. Long-press a ticket to edit, log again or delete it.
+      </TipCard>
+    </View>
+  ) : undefined;
+
   return (
     <View style={[styles.screen, { backgroundColor: theme.bg }]}>
+      {header}
       <SectionList
+        style={styles.scroller}
         sections={sections}
         keyExtractor={(row) => row.map((e) => e.id).join('|')}
         stickySectionHeadersEnabled={false}
-        ListHeaderComponent={header}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
+        // A screenful first, then the rest in small batches, so a long diary opens at once.
+        initialNumToRender={8}
+        maxToRenderPerBatch={8}
+        windowSize={9}
+        ListHeaderComponent={tip}
         contentContainerStyle={[styles.list, { paddingBottom: insets.bottom + 110 }]}
         renderSectionHeader={({ section }) => (
           <ReelHeader
@@ -316,7 +326,10 @@ function MarqueeStat({ theme, value, label }: { theme: ReturnType<typeof useThem
 const styles = StyleSheet.create({
   screen: { flex: 1 },
   list: { paddingHorizontal: 16 },
-  top: { gap: 12, paddingBottom: 2 },
+  // The header sits above the list, so it carries the list's side padding itself.
+  top: { gap: 12, paddingBottom: 6, paddingHorizontal: 16 },
+  scroller: { flex: 1 },
+  tip: { paddingTop: 10 },
   titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   iconBtn: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
   headerIcons: { flexDirection: 'row', alignItems: 'center', gap: 6 },

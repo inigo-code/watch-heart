@@ -11,6 +11,13 @@ export const DEVELOPER = {
 
 export const SUPPORT_EMAIL = 'inigo@tosstheworld.org';
 
+/** Watch Heart is one of the Heart Apps; the same names and lines as the Heart Apps website. */
+export const HEART_APPS = {
+  url: 'https://inigo-code.github.io/',
+  line: 'Free Android apps by Inigo. No ads, no tracking, nothing to buy.',
+  apps: [{ name: 'Prompt Heart', tagline: 'For the AI prompts that work', url: 'https://inigo-code.github.io/prompt-heart-site/' }],
+};
+
 /**
  * AniList's terms bar "anime and manga list or tracker services" from its API, so Watch Heart only
  * uses it with written permission from AniList (contact@anilist.co). Until then anime comes from TMDB.

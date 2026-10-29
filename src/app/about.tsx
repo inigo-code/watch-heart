@@ -3,6 +3,7 @@ import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-nati
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BrandTitle } from '@/components/BrandTitle';
+import { HeartAppsCard, HeartAppsMark } from '@/components/HeartApps';
 import { Sprockets } from '@/components/Film';
 import { Row, Section } from '@/components/SettingsUI';
 import { UpdateCard, describeRunning } from '@/components/UpdateRow';
@@ -21,6 +22,10 @@ export default function AboutScreen() {
           <BrandTitle theme={{ ...theme, text: theme.dark ? theme.text : theme.bg }} size={44} />
           <Text style={[styles.tagline, { color: theme.accent }]}>{APP_TAGLINE.toUpperCase()}</Text>
           <Text style={[styles.version, { color: theme.textMuted }]}>Version {describeRunning()}</Text>
+          <View style={styles.family}>
+            <HeartAppsMark size={18} />
+            <Text style={[styles.version, { color: theme.textMuted }]}>A Heart App</Text>
+          </View>
         </View>
         <Sprockets color={theme.bg} count={14} hole={6} />
       </View>
@@ -42,6 +47,8 @@ export default function AboutScreen() {
         <Text style={[styles.tmdbNotice, { color: theme.textMuted }]}>{DATA_SOURCES.tvmaze.notice}</Text>
       </Pressable>
 
+      <HeartAppsCard theme={theme} />
+
       <Section theme={theme} title="Made by">
         <Row theme={theme} icon="logo-github" label={DEVELOPER.name} value="GitHub" onPress={() => Linking.openURL(DEVELOPER.github)} />
         <Row theme={theme} icon="mail-outline" label="Send feedback" onPress={() => Linking.openURL(`mailto:${SUPPORT_EMAIL}?subject=Watch%20Heart`)} last />
@@ -61,6 +68,7 @@ const styles = StyleSheet.create({
   cardBody: { alignItems: 'center', gap: 6, paddingVertical: 14 },
   tagline: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 1.5 },
   version: { fontFamily: fonts.mono, fontSize: font.caption },
+  family: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 },
   tmdb: { gap: 6, paddingHorizontal: 4, marginTop: -8 },
   // Smaller than Watch Heart's own title, as TMDB's terms ask.
   tmdbLogo: { width: 78, height: 10, opacity: 0.85 },

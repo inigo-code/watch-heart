@@ -9,7 +9,7 @@ import { personTmdb } from '@/api/tmdb';
 import type { PersonAbout } from '@/api/tmdb';
 import { Poster } from '@/components/Film';
 import { SectionLabel } from '@/components/SectionLabel';
-import { Face, openTitle } from '@/components/title/Rows';
+import { Face, openTitle, warmTitle } from '@/components/title/Rows';
 import { font, fonts, useTheme } from '@/lib/theme';
 import { useSettings } from '@/settings/SettingsProvider';
 import { useDiary } from '@/store/DiaryStore';
@@ -109,6 +109,7 @@ export default function PersonScreen() {
       }
       renderItem={({ item }) => (
         <Pressable
+          onPressIn={() => warmTitle(item)}
           onPress={() => openTitle(item)}
           accessibilityRole="button"
           accessibilityLabel={`${item.title}${item.year ? `, ${item.year}` : ''}${item.role ? `, ${item.role}` : ''}`}
