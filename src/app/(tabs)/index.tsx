@@ -1,7 +1,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { Pressable, ScrollView, SectionList, StyleSheet, Text, TextInput, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -81,6 +81,7 @@ export default function DiaryScreen() {
   }
   const [menu, setMenu] = useState<Entry | null>(null);
   const [listing, setListing] = useState<Entry | null>(null);
+  const listRef = useRef<SectionList<Entry[], { month: string; count: number; data: Entry[][] }>>(null);
   const grid = settings.diaryLayout === 'grid';
   const tile = (width - 32 - GAP * (GRID_COLS - 1)) / GRID_COLS;
 
@@ -209,10 +210,31 @@ export default function DiaryScreen() {
     </View>
   ) : undefined;
 
+  const rows = sections.reduce((n, sec) => n + sec.data.length, 0);
+  const first = sections[0]?.data[0]?.[0];
+  const toTop = () => listRef.current?.scrollToLocation({ sectionIndex: 0, itemIndex: 0, viewOffset: 80, animated: true });
+  // At the end of a long diary (the oldest entry): a way back up to the newest.
+  const footer =
+    rows > 6 && first ? (
+      <View style={styles.end}>
+        <Text style={[styles.endText, { color: theme.textMuted }]}>{filter === 'all' && !query.trim() ? 'You’ve reached the beginning' : 'That’s all of them'}</Text>
+        <Pressable
+          onPress={toTop}
+          accessibilityRole="button"
+          accessibilityLabel={`Back to the top, to ${first.title}`}
+          style={({ pressed }) => [styles.endBtn, { borderColor: theme.border, backgroundColor: pressed ? theme.chip : 'transparent' }]}
+        >
+          <Ionicons name="arrow-up" size={18} color={theme.accent} />
+          <Text style={[styles.endBtnText, { color: theme.text }]}>BACK TO THE TOP</Text>
+        </Pressable>
+      </View>
+    ) : undefined;
+
   return (
     <View style={[styles.screen, { backgroundColor: theme.bg }]}>
       {header}
       <SectionList
+        ref={listRef}
         style={styles.scroller}
         sections={sections}
         keyExtractor={(row) => row.map((e) => e.id).join('|')}
@@ -251,6 +273,8 @@ export default function DiaryScreen() {
             </View>
           )
         }
+        ListFooterComponent={footer}
+        onScrollToIndexFailed={() => {}}
         ListEmptyComponent={
           !ready ? undefined : entries.length === 0 ? (
             <View style={styles.empty}>
@@ -347,6 +371,10 @@ const styles = StyleSheet.create({
   layoutBtn: { width: 36, height: 32, borderRadius: 10, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
   gridRow: { flexDirection: 'row', gap: GAP },
   empty: { alignItems: 'center', gap: 10, paddingTop: 64, paddingHorizontal: 28 },
+  end: { alignItems: 'center', gap: 12, paddingTop: 36, paddingBottom: 8 },
+  endText: { fontFamily: fonts.mono, fontSize: font.footnote },
+  endBtn: { flexDirection: 'row', alignItems: 'center', gap: 8, height: 44, paddingHorizontal: 20, borderRadius: 22, borderWidth: 1 },
+  endBtnText: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 1.5 },
   emptyIcon: { width: 84, height: 84, borderRadius: 42, alignItems: 'center', justifyContent: 'center', marginBottom: 6 },
   emptyTitle: { fontFamily: fonts.display, fontSize: 32, letterSpacing: 1.5 },
   emptyText: { fontFamily: fonts.mono, fontSize: font.body, textAlign: 'center', lineHeight: 21 },

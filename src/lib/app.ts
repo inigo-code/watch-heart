@@ -47,7 +47,7 @@ export const WHATS_NEW = {
   id: '1.2.0',
   items: [
     'An Up next widget for your home screen: your next episode, a tap away',
-    'The Diary’s header stays put while your entries scroll',
+    'The Diary’s header stays put while you scroll, and Back to the top waits at the end',
     'Discover has collections for the time of year: Diwali, Halloween, Christmas and more',
     'Faster: a title starts loading as you touch its poster, and lists scroll more smoothly',
     'Heart Apps: meet Prompt Heart, from the same maker, in About',
