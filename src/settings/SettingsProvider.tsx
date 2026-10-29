@@ -13,6 +13,20 @@ export type AccentKey = 'marquee' | 'velvet' | 'neon' | 'sakura' | 'noir';
 /** A title pinned to the profile: enough to show its poster and open it. */
 export type Favourite = { kind: MediaKind; source: string; sourceId: string; title: string; year: number | null; posterUrl: string | null };
 
+/** A night planned for a title: when, and the reminder scheduled for it. */
+export type MovieNight = {
+  key: string;
+  reminderId: string | null;
+  at: number;
+  kind: MediaKind;
+  source: string;
+  sourceId: string;
+  title: string;
+  year: number | null;
+  posterUrl: string | null;
+  backdropUrl: string | null;
+};
+
 export type Settings = {
   themeMode: ThemeMode;
   accent: AccentKey;
@@ -50,6 +64,8 @@ export type Settings = {
   watchRegion: string;
   /** The update whose "What's new" card was already shown. */
   seenUpdate: string | null;
+  /** Movie nights you planned, with the reminder's id (null: planned without one). */
+  movieNights: MovieNight[];
   /** When the profile (name, bio, photo, favourites, goal) last changed here, and when sync last matched it. */
   profileUpdatedAt: number;
   profileSyncedAt: number;
@@ -82,6 +98,7 @@ export const DEFAULT_SETTINGS: Settings = {
   omdbKey: '',
   watchRegion: '',
   seenUpdate: null,
+  movieNights: [],
   profileUpdatedAt: 0,
   profileSyncedAt: 0,
   photoPath: null,
@@ -146,6 +163,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
         tmdbKey: s.tmdbKey,
         omdbKey: s.omdbKey,
         seenUpdate: s.seenUpdate,
+        movieNights: s.movieNights,
         profileUpdatedAt: s.profileUpdatedAt,
         profileSyncedAt: s.profileSyncedAt,
         photoPath: s.photoPath,

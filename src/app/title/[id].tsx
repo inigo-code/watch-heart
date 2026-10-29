@@ -10,6 +10,7 @@ import { browseGenre } from '@/api/tmdb';
 import { Stars } from '@/components/Film';
 import { Hero } from '@/components/Hero';
 import { AddToList } from '@/components/lists/AddToList';
+import { MovieNightCard, MovieNightSheet, useMovieNights } from '@/components/MovieNight';
 import { SectionLabel } from '@/components/SectionLabel';
 import { TitleExtras } from '@/components/TitleExtras';
 import { Synopsis, TitleMore, useAbout } from '@/components/title/AboutTitle';
@@ -37,6 +38,8 @@ export default function TitleScreen() {
   const seed = useMemo(() => (params.t ? (JSON.parse(params.t) as Title) : null), [params.t]);
   const { about: a, error } = useAbout(id);
   const [listing, setListing] = useState(false);
+  const [planning, setPlanning] = useState(false);
+  const { forTitle } = useMovieNights();
 
   // Search in the Anime tab knows it's anime; TMDB's own details can't always tell (an anime film, say).
   const t: Title | null = a ? { ...a.title, kind: seed?.kind === 'anime' ? 'anime' : a.title.kind, overview: a.overview } : seed;
@@ -118,7 +121,10 @@ export default function TitleScreen() {
           </View>
 
           <View style={styles.tools}>
-            {a?.trailer && <Tool theme={theme} icon="play-circle-outline" label="Trailer" onPress={() => Linking.openURL(`https://www.youtube.com/watch?v=${a.trailer}`)} />}
+            {a?.trailer && (
+              <Tool theme={theme} icon="play-circle-outline" label="Trailer" onPress={() => Linking.openURL(`https://www.youtube.com/watch?v=${a.trailer}`)} />
+            )}
+            <Tool theme={theme} icon="calendar-outline" label="Movie night" onPress={() => setPlanning(true)} />
             <Tool theme={theme} icon="albums-outline" label={onLists.length ? `Lists (${onLists.length})` : 'Add to list'} onPress={() => setListing(true)} />
             {trackable(t) && (
               <Tool
@@ -129,6 +135,11 @@ export default function TitleScreen() {
               />
             )}
           </View>
+
+          {(() => {
+            const night = forTitle(t.sourceId);
+            return night ? <MovieNightCard night={night} theme={theme} /> : null;
+          })()}
 
           {viewings.length > 0 && (
             <View style={styles.block}>
@@ -160,17 +171,14 @@ export default function TitleScreen() {
         </View>
       </ScrollView>
       <AddToList item={listing ? t : null} theme={theme} onClose={() => setListing(false)} />
+      <MovieNightSheet t={t} visible={planning} theme={theme} onClose={() => setPlanning(false)} />
     </View>
   );
 }
 
 function Tool({ theme, icon, label, onPress }: { theme: Theme; icon: keyof typeof Ionicons.glyphMap; label: string; onPress: () => void }) {
   return (
-    <Pressable
-      onPress={onPress}
-      accessibilityRole="button"
-      style={({ pressed }) => [styles.tool, { borderColor: theme.border, opacity: pressed ? 0.7 : 1 }]}
-    >
+    <Pressable onPress={onPress} accessibilityRole="button" style={({ pressed }) => [styles.tool, { borderColor: theme.border, opacity: pressed ? 0.7 : 1 }]}>
       <Ionicons name={icon} size={17} color={theme.text} />
       <Text style={[styles.toolText, { color: theme.text }]}>{label.toUpperCase()}</Text>
     </Pressable>
@@ -189,7 +197,17 @@ const styles = StyleSheet.create({
   logText: { fontFamily: fonts.monoBold, fontSize: font.body, letterSpacing: 1.5 },
   square: { width: 50, height: 50, borderRadius: 25, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
   tools: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: -10 },
-  tool: { flexGrow: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, height: 40, borderRadius: 20, borderWidth: 1, paddingHorizontal: 12 },
+  tool: {
+    flexGrow: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    height: 40,
+    borderRadius: 20,
+    borderWidth: 1,
+    paddingHorizontal: 12,
+  },
   toolText: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 1 },
   block: { gap: 10 },
   viewing: { flexDirection: 'row', alignItems: 'center', gap: 10, borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, height: 46 },

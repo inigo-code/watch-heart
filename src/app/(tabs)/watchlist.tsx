@@ -9,6 +9,7 @@ import { trackable } from '@/api/episodes';
 import { ActionSheet } from '@/components/ActionSheet';
 import { ContinueWatching } from '@/components/ContinueWatching';
 import { AddToList } from '@/components/lists/AddToList';
+import { nightLabel, useMovieNights } from '@/components/MovieNight';
 import { Chip, KindBadge, Poster } from '@/components/Film';
 import { useToast } from '@/components/Toast';
 import { KIND_COLORS, font, fonts, shadow, useTheme } from '@/lib/theme';
@@ -35,6 +36,7 @@ export default function WatchlistScreen() {
   const toast = useToast();
   const { width } = useWindowDimensions();
   const { watchlist, removeFromWatchlist, importWatchlist } = useDiary();
+  const { forTitle } = useMovieNights();
   const [filter, setFilter] = useState<Filter>('all');
   const [sort, setSort] = useState<Sort>('added');
   const [menu, setMenu] = useState<WatchItem | null>(null);
@@ -138,6 +140,14 @@ export default function WatchlistScreen() {
               <Text style={{ color: KIND_COLORS[item.kind] }}>● </Text>
               {item.year ?? '—'}
             </Text>
+            {(() => {
+              const night = forTitle(item.sourceId);
+              return night ? (
+                <Text style={[styles.tileNight, { color: theme.accent }]} numberOfLines={1}>
+                  {nightLabel(night.at)}
+                </Text>
+              ) : null;
+            })()}
           </Pressable>
         )}
         ListEmptyComponent={
@@ -262,6 +272,7 @@ const styles = StyleSheet.create({
   sortBtn: { flexDirection: 'row', alignItems: 'center', gap: 5, alignSelf: 'flex-end' },
   sortText: { fontFamily: fonts.monoBold, fontSize: 11, letterSpacing: 1 },
   tileTitle: { fontSize: font.footnote, fontWeight: '700', marginTop: 6, lineHeight: 17 },
+  tileNight: { fontFamily: fonts.monoBold, fontSize: 10, letterSpacing: 0.5, marginTop: 1 },
   tileMeta: { fontFamily: fonts.mono, fontSize: font.caption, marginTop: 2 },
   empty: { alignItems: 'center', gap: 10, paddingTop: 50, paddingHorizontal: 24 },
   emptyIcon: { width: 84, height: 84, borderRadius: 42, alignItems: 'center', justifyContent: 'center', marginBottom: 6 },

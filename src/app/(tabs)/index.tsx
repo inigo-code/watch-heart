@@ -13,6 +13,7 @@ import { nowPlayingTmdb, trendingAllTmdb } from '@/api/tmdb';
 import { AppHeader, greetingLine } from '@/components/AppHeader';
 import { KindBadge, Poster } from '@/components/Film';
 import { RegionalRows } from '@/components/home/RegionalRows';
+import { MovieNightCard, useMovieNights } from '@/components/MovieNight';
 import { RowHead, TitleRow, openTitle, warmTitle } from '@/components/title/Rows';
 import { useToast } from '@/components/Toast';
 import { today } from '@/lib/dates';
@@ -38,6 +39,7 @@ export default function HomeScreen() {
   const key = tmdbKey(settings.tmdbKey);
   const region = watchRegion(settings.watchRegion);
   const { entries, watchlist, viewingsOf } = useDiary();
+  const { nights } = useMovieNights();
   const [trending, setTrending] = useState<Title[] | null>(null);
   const [cinema, setCinema] = useState<{ region: string; titles: Title[] } | null>(null);
   const [picks, setPicks] = useState<{ seeds: string; titles: Title[] } | null>(null);
@@ -82,6 +84,8 @@ export default function HomeScreen() {
       contentContainerStyle={[styles.content, { paddingTop: insets.top + 10, paddingBottom: insets.bottom + 32 }]}
     >
       <AppHeader theme={theme} line={greetingLine(hour, settings.name)} />
+
+      {nights[0] && <MovieNightCard night={nights[0]} theme={theme} showTitle />}
 
       {featured.length ? <FeaturedCarousel titles={featured} theme={theme} /> : <View style={[styles.featuredSkeleton, { backgroundColor: theme.card }]} />}
 

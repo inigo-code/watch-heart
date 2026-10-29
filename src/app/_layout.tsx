@@ -13,6 +13,7 @@ import { Platform } from 'react-native';
 import { ToastProvider } from '@/components/Toast';
 import { UpdatePrompt } from '@/components/UpdatePrompt';
 import { fonts, useTheme } from '@/lib/theme';
+import { useMovieNightTaps } from '@/lib/movieNight';
 import { useTmdbFreshness } from '@/lib/tmdbFreshness';
 import { AppLockProvider } from '@/lock/AppLockProvider';
 import { FriendsProvider } from '@/friends/FriendsProvider';
@@ -65,6 +66,7 @@ function Navigator() {
   const { ready } = useDiary();
   const { ready: settingsReady } = useSettings();
   useTmdbFreshness();
+  useMovieNightTaps();
 
   // The splash lifts once the diary and settings are loaded, or after 2.5 s whatever happens.
   useEffect(() => {
