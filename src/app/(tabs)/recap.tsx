@@ -62,7 +62,7 @@ export default function RecapScreen() {
 
   return (
     <ScrollView style={{ backgroundColor: theme.bg }} contentContainerStyle={[styles.content, { paddingTop: insets.top + 10, paddingBottom: insets.bottom + 32 }]}>
-      <View>
+      <View style={styles.titleBlock}>
         <Text style={[styles.heading, { color: theme.text }]}>
           THE <Text style={{ color: theme.accent }}>RECAP</Text>
         </Text>
@@ -192,6 +192,8 @@ function Numbers({ theme, stats }: { theme: Theme; stats: Stats }) {
 const styles = StyleSheet.create({
   content: { paddingHorizontal: 16, gap: 18 },
   heading: { fontFamily: fonts.display, fontSize: font.marquee, lineHeight: 46, letterSpacing: 1, includeFontPadding: false },
+  // The gold word is a span a little taller than the line; the gap keeps it off the line below.
+  titleBlock: { gap: 4 },
   sub: { fontFamily: fonts.mono, fontSize: font.footnote },
   periods: { gap: 8 },
   controls: { gap: 10 },

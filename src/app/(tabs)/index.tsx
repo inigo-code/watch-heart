@@ -118,11 +118,13 @@ export default function HomeScreen() {
 
       {seeds.length > 0 ? (
         <View style={styles.block}>
-          <RowHead title="For you" theme={theme} />
-          <Text style={[styles.because, { color: theme.textMuted }]} numberOfLines={1}>
-            Because you loved {seeds[0].title}
-            {seeds.length > 1 ? ` and ${seeds.length - 1} more` : ''}
-          </Text>
+          <View style={styles.headGroup}>
+            <RowHead title="For you" theme={theme} />
+            <Text style={[styles.because, { color: theme.textMuted }]} numberOfLines={1}>
+              Because you loved {seeds[0].title}
+              {seeds.length > 1 ? ` and ${seeds.length - 1} more` : ''}
+            </Text>
+          </View>
           {forYouTitles ? (
             forYouTitles.length ? (
               <TitleRow titles={forYouTitles} theme={theme} seen={seen} />
@@ -140,7 +142,7 @@ export default function HomeScreen() {
           style={({ pressed }) => [styles.invite, { borderColor: theme.border, backgroundColor: pressed ? theme.chip : theme.card }]}
         >
           <MaterialCommunityIcons name="star-four-points-outline" size={24} color={theme.accent} />
-          <View style={{ flex: 1 }}>
+          <View style={styles.inviteBody}>
             <Text style={[styles.inviteTitle, { color: theme.text }]}>Picks just for you</Text>
             <Text style={[styles.because, { color: theme.textMuted }]}>
               {entries.length
@@ -251,7 +253,8 @@ const styles = StyleSheet.create({
   block: { gap: 10 },
   row: { flexDirection: 'row', gap: 12, paddingRight: 16 },
   name: { fontSize: font.footnote, fontWeight: '700', marginTop: 6 },
-  because: { fontFamily: fonts.mono, fontSize: font.caption, marginTop: -4 },
+  headGroup: { gap: 4 },
+  because: { fontFamily: fonts.mono, fontSize: font.caption, lineHeight: 17 },
   episode: { position: 'absolute', left: 6, bottom: 6, borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2 },
   episodeText: { fontFamily: fonts.monoBold, fontSize: 10, letterSpacing: 0.5 },
   featured: { borderRadius: 16, overflow: 'hidden', justifyContent: 'flex-end' },
@@ -265,6 +268,7 @@ const styles = StyleSheet.create({
   logText: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 1.5 },
   saveBtn: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.18)' },
   invite: { flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, borderRadius: 14, padding: 14 },
+  inviteBody: { flex: 1, gap: 4 },
   inviteTitle: { fontSize: font.body, fontWeight: '700' },
   discover: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: 46, borderRadius: 23, borderWidth: 1 },
   discoverText: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 1.5 },

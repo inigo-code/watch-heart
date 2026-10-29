@@ -6,14 +6,12 @@ import { Pressable, ScrollView, SectionList, StyleSheet, Text, TextInput, View, 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ActionSheet } from '@/components/ActionSheet';
-import { AppHeader, greetingLine } from '@/components/AppHeader';
 import { AddToList } from '@/components/lists/AddToList';
 import { PosterTile, ReelHeader, TicketStub } from '@/components/Diary';
 import { Chip } from '@/components/Film';
 import { TipCard } from '@/components/TipCard';
 import { useToast } from '@/components/Toast';
 import { monthKey, today } from '@/lib/dates';
-import { useHour } from '@/lib/greeting';
 import { computeStats } from '@/lib/stats';
 import { KIND_COLORS, font, fonts, shadow, useTheme } from '@/lib/theme';
 import { useSettings } from '@/settings/SettingsProvider';
@@ -54,7 +52,6 @@ export default function DiaryScreen() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const toast = useToast();
-  const hour = useHour();
   const { width } = useWindowDimensions();
   const { settings, update } = useSettings();
   const { entries, ready, deleteEntry, restoreEntry } = useDiary();
@@ -107,7 +104,9 @@ export default function DiaryScreen() {
 
   const header = (
     <View style={[styles.top, { paddingTop: insets.top + 10 }]}>
-      <AppHeader theme={theme} line={greetingLine(hour, settings.name)} />
+      <Text style={[styles.heading, { color: theme.text }]} accessibilityRole="header">
+        YOUR <Text style={{ color: theme.accent }}>DIARY</Text>
+      </Text>
 
       {entries.length > 0 && (
         <View style={[styles.marquee, { borderColor: theme.accent + '55', backgroundColor: theme.accentSoft }]}>
@@ -311,6 +310,7 @@ function MarqueeStat({ theme, value, label }: { theme: ReturnType<typeof useThem
 const styles = StyleSheet.create({
   screen: { flex: 1 },
   list: { paddingHorizontal: 16 },
+  heading: { fontFamily: fonts.display, fontSize: font.marquee, lineHeight: 46, letterSpacing: 1, includeFontPadding: false },
   // The header sits above the list, so it carries the list's side padding itself.
   top: { gap: 12, paddingBottom: 6, paddingHorizontal: 16 },
   scroller: { flex: 1 },

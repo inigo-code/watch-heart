@@ -66,7 +66,7 @@ export default function WatchlistScreen() {
     <View style={[styles.top, { paddingTop: insets.top + 10 }]}>
       <ContinueWatching items={watchlist} theme={theme} />
       <View style={styles.headRow}>
-        <View>
+        <View style={styles.titleBlock}>
           <Text style={[styles.heading, { color: theme.text }]}>
             UP <Text style={{ color: theme.accent }}>NEXT</Text>
           </Text>
@@ -249,6 +249,8 @@ const styles = StyleSheet.create({
   list: { paddingHorizontal: 16, gap: 18 },
   top: { gap: 12, marginBottom: 2 },
   heading: { fontFamily: fonts.display, fontSize: font.marquee, lineHeight: 46, letterSpacing: 1, includeFontPadding: false },
+  // The gold word is a span a little taller than the line; the gap keeps it off the line below.
+  titleBlock: { gap: 4 },
   sub: { fontFamily: fonts.mono, fontSize: font.footnote },
   pickBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, height: 50, borderRadius: 25 },
   pickText: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 1.2 },
