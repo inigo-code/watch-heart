@@ -39,15 +39,17 @@ export const DATA_SOURCES = {
 } as const;
 
 /**
- * Shown once after an update installs ("What's new in this cut"). Change the id and the lines with each
- * update worth telling people about; an update that leaves it alone shows nothing.
+ * Shown once after an update installs ("What's new in this cut"). Every update gets one, over-the-air
+ * ones included: before each eas update or build, give it a new id and lines for that update's changes.
+ * An update that leaves it alone shows nothing.
  */
 export const WHATS_NEW = {
   id: '1.2.0',
   items: [
-    'Friends: share your invite code, then see each other’s diaries, reviews and lists',
-    'Title pages show which friends have seen it, their ratings and reviews',
     'An Up next widget for your home screen: your next episode, a tap away',
-    'You choose what friends see, in Settings',
+    'The Diary’s header stays put while your entries scroll',
+    'Discover has collections for the time of year: Diwali, Halloween, Christmas and more',
+    'Faster: a title starts loading as you touch its poster, and lists scroll more smoothly',
+    'Heart Apps: meet Prompt Heart, from the same maker, in About',
   ],
 };
