@@ -45,6 +45,12 @@ export type ProfileStats = {
   thisYear: number;
   /** The people you watch with, most viewings first. */
   buddies: Buddy[];
+  /** The vibes you pick most, from "more about this viewing". */
+  topVibes: { name: string; count: number }[];
+  /** What you watch on (DEVICES keys), most first. */
+  devices: { name: string; count: number }[];
+  /** Services and formats, most first. */
+  platforms: { name: string; count: number }[];
   achievements: Achievement[];
 };
 
@@ -82,9 +88,16 @@ export function profileStats(all: Entry[], todayIso: string): ProfileStats {
 
   const genres = new Map<string, number>();
   const credits = new Map<string, number>();
+  const vibes = new Map<string, number>();
+  const devices = new Map<string, number>();
+  const platforms = new Map<string, number>();
+  const bump = (m: Map<string, number>, k: string) => m.set(k, (m.get(k) ?? 0) + 1);
   for (const e of all) {
-    for (const g of e.genres) genres.set(g, (genres.get(g) ?? 0) + 1);
-    if (e.credit) credits.set(e.credit, (credits.get(e.credit) ?? 0) + 1);
+    for (const g of e.genres) bump(genres, g);
+    if (e.credit) bump(credits, e.credit);
+    for (const v of e.vibes ?? []) bump(vibes, v);
+    if (e.device) bump(devices, e.device);
+    if (e.platform) bump(platforms, e.platform);
   }
 
   // Per day: viewings, and episodes for the binge record.
@@ -176,6 +189,9 @@ export function profileStats(all: Entry[], todayIso: string): ProfileStats {
     busiestMonth: busiest ? { key: busiest[0], count: busiest[1] } : null,
     thisYear: dated.filter((e) => e.watchedOn.startsWith(year)).length,
     buddies: people,
+    topVibes: top(vibes, 8),
+    devices: top(devices, 6),
+    platforms: top(platforms, 5),
     achievements,
   };
 }

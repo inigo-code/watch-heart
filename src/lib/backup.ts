@@ -5,6 +5,7 @@ import { Platform } from 'react-native';
 
 import { APP_NAME, APP_SLUG } from '@/lib/app';
 import { toHtml } from '@/lib/richText';
+import { contextLabel, deviceLabel } from '@/lib/viewing';
 import type { Entry, WatchItem } from '@/store/types';
 
 const FORMAT = 'watchheart-backup';
@@ -90,11 +91,16 @@ export async function exportCsv(entries: Entry[]) {
     e.runtime,
     e.tags.join(', '),
     (e.companions ?? []).join(', '),
+    (e.vibes ?? []).join(', '),
+    deviceLabel(e.device) ?? '',
+    (e.context ?? []).map(contextLabel).join(', '),
+    e.platform ?? '',
+    e.character ? `${e.character.name}${e.character.actor ? ` (${e.character.actor})` : ''}` : '',
     e.review,
   ]);
   await share(
     `${APP_SLUG}-diary-${stamp()}.csv`,
-    csv([['Watched', 'Kind', 'Title', 'Year', 'Rating', 'Liked', 'Rewatch', 'Progress', 'Genres', 'Minutes', 'Tags', 'Watched with', 'Review'], ...rows]),
+    csv([['Watched', 'Kind', 'Title', 'Year', 'Rating', 'Liked', 'Rewatch', 'Progress', 'Genres', 'Minutes', 'Tags', 'Watched with', 'Vibes', 'Watched on', 'Where', 'Service', 'Favourite character', 'Review'], ...rows]),
     'text/csv',
     'Export diary',
   );

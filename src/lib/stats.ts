@@ -11,6 +11,8 @@ export type Stats = {
   rewatches: number;
   reviews: number;
   topGenre: string | null;
+  /** The vibe picked most often, from "more about this viewing". */
+  topVibe: string | null;
   /** Count of entries at each half-star rating, index 1–10 (index 0 = unrated). */
   ratings: number[];
   /** Highest rated, ties broken by liked, then most recent. */
@@ -34,6 +36,7 @@ export function computeStats(entries: Entry[]): Stats {
   const byKind: Record<MediaKind, number> = { movie: 0, tv: 0, anime: 0 };
   const ratings = new Array(11).fill(0) as number[];
   const genres = new Map<string, number>();
+  const vibes = new Map<string, number>();
   let minutes = 0;
   let rated = 0;
   let ratingSum = 0;
@@ -46,6 +49,7 @@ export function computeStats(entries: Entry[]): Stats {
     }
     minutes += runtimeOf(e);
     for (const g of e.genres) genres.set(g, (genres.get(g) ?? 0) + 1);
+    for (const v of e.vibes ?? []) vibes.set(v, (vibes.get(v) ?? 0) + 1);
   }
   const favourite =
     [...entries].sort((a, b) => b.rating - a.rating || Number(b.liked) - Number(a.liked) || b.watchedOn.localeCompare(a.watchedOn))[0] ?? null;
@@ -58,6 +62,7 @@ export function computeStats(entries: Entry[]): Stats {
     rewatches: entries.filter((e) => e.rewatch).length,
     reviews: entries.filter((e) => e.review.trim()).length,
     topGenre: [...genres.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null,
+    topVibe: [...vibes.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null,
     ratings,
     favourite,
   };

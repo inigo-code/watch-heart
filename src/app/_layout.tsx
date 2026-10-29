@@ -96,6 +96,10 @@ function Navigator() {
         <Stack.Screen name="list-card/[id]" options={{ title: 'LIST STORY' }} />
         <Stack.Screen name="profile-card" options={{ title: 'PROFILE CARD' }} />
         <Stack.Screen name="share" options={{ title: '' }} />
+        <Stack.Screen name="title/[id]" options={{ title: '', headerTransparent: true }} />
+        <Stack.Screen name="credits/[id]" options={{ title: 'CAST & CREW' }} />
+        <Stack.Screen name="person/[id]" options={{ title: '' }} />
+        <Stack.Screen name="browse" options={{ title: 'DISCOVER' }} />
       </Stack>
     </>
   );

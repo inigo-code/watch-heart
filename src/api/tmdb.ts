@@ -1,4 +1,4 @@
-import type { Title } from '@/store/types';
+import type { MediaKind, Title } from '@/store/types';
 
 // TMDB: free for non-commercial use with your own key (themoviedb.org/settings/api).
 // Accepts either the short v3 "API key" or the long v4 "API Read Access Token".
@@ -268,4 +268,278 @@ export async function extrasTmdb(key: string, sourceId: string, region: string, 
     imdbId: d.imdb_id || d.external_ids?.imdb_id || null,
     watch: r ? { link: r.link ?? null, stream: list(r.flatrate), free: [...list(r.free), ...list(r.ads)], rent: list(r.rent), buy: list(r.buy) } : null,
   };
+}
+
+// ── The title page, people, and Discover ────────────────────────────────────────────────────────────
+
+export type Person = { id: number; name: string; role: string; photo: string | null };
+export type Season = { n: number; name: string; episodes: number; year: number | null; poster: string | null };
+export type TitleAbout = {
+  /** Full details: genres, running time, credit, episode count. */
+  title: Title;
+  tagline: string | null;
+  overview: string;
+  /** Series: Returning Series, Ended… */
+  status: string | null;
+  seasons: Season[];
+  cast: Person[];
+  crew: Person[];
+  /** A YouTube video id. */
+  trailer: string | null;
+  recommendations: Title[];
+  /** The director (films) or creators (series), for "By the same director". */
+  makers: { id: number; name: string }[];
+};
+
+type Video = { key: string; site: string; type: string; official?: boolean };
+type CastRow = { id: number; name: string; character?: string; roles?: { character: string; episode_count: number }[]; profile_path: string | null };
+type CrewRow = { id: number; name: string; job?: string; jobs?: { job: string }[]; department: string; profile_path: string | null };
+type Recommended = Result & { media_type?: 'movie' | 'tv' };
+
+// The jobs worth showing on the crew row, in this order.
+const KEY_JOBS = ['Director', 'Screenplay', 'Writer', 'Novel', 'Original Story', 'Story', 'Producer', 'Original Music Composer', 'Director of Photography', 'Editor'];
+
+const pickTrailer = (videos?: { results: Video[] }) => {
+  const yt = (videos?.results ?? []).filter((v) => v.site === 'YouTube');
+  return (yt.find((v) => v.type === 'Trailer' && v.official) ?? yt.find((v) => v.type === 'Trailer') ?? yt.find((v) => v.type === 'Teaser'))?.key ?? null;
+};
+
+function crewOf(rows: CrewRow[], creators: { id: number; name: string; profile_path: string | null }[] = []): Person[] {
+  const out: Person[] = creators.map((c) => ({ id: c.id, name: c.name, role: 'Creator', photo: poster(c.profile_path, 'w185') }));
+  for (const job of KEY_JOBS) {
+    for (const r of rows) {
+      const jobs = r.job ? [r.job] : (r.jobs ?? []).map((j) => j.job);
+      if (jobs.includes(job) && !out.some((p) => p.id === r.id)) {
+        out.push({ id: r.id, name: r.name, role: job === 'Original Music Composer' ? 'Music' : job, photo: poster(r.profile_path, 'w185') });
+      }
+    }
+  }
+  return out;
+}
+
+// Kept for the session, so going back and forth between titles doesn't ask again.
+const aboutCache = new Map<string, TitleAbout>();
+
+/** Everything the title page shows, in one request: details, cast and crew, trailer, recommendations. */
+export async function aboutTmdb(key: string, sourceId: string, signal?: AbortSignal): Promise<TitleAbout> {
+  const hit = aboutCache.get(sourceId);
+  if (hit) return hit;
+  const [type, id] = sourceId.split(':') as ['movie' | 'tv', string];
+  type Common = { tagline?: string; overview?: string; videos?: { results: Video[] }; recommendations?: { results: Recommended[] } };
+  let about: TitleAbout;
+  if (type === 'movie') {
+    const d = await get<Omit<MovieDetails, 'credits'> & Common & { credits?: { cast: CastRow[]; crew: CrewRow[] } }>(
+      key,
+      `/movie/${id}`,
+      { append_to_response: 'credits,videos,recommendations' },
+      signal,
+    );
+    const base = toTitle(d, 'movie');
+    const directors = (d.credits?.crew ?? []).filter((c) => c.job === 'Director');
+    about = {
+      title: {
+        ...base,
+        genres: d.genres.map((g) => g.name),
+        runtime: d.runtime || null,
+        credit: (base.kind === 'anime' ? d.production_companies?.[0]?.name : null) ?? directors[0]?.name ?? null,
+      },
+      tagline: d.tagline || null,
+      overview: d.overview ?? '',
+      status: null,
+      seasons: [],
+      cast: (d.credits?.cast ?? []).map((c) => ({ id: c.id, name: c.name, role: c.character ?? '', photo: poster(c.profile_path, 'w185') })),
+      crew: crewOf(d.credits?.crew ?? []),
+      trailer: pickTrailer(d.videos),
+      recommendations: (d.recommendations?.results ?? []).map((r) => toTitle(r, r.media_type === 'tv' ? 'tv' : 'movie')),
+      makers: directors.map((c) => ({ id: c.id, name: c.name })),
+    };
+  } else {
+    const d = await get<
+      Omit<TvDetails, 'created_by'> &
+        Common & {
+          status?: string;
+          created_by: { id: number; name: string; profile_path: string | null }[];
+          seasons?: { season_number: number; name: string; episode_count: number; air_date: string | null; poster_path: string | null }[];
+          aggregate_credits?: { cast: CastRow[]; crew: CrewRow[] };
+        }
+    >(key, `/tv/${id}`, { append_to_response: 'aggregate_credits,videos,recommendations' }, signal);
+    const base = toTitle(d, 'tv');
+    about = {
+      title: {
+        ...base,
+        genres: d.genres.map((g) => g.name),
+        runtime: d.episode_run_time?.[0] ?? null,
+        episodes: d.number_of_episodes,
+        credit: (base.kind === 'anime' ? d.production_companies?.[0]?.name : null) ?? d.networks?.[0]?.name ?? d.created_by?.[0]?.name ?? null,
+      },
+      tagline: d.tagline || null,
+      overview: d.overview ?? '',
+      status: d.status ?? null,
+      seasons: (d.seasons ?? [])
+        .filter((s) => s.season_number > 0 && s.episode_count > 0)
+        .map((s) => ({ n: s.season_number, name: s.name, episodes: s.episode_count, year: year(s.air_date ?? undefined), poster: poster(s.poster_path, 'w185') })),
+      cast: (d.aggregate_credits?.cast ?? []).map((c) => ({ id: c.id, name: c.name, role: c.roles?.[0]?.character ?? '', photo: poster(c.profile_path, 'w185') })),
+      crew: crewOf(d.aggregate_credits?.crew ?? [], d.created_by),
+      trailer: pickTrailer(d.videos),
+      recommendations: (d.recommendations?.results ?? []).map((r) => toTitle(r, r.media_type === 'movie' ? 'movie' : 'tv')),
+      makers: (d.created_by ?? []).map((c) => ({ id: c.id, name: c.name })),
+    };
+  }
+  aboutCache.set(sourceId, about);
+  return about;
+}
+
+type CreditRow = Result & { media_type: 'movie' | 'tv'; character?: string; job?: string; vote_count?: number };
+export type PersonAbout = {
+  id: number;
+  name: string;
+  photo: string | null;
+  department: string | null;
+  born: string | null;
+  place: string | null;
+  bio: string;
+  /** Their titles, best known first: acting roles and crew jobs together, each title once. */
+  credits: (Title & { role: string })[];
+};
+
+/** A person and what they've been in or made. */
+export async function personTmdb(key: string, id: string, signal?: AbortSignal): Promise<PersonAbout> {
+  const d = await get<{
+    id: number;
+    name: string;
+    profile_path: string | null;
+    known_for_department?: string;
+    birthday?: string | null;
+    place_of_birth?: string | null;
+    biography?: string;
+    combined_credits?: { cast: CreditRow[]; crew: CreditRow[] };
+  }>(key, `/person/${id}`, { append_to_response: 'combined_credits' }, signal);
+  const seen = new Map<string, Title & { role: string; votes: number }>();
+  const rows = [
+    ...(d.combined_credits?.cast ?? []).map((r) => ({ r, role: r.character ?? '' })),
+    ...(d.combined_credits?.crew ?? []).map((r) => ({ r, role: r.job ?? '' })),
+  ];
+  for (const { r, role } of rows) {
+    if (r.media_type !== 'movie' && r.media_type !== 'tv') continue;
+    // Talk shows, news and reality, where people appear as themselves, crowd out the real work.
+    if (r.media_type === 'tv' && r.genre_ids?.some((g) => g === 10767 || g === 10763 || g === 10764)) continue;
+    const k = `${r.media_type}:${r.id}`;
+    const prev = seen.get(k);
+    if (prev) {
+      if (role && !prev.role.split(', ').includes(role)) prev.role = prev.role ? `${prev.role}, ${role}` : role;
+      continue;
+    }
+    seen.set(k, { ...toTitle(r, r.media_type), role, votes: r.vote_count ?? 0 });
+  }
+  return {
+    id: d.id,
+    name: d.name,
+    photo: poster(d.profile_path, 'h632'),
+    department: d.known_for_department ?? null,
+    born: d.birthday ?? null,
+    place: d.place_of_birth ?? null,
+    bio: d.biography ?? '',
+    credits: [...seen.values()].sort((a, b) => b.votes - a.votes).map(({ votes, ...t }) => (void votes, t)),
+  };
+}
+
+/** A director's other films (or a creator's other series), best known first, leaving out this one. */
+export async function madeBy(key: string, personId: number, type: 'movie' | 'tv', except: string, signal?: AbortSignal): Promise<Title[]> {
+  const d = await get<{ crew: (Result & { job?: string; vote_count?: number })[] }>(key, `/person/${personId}/${type}_credits`, {}, signal);
+  const jobs = type === 'movie' ? ['Director'] : ['Creator', 'Executive Producer'];
+  const seen = new Set<number>();
+  return d.crew
+    .filter((r) => {
+      if (!r.job || !jobs.includes(r.job) || `${type}:${r.id}` === except || seen.has(r.id)) return false;
+      seen.add(r.id);
+      return true;
+    })
+    .sort((a, b) => (b.vote_count ?? 0) - (a.vote_count ?? 0))
+    .slice(0, 20)
+    .map((r) => toTitle(r, type));
+}
+
+/** The streaming services TMDB knows in a country, most watched there first (JustWatch's data). */
+export async function regionProviders(key: string, region: string, signal?: AbortSignal): Promise<Provider[]> {
+  const d = await get<{ results: (ProviderRow & { display_priorities?: Record<string, number> })[] }>(key, '/watch/providers/movie', { watch_region: region }, signal);
+  // Stores (rent or buy), kids' and ad-supported copies of a service aren't something to browse by.
+  return d.results
+    .filter((p) => !/store|kids|google play|amazon video|with ads|rakuten|channel/i.test(p.provider_name))
+    .sort((a, b) => (a.display_priorities?.[region] ?? 999) - (b.display_priorities?.[region] ?? 999))
+    .map((p) => ({ id: p.provider_id, name: p.provider_name, logo: p.logo_path ? `${IMG}/w92${p.logo_path}` : '' }));
+}
+
+/** TMDB's genres, by the kind of list being browsed (series have their own). */
+export const BROWSE_GENRES: Record<'movie' | 'tv', { id: number; name: string }[]> = {
+  movie: [28, 12, 16, 35, 80, 99, 18, 10751, 14, 36, 27, 10402, 9648, 10749, 878, 53, 10752, 37].map((id) => ({ id, name: GENRES[id] })),
+  tv: [10759, 16, 35, 80, 99, 18, 10751, 10762, 9648, 10764, 10765, 10766, 10768, 37].map((id) => ({ id, name: GENRES[id] })),
+};
+
+export type BrowseSort = 'popular' | 'rating' | 'newest';
+/** What to browse. Anime is Japanese animation, as series. */
+export type BrowseQuery = {
+  kind: MediaKind;
+  genres?: number[];
+  /** Released from this year to this year, inclusive. */
+  from?: number;
+  to?: number;
+  /** Or a window of days around today, e.g. [-45, 0] for the last six weeks. */
+  days?: [number, number];
+  /** Series with an episode out this fortnight. */
+  airing?: boolean;
+  lang?: string;
+  country?: string;
+  provider?: number;
+  region?: string;
+  minScore?: number;
+  minVotes?: number;
+  maxVotes?: number;
+  maxRuntime?: number;
+  /** Series: 3 ended, 0 still running. */
+  status?: number;
+  /** Series: 2 miniseries. */
+  tvType?: number;
+  sort?: BrowseSort;
+};
+
+/** One page of titles matching a Discover query. */
+export async function discoverTmdb(key: string, q: BrowseQuery, page: number, signal?: AbortSignal): Promise<{ results: Title[]; pages: number }> {
+  const type = q.kind === 'movie' ? 'movie' : 'tv';
+  const dateField = type === 'movie' ? 'primary_release_date' : 'first_air_date';
+  const genres = [...new Set([...(q.kind === 'anime' ? [ANIMATION] : []), ...(q.genres ?? [])])];
+  const p: Record<string, string> = { include_adult: 'false', page: String(page) };
+  if (genres.length) p.with_genres = genres.join(',');
+  if (q.kind === 'anime') p.with_original_language = 'ja';
+  else if (q.lang) p.with_original_language = q.lang;
+  if (q.country) p.with_origin_country = q.country;
+  if (q.from) p[`${dateField}.gte`] = `${q.from}-01-01`;
+  if (q.to) p[`${dateField}.lte`] = `${q.to}-12-31`;
+  if (q.days) {
+    p[`${dateField}.gte`] = isoDaysFromNow(q.days[0]);
+    p[`${dateField}.lte`] = isoDaysFromNow(q.days[1]);
+  }
+  if (q.airing && type === 'tv') {
+    p['air_date.gte'] = isoDaysFromNow(-14);
+    p['air_date.lte'] = isoDaysFromNow(7);
+    // Long-running children's shows are always airing and always popular.
+    if (q.kind === 'anime') p.without_genres = `${KIDS},${FAMILY}`;
+  }
+  if (q.provider && q.region) {
+    p.with_watch_providers = String(q.provider);
+    p.watch_region = q.region;
+    p.with_watch_monetization_types = 'flatrate|free|ads';
+  }
+  if (q.minScore) p['vote_average.gte'] = String(q.minScore);
+  // A rating sort with no floor is topped by titles with three votes.
+  const minVotes = q.minVotes ?? (q.sort === 'rating' || q.minScore ? 150 : undefined);
+  if (minVotes) p['vote_count.gte'] = String(minVotes);
+  if (q.maxVotes) p['vote_count.lte'] = String(q.maxVotes);
+  if (q.maxRuntime) p['with_runtime.lte'] = String(q.maxRuntime);
+  if (type === 'tv' && q.status !== undefined) p.with_status = String(q.status);
+  if (type === 'tv' && q.tvType !== undefined) p.with_type = String(q.tvType);
+  p.sort_by = q.sort === 'rating' ? 'vote_average.desc' : q.sort === 'newest' ? `${dateField}.desc` : 'popularity.desc';
+  // Newest first would otherwise start with titles that haven't come out yet.
+  if (q.sort === 'newest' && !q.to && !q.days) p[`${dateField}.lte`] = isoDaysFromNow(0);
+  const d = await get<{ results: Result[]; total_pages: number }>(key, `/discover/${type}`, p, signal);
+  return { results: d.results.map((r) => toTitle(r, type)), pages: Math.min(d.total_pages, 500) };
 }

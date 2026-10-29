@@ -75,7 +75,19 @@ export type Entry = {
   episodes?: string[];
   /** Who you watched it with, as you typed their names ("Sam", "Priya"). */
   companions?: string[];
+  /** How it felt: up to five vibes ("Mind-bending", "Comfort watch"); see src/lib/viewing.ts. */
+  vibes?: string[];
+  /** What you watched it on: a DEVICES key ("cinema", "tv", "phone"…). */
+  device?: string | null;
+  /** Where or when: CONTEXTS keys ("home", "holidays"…). */
+  context?: string[];
+  /** The service or format: "Netflix", "Blu-ray"… */
+  platform?: string | null;
+  /** Your favourite character, picked from the cast. */
+  character?: FavouriteCharacter | null;
 };
+
+export type FavouriteCharacter = { name: string; actor: string; photo: string | null };
 
 export type EntryDraft = Omit<Entry, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt'>;
 

@@ -97,7 +97,7 @@ type Row = {
 };
 
 /** The optional fields kept in the extra column. */
-const EXTRA_KEYS = ['fetchedAt', 'imdbId', 'matchTriedAt', 'undated', 'episodes', 'companions'] as const;
+const EXTRA_KEYS = ['fetchedAt', 'imdbId', 'matchTriedAt', 'undated', 'episodes', 'companions', 'vibes', 'device', 'context', 'platform', 'character'] as const;
 
 function extraOf(e: Entry): string {
   const out: Record<string, unknown> = {};

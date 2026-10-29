@@ -6,7 +6,10 @@ import { ActivityIndicator, FlatList, Keyboard, Pressable, StyleSheet, Text, Tex
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { search, sourceFor, tmdbKey, trending } from '@/api';
+import { watchRegion } from '@/api/omdb';
+import { DiscoverHome } from '@/components/discover/DiscoverHome';
 import { Poster } from '@/components/Film';
+import { openTitle } from '@/components/title/Rows';
 import { useToast } from '@/components/Toast';
 import { DATA_SOURCES } from '@/lib/app';
 import { KIND_COLORS, font, fonts, useTheme } from '@/lib/theme';
@@ -50,10 +53,13 @@ export default function SearchScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const q = query.trim();
+  // Before you type: ways to browse (Discover), or this week's trending titles.
+  const [mode, setMode] = useState<'discover' | 'trending'>('discover');
+  const discovering = !q && mode === 'discover' && source === 'tmdb';
 
   // Search as you type, after a short pause; with no query, show what's trending.
   useEffect(() => {
-    if (!source) return;
+    if (!source || discovering) return;
     const controller = new AbortController();
     const timer = setTimeout(
       () => {
@@ -74,11 +80,15 @@ export default function SearchScreen() {
       clearTimeout(timer);
       controller.abort();
     };
-  }, [kind, q, key, source]);
+  }, [kind, q, key, source, discovering]);
 
   const open = (t: Title) => {
     Keyboard.dismiss();
     router.push({ pathname: '/log', params: { title: JSON.stringify(t) } });
+  };
+  const about = (t: Title) => {
+    Keyboard.dismiss();
+    openTitle(t);
   };
 
   const credit = useMemo(() => (source ? (source === 'tmdb' ? DATA_SOURCES.tmdb.label : source === 'anilist' ? DATA_SOURCES.anilist.label : DATA_SOURCES.tvmaze.label) : null), [source]);
@@ -129,13 +139,31 @@ export default function SearchScreen() {
       </View>
 
       <FlatList
-        data={source ? results : []}
+        data={source && !discovering ? results : []}
         keyExtractor={(t) => `${t.source}:${t.sourceId}`}
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
         contentContainerStyle={[styles.list, { paddingBottom: insets.bottom + 24 }]}
         ListHeaderComponent={
-          !source ? (
+          <>
+            {!q && source === 'tmdb' && (
+              <View style={[styles.modes, { borderColor: theme.border }]}>
+                {(['discover', 'trending'] as const).map((m) => (
+                  <Pressable
+                    key={m}
+                    onPress={() => setMode(m)}
+                    accessibilityRole="tab"
+                    accessibilityState={{ selected: mode === m }}
+                    style={[styles.mode, mode === m && { borderBottomColor: theme.accent }]}
+                  >
+                    <Text style={[styles.modeText, { color: mode === m ? theme.accent : theme.textMuted }]}>{m === 'discover' ? 'DISCOVER' : 'TRENDING'}</Text>
+                  </Pressable>
+                ))}
+              </View>
+            )}
+            {discovering ? (
+              <DiscoverHome kind={kind} theme={theme} tmdb={key} region={watchRegion(settings.watchRegion)} />
+            ) : !source ? (
             <NeedsKey theme={theme} kind={kind} onManual={() => router.push({ pathname: '/log', params: { manual: kind } })} />
           ) : error ? (
             <Text style={[styles.note, { color: theme.danger }]}>{error}</Text>
@@ -145,7 +173,8 @@ export default function SearchScreen() {
             <Text style={[styles.note, { color: theme.textMuted }]}>Nothing found for “{q}”.</Text>
           ) : !loading && kind === 'tv' && source === 'tvmaze' ? (
             <Text style={[styles.note, { color: theme.textMuted }]}>Type a series name to search TVmaze.</Text>
-          ) : undefined
+            ) : null}
+          </>
         }
         renderItem={({ item }) => {
           const seen = viewingsOf(item.source, item.sourceId).length;
@@ -154,9 +183,9 @@ export default function SearchScreen() {
           return (
             <View style={[styles.row, { borderBottomColor: theme.border }]}>
               <Pressable
-                onPress={() => open(item)}
+                onPress={() => about(item)}
                 accessibilityRole="button"
-                accessibilityLabel={`Log ${item.title}${item.year ? `, ${item.year}` : ''}`}
+                accessibilityLabel={`${item.title}${item.year ? `, ${item.year}` : ''}`}
                 style={({ pressed }) => [styles.rowMain, { backgroundColor: pressed ? theme.chip : 'transparent' }]}
               >
                 <Poster uri={item.posterUrl} title={item.title} width={58} theme={theme} radius={4} />
@@ -182,7 +211,15 @@ export default function SearchScreen() {
                     </View>
                   )}
                 </View>
-                <Ionicons name="add-circle-outline" size={26} color={theme.accent} />
+              </Pressable>
+              <Pressable
+                onPress={() => open(item)}
+                hitSlop={6}
+                accessibilityRole="button"
+                accessibilityLabel={`Log ${item.title}`}
+                style={styles.rowBtn}
+              >
+                <Ionicons name="add-circle-outline" size={27} color={theme.accent} />
               </Pressable>
               <Pressable
                 onPress={() => {
@@ -205,7 +242,7 @@ export default function SearchScreen() {
           );
         }}
         ListFooterComponent={
-          source ? (
+          source && !discovering ? (
             <View style={styles.footer}>
               <Pressable
                 onPress={() => router.push({ pathname: '/log', params: { manual: kind } })}
@@ -259,6 +296,9 @@ const styles = StyleSheet.create({
   section: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 1.5, paddingVertical: 8 },
   note: { fontFamily: fonts.mono, fontSize: font.footnote, paddingVertical: 12, lineHeight: 19 },
   rowBtn: { padding: 8 },
+  modes: { flexDirection: 'row', gap: 22, borderBottomWidth: StyleSheet.hairlineWidth, marginBottom: 4 },
+  mode: { paddingVertical: 10, borderBottomWidth: 2, borderBottomColor: 'transparent' },
+  modeText: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 1.5 },
   rowMain: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10, borderRadius: 8 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 4, borderBottomWidth: StyleSheet.hairlineWidth },
   rowBody: { flex: 1, gap: 3 },

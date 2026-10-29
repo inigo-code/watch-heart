@@ -5,6 +5,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } fr
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Chip } from '@/components/Film';
+import { RatingChart } from '@/components/RatingChart';
 import { SectionLabel } from '@/components/SectionLabel';
 import { Segmented } from '@/components/SettingsUI';
 import { formatRuntime, monthKey, monthName, today } from '@/lib/dates';
@@ -134,7 +135,6 @@ function Numbers({ theme, stats }: { theme: Theme; stats: Stats }) {
     { value: String(stats.rewatches), label: 'Rewatches' },
     { value: String(stats.reviews), label: 'Reviews' },
   ];
-  const maxRating = Math.max(1, ...stats.ratings.slice(1));
   return (
     <View style={styles.numbers}>
       <Label theme={theme}>The numbers</Label>
@@ -164,23 +164,18 @@ function Numbers({ theme, stats }: { theme: Theme; stats: Stats }) {
       </View>
 
       <Label theme={theme}>Your ratings</Label>
-      <View style={styles.histogram} accessibilityLabel="How often you gave each rating">
-        {stats.ratings.slice(1).map((n, i) => (
-          <View key={i} style={styles.barCol}>
-            <View style={[styles.bar, { height: 4 + (n / maxRating) * 56, backgroundColor: n ? theme.star : theme.border }]} />
-          </View>
-        ))}
-      </View>
-      <View style={styles.histLegend}>
-        <Text style={[styles.mixText, { color: theme.textMuted }]}>½★</Text>
-        <Text style={[styles.mixText, { color: theme.textMuted }]}>★★★★★</Text>
-      </View>
+      <RatingChart ratings={stats.ratings} theme={theme} height={56} />
 
-      {(stats.topGenre || stats.favourite) && (
+      {(stats.topGenre || stats.favourite || stats.topVibe) && (
         <View style={[styles.facts, { borderColor: theme.border }]}>
           {stats.topGenre && (
             <Text style={[styles.fact, { color: theme.textMuted }]}>
               TOP GENRE <Text style={{ color: theme.text }}>{stats.topGenre.toUpperCase()}</Text>
+            </Text>
+          )}
+          {stats.topVibe && (
+            <Text style={[styles.fact, { color: theme.textMuted }]}>
+              TOP VIBE <Text style={{ color: theme.text }}>{stats.topVibe.toUpperCase()}</Text>
             </Text>
           )}
           {stats.favourite && (
@@ -214,10 +209,6 @@ const styles = StyleSheet.create({
   mix: { flexDirection: 'row', height: 10, borderRadius: 5, overflow: 'hidden', gap: 2 },
   mixLegend: { flexDirection: 'row', justifyContent: 'space-between' },
   mixText: { fontFamily: fonts.monoBold, fontSize: 10, letterSpacing: 1 },
-  histogram: { flexDirection: 'row', alignItems: 'flex-end', height: 64, gap: 4 },
-  barCol: { flex: 1, justifyContent: 'flex-end' },
-  bar: { borderRadius: 2 },
-  histLegend: { flexDirection: 'row', justifyContent: 'space-between', marginTop: -4 },
   facts: { borderTopWidth: 1, paddingTop: 10, gap: 6 },
   fact: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 1 },
 });

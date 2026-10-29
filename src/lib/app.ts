@@ -36,10 +36,10 @@ export const DATA_SOURCES = {
  * update worth telling people about; an update that leaves it alone shows nothing.
  */
 export const WHATS_NEW = {
-  id: '1.1.2',
+  id: '1.1.3',
   items: [
-    'Lists: make your own, ranked or not, and share one as a story',
-    'Add any title to a list from its page, the diary or your watchlist',
-    'Opening the app on your profile or an entry no longer shows a blank form',
+    'Title pages: synopsis, cast and crew, trailer, seasons, and what to watch next',
+    'Discover: browse by service, genre, decade, language and country, or build your own filters',
+    'When you log: vibes, where you watched, which service, and your favourite character',
   ],
 };

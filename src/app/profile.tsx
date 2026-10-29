@@ -8,6 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Poster } from '@/components/Film';
 import { ListCover } from '@/components/lists/ListCover';
+import { RatingChart } from '@/components/RatingChart';
 import { SectionLabel } from '@/components/SectionLabel';
 import { Achievements } from '@/components/profile/Achievements';
 import { ActivityGraph, ActivityKey } from '@/components/profile/ActivityGraph';
@@ -18,6 +19,7 @@ import { needsShrinking, pickProfilePhoto, removePhotoFile, squareJpeg } from '@
 import { profileStats } from '@/lib/profileStats';
 import { KIND_LABEL } from '@/lib/stats';
 import { font, fonts, kindColor, useTheme } from '@/lib/theme';
+import { deviceLabel } from '@/lib/viewing';
 import type { Theme } from '@/lib/theme';
 import { useSettings } from '@/settings/SettingsProvider';
 import type { Favourite } from '@/settings/SettingsProvider';
@@ -284,18 +286,28 @@ function ProfileBody() {
 
         {/* Ratings */}
         <Block theme={theme} title="How you rate">
-          <View style={styles.histogram}>
-            {s.ratings.slice(1).map((n, i) => {
-              const max = Math.max(1, ...s.ratings.slice(1));
-              return (
-                <View key={i} style={styles.barCol}>
-                  <View style={[styles.bar, { height: 4 + (n / max) * 72, backgroundColor: n ? theme.star : theme.elevated }]} />
-                  <Text style={[styles.barLabel, { color: theme.textMuted }]}>{(i + 1) % 2 === 0 ? (i + 1) / 2 : '½'}</Text>
-                </View>
-              );
-            })}
-          </View>
+          <RatingChart ratings={s.ratings} theme={theme} />
         </Block>
+
+        {s.topVibes.length > 0 && (
+          <Block theme={theme} title="How it felt">
+            <View style={styles.vibes}>
+              {s.topVibes.map((v, i) => (
+                <View key={v.name} style={[styles.vibe, { backgroundColor: i === 0 ? theme.accent : theme.card, borderColor: i === 0 ? theme.accent : theme.border }]}>
+                  <Text style={[styles.vibeName, { color: i === 0 ? theme.accentText : theme.text }]}>{v.name.toUpperCase()}</Text>
+                  <Text style={[styles.vibeCount, { color: i === 0 ? theme.accentText : theme.textMuted }]}>×{v.count}</Text>
+                </View>
+              ))}
+            </View>
+          </Block>
+        )}
+
+        {(s.devices.length > 0 || s.platforms.length > 0) && (
+          <View style={styles.tops}>
+            <TopList theme={theme} title="Watched on" items={s.devices.map((d) => ({ name: deviceLabel(d.name) ?? d.name, count: d.count }))} />
+            <TopList theme={theme} title="Services" items={s.platforms} />
+          </View>
+        )}
 
         {/* Tops */}
         {(s.topGenres.length > 0 || s.topCredits.length > 0) && (
@@ -492,10 +504,10 @@ const styles = StyleSheet.create({
   goalChip: { height: 34, minWidth: 52, paddingHorizontal: 12, borderRadius: 17, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
   goalChipText: { fontFamily: fonts.monoBold, fontSize: font.footnote },
   activityFoot: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  histogram: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', height: 96 },
-  barCol: { flex: 1, alignItems: 'center', gap: 4 },
-  bar: { width: '70%', borderRadius: 3 },
-  barLabel: { fontFamily: fonts.mono, fontSize: 10 },
+  vibes: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  vibe: { flexDirection: 'row', alignItems: 'center', gap: 6, borderWidth: 1, borderRadius: 16, paddingHorizontal: 12, height: 32 },
+  vibeName: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 1 },
+  vibeCount: { fontFamily: fonts.mono, fontSize: font.caption },
   tops: { gap: 10 },
   buddies: { borderWidth: 1, borderRadius: 12, overflow: 'hidden' },
   listsRow: { gap: 12 },

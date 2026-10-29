@@ -14,6 +14,7 @@ import { DangerButton } from '@/components/DangerButton';
 import { Chip, StarInput } from '@/components/Film';
 import { Hero } from '@/components/Hero';
 import { SectionLabel } from '@/components/SectionLabel';
+import { ViewingDetails } from '@/components/ViewingDetails';
 import { trackable } from '@/api/episodes';
 import { TitleExtras } from '@/components/TitleExtras';
 import { TitlePicker } from '@/components/TitlePicker';
@@ -91,7 +92,11 @@ function LogForm() {
   const [draft, setDraft] = useState<EntryDraft>(() => {
     if (editing) return editing;
     const prev = params.again ? getEntry(params.again) : undefined;
-    if (prev) return { ...prev, watchedOn: today(), rewatch: true, review: '', spoilers: false, progress: '', tags: [] };
+    if (prev) {
+      // A new viewing: its own feelings, screen and place.
+      const fresh = { vibes: [], device: null, context: [], platform: null, character: null };
+      return { ...prev, ...fresh, watchedOn: today(), rewatch: true, review: '', spoilers: false, progress: '', tags: [] };
+    }
     if (params.title) {
       const t = JSON.parse(params.title) as Title;
       return { ...blankDraft(t), rewatch: viewingsOf(t.source, t.sourceId).length > 0 };
@@ -350,6 +355,8 @@ function LogForm() {
           <Field theme={theme} label="Watched with">
             <CompanionField names={draft.companions ?? []} onChange={(companions) => set({ companions })} known={known} theme={theme} />
           </Field>
+
+          <ViewingDetails draft={draft} onChange={set} theme={theme} />
 
           <ToggleLine
             theme={theme}

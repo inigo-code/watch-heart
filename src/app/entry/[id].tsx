@@ -12,8 +12,10 @@ import { AddToList } from '@/components/lists/AddToList';
 import { RichText } from '@/components/RichText';
 import { SectionLabel } from '@/components/SectionLabel';
 import { TitleExtras } from '@/components/TitleExtras';
+import { Face, openTitle } from '@/components/title/Rows';
 import { useToast } from '@/components/Toast';
 import { dayParts, friendlyDate } from '@/lib/dates';
+import { viewingLine } from '@/lib/viewing';
 import { font, fonts, useTheme } from '@/lib/theme';
 import { useLists } from '@/lists/ListsProvider';
 import { useDiary } from '@/store/DiaryStore';
@@ -110,6 +112,31 @@ export default function EntryScreen() {
             </View>
           </View>
 
+          {(!!entry.vibes?.length || !!viewingLine(entry) || !!entry.character) && (
+            <View style={styles.viewingWrap}>
+              {!!entry.vibes?.length && (
+                <View style={styles.vibes}>
+                  {entry.vibes.map((v) => (
+                    <Text key={v} style={[styles.vibe, { color: theme.accentText, backgroundColor: theme.accent }]}>
+                      {v.toUpperCase()}
+                    </Text>
+                  ))}
+                </View>
+              )}
+              {!!viewingLine(entry) && <Text style={[styles.viewingLine, { color: theme.textMuted }]}>{viewingLine(entry)}</Text>}
+              {entry.character && (
+                <View style={[styles.character, { backgroundColor: theme.card, borderColor: theme.border }]}>
+                  <Face uri={entry.character.photo} name={entry.character.name} theme={theme} size={48} round />
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.characterLabel, { color: theme.accent }]}>FAVOURITE CHARACTER</Text>
+                    <Text style={[styles.characterName, { color: theme.text }]}>{entry.character.name}</Text>
+                    {!!entry.character.actor && <Text style={[styles.characterActor, { color: theme.textMuted }]}>{entry.character.actor}</Text>}
+                  </View>
+                </View>
+              )}
+            </View>
+          )}
+
           <TitleExtras source={entry.source} sourceId={entry.sourceId} imdbId={entry.imdbId} theme={theme} />
 
           {!!entry.review && (
@@ -149,6 +176,27 @@ export default function EntryScreen() {
               primary
             />
             <Action theme={theme} icon="repeat" label="LOG AGAIN" onPress={() => router.push({ pathname: '/log', params: { again: entry.id } })} />
+            {entry.source === 'tmdb' && (
+              <Action
+                theme={theme}
+                icon="information-circle-outline"
+                label="DETAILS & CAST"
+                onPress={() =>
+                  openTitle({
+                    kind: entry.kind,
+                    source: entry.source,
+                    sourceId: entry.sourceId,
+                    title: entry.title,
+                    year: entry.year,
+                    posterUrl: entry.posterUrl,
+                    backdropUrl: entry.backdropUrl,
+                    genres: entry.genres,
+                    runtime: entry.runtime,
+                    credit: entry.credit,
+                  })
+                }
+              />
+            )}
             <Action theme={theme} icon="albums-outline" label={onLists.length ? `LISTS (${onLists.length})` : 'ADD TO LIST'} onPress={() => setListing(true)} />
             {trackable(entry) && (
               <Action
@@ -234,6 +282,14 @@ function Action({
 }
 
 const styles = StyleSheet.create({
+  viewingWrap: { gap: 10 },
+  vibes: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  vibe: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 1, borderRadius: 4, paddingHorizontal: 8, paddingVertical: 4, overflow: 'hidden' },
+  viewingLine: { fontFamily: fonts.mono, fontSize: font.footnote },
+  character: { flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, borderRadius: 12, padding: 10 },
+  characterLabel: { fontFamily: fonts.monoBold, fontSize: 10, letterSpacing: 1.5 },
+  characterName: { fontSize: font.body, fontWeight: '700' },
+  characterActor: { fontFamily: fonts.mono, fontSize: font.caption },
   with: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 8, marginTop: 6 },
   withLabel: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 1.5 },
   withName: { fontSize: font.body, fontWeight: '700', textDecorationLine: 'underline' },
