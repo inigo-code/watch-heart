@@ -31,13 +31,22 @@ Then add a test account's email and password. Create two accounts in the app wit
 
 Category: **Utility, Productivity, Communication, or Other**. (Watch Heart is a diary, not a streaming or video app; it plays no video itself. Trailers open in YouTube.)
 
-- Violence, sexual content, profanity, drugs, gambling: **No**. The app's own content has none of these. Titles and posters come from TMDB with adult titles excluded.
-- Can users interact or exchange content with each other? **Yes**. Friends added with an invite code can see each other's diary, ratings, reviews and lists. There's no chat, and strangers can't find you: it only works with a code you give out.
+- Ratings-relevant content downloaded as part of the app package (code, assets)? **No**. Posters and synopses aren't bundled; they load from TMDB, with adult titles excluded.
+- Violence: can the app contain violent material (the catalogue, not user content)? **Yes**. Posters, stills and synopses of horror, war and action films show or describe violence. These are pictures and text, not interactive. Realistic: yes. Blood: possible (horror posters). Graphic or gory: no.
+- Sexual content, profanity, drugs, gambling, age-restricted products: **No**.
+- Can users interact or exchange content with each other? **Yes**. Friends added with an invite code can see each other's diary, ratings, reviews, lists and profile photos. There's no chat, and strangers can't find you: it only works with a code you give out.
+  - Is shared user-generated content the primary source of content? **No**
+  - Public sharing of nudity, or of real-world graphic violence? **No** (nothing is public)
+  - Can users block users or content? **Yes** (unfriend, or make a new invite code)
+  - Can users report users or content? **No**
+  - Chat moderation? **No** (there's no chat)
+  - Can interactions be limited to invited friends only? **Yes** (always)
+- Does the app show content from the internet? **Yes** (film data and posters from TMDB). Unrestricted web browsing: **No**
 - Does the app share the user's location with others? **No**
 - Can users buy digital goods? **No**
 - Is it a web browser or search engine? **No**
 
-Expected rating: Everyone / PEGI 3, with "Users Interact".
+Expected rating: Teen / PEGI 12–16 (film posters and synopses can show violence), with "Users Interact".
 
 ## Target audience and content
 
