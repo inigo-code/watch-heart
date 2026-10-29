@@ -53,8 +53,8 @@ export default function SearchScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const q = query.trim();
-  // Before you type: ways to browse (Discover), or this week's trending titles.
-  const [mode, setMode] = useState<'discover' | 'trending'>('discover');
+  // Before you type: this week's trending titles, or ways to browse (Discover).
+  const [mode, setMode] = useState<'trending' | 'discover'>('trending');
   const discovering = !q && mode === 'discover' && source === 'tmdb';
 
   // Search as you type, after a short pause; with no query, show what's trending.
@@ -91,7 +91,10 @@ export default function SearchScreen() {
     openTitle(t);
   };
 
-  const credit = useMemo(() => (source ? (source === 'tmdb' ? DATA_SOURCES.tmdb.label : source === 'anilist' ? DATA_SOURCES.anilist.label : DATA_SOURCES.tvmaze.label) : null), [source]);
+  const credit = useMemo(
+    () => (source ? (source === 'tmdb' ? DATA_SOURCES.tmdb.label : source === 'anilist' ? DATA_SOURCES.anilist.label : DATA_SOURCES.tvmaze.label) : null),
+    [source],
+  );
 
   return (
     <View style={[styles.screen, { backgroundColor: theme.bg, paddingTop: insets.top + 10 }]}>
@@ -99,22 +102,6 @@ export default function SearchScreen() {
         <Text style={[styles.heading, { color: theme.text }]}>
           WHAT DID YOU <Text style={{ color: theme.accent }}>WATCH?</Text>
         </Text>
-        <View style={[styles.kinds, { borderColor: theme.border }]}>
-          {KINDS.map((k) => {
-            const active = k.kind === kind;
-            return (
-              <Pressable
-                key={k.kind}
-                onPress={() => update({ searchKind: k.kind })}
-                accessibilityRole="tab"
-                accessibilityState={{ selected: active }}
-                style={[styles.kind, active && { backgroundColor: KIND_COLORS[k.kind] }]}
-              >
-                <Text style={[styles.kindText, { color: active ? '#0B0A0D' : theme.textMuted }]}>{k.label}</Text>
-              </Pressable>
-            );
-          })}
-        </View>
         <View style={[styles.search, { backgroundColor: theme.chip }]}>
           <Ionicons name="search" size={18} color={theme.textMuted} />
           <TextInput
@@ -136,6 +123,40 @@ export default function SearchScreen() {
             )
           )}
         </View>
+        {!q && source === 'tmdb' && (
+          <View style={[styles.modes, { borderColor: theme.border }]}>
+            {(['trending', 'discover'] as const).map((m) => (
+              <Pressable
+                key={m}
+                onPress={() => setMode(m)}
+                accessibilityRole="tab"
+                accessibilityState={{ selected: mode === m }}
+                style={[styles.mode, mode === m && { borderBottomColor: theme.accent }]}
+              >
+                <Text style={[styles.modeText, { color: mode === m ? theme.accent : theme.textMuted }]}>{m === 'discover' ? 'DISCOVER' : 'TRENDING'}</Text>
+              </Pressable>
+            ))}
+          </View>
+        )}
+        {/* Discover covers films, series and anime alike; the kind is for trending and search. */}
+        {!discovering && (
+          <View style={[styles.kinds, { borderColor: theme.border }]}>
+            {KINDS.map((k) => {
+              const active = k.kind === kind;
+              return (
+                <Pressable
+                  key={k.kind}
+                  onPress={() => update({ searchKind: k.kind })}
+                  accessibilityRole="tab"
+                  accessibilityState={{ selected: active }}
+                  style={[styles.kind, active && { backgroundColor: KIND_COLORS[k.kind] }]}
+                >
+                  <Text style={[styles.kindText, { color: active ? '#0B0A0D' : theme.textMuted }]}>{k.label}</Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        )}
       </View>
 
       <FlatList
@@ -146,33 +167,20 @@ export default function SearchScreen() {
         contentContainerStyle={[styles.list, { paddingBottom: insets.bottom + 24 }]}
         ListHeaderComponent={
           <>
-            {!q && source === 'tmdb' && (
-              <View style={[styles.modes, { borderColor: theme.border }]}>
-                {(['discover', 'trending'] as const).map((m) => (
-                  <Pressable
-                    key={m}
-                    onPress={() => setMode(m)}
-                    accessibilityRole="tab"
-                    accessibilityState={{ selected: mode === m }}
-                    style={[styles.mode, mode === m && { borderBottomColor: theme.accent }]}
-                  >
-                    <Text style={[styles.modeText, { color: mode === m ? theme.accent : theme.textMuted }]}>{m === 'discover' ? 'DISCOVER' : 'TRENDING'}</Text>
-                  </Pressable>
-                ))}
-              </View>
-            )}
             {discovering ? (
-              <DiscoverHome kind={kind} theme={theme} tmdb={key} region={watchRegion(settings.watchRegion)} />
+              <DiscoverHome theme={theme} tmdb={key} region={watchRegion(settings.watchRegion)} />
             ) : !source ? (
-            <NeedsKey theme={theme} kind={kind} onManual={() => router.push({ pathname: '/log', params: { manual: kind } })} />
-          ) : error ? (
-            <Text style={[styles.note, { color: theme.danger }]}>{error}</Text>
-          ) : results.length > 0 ? (
-            <Text style={[styles.section, { color: theme.textMuted }]}>{q ? 'RESULTS' : source === 'tvmaze' ? 'POPULAR ON TV TODAY' : 'TRENDING THIS WEEK'}</Text>
-          ) : !loading && q ? (
-            <Text style={[styles.note, { color: theme.textMuted }]}>Nothing found for “{q}”.</Text>
-          ) : !loading && kind === 'tv' && source === 'tvmaze' ? (
-            <Text style={[styles.note, { color: theme.textMuted }]}>Type a series name to search TVmaze.</Text>
+              <NeedsKey theme={theme} kind={kind} onManual={() => router.push({ pathname: '/log', params: { manual: kind } })} />
+            ) : error ? (
+              <Text style={[styles.note, { color: theme.danger }]}>{error}</Text>
+            ) : results.length > 0 ? (
+              <Text style={[styles.section, { color: theme.textMuted }]}>
+                {q ? 'RESULTS' : source === 'tvmaze' ? 'POPULAR ON TV TODAY' : 'TRENDING THIS WEEK'}
+              </Text>
+            ) : !loading && q ? (
+              <Text style={[styles.note, { color: theme.textMuted }]}>Nothing found for “{q}”.</Text>
+            ) : !loading && kind === 'tv' && source === 'tvmaze' ? (
+              <Text style={[styles.note, { color: theme.textMuted }]}>Type a series name to search TVmaze.</Text>
             ) : null}
           </>
         }
@@ -212,13 +220,7 @@ export default function SearchScreen() {
                   )}
                 </View>
               </Pressable>
-              <Pressable
-                onPress={() => open(item)}
-                hitSlop={6}
-                accessibilityRole="button"
-                accessibilityLabel={`Log ${item.title}`}
-                style={styles.rowBtn}
-              >
+              <Pressable onPress={() => open(item)} hitSlop={6} accessibilityRole="button" accessibilityLabel={`Log ${item.title}`} style={styles.rowBtn}>
                 <Ionicons name="add-circle-outline" size={27} color={theme.accent} />
               </Pressable>
               <Pressable
@@ -268,8 +270,8 @@ function NeedsKey({ theme, kind, onManual }: { theme: ReturnType<typeof useTheme
       <MaterialCommunityIcons name="key-chain-variant" size={28} color={theme.accent} />
       <Text style={[styles.keyTitle, { color: theme.text }]}>{kind === 'anime' ? 'ANIME' : 'FILM'} SEARCH NEEDS A FREE TMDB KEY</Text>
       <Text style={[styles.keyText, { color: theme.textMuted }]}>
-        TMDB is the free film and TV database most apps use. Make an account at themoviedb.org, open Settings → API, copy your key, then
-        paste it into Watch Heart’s settings. Series search already works without one.
+        TMDB is the free film and TV database most apps use. Make an account at themoviedb.org, open Settings → API, copy your key, then paste it into Watch
+        Heart’s settings. Series search already works without one.
       </Text>
       <View style={styles.keyButtons}>
         <Pressable onPress={() => router.push('/settings')} style={[styles.keyBtn, { backgroundColor: theme.accent }]} accessibilityRole="button">
@@ -296,7 +298,7 @@ const styles = StyleSheet.create({
   section: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 1.5, paddingVertical: 8 },
   note: { fontFamily: fonts.mono, fontSize: font.footnote, paddingVertical: 12, lineHeight: 19 },
   rowBtn: { padding: 8 },
-  modes: { flexDirection: 'row', gap: 22, borderBottomWidth: StyleSheet.hairlineWidth, marginBottom: 4 },
+  modes: { flexDirection: 'row', gap: 22, borderBottomWidth: StyleSheet.hairlineWidth },
   mode: { paddingVertical: 10, borderBottomWidth: 2, borderBottomColor: 'transparent' },
   modeText: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 1.5 },
   rowMain: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10, borderRadius: 8 },

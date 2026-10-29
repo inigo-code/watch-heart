@@ -6,17 +6,23 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { tmdbKey } from '@/api';
 import { watchRegion } from '@/api/omdb';
-import { BROWSE_GENRES, discoverTmdb, regionProviders } from '@/api/tmdb';
+import { BROWSE_GENRES, discoverTmdb, genreId, regionProviders } from '@/api/tmdb';
 import type { BrowseQuery, BrowseSort, Provider } from '@/api/tmdb';
 import { Chip, Poster } from '@/components/Film';
 import { SectionLabel } from '@/components/SectionLabel';
 import { openTitle } from '@/components/title/Rows';
-import { DECADES, LANGUAGES } from '@/lib/discover';
-import { font, fonts, useTheme } from '@/lib/theme';
+import { DECADES, LANGUAGES, kindsFor } from '@/lib/discover';
+import { KIND_COLORS, font, fonts, useTheme } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
 import { useSettings } from '@/settings/SettingsProvider';
 import { useDiary } from '@/store/DiaryStore';
 import type { MediaKind, Title } from '@/store/types';
+
+const KINDS: { kind: MediaKind; label: string }[] = [
+  { kind: 'movie', label: 'FILMS' },
+  { kind: 'tv', label: 'SERIES' },
+  { kind: 'anime', label: 'ANIME' },
+];
 
 const SORTS: { key: BrowseSort; label: string }[] = [
   { key: 'popular', label: 'Popular' },
@@ -83,6 +89,10 @@ export default function BrowseScreen() {
   const columns = 3;
   const cell = Math.floor((width - 32 - (columns - 1) * 10) / columns);
   const sort = query.sort ?? 'popular';
+  const kinds = kindsFor(query);
+  // A genre TMDB doesn't file this kind under (Horror series): say so, rather than "nothing matches".
+  const noGenre = query.genres?.find((g) => genreId(g, query.kind) === undefined);
+  const kindName = query.kind === 'movie' ? 'films' : query.kind === 'tv' ? 'series' : 'anime';
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.bg }}>
@@ -96,25 +106,47 @@ export default function BrowseScreen() {
         onEndReached={more}
         onEndReachedThreshold={0.6}
         ListHeaderComponent={
-          <View style={styles.bar}>
-            {SORTS.map((s) => (
-              <Chip key={s.key} theme={theme} label={s.label} active={sort === s.key} onPress={() => setQuery((q) => ({ ...q, sort: s.key }))} />
-            ))}
-            <View style={{ flex: 1 }} />
-            <Pressable
-              onPress={() => setFiltering(true)}
-              accessibilityRole="button"
-              accessibilityLabel="Filters"
-              hitSlop={8}
-              style={[styles.filterBtn, { borderColor: theme.border }]}
-            >
-              <Ionicons name="options-outline" size={18} color={theme.text} />
-            </Pressable>
+          <View style={{ gap: 10 }}>
+            {kinds.length > 1 && (
+              <View style={[styles.kinds, { borderColor: theme.border }]}>
+                {KINDS.filter((k) => kinds.includes(k.kind)).map((k) => {
+                  const on = query.kind === k.kind;
+                  return (
+                    <Pressable
+                      key={k.kind}
+                      onPress={() => setQuery((q) => ({ ...q, kind: k.kind }))}
+                      accessibilityRole="tab"
+                      accessibilityState={{ selected: on }}
+                      style={[styles.kind, on && { backgroundColor: KIND_COLORS[k.kind] }]}
+                    >
+                      <Text style={[styles.kindText, { color: on ? '#0B0A0D' : theme.textMuted }]}>{k.label}</Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            )}
+            <View style={styles.bar}>
+              {SORTS.map((s) => (
+                <Chip key={s.key} theme={theme} label={s.label} active={sort === s.key} onPress={() => setQuery((q) => ({ ...q, sort: s.key }))} />
+              ))}
+              <View style={{ flex: 1 }} />
+              <Pressable
+                onPress={() => setFiltering(true)}
+                accessibilityRole="button"
+                accessibilityLabel="Filters"
+                hitSlop={8}
+                style={[styles.filterBtn, { borderColor: theme.border }]}
+              >
+                <Ionicons name="options-outline" size={18} color={theme.text} />
+              </Pressable>
+            </View>
           </View>
         }
         ListEmptyComponent={
           loading ? undefined : (
-            <Text style={[styles.note, { color: error ? theme.danger : theme.textMuted }]}>{error ?? 'Nothing matches. Try fewer filters.'}</Text>
+            <Text style={[styles.note, { color: error ? theme.danger : theme.textMuted }]}>
+              {error ?? (noGenre ? `TMDB doesn’t file ${kindName} under ${noGenre}. Try another kind.` : 'Nothing matches. Try fewer filters.')}
+            </Text>
           )
         }
         ListFooterComponent={loading ? <ActivityIndicator color={theme.accent} style={{ marginTop: 16 }} /> : undefined}
@@ -198,11 +230,11 @@ function Filters({
   }, [visible, providers.length, tmdb, region]);
 
   const set = (patch: Partial<BrowseQuery>) => setDraft((d) => ({ ...d, ...patch }));
-  const genres = BROWSE_GENRES[draft.kind === 'movie' ? 'movie' : 'tv'];
+  const genres = BROWSE_GENRES.filter((g) => genreId(g.name, draft.kind) !== undefined && !(draft.kind === 'anime' && g.name === 'Animation'));
   const decade = draft.from && draft.to && draft.to - draft.from === 9 ? draft.from : null;
-  const toggleGenre = (id: number) => {
+  const toggleGenre = (name: string) => {
     const g = draft.genres ?? [];
-    set({ genres: g.includes(id) ? g.filter((x) => x !== id) : [...g, id] });
+    set({ genres: g.includes(name) ? g.filter((x) => x !== name) : [...g, name] });
   };
 
   return (
@@ -223,36 +255,68 @@ function Filters({
                 theme={theme}
                 label={k === 'movie' ? 'Films' : k === 'tv' ? 'Series' : 'Anime'}
                 active={draft.kind === k}
-                onPress={() => set({ kind: k, genres: [], status: undefined, tvType: undefined, maxRuntime: k === 'movie' ? draft.maxRuntime : undefined })}
+                onPress={() =>
+                  set({
+                    kind: k,
+                    genres: draft.genres?.filter((g) => genreId(g, k) !== undefined),
+                    status: k === 'movie' ? undefined : draft.status,
+                    tvType: k === 'movie' ? undefined : draft.tvType,
+                    maxRuntime: k === 'movie' ? draft.maxRuntime : undefined,
+                  })
+                }
               />
             ))}
           </Group>
           <Group theme={theme} title="Genres (all of)">
             {genres.map((g) => (
-              <Chip key={g.id} theme={theme} label={g.name} active={draft.genres?.includes(g.id)} onPress={() => toggleGenre(g.id)} />
+              <Chip key={g.name} theme={theme} label={g.name} active={draft.genres?.includes(g.name)} onPress={() => toggleGenre(g.name)} />
             ))}
           </Group>
           <Group theme={theme} title="Decade">
             {DECADES.map((d) => (
-              <Chip key={d} theme={theme} label={`${d}s`} active={decade === d} onPress={() => set(decade === d ? { from: undefined, to: undefined } : { from: d, to: d + 9, days: undefined })} />
+              <Chip
+                key={d}
+                theme={theme}
+                label={`${d}s`}
+                active={decade === d}
+                onPress={() => set(decade === d ? { from: undefined, to: undefined } : { from: d, to: d + 9, days: undefined })}
+              />
             ))}
           </Group>
           {draft.kind !== 'anime' && (
             <Group theme={theme} title="Original language">
               {LANGUAGES.map((l) => (
-                <Chip key={l.code} theme={theme} label={l.name} active={draft.lang === l.code} onPress={() => set({ lang: draft.lang === l.code ? undefined : l.code })} />
+                <Chip
+                  key={l.code}
+                  theme={theme}
+                  label={l.name}
+                  active={draft.lang === l.code}
+                  onPress={() => set({ lang: draft.lang === l.code ? undefined : l.code })}
+                />
               ))}
             </Group>
           )}
           <Group theme={theme} title="TMDB score at least">
             {[6, 7, 7.5, 8].map((s) => (
-              <Chip key={s} theme={theme} label={`${s}+`} active={draft.minScore === s} onPress={() => set({ minScore: draft.minScore === s ? undefined : s })} />
+              <Chip
+                key={s}
+                theme={theme}
+                label={`${s}+`}
+                active={draft.minScore === s}
+                onPress={() => set({ minScore: draft.minScore === s ? undefined : s })}
+              />
             ))}
           </Group>
           {draft.kind === 'movie' && (
             <Group theme={theme} title="Length">
               {[90, 120, 150].map((m) => (
-                <Chip key={m} theme={theme} label={`Under ${m} min`} active={draft.maxRuntime === m} onPress={() => set({ maxRuntime: draft.maxRuntime === m ? undefined : m })} />
+                <Chip
+                  key={m}
+                  theme={theme}
+                  label={`Under ${m} min`}
+                  active={draft.maxRuntime === m}
+                  onPress={() => set({ maxRuntime: draft.maxRuntime === m ? undefined : m })}
+                />
               ))}
             </Group>
           )}
@@ -300,6 +364,9 @@ function Group({ theme, title, children }: { theme: Theme; title: string; childr
 
 const styles = StyleSheet.create({
   bar: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 },
+  kinds: { flexDirection: 'row', borderWidth: 1, borderRadius: 10, padding: 3, gap: 3 },
+  kind: { flex: 1, height: 34, borderRadius: 7, alignItems: 'center', justifyContent: 'center' },
+  kindText: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 1.5 },
   filterBtn: { width: 38, height: 38, borderRadius: 19, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
   note: { fontFamily: fonts.mono, fontSize: font.footnote, textAlign: 'center', paddingVertical: 32 },
   tick: { position: 'absolute', top: 6, right: 6, width: 22, height: 22, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },

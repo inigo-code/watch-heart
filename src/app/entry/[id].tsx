@@ -12,6 +12,7 @@ import { AddToList } from '@/components/lists/AddToList';
 import { RichText } from '@/components/RichText';
 import { SectionLabel } from '@/components/SectionLabel';
 import { TitleExtras } from '@/components/TitleExtras';
+import { Synopsis, TitleMore, useAbout } from '@/components/title/AboutTitle';
 import { Face, openTitle } from '@/components/title/Rows';
 import { useToast } from '@/components/Toast';
 import { dayParts, friendlyDate } from '@/lib/dates';
@@ -19,6 +20,7 @@ import { viewingLine } from '@/lib/viewing';
 import { font, fonts, useTheme } from '@/lib/theme';
 import { useLists } from '@/lists/ListsProvider';
 import { useDiary } from '@/store/DiaryStore';
+import type { Title } from '@/store/types';
 
 export default function EntryScreen() {
   const theme = useTheme();
@@ -30,6 +32,7 @@ export default function EntryScreen() {
   const [reveal, setReveal] = useState(false);
   const [listing, setListing] = useState(false);
   const { listsWith } = useLists();
+  const { about } = useAbout(entry?.source === 'tmdb' ? entry.sourceId : null);
 
   if (!ready) return <View style={{ flex: 1, backgroundColor: theme.bg }} />;
   if (!entry || entry.deletedAt !== null) {
@@ -42,6 +45,18 @@ export default function EntryScreen() {
   }
 
   const viewings = viewingsOf(entry.source, entry.sourceId);
+  const title: Title = {
+    kind: entry.kind,
+    source: entry.source,
+    sourceId: entry.sourceId,
+    title: entry.title,
+    year: entry.year,
+    posterUrl: entry.posterUrl,
+    backdropUrl: entry.backdropUrl,
+    genres: entry.genres,
+    runtime: entry.runtime,
+    credit: entry.credit,
+  };
   const onLists = listsWith(entry);
   const { day, weekday, month } = dayParts(entry.watchedOn);
   const hideReview = entry.spoilers && !reveal;
@@ -176,27 +191,6 @@ export default function EntryScreen() {
               primary
             />
             <Action theme={theme} icon="repeat" label="LOG AGAIN" onPress={() => router.push({ pathname: '/log', params: { again: entry.id } })} />
-            {entry.source === 'tmdb' && (
-              <Action
-                theme={theme}
-                icon="information-circle-outline"
-                label="DETAILS & CAST"
-                onPress={() =>
-                  openTitle({
-                    kind: entry.kind,
-                    source: entry.source,
-                    sourceId: entry.sourceId,
-                    title: entry.title,
-                    year: entry.year,
-                    posterUrl: entry.posterUrl,
-                    backdropUrl: entry.backdropUrl,
-                    genres: entry.genres,
-                    runtime: entry.runtime,
-                    credit: entry.credit,
-                  })
-                }
-              />
-            )}
             <Action theme={theme} icon="albums-outline" label={onLists.length ? `LISTS (${onLists.length})` : 'ADD TO LIST'} onPress={() => setListing(true)} />
             {trackable(entry) && (
               <Action
@@ -241,6 +235,19 @@ export default function EntryScreen() {
                 </Pressable>
               ))}
             </View>
+          )}
+
+          {about && (
+            <>
+              <Synopsis
+                about={about}
+                overview=""
+                theme={theme}
+                label={entry.kind === 'movie' ? 'About the film' : entry.kind === 'tv' ? 'About the series' : 'About the anime'}
+                onMore={() => openTitle(title)}
+              />
+              <TitleMore id={entry.sourceId} t={title} about={about} theme={theme} />
+            </>
           )}
 
           <DangerButton theme={theme} label="Move to trash" onPress={remove} />

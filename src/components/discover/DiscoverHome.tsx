@@ -7,18 +7,20 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { BROWSE_GENRES, regionProviders } from '@/api/tmdb';
 import type { BrowseQuery, Provider } from '@/api/tmdb';
 import { SectionLabel } from '@/components/SectionLabel';
-import { COUNTRIES, DECADES, LANGUAGES, countryName, flag, seasonalShelf, shelvesFor } from '@/lib/discover';
+import { COUNTRIES, DECADES, LANGUAGES, SHELVES, countryName, flag, seasonalShelf } from '@/lib/discover';
 import { font, fonts } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
-import type { MediaKind } from '@/store/types';
 
 const providerCache = new Map<string, Provider[]>();
 
 export const browse = (q: BrowseQuery, name: string, filters?: boolean) =>
   router.push({ pathname: '/browse', params: { q: JSON.stringify(q), name, ...(filters ? { filters: '1' } : {}) } });
 
-/** Ways into the catalogue: streaming services, ready-made shelves, and genre, decade, language and country. */
-export function DiscoverHome({ kind, theme, tmdb, region }: { kind: MediaKind; theme: Theme; tmdb: string; region: string }) {
+/**
+ * Ways into the catalogue: streaming services, ready-made shelves, and genre, decade, language and country.
+ * One page for films, series and anime alike; what's shown starts with films, and switches on the results.
+ */
+export function DiscoverHome({ theme, tmdb, region }: { theme: Theme; tmdb: string; region: string }) {
   const [providers, setProviders] = useState<Provider[]>(() => providerCache.get(region) ?? []);
 
   useEffect(() => {
@@ -35,9 +37,7 @@ export function DiscoverHome({ kind, theme, tmdb, region }: { kind: MediaKind; t
   }, [tmdb, region]);
 
   const seasonal = seasonalShelf();
-  const genres = BROWSE_GENRES[kind === 'movie' ? 'movie' : 'tv'].filter((g) => kind !== 'anime' || ![16, 10762, 10764, 10766].includes(g.id));
-  const decades = DECADES.filter((d) => kind === 'movie' || d >= 1950);
-  const label = kind === 'movie' ? 'films' : kind === 'tv' ? 'series' : 'anime';
+  const kind = 'movie';
 
   return (
     <View style={styles.wrap}>
@@ -50,7 +50,7 @@ export function DiscoverHome({ kind, theme, tmdb, region }: { kind: MediaKind; t
                 key={p.id}
                 onPress={() => browse({ kind, provider: p.id, region }, p.name)}
                 accessibilityRole="button"
-                accessibilityLabel={`${p.name}: ${label} to stream`}
+                accessibilityLabel={`What's on ${p.name}`}
                 style={({ pressed }) => [pressed && { opacity: 0.7 }]}
               >
                 <Image source={{ uri: p.logo }} style={[styles.logo, { backgroundColor: theme.elevated }]} contentFit="cover" />
@@ -77,7 +77,7 @@ export function DiscoverHome({ kind, theme, tmdb, region }: { kind: MediaKind; t
           </Pressable>
         )}
         <View style={[styles.shelves, { borderColor: theme.border, backgroundColor: theme.card }]}>
-          {shelvesFor(kind).map((s, i) => (
+          {SHELVES.map((s, i) => (
             <Pressable
               key={s.id}
               onPress={() => browse(s.q, s.name)}
@@ -94,26 +94,22 @@ export function DiscoverHome({ kind, theme, tmdb, region }: { kind: MediaKind; t
         </View>
       </View>
 
-      <Chips theme={theme} title="By genre" items={genres.map((g) => ({ key: String(g.id), label: g.name, onPress: () => browse({ kind, genres: [g.id] }, g.name) }))} />
+      <Chips theme={theme} title="By genre" items={BROWSE_GENRES.map((g) => ({ key: g.name, label: g.name, onPress: () => browse({ kind: g.movie ? kind : 'tv', genres: [g.name] }, g.name) }))} />
       <Chips
         theme={theme}
         title="By decade"
-        items={decades.map((d) => ({ key: String(d), label: `${d}s`, onPress: () => browse({ kind, from: d, to: d + 9 }, `The ${d}s`) }))}
+        items={DECADES.map((d) => ({ key: String(d), label: `${d}s`, onPress: () => browse({ kind, from: d, to: d + 9 }, `The ${d}s`) }))}
       />
-      {kind !== 'anime' && (
-        <Chips
-          theme={theme}
-          title="By original language"
-          items={LANGUAGES.map((l) => ({ key: l.code, label: l.name, onPress: () => browse({ kind, lang: l.code }, `In ${l.name}`) }))}
-        />
-      )}
-      {kind !== 'anime' && (
-        <Chips
-          theme={theme}
-          title="By country"
-          items={COUNTRIES.map((c) => ({ key: c, label: `${flag(c)} ${c}`, a11y: countryName(c), onPress: () => browse({ kind, country: c }, `From ${countryName(c)}`) }))}
-        />
-      )}
+      <Chips
+        theme={theme}
+        title="By original language"
+        items={LANGUAGES.map((l) => ({ key: l.code, label: l.name, onPress: () => browse({ kind, lang: l.code }, `In ${l.name}`) }))}
+      />
+      <Chips
+        theme={theme}
+        title="By country"
+        items={COUNTRIES.map((c) => ({ key: c, label: `${flag(c)} ${c}`, a11y: countryName(c), onPress: () => browse({ kind, country: c }, `From ${countryName(c)}`) }))}
+      />
 
       <Pressable
         onPress={() => browse({ kind }, 'Your filters', true)}

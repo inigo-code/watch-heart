@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { FlatList, Pressable, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { KeyboardSafe } from '@/components/KeyboardSafe';
 import { ActionSheet } from '@/components/ActionSheet';
 import { DangerButton } from '@/components/DangerButton';
 import { Poster } from '@/components/Film';
@@ -54,7 +55,7 @@ export default function ListScreen() {
   };
 
   return (
-    <>
+    <KeyboardSafe style={{ backgroundColor: theme.bg }}>
       <Stack.Screen
         options={{
           title: 'LIST',
@@ -215,7 +216,7 @@ export default function ListScreen() {
           },
         ]}
       />
-    </>
+    </KeyboardSafe>
   );
 }
 

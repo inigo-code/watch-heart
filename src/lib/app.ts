@@ -36,10 +36,10 @@ export const DATA_SOURCES = {
  * update worth telling people about; an update that leaves it alone shows nothing.
  */
 export const WHATS_NEW = {
-  id: '1.1.3',
+  id: '1.1.4',
   items: [
-    'Title pages: synopsis, cast and crew, trailer, seasons, and what to watch next',
-    'Discover: browse by service, genre, decade, language and country, or build your own filters',
-    'When you log: vibes, where you watched, which service, and your favourite character',
+    'Diary entries show the synopsis, cast and crew, and what to watch next',
+    'Discover is one page for films, series and anime; switch kind on the results',
+    'Text fields stay above the keyboard',
   ],
 };

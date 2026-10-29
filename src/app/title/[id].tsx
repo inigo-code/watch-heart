@@ -1,27 +1,23 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { Image } from 'expo-image';
 import * as Linking from 'expo-linking';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { tmdbKey } from '@/api';
 import { trackable } from '@/api/episodes';
-import { BROWSE_GENRES, aboutTmdb, madeBy } from '@/api/tmdb';
-import type { TitleAbout } from '@/api/tmdb';
+import { browseGenre } from '@/api/tmdb';
 import { Stars } from '@/components/Film';
 import { Hero } from '@/components/Hero';
 import { AddToList } from '@/components/lists/AddToList';
 import { SectionLabel } from '@/components/SectionLabel';
 import { TitleExtras } from '@/components/TitleExtras';
-import { PeopleRow, RowHead, TitleRow } from '@/components/title/Rows';
+import { Synopsis, TitleMore, useAbout } from '@/components/title/AboutTitle';
 import { useToast } from '@/components/Toast';
 import { friendlyDate } from '@/lib/dates';
 import { font, fonts, useTheme } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
 import { useLists } from '@/lists/ListsProvider';
-import { useSettings } from '@/settings/SettingsProvider';
 import { useDiary } from '@/store/DiaryStore';
 import type { Title } from '@/store/types';
 
@@ -35,38 +31,11 @@ export default function TitleScreen() {
   const toast = useToast();
   const params = useLocalSearchParams<{ id: string; t?: string }>();
   const id = params.id;
-  const { settings } = useSettings();
-  const key = tmdbKey(settings.tmdbKey);
   const { viewingsOf, onWatchlist, addToWatchlist, removeFromWatchlist } = useDiary();
   const { listsWith } = useLists();
   const seed = useMemo(() => (params.t ? (JSON.parse(params.t) as Title) : null), [params.t]);
-  const [about, setAbout] = useState<{ id: string; value: TitleAbout } | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [more, setMore] = useState(false);
-  const [crewTab, setCrewTab] = useState(false);
+  const { about: a, error } = useAbout(id);
   const [listing, setListing] = useState(false);
-  const [byMaker, setByMaker] = useState<{ id: string; titles: Title[] } | null>(null);
-  const a = about?.id === id ? about.value : null;
-
-  useEffect(() => {
-    if (!key || !id) return;
-    const controller = new AbortController();
-    aboutTmdb(key, id, controller.signal)
-      .then((value) => setAbout({ id, value }))
-      .catch((e) => !controller.signal.aborted && setError(e instanceof Error && e.message !== 'Network request failed' ? e.message : 'No connection.'));
-    return () => controller.abort();
-  }, [key, id]);
-
-  // The director's (or creator's) other work, once we know who that is.
-  const maker = a?.makers[0];
-  useEffect(() => {
-    if (!key || !maker) return;
-    const controller = new AbortController();
-    madeBy(key, maker.id, id.startsWith('movie:') ? 'movie' : 'tv', id, controller.signal)
-      .then((titles) => setByMaker({ id, titles }))
-      .catch(() => {});
-    return () => controller.abort();
-  }, [key, maker, id]);
 
   // Search in the Anime tab knows it's anime; TMDB's own details can't always tell (an anime film, say).
   const t: Title | null = a ? { ...a.title, kind: seed?.kind === 'anime' ? 'anime' : a.title.kind, overview: a.overview } : seed;
@@ -83,11 +52,6 @@ export default function TitleScreen() {
   const viewings = viewingsOf(t.source, t.sourceId);
   const saved = onWatchlist(t);
   const onLists = listsWith(t);
-  const series = id.startsWith('tv:');
-  const seen = (x: Title) => viewingsOf(x.source, x.sourceId).length > 0;
-  const people = crewTab ? (a?.crew ?? []) : (a?.cast ?? []);
-  const genreIds = BROWSE_GENRES[series ? 'tv' : 'movie'];
-  const overview = a?.overview || t.overview || '';
 
   const log = () => router.push({ pathname: '/log', params: { title: JSON.stringify(t) } });
   const toggleWatchlist = () => {
@@ -110,13 +74,13 @@ export default function TitleScreen() {
           {t.genres.length > 0 && (
             <View style={styles.genres}>
               {t.genres.map((g) => {
-                const genre = genreIds.find((x) => x.name === g);
+                const genre = browseGenre(g);
                 return (
                   <Pressable
                     key={g}
                     disabled={!genre}
                     onPress={() =>
-                      genre && router.push({ pathname: '/browse', params: { q: JSON.stringify({ kind: t.kind, genres: [genre.id] }), name: g } })
+                      genre && router.push({ pathname: '/browse', params: { q: JSON.stringify({ kind: t.kind, genres: [genre.name] }), name: genre.name } })
                     }
                     accessibilityRole={genre ? 'button' : undefined}
                     accessibilityLabel={genre ? `Browse ${g}` : g}
@@ -185,103 +149,11 @@ export default function TitleScreen() {
             </View>
           )}
 
-          {(!!overview || !!a?.tagline) && (
-            <View style={styles.block}>
-              {!!a?.tagline && <Text style={[styles.tagline, { color: theme.textMuted }]}>“{a.tagline}”</Text>}
-              {!!overview && (
-                <Pressable onPress={() => setMore((m) => !m)} accessibilityRole="button" accessibilityHint={more ? 'Shows less' : 'Shows the whole synopsis'}>
-                  <Text style={[styles.overview, { color: theme.text }]} numberOfLines={more ? undefined : 4}>
-                    {overview}
-                  </Text>
-                  {overview.length > 220 && <Text style={[styles.showMore, { color: theme.accent }]}>{more ? 'Show less' : 'Show more'}</Text>}
-                </Pressable>
-              )}
-              {series && a && (
-                <Text style={[styles.facts, { color: theme.textMuted }]}>
-                  {[a.status, a.seasons.length ? `${a.seasons.length} ${a.seasons.length === 1 ? 'season' : 'seasons'}` : null, a.title.episodes ? `${a.title.episodes} episodes` : null]
-                    .filter(Boolean)
-                    .join(' · ')}
-                </Text>
-              )}
-            </View>
-          )}
+          <Synopsis about={a} overview={t.overview ?? ''} theme={theme} />
 
           <TitleExtras source={t.source} sourceId={t.sourceId} theme={theme} />
 
-          {a && a.cast.length + a.crew.length > 0 && (
-            <View style={styles.block}>
-              <RowHead title="Cast & crew" theme={theme} onMore={() => router.push({ pathname: '/credits/[id]', params: { id } })} more="Full list" />
-              <View style={styles.tabs}>
-                {[
-                  { crew: false, label: 'Cast', n: a.cast.length },
-                  { crew: true, label: 'Crew', n: a.crew.length },
-                ].map((tab) => (
-                  <Pressable
-                    key={tab.label}
-                    disabled={!tab.n}
-                    onPress={() => setCrewTab(tab.crew)}
-                    accessibilityRole="tab"
-                    accessibilityState={{ selected: crewTab === tab.crew }}
-                    style={[styles.tab, { borderColor: crewTab === tab.crew ? theme.accent : theme.border, backgroundColor: crewTab === tab.crew ? theme.accent : 'transparent', opacity: tab.n ? 1 : 0.4 }]}
-                  >
-                    <Text style={[styles.tabText, { color: crewTab === tab.crew ? theme.accentText : theme.text }]}>{tab.label.toUpperCase()}</Text>
-                  </Pressable>
-                ))}
-              </View>
-              <PeopleRow people={people.slice(0, 15)} theme={theme} />
-            </View>
-          )}
-
-          {series && a && a.seasons.length > 0 && (
-            <View style={styles.block}>
-              <RowHead
-                title={`Seasons (${a.seasons.length})`}
-                theme={theme}
-                more="Episodes"
-                onMore={trackable(t) ? () => router.push({ pathname: '/track', params: { title: JSON.stringify(t) } }) : undefined}
-              />
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.seasons}>
-                {a.seasons.map((s) => (
-                  <View key={s.n} style={styles.season}>
-                    {s.poster ? (
-                      <Image source={{ uri: s.poster }} style={[styles.seasonPoster, { backgroundColor: theme.elevated }]} contentFit="cover" />
-                    ) : (
-                      <View style={[styles.seasonPoster, styles.center, { backgroundColor: theme.elevated }]}>
-                        <Text style={[styles.seasonNo, { color: theme.textMuted }]}>{s.n}</Text>
-                      </View>
-                    )}
-                    <Text style={[styles.seasonName, { color: theme.text }]} numberOfLines={1}>
-                      {s.name}
-                    </Text>
-                    <Text style={[styles.seasonSub, { color: theme.textMuted }]}>
-                      {s.episodes} eps{s.year ? ` · ${s.year}` : ''}
-                    </Text>
-                  </View>
-                ))}
-              </ScrollView>
-            </View>
-          )}
-
-          {a && a.recommendations.length > 0 && (
-            <View style={styles.block}>
-              <RowHead title="You might like" theme={theme} />
-              <TitleRow titles={a.recommendations} theme={theme} seen={seen} />
-            </View>
-          )}
-
-          {maker && byMaker?.id === id && byMaker.titles.length > 0 && (
-            <View style={styles.block}>
-              <RowHead
-                title={series ? `More from ${maker.name}` : `By the same director`}
-                theme={theme}
-                more={series ? undefined : maker.name}
-                onMore={() => router.push({ pathname: '/person/[id]', params: { id: String(maker.id) } })}
-              />
-              <TitleRow titles={byMaker.titles} theme={theme} seen={seen} />
-            </View>
-          )}
-
-          <Text style={[styles.credit, { color: theme.textMuted }]}>Details, cast and recommendations from TMDB.</Text>
+          {a && <TitleMore id={id} t={t} about={a} theme={theme} />}
         </View>
       </ScrollView>
       <AddToList item={listing ? t : null} theme={theme} onClose={() => setListing(false)} />
@@ -319,18 +191,4 @@ const styles = StyleSheet.create({
   block: { gap: 10 },
   viewing: { flexDirection: 'row', alignItems: 'center', gap: 10, borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, height: 46 },
   viewingDate: { flex: 1, fontFamily: fonts.mono, fontSize: font.body },
-  tagline: { fontSize: font.body, fontStyle: 'italic', lineHeight: 21 },
-  overview: { fontSize: font.body, lineHeight: 22 },
-  showMore: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 1, marginTop: 4 },
-  facts: { fontFamily: fonts.mono, fontSize: font.footnote },
-  tabs: { flexDirection: 'row', gap: 8 },
-  tab: { borderWidth: 1, borderRadius: 16, height: 32, paddingHorizontal: 16, alignItems: 'center', justifyContent: 'center' },
-  tabText: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 1.5 },
-  seasons: { gap: 12, paddingRight: 16 },
-  season: { width: 96 },
-  seasonPoster: { width: 96, height: 144, borderRadius: 6 },
-  seasonNo: { fontFamily: fonts.display, fontSize: 40 },
-  seasonName: { fontSize: font.footnote, fontWeight: '700', marginTop: 6 },
-  seasonSub: { fontFamily: fonts.mono, fontSize: font.caption },
-  credit: { fontFamily: fonts.mono, fontSize: font.caption, textAlign: 'center' },
 });

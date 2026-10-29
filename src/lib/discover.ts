@@ -7,34 +7,29 @@ export type Shelf = { id: string; name: string; note: string; q: BrowseQuery };
 
 const NOW = new Date().getFullYear();
 
-/** The ready-made shelves for films, series or anime. */
-export function shelvesFor(kind: MediaKind): Shelf[] {
-  if (kind === 'movie') {
-    return [
-      { id: 'new', name: 'New this month', note: 'Released in the last six weeks', q: { kind, days: [-45, 0] } },
-      { id: 'crowd', name: 'Crowd favourites', note: 'The best rated, by thousands of votes', q: { kind, sort: 'rating', minVotes: 5000 } },
-      { id: 'gems', name: 'Hidden gems', note: 'Rated highly, seen by few', q: { kind, sort: 'rating', minScore: 7.3, minVotes: 150, maxVotes: 1500 } },
-      { id: 'short', name: 'Short and sweet', note: 'Under 95 minutes and well liked', q: { kind, maxRuntime: 95, minScore: 7, minVotes: 500 } },
-      { id: 'classics', name: 'Classics', note: 'Before 1980, still loved', q: { kind, to: 1979, sort: 'rating', minVotes: 1000 } },
-      { id: 'year', name: `Best of ${NOW}`, note: 'This year’s best rated so far', q: { kind, from: NOW, to: NOW, sort: 'rating', minVotes: 200 } },
-    ];
-  }
-  if (kind === 'tv') {
-    return [
-      { id: 'new', name: 'New this month', note: 'Premiered in the last six weeks', q: { kind, days: [-45, 0] } },
-      { id: 'crowd', name: 'Crowd favourites', note: 'The best rated, by thousands of votes', q: { kind, sort: 'rating', minVotes: 2000 } },
-      { id: 'ended', name: 'Ended and complete', note: 'Finished stories, no cliffhanger left', q: { kind, status: 3, sort: 'rating', minVotes: 300 } },
-      { id: 'mini', name: 'Miniseries to binge', note: 'One season, start to finish', q: { kind, tvType: 2, sort: 'rating', minVotes: 100 } },
-      { id: 'gems', name: 'Hidden gems', note: 'Rated highly, seen by few', q: { kind, sort: 'rating', minScore: 7.5, minVotes: 100, maxVotes: 800 } },
-    ];
-  }
-  return [
-    { id: 'airing', name: 'Airing now', note: 'Episodes out this fortnight', q: { kind, airing: true } },
-    { id: 'season', name: 'New this season', note: 'Premiered in the last three months', q: { kind, days: [-90, 0] } },
-    { id: 'crowd', name: 'Crowd favourites', note: 'The best rated anime', q: { kind, sort: 'rating', minVotes: 500 } },
-    { id: 'ended', name: 'Ended and complete', note: 'Finished stories to binge', q: { kind, status: 3, sort: 'rating', minVotes: 150 } },
-    { id: 'gems', name: 'Hidden gems', note: 'Rated highly, seen by few', q: { kind, sort: 'rating', minScore: 7.5, minVotes: 50, maxVotes: 400 } },
-  ];
+/** The ready-made shelves. Each opens on the kind it suits; the results can switch to another. */
+export const SHELVES: Shelf[] = [
+  { id: 'new', name: 'New this month', note: 'Released in the last six weeks', q: { kind: 'movie', days: [-45, 0] } },
+  { id: 'airing', name: 'Anime airing now', note: 'Episodes out this fortnight', q: { kind: 'anime', airing: true } },
+  { id: 'crowd', name: 'Crowd favourites', note: 'The best rated, by thousands of votes', q: { kind: 'movie', sort: 'rating', minVotes: 3000 } },
+  {
+    id: 'gems',
+    name: 'Hidden gems',
+    note: 'Rated highly, seen by few',
+    q: { kind: 'movie', sort: 'rating', minScore: 7.2, minVotes: 300, maxVotes: 2500, to: NOW - 1, notGenres: ['Documentary', 'Music'] },
+  },
+  { id: 'ended', name: 'Ended and complete', note: 'Finished series, no cliffhanger left', q: { kind: 'tv', status: 3, sort: 'rating', minVotes: 300 } },
+  { id: 'mini', name: 'Miniseries to binge', note: 'One season, start to finish', q: { kind: 'tv', tvType: 2, sort: 'rating', minVotes: 100 } },
+  { id: 'short', name: 'Short and sweet', note: 'Films under 95 minutes, well liked', q: { kind: 'movie', maxRuntime: 95, minScore: 7, minVotes: 500 } },
+  { id: 'classics', name: 'Classics', note: 'Before 1980, still loved', q: { kind: 'movie', to: 1979, sort: 'rating', minVotes: 1000 } },
+  { id: 'year', name: `Best of ${NOW}`, note: 'This year’s best rated so far', q: { kind: 'movie', from: NOW, to: NOW, sort: 'rating', minVotes: 200 } },
+];
+
+/** Which kinds a query makes sense for: series-only filters rule out films, a film length rules out series. */
+export function kindsFor(q: BrowseQuery): MediaKind[] {
+  if (q.status !== undefined || q.tvType !== undefined || q.airing) return ['tv', 'anime'];
+  if (q.maxRuntime) return ['movie'];
+  return ['movie', 'tv', 'anime'];
 }
 
 /** A shelf for the time of year, when there is one: horror in October, romance in February, family films in December. */
@@ -46,11 +41,11 @@ export function seasonalShelf(today = new Date()): Shelf | null {
       id: 'halloween',
       name: 'Halloween horror',
       note: days ? `Well-loved horror · ${days} ${days === 1 ? 'day' : 'days'} until Halloween` : 'Well-loved horror · it’s Halloween',
-      q: { kind: 'movie', genres: [27], minScore: 6.8, minVotes: 1500 },
+      q: { kind: 'movie', genres: ['Horror'], minScore: 6.8, minVotes: 1500 },
     };
   }
-  if (m === 1) return { id: 'valentine', name: 'Valentine’s romance', note: 'Well-loved love stories', q: { kind: 'movie', genres: [10749], minScore: 7, minVotes: 1000 } };
-  if (m === 11) return { id: 'cosy', name: 'Cosy December', note: 'Family films for the holidays', q: { kind: 'movie', genres: [10751], minScore: 6.8, minVotes: 1000 } };
+  if (m === 1) return { id: 'valentine', name: 'Valentine’s romance', note: 'Well-loved love stories', q: { kind: 'movie', genres: ['Romance'], minScore: 7, minVotes: 1000 } };
+  if (m === 11) return { id: 'cosy', name: 'Cosy December', note: 'Family films for the holidays', q: { kind: 'movie', genres: ['Family'], minScore: 6.8, minVotes: 1000 } };
   return null;
 }
 

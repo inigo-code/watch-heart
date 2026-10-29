@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { KeyboardSafe } from '@/components/KeyboardSafe';
 import { ListCover } from '@/components/lists/ListCover';
 import { SectionLabel } from '@/components/SectionLabel';
 import { font, fonts, useTheme } from '@/lib/theme';
@@ -24,70 +25,72 @@ export default function ListsScreen() {
   };
 
   return (
-    <FlatList
-      style={{ backgroundColor: theme.bg }}
-      data={lists}
-      keyExtractor={(l) => l.id}
-      contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 32 }]}
-      keyboardShouldPersistTaps="handled"
-      ListHeaderComponent={
-        <View style={{ gap: 12 }}>
-          <Text style={[styles.lede, { color: theme.textMuted }]}>
-            Your own lists: best of the year, a director ranked, what to show a friend. Share any of them as a story.
-          </Text>
-          <View style={[styles.newRow, { backgroundColor: theme.card, borderColor: theme.border }]}>
-            <Ionicons name="add-circle-outline" size={22} color={theme.accent} />
-            <TextInput
-              value={name}
-              onChangeText={setName}
-              onSubmitEditing={create}
-              returnKeyType="done"
-              placeholder="Name a new list, e.g. Best of 2026"
-              placeholderTextColor={theme.textMuted}
-              style={[styles.input, { color: theme.text }]}
-              maxLength={60}
-            />
-            {!!name.trim() && (
-              <Pressable onPress={create} accessibilityRole="button" style={[styles.create, { backgroundColor: theme.accent }]}>
-                <Text style={[styles.createText, { color: theme.accentText }]}>CREATE</Text>
-              </Pressable>
-            )}
-          </View>
-          {lists.length > 0 && <SectionLabel theme={theme}>{`${lists.length} ${lists.length === 1 ? 'list' : 'lists'}`}</SectionLabel>}
-        </View>
-      }
-      ListEmptyComponent={
-        <View style={styles.empty}>
-          <Ionicons name="albums-outline" size={44} color={theme.accent} />
-          <Text style={[styles.emptyTitle, { color: theme.text }]}>NO LISTS YET</Text>
-          <Text style={[styles.lede, { color: theme.textMuted, textAlign: 'center' }]}>Name one above, or open any entry and tap Add to list.</Text>
-        </View>
-      }
-      renderItem={({ item: l }) => (
-        <Pressable
-          onPress={() => router.push({ pathname: '/list/[id]', params: { id: l.id } })}
-          accessibilityRole="button"
-          style={({ pressed }) => [styles.card, { backgroundColor: theme.card, borderColor: theme.border, opacity: pressed ? 0.85 : 1 }]}
-        >
-          <ListCover items={l.items} theme={theme} width={112} />
-          <View style={{ flex: 1, gap: 4 }}>
-            <Text style={[styles.name, { color: theme.text }]} numberOfLines={2}>
-              {l.name}
+    <KeyboardSafe style={{ backgroundColor: theme.bg }}>
+      <FlatList
+        style={{ backgroundColor: theme.bg }}
+        data={lists}
+        keyExtractor={(l) => l.id}
+        contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 32 }]}
+        keyboardShouldPersistTaps="handled"
+        ListHeaderComponent={
+          <View style={{ gap: 12 }}>
+            <Text style={[styles.lede, { color: theme.textMuted }]}>
+              Your own lists: best of the year, a director ranked, what to show a friend. Share any of them as a story.
             </Text>
-            {!!l.description && (
-              <Text style={[styles.lede, { color: theme.textMuted }]} numberOfLines={2}>
-                {l.description}
+            <View style={[styles.newRow, { backgroundColor: theme.card, borderColor: theme.border }]}>
+              <Ionicons name="add-circle-outline" size={22} color={theme.accent} />
+              <TextInput
+                value={name}
+                onChangeText={setName}
+                onSubmitEditing={create}
+                returnKeyType="done"
+                placeholder="Name a new list, e.g. Best of 2026"
+                placeholderTextColor={theme.textMuted}
+                style={[styles.input, { color: theme.text }]}
+                maxLength={60}
+              />
+              {!!name.trim() && (
+                <Pressable onPress={create} accessibilityRole="button" style={[styles.create, { backgroundColor: theme.accent }]}>
+                  <Text style={[styles.createText, { color: theme.accentText }]}>CREATE</Text>
+                </Pressable>
+              )}
+            </View>
+            {lists.length > 0 && <SectionLabel theme={theme}>{`${lists.length} ${lists.length === 1 ? 'list' : 'lists'}`}</SectionLabel>}
+          </View>
+        }
+        ListEmptyComponent={
+          <View style={styles.empty}>
+            <Ionicons name="albums-outline" size={44} color={theme.accent} />
+            <Text style={[styles.emptyTitle, { color: theme.text }]}>NO LISTS YET</Text>
+            <Text style={[styles.lede, { color: theme.textMuted, textAlign: 'center' }]}>Name one above, or open any entry and tap Add to list.</Text>
+          </View>
+        }
+        renderItem={({ item: l }) => (
+          <Pressable
+            onPress={() => router.push({ pathname: '/list/[id]', params: { id: l.id } })}
+            accessibilityRole="button"
+            style={({ pressed }) => [styles.card, { backgroundColor: theme.card, borderColor: theme.border, opacity: pressed ? 0.85 : 1 }]}
+          >
+            <ListCover items={l.items} theme={theme} width={112} />
+            <View style={{ flex: 1, gap: 4 }}>
+              <Text style={[styles.name, { color: theme.text }]} numberOfLines={2}>
+                {l.name}
               </Text>
-            )}
-            <Text style={[styles.meta, { color: theme.accent }]}>
-              {l.items.length} {l.items.length === 1 ? 'TITLE' : 'TITLES'}
-              {l.ranked ? ' · RANKED' : ''}
-            </Text>
-          </View>
-          <Ionicons name="chevron-forward" size={18} color={theme.textMuted} />
-        </Pressable>
-      )}
-    />
+              {!!l.description && (
+                <Text style={[styles.lede, { color: theme.textMuted }]} numberOfLines={2}>
+                  {l.description}
+                </Text>
+              )}
+              <Text style={[styles.meta, { color: theme.accent }]}>
+                {l.items.length} {l.items.length === 1 ? 'TITLE' : 'TITLES'}
+                {l.ranked ? ' · RANKED' : ''}
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={theme.textMuted} />
+          </Pressable>
+        )}
+      />
+    </KeyboardSafe>
   );
 }
 

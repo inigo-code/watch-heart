@@ -6,6 +6,7 @@ import type { ReactNode } from 'react';
 import { ActivityIndicator, Keyboard, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { KeyboardSafe } from '@/components/KeyboardSafe';
 import { Poster } from '@/components/Film';
 import { ListCover } from '@/components/lists/ListCover';
 import { RatingChart } from '@/components/RatingChart';
@@ -118,7 +119,7 @@ function ProfileBody() {
   const onPace = goal ? Math.round((goal * dayOfYear) / 365) : 0;
 
   return (
-    <View style={{ flex: 1 }}>
+    <KeyboardSafe style={{ backgroundColor: theme.bg }}>
       <ScrollView
         style={{ backgroundColor: theme.bg }}
         contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 40 }]}
@@ -410,7 +411,7 @@ function ProfileBody() {
           }}
         />
       </ScrollView>
-    </View>
+    </KeyboardSafe>
   );
 }
 

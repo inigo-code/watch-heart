@@ -5,10 +5,11 @@ import * as Haptics from 'expo-haptics';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
+import { Platform, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { details, tmdbKey } from '@/api';
+import { KeyboardSafe } from '@/components/KeyboardSafe';
 import { CompanionField } from '@/components/CompanionField';
 import { DangerButton } from '@/components/DangerButton';
 import { Chip, StarInput } from '@/components/Film';
@@ -232,7 +233,7 @@ function LogForm() {
   };
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: theme.bg }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <KeyboardSafe style={{ backgroundColor: theme.bg }}>
       <Stack.Screen
         options={{
           title: editing ? 'EDIT ENTRY' : manual ? 'ADD BY HAND' : '',
@@ -444,7 +445,7 @@ function LogForm() {
         </View>
       </ScrollView>
       <TitlePicker visible={picking} theme={theme} initialQuery={draft.title} initialKind={draft.kind} onPick={repick} onClose={() => setPicking(false)} />
-    </KeyboardAvoidingView>
+    </KeyboardSafe>
   );
 }
 

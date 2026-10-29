@@ -469,17 +469,46 @@ export async function regionProviders(key: string, region: string, signal?: Abor
     .map((p) => ({ id: p.provider_id, name: p.provider_name, logo: p.logo_path ? `${IMG}/w92${p.logo_path}` : '' }));
 }
 
-/** TMDB's genres, by the kind of list being browsed (series have their own). */
-export const BROWSE_GENRES: Record<'movie' | 'tv', { id: number; name: string }[]> = {
-  movie: [28, 12, 16, 35, 80, 99, 18, 10751, 14, 36, 27, 10402, 9648, 10749, 878, 53, 10752, 37].map((id) => ({ id, name: GENRES[id] })),
-  tv: [10759, 16, 35, 80, 99, 18, 10751, 10762, 9648, 10764, 10765, 10766, 10768, 37].map((id) => ({ id, name: GENRES[id] })),
-};
+/**
+ * Genres to browse by, one list for films and series: TMDB numbers them separately and files some only one
+ * way (series have no Horror; films have no Kids), so each has its film id, its series id, or both.
+ */
+export const BROWSE_GENRES: { name: string; movie?: number; tv?: number }[] = [
+  { name: 'Action', movie: 28, tv: 10759 },
+  { name: 'Adventure', movie: 12, tv: 10759 },
+  { name: 'Animation', movie: 16, tv: 16 },
+  { name: 'Comedy', movie: 35, tv: 35 },
+  { name: 'Crime', movie: 80, tv: 80 },
+  { name: 'Documentary', movie: 99, tv: 99 },
+  { name: 'Drama', movie: 18, tv: 18 },
+  { name: 'Family', movie: 10751, tv: 10751 },
+  { name: 'Fantasy', movie: 14, tv: 10765 },
+  { name: 'History', movie: 36 },
+  { name: 'Horror', movie: 27 },
+  { name: 'Kids', tv: 10762 },
+  { name: 'Music', movie: 10402 },
+  { name: 'Mystery', movie: 9648, tv: 9648 },
+  { name: 'Reality', tv: 10764 },
+  { name: 'Romance', movie: 10749 },
+  { name: 'Science Fiction', movie: 878, tv: 10765 },
+  { name: 'Thriller', movie: 53 },
+  { name: 'War', movie: 10752, tv: 10768 },
+  { name: 'Western', movie: 37, tv: 37 },
+];
+// Series-only names TMDB uses on title pages.
+const GENRE_ALIASES: Record<string, string> = { 'Action & Adventure': 'Action', 'Sci-Fi & Fantasy': 'Science Fiction', 'War & Politics': 'War' };
+export const browseGenre = (name: string) => BROWSE_GENRES.find((g) => g.name === (GENRE_ALIASES[name] ?? name));
+/** TMDB's id for a genre when browsing this kind; undefined when TMDB doesn't file that kind under it. */
+export const genreId = (name: string, kind: MediaKind) => browseGenre(name)?.[kind === 'movie' ? 'movie' : 'tv'];
 
 export type BrowseSort = 'popular' | 'rating' | 'newest';
 /** What to browse. Anime is Japanese animation, as series. */
 export type BrowseQuery = {
   kind: MediaKind;
-  genres?: number[];
+  /** BROWSE_GENRES names, all of which must match. */
+  genres?: string[];
+  /** BROWSE_GENRES names to leave out. */
+  notGenres?: string[];
   /** Released from this year to this year, inclusive. */
   from?: number;
   to?: number;
@@ -506,9 +535,14 @@ export type BrowseQuery = {
 export async function discoverTmdb(key: string, q: BrowseQuery, page: number, signal?: AbortSignal): Promise<{ results: Title[]; pages: number }> {
   const type = q.kind === 'movie' ? 'movie' : 'tv';
   const dateField = type === 'movie' ? 'primary_release_date' : 'first_air_date';
-  const genres = [...new Set([...(q.kind === 'anime' ? [ANIMATION] : []), ...(q.genres ?? [])])];
+  const ids = (q.genres ?? []).map((g) => genreId(g, q.kind));
+  // A genre TMDB doesn't use for this kind (Horror series) matches nothing, rather than everything.
+  if (ids.some((id) => id === undefined)) return { results: [], pages: 0 };
+  const genres = [...new Set([...(q.kind === 'anime' ? [ANIMATION] : []), ...(ids as number[])])];
   const p: Record<string, string> = { include_adult: 'false', page: String(page) };
   if (genres.length) p.with_genres = genres.join(',');
+  const without = (q.notGenres ?? []).map((g) => genreId(g, q.kind)).filter((id): id is number => id !== undefined);
+  if (without.length) p.without_genres = without.join(',');
   if (q.kind === 'anime') p.with_original_language = 'ja';
   else if (q.lang) p.with_original_language = q.lang;
   if (q.country) p.with_origin_country = q.country;
@@ -522,7 +556,7 @@ export async function discoverTmdb(key: string, q: BrowseQuery, page: number, si
     p['air_date.gte'] = isoDaysFromNow(-14);
     p['air_date.lte'] = isoDaysFromNow(7);
     // Long-running children's shows are always airing and always popular.
-    if (q.kind === 'anime') p.without_genres = `${KIDS},${FAMILY}`;
+    if (q.kind === 'anime') p.without_genres = [p.without_genres, KIDS, FAMILY].filter(Boolean).join(',');
   }
   if (q.provider && q.region) {
     p.with_watch_providers = String(q.provider);

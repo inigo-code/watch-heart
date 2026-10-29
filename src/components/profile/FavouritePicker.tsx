@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 import { FlatList, Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { KeyboardSafe } from '@/components/KeyboardSafe';
 import { Poster } from '@/components/Film';
 import { KIND_LABEL } from '@/lib/stats';
 import { font, fonts } from '@/lib/theme';
@@ -39,7 +40,7 @@ export function FavouritePicker({ visible, theme, entries, onPick, onClose }: {
 
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose} statusBarTranslucent>
-      <View style={[styles.sheet, { backgroundColor: theme.bg, paddingTop: insets.top + 12 }]}>
+      <KeyboardSafe style={[styles.sheet, { backgroundColor: theme.bg, paddingTop: insets.top + 12 }]}>
         <View style={styles.head}>
           <Text style={[styles.title, { color: theme.text }]}>PICK A FAVOURITE</Text>
           <Pressable onPress={onClose} hitSlop={10} accessibilityRole="button" accessibilityLabel="Close">
@@ -72,7 +73,7 @@ export function FavouritePicker({ visible, theme, entries, onPick, onClose }: {
             </Pressable>
           )}
         />
-      </View>
+      </KeyboardSafe>
     </Modal>
   );
 }
