@@ -63,7 +63,9 @@ Expected rating: Teen / PEGI 12–16 (film posters and synopses can show violenc
 **Is all of the user data collected by your app encrypted in transit?** Yes.
 **Do you provide a way for users to request that their data is deleted?** Yes. In the app (Settings → Account → your email → Delete account), and at https://inigo-code.github.io/watch-heart-site/delete-account.html
 
-**Account creation:** "My app allows users to create an account": username and password (email + password). Account deletion URL: https://inigo-code.github.io/watch-heart-site/delete-account.html
+**Account creation:** username, password and other authentication (email and password, with a one-time code emailed at sign-up). Account deletion URL: https://inigo-code.github.io/watch-heart-site/delete-account.html
+
+**Delete some data without deleting the account?** Yes: https://inigo-code.github.io/watch-heart-site/delete-account.html#some-data (diary entries, watchlist titles, lists, profile details, what friends see).
 
 Data types. For each one: **Collected: yes. Shared: no. Processed ephemerally: no.**
 - Supabase and Expo are service providers processing data on your behalf, which Google doesn't count as sharing.
