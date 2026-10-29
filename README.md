@@ -43,7 +43,7 @@ keep a watchlist, and turn each month into an <b>Instagram story</b>. Free, with
   <tr>
     <td valign="top">
       <h4>📸 Month in a story</h4>
-      Any month, or <i>2026 wrapped</i>, as a 1080 × 1920 story: three layouts, six palettes, ratings, stats or a ranking. Share to Instagram or save to Photos.
+      Any month, or <i>2026 wrapped</i>, as a sharp 1440 × 2560 story: three layouts, six palettes, ratings, stats or a ranking. Share to Instagram or save to Photos.
     </td>
     <td valign="top">
       <h4>🍿 Can't decide?</h4>
