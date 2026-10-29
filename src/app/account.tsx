@@ -365,15 +365,15 @@ function SignedIn({ theme }: { theme: Theme }) {
 
       <ActionSheet
         visible={sheet === 'sign-out'}
-        title="Your account keeps your diary either way. Sign in again any time to get it back."
+        title="Your account keeps your diary and profile either way. Sign in again any time to get them back."
         onClose={() => setSheet(null)}
         actions={[
           { label: 'Sign out, keep my diary on this phone', icon: 'log-out-outline', onPress: () => void act(() => signOut(false), 'Signed out') },
           {
-            label: 'Sign out and remove it from this phone',
+            label: 'Sign out and remove my diary and profile from this phone',
             icon: 'trash-outline',
             destructive: true,
-            onPress: () => void act(() => signOut(true), 'Signed out; this phone’s copy is removed'),
+            onPress: () => void act(() => signOut(true), 'Signed out; your diary and profile are removed from this phone'),
           },
         ]}
       />

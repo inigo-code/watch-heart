@@ -4,7 +4,8 @@ import type { ReactNode } from 'react';
 import { AppState } from 'react-native';
 
 import { useLists } from '@/lists/ListsProvider';
-import { useSettings } from '@/settings/SettingsProvider';
+import { removePhotoFile } from '@/lib/profilePhoto';
+import { DEFAULT_SETTINGS, useSettings } from '@/settings/SettingsProvider';
 import { useDiary } from '@/store/DiaryStore';
 import type { RemoteRecord, SyncStoreApi } from '@/store/DiaryStore';
 import type { Entry, WatchItem } from '@/store/types';
@@ -358,12 +359,22 @@ export function SyncProvider({ children }: { children: ReactNode }) {
 
   const signOut = useCallback(
     async (removeLocal: boolean) => {
-      // Send anything unsent first, so nothing is lost if this phone's copy is removed.
-      const m = storeRef.current.getSnapshot().meta;
-      if (Object.keys(m.entries).length + Object.keys(m.watchlist).length > 0) {
+      // Send anything unsent first (diary, watchlist, profile, lists), so nothing is lost if this phone's copy goes.
+      const unsent = () => {
+        const m = storeRef.current.getSnapshot().meta;
+        const s = settingsRef.current;
+        return (
+          Object.keys(m.entries).length +
+          Object.keys(m.watchlist).length +
+          (s.profileUpdatedAt > s.profileSyncedAt ? 1 : 0) +
+          listsRef.current.all().filter((l) => l.updatedAt > l.syncedAt).length
+        );
+      };
+      if (unsent() > 0) {
         await runSync();
-        const left = storeRef.current.getSnapshot().meta;
-        if (removeLocal && Object.keys(left.entries).length + Object.keys(left.watchlist).length > 0) {
+        // Let the settings and lists that sync just stamped settle before counting again.
+        await new Promise((r) => setTimeout(r, 150));
+        if (removeLocal && unsent() > 0) {
           throw new Error('Some changes haven’t reached the cloud yet. Connect to the internet and try again.');
         }
       }
@@ -372,10 +383,23 @@ export function SyncProvider({ children }: { children: ReactNode }) {
       if (removeLocal) {
         clearLocal();
         listsRef.current.clear();
+        // The profile is the account's too: name, bio, photo, favourites, goal and what friends can see.
+        removePhotoFile(settingsRef.current.photo);
+        update({
+          name: '',
+          bio: '',
+          photo: null,
+          photoPath: null,
+          favourites: [],
+          yearGoal: 0,
+          sharing: DEFAULT_SETTINGS.sharing,
+          profileUpdatedAt: 0,
+          profileSyncedAt: 0,
+        });
       }
       setState({ status: 'idle', error: null, lastSyncedAt: null });
     },
-    [client, runSync, forgetAccount, clearLocal],
+    [client, runSync, forgetAccount, clearLocal, update],
   );
 
   const deleteAccount = useCallback(async () => {
