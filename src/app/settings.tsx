@@ -405,8 +405,7 @@ export default function SettingsScreen() {
         <UpdateCard theme={theme} />
 
         <Section theme={theme} title="About">
-          <Row theme={theme} icon="information-circle-outline" label={`About ${APP_NAME}`} onPress={() => router.push('/about')} />
-          <Row theme={theme} leading={<HeartAppsMark size={30} />} label="Heart Apps" value="More apps" onPress={() => router.push('/about')} />
+          <Row theme={theme} leading={<HeartAppsMark size={30} />} label={`About ${APP_NAME}`} value="Heart Apps" onPress={() => router.push('/about')} />
           <Row theme={theme} icon="refresh-outline" label="Reset settings" destructive last onPress={() => setConfirmReset(true)} />
         </Section>
         <ActionSheet

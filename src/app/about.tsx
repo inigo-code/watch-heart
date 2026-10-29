@@ -7,7 +7,7 @@ import { HeartAppsCard, HeartAppsMark } from '@/components/HeartApps';
 import { Sprockets } from '@/components/Film';
 import { Row, Section } from '@/components/SettingsUI';
 import { UpdateCard, describeRunning } from '@/components/UpdateRow';
-import { ANILIST_ALLOWED, APP_TAGLINE, DATA_SOURCES, DEVELOPER, SUPPORT_EMAIL } from '@/lib/app';
+import { ANILIST_ALLOWED, APP_TAGLINE, DATA_SOURCES, DEVELOPER, HEART_APPS, SUPPORT_EMAIL } from '@/lib/app';
 import { font, fonts, useTheme } from '@/lib/theme';
 
 export default function AboutScreen() {
@@ -22,10 +22,15 @@ export default function AboutScreen() {
           <BrandTitle theme={{ ...theme, text: theme.dark ? theme.text : theme.bg }} size={44} />
           <Text style={[styles.tagline, { color: theme.accent }]}>{APP_TAGLINE.toUpperCase()}</Text>
           <Text style={[styles.version, { color: theme.textMuted }]}>Version {describeRunning()}</Text>
-          <View style={styles.family}>
-            <HeartAppsMark size={18} />
-            <Text style={[styles.version, { color: theme.textMuted }]}>A Heart App</Text>
-          </View>
+          <Pressable
+            onPress={() => Linking.openURL(HEART_APPS.url)}
+            accessibilityRole="link"
+            accessibilityLabel="A Heart App. Open the Heart Apps website"
+            style={({ pressed }) => [styles.family, pressed && { opacity: 0.75 }]}
+          >
+            <HeartAppsMark size={20} />
+            <Text style={styles.familyText}>A HEART APP</Text>
+          </Pressable>
         </View>
         <Sprockets color={theme.bg} count={14} hole={6} />
       </View>
@@ -68,7 +73,20 @@ const styles = StyleSheet.create({
   cardBody: { alignItems: 'center', gap: 6, paddingVertical: 14 },
   tagline: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 1.5 },
   version: { fontFamily: fonts.mono, fontSize: font.caption },
-  family: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 },
+  family: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 6,
+    paddingLeft: 5,
+    paddingRight: 12,
+    height: 30,
+    borderRadius: 15,
+    borderWidth: 1,
+    borderColor: '#F2B84B',
+    backgroundColor: 'rgba(242, 184, 75, 0.14)',
+  },
+  familyText: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 1.5, color: '#F2B84B' },
   tmdb: { gap: 6, paddingHorizontal: 4, marginTop: -8 },
   // Smaller than Watch Heart's own title, as TMDB's terms ask.
   tmdbLogo: { width: 78, height: 10, opacity: 0.85 },
