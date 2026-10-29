@@ -66,7 +66,16 @@ function blankDraft(t: Title): EntryDraft {
 
 const parseTags = (s: string) => [...new Set(s.split(',').map((t) => t.trim().replace(/^#/, '')).filter(Boolean))];
 
+/** Waits for the diary when editing (or logging again), so the form starts from the entry, not a blank one. */
 export default function LogScreen() {
+  const theme = useTheme();
+  const params = useLocalSearchParams<Params>();
+  const { ready } = useDiary();
+  if ((params.id || params.again) && !ready) return <View style={{ flex: 1, backgroundColor: theme.bg }} />;
+  return <LogForm />;
+}
+
+function LogForm() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const toast = useToast();
@@ -464,7 +473,7 @@ function ToggleLine({ theme, icon, label, value, onChange }: {
 }
 
 const styles = StyleSheet.create({
-  headerSave: { fontFamily: fonts.monoBold, fontSize: font.body, letterSpacing: 1 },
+  headerSave: { fontFamily: fonts.monoBold, fontSize: font.body, letterSpacing: 1, paddingHorizontal: 8 },
   manual: { padding: 16, gap: 18 },
   form: { padding: 16, gap: 20 },
   field: { gap: 8 },

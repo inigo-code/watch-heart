@@ -15,6 +15,7 @@ import { UpdatePrompt } from '@/components/UpdatePrompt';
 import { fonts, useTheme } from '@/lib/theme';
 import { useTmdbFreshness } from '@/lib/tmdbFreshness';
 import { AppLockProvider } from '@/lock/AppLockProvider';
+import { ListsProvider } from '@/lists/ListsProvider';
 import { SettingsProvider } from '@/settings/SettingsProvider';
 import { DiaryStoreProvider } from '@/store/DiaryStore';
 import { SyncProvider } from '@/sync/SyncProvider';
@@ -39,6 +40,7 @@ export default function RootLayout() {
     <ShareIntentProvider options={{ disabled: shareDisabled, resetOnBackground: true }}>
     <SettingsProvider>
       <DiaryStoreProvider>
+        <ListsProvider>
         <SyncProvider>
           <ToastProvider>
             <AppLockProvider>
@@ -46,6 +48,7 @@ export default function RootLayout() {
             </AppLockProvider>
           </ToastProvider>
         </SyncProvider>
+        </ListsProvider>
       </DiaryStoreProvider>
     </SettingsProvider>
     </ShareIntentProvider>
@@ -88,6 +91,9 @@ function Navigator() {
         <Stack.Screen name="about" options={{ title: 'ABOUT' }} />
         <Stack.Screen name="profile" options={{ title: 'PROFILE' }} />
         <Stack.Screen name="track" options={{ title: 'EPISODES' }} />
+        <Stack.Screen name="lists" options={{ title: 'YOUR LISTS' }} />
+        <Stack.Screen name="list/[id]" options={{ title: 'LIST' }} />
+        <Stack.Screen name="list-card/[id]" options={{ title: 'LIST STORY' }} />
         <Stack.Screen name="profile-card" options={{ title: 'PROFILE CARD' }} />
         <Stack.Screen name="share" options={{ title: '' }} />
       </Stack>

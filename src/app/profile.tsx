@@ -7,6 +7,7 @@ import { ActivityIndicator, Keyboard, Platform, Pressable, ScrollView, StyleShee
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Poster } from '@/components/Film';
+import { ListCover } from '@/components/lists/ListCover';
 import { SectionLabel } from '@/components/SectionLabel';
 import { Achievements } from '@/components/profile/Achievements';
 import { ActivityGraph, ActivityKey } from '@/components/profile/ActivityGraph';
@@ -21,12 +22,21 @@ import type { Theme } from '@/lib/theme';
 import { useSettings } from '@/settings/SettingsProvider';
 import type { Favourite } from '@/settings/SettingsProvider';
 import { useDiary } from '@/store/DiaryStore';
+import { useLists } from '@/lists/ListsProvider';
 import { useSync } from '@/sync/SyncProvider';
 
 const GOALS = [25, 52, 100, 150, 365];
 
 /** You: photo, name and a line, your favourite four, and everything your diary adds up to. */
+/** Waits for saved settings, so the name and bio drafts start from them, not from empty defaults. */
 export default function ProfileScreen() {
+  const theme = useTheme();
+  const { ready } = useSettings();
+  if (!ready) return <View style={{ flex: 1, backgroundColor: theme.bg }} />;
+  return <ProfileBody />;
+}
+
+function ProfileBody() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const toast = useToast();
@@ -56,6 +66,7 @@ export default function ProfileScreen() {
   });
   useEffect(() => () => saveOnLeave.current(true), []);
   const { entries } = useDiary();
+  const { lists } = useLists();
   const [picking, setPicking] = useState<number | null>(null);
   const [busyPhoto, setBusyPhoto] = useState(false);
   const todayIso = today();
@@ -294,6 +305,36 @@ export default function ProfileScreen() {
           </View>
         )}
 
+        {/* Your lists */}
+        <Block theme={theme} title="Your lists">
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.listsRow}>
+            {lists.map((l) => (
+              <Pressable
+                key={l.id}
+                onPress={() => router.push({ pathname: '/list/[id]', params: { id: l.id } })}
+                accessibilityRole="button"
+                style={({ pressed }) => [styles.listCard, pressed && { opacity: 0.8 }]}
+              >
+                <ListCover items={l.items} theme={theme} width={120} />
+                <Text style={[styles.buddyName, { color: theme.text }]} numberOfLines={1}>
+                  {l.name}
+                </Text>
+                <Text style={[styles.hint, { color: theme.textMuted }]}>
+                  {l.items.length} {l.items.length === 1 ? 'title' : 'titles'}
+                </Text>
+              </Pressable>
+            ))}
+            <Pressable
+              onPress={() => router.push('/lists')}
+              accessibilityRole="button"
+              style={({ pressed }) => [styles.listNew, { borderColor: theme.border, opacity: pressed ? 0.7 : 1 }]}
+            >
+              <Ionicons name={lists.length ? 'albums-outline' : 'add'} size={24} color={theme.accent} />
+              <Text style={[styles.hint, { color: theme.text, textAlign: 'center' }]}>{lists.length ? 'All lists' : 'Make a list'}</Text>
+            </Pressable>
+          </ScrollView>
+        </Block>
+
         {/* Movie buddies */}
         {s.buddies.length > 0 && (
           <Block theme={theme} title="Movie buddies">
@@ -457,6 +498,9 @@ const styles = StyleSheet.create({
   barLabel: { fontFamily: fonts.mono, fontSize: 10 },
   tops: { gap: 10 },
   buddies: { borderWidth: 1, borderRadius: 12, overflow: 'hidden' },
+  listsRow: { gap: 12 },
+  listCard: { width: 120, gap: 4 },
+  listNew: { width: 104, height: 166, borderRadius: 10, borderWidth: 1, borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center', gap: 6 },
   buddy: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 14, paddingVertical: 12 },
   buddyMark: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
   buddyInitial: { fontFamily: fonts.display, fontSize: font.title },

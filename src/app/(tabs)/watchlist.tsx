@@ -8,9 +8,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { trackable } from '@/api/episodes';
 import { ActionSheet } from '@/components/ActionSheet';
 import { ContinueWatching } from '@/components/ContinueWatching';
+import { AddToList } from '@/components/lists/AddToList';
 import { Chip, KindBadge, Poster } from '@/components/Film';
 import { useToast } from '@/components/Toast';
 import { KIND_COLORS, font, fonts, shadow, useTheme } from '@/lib/theme';
+import { useLists } from '@/lists/ListsProvider';
 import type { Theme } from '@/lib/theme';
 import { titleOf, useDiary } from '@/store/DiaryStore';
 import type { MediaKind, WatchItem } from '@/store/types';
@@ -37,6 +39,8 @@ export default function WatchlistScreen() {
   const [sort, setSort] = useState<Sort>('added');
   const [menu, setMenu] = useState<WatchItem | null>(null);
   const [pick, setPick] = useState<WatchItem | null>(null);
+  const [listing, setListing] = useState<WatchItem | null>(null);
+  const { lists } = useLists();
   const tile = (width - 32 - GAP * (COLS - 1)) / COLS;
 
   const queue = useMemo(() => watchlist.filter((w) => !w.track), [watchlist]);
@@ -61,13 +65,24 @@ export default function WatchlistScreen() {
   const header = (
     <View style={[styles.top, { paddingTop: insets.top + 10 }]}>
       <ContinueWatching items={watchlist} theme={theme} />
-      <View>
-        <Text style={[styles.heading, { color: theme.text }]}>
-          UP <Text style={{ color: theme.accent }}>NEXT</Text>
-        </Text>
-        <Text style={[styles.sub, { color: theme.textMuted }]}>
-          {queue.length ? `${queue.length} ${queue.length === 1 ? 'title' : 'titles'} on your watchlist` : 'Your watchlist'}
-        </Text>
+      <View style={styles.headRow}>
+        <View>
+          <Text style={[styles.heading, { color: theme.text }]}>
+            UP <Text style={{ color: theme.accent }}>NEXT</Text>
+          </Text>
+          <Text style={[styles.sub, { color: theme.textMuted }]}>
+            {queue.length ? `${queue.length} ${queue.length === 1 ? 'title' : 'titles'} on your watchlist` : 'Your watchlist'}
+          </Text>
+        </View>
+        <Pressable
+          onPress={() => router.push('/lists')}
+          accessibilityRole="button"
+          accessibilityLabel="Your lists"
+          style={({ pressed }) => [styles.listsBtn, { borderColor: theme.border, opacity: pressed ? 0.7 : 1 }]}
+        >
+          <Ionicons name="albums-outline" size={16} color={theme.accent} />
+          <Text style={[styles.listsText, { color: theme.text }]}>LISTS{lists.length ? ` · ${lists.length}` : ''}</Text>
+        </Pressable>
       </View>
       {queue.length > 0 && (
         <>
@@ -153,6 +168,7 @@ export default function WatchlistScreen() {
           menu
             ? [
                 { label: 'Watched it: log now', icon: 'checkmark-done-outline', onPress: () => log(menu) },
+                { label: 'Add to a list', icon: 'albums-outline' as const, onPress: () => setListing(menu) },
                 ...(trackable(menu)
                   ? [{ label: 'Track episodes', icon: 'list-outline' as const, onPress: () => router.push({ pathname: '/track', params: { id: menu.id } }) }]
                   : []),
@@ -162,13 +178,28 @@ export default function WatchlistScreen() {
         }
       />
 
-      <TonightsFeature theme={theme} item={pick} onClose={() => setPick(null)} onSpin={spin} onLog={(w) => (setPick(null), log(w))} canSpin={shown.length > 1} />
+      <AddToList item={listing} theme={theme} onClose={() => setListing(null)} />
+      <TonightsFeature
+        theme={theme}
+        item={pick}
+        onClose={() => setPick(null)}
+        onSpin={spin}
+        onLog={(w) => (setPick(null), log(w))}
+        canSpin={shown.length > 1}
+      />
     </View>
   );
 }
 
 /** The roulette's result, presented like the night's main feature. */
-function TonightsFeature({ theme, item, onClose, onSpin, onLog, canSpin }: {
+function TonightsFeature({
+  theme,
+  item,
+  onClose,
+  onSpin,
+  onLog,
+  canSpin,
+}: {
   theme: Theme;
   item: WatchItem | null;
   onClose: () => void;
@@ -187,7 +218,12 @@ function TonightsFeature({ theme, item, onClose, onSpin, onLog, canSpin }: {
             <Text style={[styles.featureTitle, { color: theme.text }]} numberOfLines={3}>
               {item.title.toUpperCase()}
             </Text>
-            {!!item.year && <Text style={[styles.featureMeta, { color: theme.textMuted }]}>{item.year}{item.credit ? ` · ${item.credit}` : ''}</Text>}
+            {!!item.year && (
+              <Text style={[styles.featureMeta, { color: theme.textMuted }]}>
+                {item.year}
+                {item.credit ? ` · ${item.credit}` : ''}
+              </Text>
+            )}
             {!!item.note && <Text style={[styles.featureMeta, { color: theme.textMuted }]}>“{item.note}”</Text>}
             <View style={styles.featureButtons}>
               {canSpin && (
@@ -217,6 +253,9 @@ const styles = StyleSheet.create({
   pickBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, height: 50, borderRadius: 25 },
   pickText: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 1.2 },
   toolbar: { flexDirection: 'row', alignItems: 'center' },
+  headRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
+  listsBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, height: 36, paddingHorizontal: 14, borderRadius: 18, borderWidth: 1 },
+  listsText: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 1 },
   chips: { gap: 8 },
   sortBtn: { flexDirection: 'row', alignItems: 'center', gap: 5, alignSelf: 'flex-end' },
   sortText: { fontFamily: fonts.monoBold, fontSize: 11, letterSpacing: 1 },

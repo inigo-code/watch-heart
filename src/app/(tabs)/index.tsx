@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ActionSheet } from '@/components/ActionSheet';
 import { Avatar } from '@/components/Avatar';
+import { AddToList } from '@/components/lists/AddToList';
 import { BrandTitle } from '@/components/BrandTitle';
 import { PosterTile, ReelHeader, TicketStub } from '@/components/Diary';
 import { Chip } from '@/components/Film';
@@ -79,6 +80,7 @@ export default function DiaryScreen() {
     if (q) setQuery(q);
   }
   const [menu, setMenu] = useState<Entry | null>(null);
+  const [listing, setListing] = useState<Entry | null>(null);
   const grid = settings.diaryLayout === 'grid';
   const tile = (width - 32 - GAP * (GRID_COLS - 1)) / GRID_COLS;
 
@@ -289,11 +291,13 @@ export default function DiaryScreen() {
                 { label: 'Edit entry', icon: 'create-outline', onPress: () => router.push({ pathname: '/log', params: { id: menu.id } }) },
                 { label: 'Log again', icon: 'repeat', onPress: () => router.push({ pathname: '/log', params: { again: menu.id } }) },
                 { label: 'Share as story card', icon: 'sparkles-outline', onPress: () => router.push({ pathname: '/card/[id]', params: { id: menu.id } }) },
+                { label: 'Add to a list', icon: 'albums-outline', onPress: () => setListing(menu) },
                 { label: 'Move to Trash', icon: 'trash-outline', destructive: true, onPress: () => remove(menu) },
               ]
             : []
         }
       />
+      <AddToList item={listing} theme={theme} onClose={() => setListing(null)} />
     </View>
   );
 }

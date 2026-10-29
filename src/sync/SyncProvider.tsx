@@ -3,12 +3,14 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import type { ReactNode } from 'react';
 import { AppState } from 'react-native';
 
+import { useLists } from '@/lists/ListsProvider';
 import { useSettings } from '@/settings/SettingsProvider';
 import { useDiary } from '@/store/DiaryStore';
 import type { RemoteRecord, SyncStoreApi } from '@/store/DiaryStore';
 import type { Entry, WatchItem } from '@/store/types';
 
 import { AUTO_SYNC_COOLDOWN_MS, createAutoSync } from './autoSync';
+import { syncLists } from './listsSync';
 import { hasProfile, pullProfile, pushProfile, removeRemote } from './profileSync';
 import { supabase } from './supabase';
 
@@ -196,6 +198,29 @@ export function SyncProvider({ children }: { children: ReactNode }) {
     }
   }, [userId, settingsReady, update]);
 
+  const lists = useLists();
+  const listsRef = useRef(lists);
+  useEffect(() => {
+    listsRef.current = lists;
+  });
+  const listsRunning = useRef(false);
+  const syncAllLists = useCallback(async () => {
+    const l = listsRef.current;
+    if (!supabase || !userId || !l.ready || listsRunning.current) return;
+    listsRunning.current = true;
+    try {
+      // A different account than last time: everything here goes to this one.
+      const fresh = l.meta.userId !== userId;
+      const { incoming, sent } = await syncLists(supabase, userId, l.all(), fresh);
+      listsRef.current.applySync(incoming, sent);
+      if (fresh) l.setMeta({ userId });
+    } catch (e) {
+      console.warn('Lists sync failed', errorText(e));
+    } finally {
+      listsRunning.current = false;
+    }
+  }, [userId]);
+
   const runSync = useCallback(async () => {
     if (!supabase || !userId) return;
     if (running.current) {
@@ -212,6 +237,7 @@ export function SyncProvider({ children }: { children: ReactNode }) {
         await pull(supabase, userId, storeRef.current);
       } while (again.current);
       await syncProfile();
+      await syncAllLists();
       setState({ status: 'synced', error: null, lastSyncedAt: Date.now() });
     } catch (e) {
       setState((s) => ({ ...s, status: 'error', error: errorText(e) }));
@@ -219,7 +245,14 @@ export function SyncProvider({ children }: { children: ReactNode }) {
       running.current = false;
       autoSync.finished();
     }
-  }, [userId, autoSync, syncProfile]);
+  }, [userId, autoSync, syncProfile, syncAllLists]);
+
+  // List edits go out shortly after you stop changing them.
+  useEffect(() => {
+    if (!active || !lists.revision) return;
+    const timer = setTimeout(() => void syncAllLists(), PROFILE_DEBOUNCE_MS);
+    return () => clearTimeout(timer);
+  }, [active, lists.revision, syncAllLists]);
 
   useEffect(() => {
     runSyncRef.current = runSync;
@@ -270,6 +303,7 @@ export function SyncProvider({ children }: { children: ReactNode }) {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'entries', filter: `user_id=eq.${userId}` }, onChange('entries'))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'watchlist', filter: `user_id=eq.${userId}` }, onChange('watchlist'))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles', filter: `user_id=eq.${userId}` }, () => autoSync.request(400))
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'lists', filter: `user_id=eq.${userId}` }, () => autoSync.request(400))
       .subscribe();
     return () => {
       client.removeChannel(channel);
@@ -335,7 +369,10 @@ export function SyncProvider({ children }: { children: ReactNode }) {
       }
       await client().auth.signOut({ scope: 'local' });
       forgetAccount();
-      if (removeLocal) clearLocal();
+      if (removeLocal) {
+        clearLocal();
+        listsRef.current.clear();
+      }
       setState({ status: 'idle', error: null, lastSyncedAt: null });
     },
     [client, runSync, forgetAccount, clearLocal],

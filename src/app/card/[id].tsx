@@ -18,13 +18,15 @@ export default function CardScreen() {
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const entry = useDiary().getEntry(id);
+  const { ready: loaded, getEntry } = useDiary();
+  const entry = getEntry(id);
   const { settings, update } = useSettings();
   const ref = useRef<StoryHandle>(null);
   const [ready, setReady] = useState(false);
   const onReady = useCallback((r: boolean) => setReady(r), []);
   const [showReview, setShowReview] = useState(true);
 
+  if (!loaded) return <View style={{ flex: 1, backgroundColor: theme.bg }} />;
   if (!entry) {
     return (
       <View style={[styles.missing, { backgroundColor: theme.bg }]}>

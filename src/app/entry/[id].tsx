@@ -8,12 +8,14 @@ import { Stars } from '@/components/Film';
 import { Hero } from '@/components/Hero';
 import { trackable } from '@/api/episodes';
 import { DangerButton } from '@/components/DangerButton';
+import { AddToList } from '@/components/lists/AddToList';
 import { RichText } from '@/components/RichText';
 import { SectionLabel } from '@/components/SectionLabel';
 import { TitleExtras } from '@/components/TitleExtras';
 import { useToast } from '@/components/Toast';
 import { dayParts, friendlyDate } from '@/lib/dates';
 import { font, fonts, useTheme } from '@/lib/theme';
+import { useLists } from '@/lists/ListsProvider';
 import { useDiary } from '@/store/DiaryStore';
 
 export default function EntryScreen() {
@@ -21,10 +23,13 @@ export default function EntryScreen() {
   const insets = useSafeAreaInsets();
   const toast = useToast();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { getEntry, viewingsOf, deleteEntry, restoreEntry } = useDiary();
+  const { ready, getEntry, viewingsOf, deleteEntry, restoreEntry } = useDiary();
   const entry = getEntry(id);
   const [reveal, setReveal] = useState(false);
+  const [listing, setListing] = useState(false);
+  const { listsWith } = useLists();
 
+  if (!ready) return <View style={{ flex: 1, backgroundColor: theme.bg }} />;
   if (!entry || entry.deletedAt !== null) {
     return (
       <View style={[styles.missing, { backgroundColor: theme.bg }]}>
@@ -35,6 +40,7 @@ export default function EntryScreen() {
   }
 
   const viewings = viewingsOf(entry.source, entry.sourceId);
+  const onLists = listsWith(entry);
   const { day, weekday, month } = dayParts(entry.watchedOn);
   const hideReview = entry.spoilers && !reveal;
 
@@ -77,7 +83,11 @@ export default function EntryScreen() {
                 {entry.rewatch ? 'REWATCHED' : 'WATCHED'} {entry.undated ? '· DATE UNKNOWN' : friendlyDate(entry.watchedOn).toUpperCase()}
               </Text>
               <View style={styles.line}>
-                {entry.rating ? <Stars rating={entry.rating} size={22} color={theme.star} /> : <Text style={[styles.unrated, { color: theme.textMuted }]}>No rating</Text>}
+                {entry.rating ? (
+                  <Stars rating={entry.rating} size={22} color={theme.star} />
+                ) : (
+                  <Text style={[styles.unrated, { color: theme.textMuted }]}>No rating</Text>
+                )}
                 {entry.liked && <Ionicons name="heart" size={22} color={theme.like} accessibilityLabel="Liked" />}
               </View>
               {!!entry.progress && <Text style={[styles.progress, { color: theme.text }]}>{entry.progress}</Text>}
@@ -86,7 +96,12 @@ export default function EntryScreen() {
                   <Ionicons name="people" size={15} color={theme.textMuted} />
                   <Text style={[styles.withLabel, { color: theme.textMuted }]}>WITH</Text>
                   {entry.companions.map((n) => (
-                    <Pressable key={n} onPress={() => router.navigate({ pathname: '/', params: { q: n } })} accessibilityRole="button" accessibilityLabel={`Everything you watched with ${n}`}>
+                    <Pressable
+                      key={n}
+                      onPress={() => router.navigate({ pathname: '/', params: { q: n } })}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Everything you watched with ${n}`}
+                    >
                       <Text style={[styles.withName, { color: theme.accent }]}>{n}</Text>
                     </Pressable>
                   ))}
@@ -101,7 +116,11 @@ export default function EntryScreen() {
             <View style={styles.reviewWrap}>
               <SectionLabel theme={theme}>REVIEW</SectionLabel>
               {hideReview ? (
-                <Pressable onPress={() => setReveal(true)} style={[styles.spoiler, { backgroundColor: theme.card, borderColor: theme.border }]} accessibilityRole="button">
+                <Pressable
+                  onPress={() => setReveal(true)}
+                  style={[styles.spoiler, { backgroundColor: theme.card, borderColor: theme.border }]}
+                  accessibilityRole="button"
+                >
                   <Ionicons name="eye-off-outline" size={18} color={theme.textMuted} />
                   <Text style={[styles.spoilerText, { color: theme.textMuted }]}>Contains spoilers. Tap to read.</Text>
                 </Pressable>
@@ -122,8 +141,15 @@ export default function EntryScreen() {
           )}
 
           <View style={styles.actions}>
-            <Action theme={theme} icon="sparkles-outline" label="STORY CARD" onPress={() => router.push({ pathname: '/card/[id]', params: { id: entry.id } })} primary />
+            <Action
+              theme={theme}
+              icon="sparkles-outline"
+              label="STORY CARD"
+              onPress={() => router.push({ pathname: '/card/[id]', params: { id: entry.id } })}
+              primary
+            />
             <Action theme={theme} icon="repeat" label="LOG AGAIN" onPress={() => router.push({ pathname: '/log', params: { again: entry.id } })} />
+            <Action theme={theme} icon="albums-outline" label={onLists.length ? `LISTS (${onLists.length})` : 'ADD TO LIST'} onPress={() => setListing(true)} />
             {trackable(entry) && (
               <Action
                 theme={theme}
@@ -132,7 +158,20 @@ export default function EntryScreen() {
                 onPress={() =>
                   router.push({
                     pathname: '/track',
-                    params: { title: JSON.stringify({ kind: entry.kind, source: entry.source, sourceId: entry.sourceId, title: entry.title, year: entry.year, posterUrl: entry.posterUrl, backdropUrl: entry.backdropUrl, genres: entry.genres, runtime: entry.runtime, credit: entry.credit }) },
+                    params: {
+                      title: JSON.stringify({
+                        kind: entry.kind,
+                        source: entry.source,
+                        sourceId: entry.sourceId,
+                        title: entry.title,
+                        year: entry.year,
+                        posterUrl: entry.posterUrl,
+                        backdropUrl: entry.backdropUrl,
+                        genres: entry.genres,
+                        runtime: entry.runtime,
+                        credit: entry.credit,
+                      }),
+                    },
                   })
                 }
               />
@@ -159,11 +198,18 @@ export default function EntryScreen() {
           <DangerButton theme={theme} label="Move to trash" onPress={remove} />
         </View>
       </ScrollView>
+      <AddToList item={listing ? entry : null} theme={theme} onClose={() => setListing(false)} />
     </View>
   );
 }
 
-function Action({ theme, icon, label, onPress, primary }: {
+function Action({
+  theme,
+  icon,
+  label,
+  onPress,
+  primary,
+}: {
   theme: ReturnType<typeof useTheme>;
   icon: keyof typeof Ionicons.glyphMap;
   label: string;
@@ -209,8 +255,8 @@ const styles = StyleSheet.create({
   spoilerText: { fontFamily: fonts.mono, fontSize: font.body },
   tags: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   tag: { fontFamily: fonts.mono, fontSize: font.footnote, borderWidth: 1, borderRadius: 4, paddingHorizontal: 8, paddingVertical: 3 },
-  actions: { flexDirection: 'row', gap: 10 },
-  action: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: 46, borderRadius: 23 },
+  actions: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  action: { flexGrow: 1, flexBasis: '45%', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: 46, borderRadius: 23 },
   actionText: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 1 },
   viewings: { gap: 4 },
   viewing: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 10, borderBottomWidth: StyleSheet.hairlineWidth },

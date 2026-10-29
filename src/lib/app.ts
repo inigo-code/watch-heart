@@ -36,10 +36,10 @@ export const DATA_SOURCES = {
  * update worth telling people about; an update that leaves it alone shows nothing.
  */
 export const WHATS_NEW = {
-  id: '1.1.1',
+  id: '1.1.2',
   items: [
-    'Delete account, Empty trash and Move to trash are proper buttons',
-    'Reset settings asks before it resets anything',
-    'One Save button for your name and bio',
+    'Lists: make your own, ranked or not, and share one as a story',
+    'Add any title to a list from its page, the diary or your watchlist',
+    'Opening the app on your profile or an entry no longer shows a blank form',
   ],
 };

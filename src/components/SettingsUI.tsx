@@ -158,9 +158,9 @@ const styles = StyleSheet.create({
   label: { flex: 1, fontSize: font.body, fontWeight: '600' },
   value: { fontSize: font.body, maxWidth: '45%' },
   control: { paddingHorizontal: 16, paddingVertical: 12, gap: 10 },
-  controlHead: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between' },
+  controlHead: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', gap: 12 },
   controlLabel: { fontSize: font.body, fontWeight: '600' },
-  controlValue: { fontSize: font.body, fontWeight: '600' },
+  controlValue: { flexShrink: 1, textAlign: 'right', fontSize: font.body, fontWeight: '600' },
   segmented: { flexDirection: 'row', borderRadius: 11, padding: 3 },
   segment: {
     flex: 1,
