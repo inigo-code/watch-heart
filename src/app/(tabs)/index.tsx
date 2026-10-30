@@ -12,6 +12,7 @@ import { watchRegion } from '@/api/omdb';
 import { discoverTmdb, nowPlayingTmdb, trendingAllTmdb } from '@/api/tmdb';
 import { AppHeader, greetingIcon, greetingLine } from '@/components/AppHeader';
 import { KindBadge, Poster } from '@/components/Film';
+import { FriendsRow } from '@/components/home/FriendsRow';
 import { RegionalRows } from '@/components/home/RegionalRows';
 import { MovieNightCard, useMovieNights } from '@/components/MovieNight';
 import { RowHead, TitleRow, openTitle, warmTitle } from '@/components/title/Rows';
@@ -66,8 +67,12 @@ export default function HomeScreen() {
   useEffect(() => {
     if (!key || !regional) return;
     let live = true;
-    discoverTmdb(key, regional.q, 1)
-      .then((r) => live && setLocal({ key: regionalKey, titles: r.results.filter((t) => t.backdropUrl && t.posterUrl).slice(0, 2) }))
+    // Only titles people know lead the slider: new releases with some votes already (Jailer 2, not a film
+    // three people have heard of); in a quiet week, the most popular new release.
+    const usable = (r: { results: Title[] }) => r.results.filter((t) => t.backdropUrl && t.posterUrl);
+    discoverTmdb(key, { ...regional.q, minVotes: 10 }, 1)
+      .then(async (r) => (usable(r).length ? usable(r) : usable(await discoverTmdb(key, regional.q, 1)).slice(0, 1)))
+      .then((titles) => live && setLocal({ key: regionalKey, titles: titles.slice(0, 2) }))
       .catch(() => live && setLocal({ key: regionalKey, titles: [] }));
     return () => {
       live = false;
@@ -183,6 +188,8 @@ export default function HomeScreen() {
           <Ionicons name="chevron-forward" size={18} color={theme.textMuted} />
         </Pressable>
       )}
+
+      <FriendsRow theme={theme} />
 
       <RegionalRows key={lang?.code ?? ''} region={region} mine={lang} theme={theme} seen={seen} />
 

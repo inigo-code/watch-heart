@@ -14,6 +14,8 @@ const dark = {
   textMuted: '#8F8898',
   border: '#2A2631',
   accent: '#F2B84B',
+  /** The accent on a surface that stays dark in both looks. */
+  accentOnDark: '#F2B84B',
   accentText: '#120F08',
   accentSoft: '#33280F',
   chip: '#1E1B23',
@@ -37,7 +39,8 @@ const light: typeof dark = {
   text: '#1A1714',
   textMuted: '#685F54',
   border: '#E0D6C5',
-  accent: '#805A14',
+  accent: '#8C6200',
+  accentOnDark: '#F2B84B',
   accentText: '#FFFFFF',
   accentSoft: '#F0E2C2',
   chip: '#E9E1D2',
@@ -84,17 +87,21 @@ type AccentSpec = { label: string; note: string; light: [string, string, string]
 // [accent, text on accent, soft tint] for each look. Every accent reads at 4.5:1 or better on its look's
 // page and cards (the light look's gold, neon and sakura are deeper inks than the dark look's for that).
 export const ACCENTS: Record<AccentKey, AccentSpec> = {
-  marquee: { label: 'Marquee', note: 'Gold bulbs over the box office', light: ['#805A14', '#FFFFFF', '#F0E2C2'], dark: ['#F2B84B', '#120F08', '#33280F'] },
-  velvet: { label: 'Velvet', note: 'Red seats, red curtain', light: ['#B3203A', '#FFFFFF', '#F3D3D8'], dark: ['#FF4D6D', '#1A0509', '#3A1119'] },
-  neon: { label: 'Neon', note: 'Night city, cyberpunk', light: ['#0A6C78', '#FFFFFF', '#CDEDF0'], dark: ['#3DE0F0', '#03191C', '#0F2E33'] },
-  sakura: { label: 'Sakura', note: 'For the otaku', light: ['#A6336B', '#FFFFFF', '#F6D7E6'], dark: ['#FF8FC7', '#22091A', '#3B1530'] },
+  marquee: { label: 'Marquee', note: 'Gold bulbs over the box office', light: ['#8C6200', '#FFFFFF', '#F0E2C2'], dark: ['#F2B84B', '#120F08', '#33280F'] },
+  velvet: { label: 'Velvet', note: 'Red seats, red curtain', light: ['#C0243F', '#FFFFFF', '#F3D3D8'], dark: ['#FF4D6D', '#1A0509', '#3A1119'] },
+  neon: { label: 'Neon', note: 'Night city, cyberpunk', light: ['#0B7480', '#FFFFFF', '#CDEDF0'], dark: ['#3DE0F0', '#03191C', '#0F2E33'] },
+  sakura: { label: 'Sakura', note: 'For the otaku', light: ['#B0386F', '#FFFFFF', '#F6D7E6'], dark: ['#FF8FC7', '#22091A', '#3B1530'] },
   noir: { label: 'Noir', note: 'Black and white classics', light: ['#2A2622', '#FFFFFF', '#E1DBD0'], dark: ['#E8E4DC', '#0B0A0D', '#2A2830'] },
+  // Perks, earned with achievement points.
+  emerald: { label: 'Emerald', note: 'A perk: the jade of an old cinema’s seats', light: ['#0A7A4C', '#FFFFFF', '#D2EDDF'], dark: ['#3DDC97', '#04140D', '#0F2E22'] },
+  platinum: { label: 'Platinum', note: 'A perk: for the true cinephile', light: ['#4D5966', '#FFFFFF', '#DCE2E8'], dark: ['#CFD8E3', '#0B0A0D', '#25292F'] },
 };
 
 export function buildTheme(isDark: boolean, accent: AccentKey): Theme {
   const base = isDark ? dark : light;
   const [a, aText, aSoft] = ACCENTS[accent][isDark ? 'dark' : 'light'];
-  return { ...base, accent: a, accentText: aText, accentSoft: aSoft };
+  // Surfaces that stay dark in both looks (the Diary's film strip, the About card) take the bright accent.
+  return { ...base, accent: a, accentText: aText, accentSoft: aSoft, accentOnDark: ACCENTS[accent].dark[0] };
 }
 
 export function useTheme(): Theme {

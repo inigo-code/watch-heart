@@ -2,7 +2,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { Image } from 'expo-image';
 import { useRef, useState } from 'react';
 import type { ReactNode } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { PixelRatio, Pressable, StyleSheet, Text, View } from 'react-native';
 import type { StyleProp, ViewStyle } from 'react-native';
 
 import { KIND_LABEL } from '@/lib/stats';
@@ -23,11 +23,12 @@ export function Poster({ uri, title, width, theme, radius = 6, style }: {
 }) {
   const [failed, setFailed] = useState(false);
   const height = width * 1.5;
+  const src = uri ? sized(uri, width) : null;
   return (
     <View style={[{ width, height, borderRadius: radius, backgroundColor: theme.elevated, overflow: 'hidden' }, style]}>
       {uri && !failed ? (
         // Kept in memory as well as on disk, so scrolling back up is instant, with no second fade-in.
-        <Image source={uri} recyclingKey={uri} style={StyleSheet.absoluteFill} contentFit="cover" transition={150} cachePolicy="memory-disk" onError={() => setFailed(true)} />
+        <Image source={src} recyclingKey={src} style={StyleSheet.absoluteFill} contentFit="cover" transition={150} cachePolicy="memory-disk" onError={() => setFailed(true)} />
       ) : (
         <View style={styles.slate}>
           <Ionicons name="film-outline" size={Math.max(14, width * 0.26)} color={theme.textMuted} />
@@ -40,6 +41,17 @@ export function Poster({ uri, title, width, theme, radius = 6, style }: {
       )}
     </View>
   );
+}
+
+const TMDB_POSTER = /^(https:\/\/image\.tmdb\.org\/t\/p\/)w\d+(\/.+)$/;
+const SIZES = [92, 154, 185, 342, 500, 780];
+
+/** A TMDB poster at the smallest size that's sharp drawn `width` points wide on this phone; other images as they are. */
+function sized(uri: string, width: number) {
+  const m = uri.match(TMDB_POSTER);
+  if (!m) return uri;
+  const need = width * PixelRatio.get();
+  return `${m[1]}w${SIZES.find((s) => s >= need) ?? 780}${m[2]}`;
 }
 
 /** Read-only stars for a half-star rating (0–10). */

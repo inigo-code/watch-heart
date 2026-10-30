@@ -46,7 +46,7 @@ export const ProfileCard = forwardRef<StoryHandle, Props>(function ProfileCard({
         <View style={styles.favs}>
           {Array.from({ length: 4 }, (_, i) => favourites[i]).map((f, i) => (
             <View key={i} style={[styles.poster, { backgroundColor: p.card }]}>
-              {f?.posterUrl ? <Image source={{ uri: sharp(f.posterUrl, 70) }} style={StyleSheet.absoluteFill} fadeDuration={0} resizeMethod="scale" /> : f ? <Text style={[styles.posterTitle, { color: p.muted }]}>{f.title}</Text> : null}
+              {f?.posterUrl ? <Image source={{ uri: sharp(f.posterUrl, 64) }} style={StyleSheet.absoluteFill} fadeDuration={0} resizeMethod="scale" /> : f ? <Text style={[styles.posterTitle, { color: p.muted }]}>{f.title}</Text> : null}
             </View>
           ))}
         </View>
@@ -69,30 +69,32 @@ export const ProfileCard = forwardRef<StoryHandle, Props>(function ProfileCard({
       <Text style={[styles.line, { color: p.muted }]}>
         {stats.thisYear} IN {year} · {stats.longestStreak}-DAY BEST STREAK{stats.avgStars ? ` · ${stats.avgStars}★ AVG` : ''}
       </Text>
+      <View style={{ flex: 1 }} />
       <Text style={[styles.brand, { color: p.accent }]}>♥ WATCH HEART</Text>
     </View>
   );
 });
 
 const styles = StyleSheet.create({
-  card: { width: STORY_W, height: STORY_H, overflow: 'hidden', alignItems: 'center', paddingTop: 54, paddingHorizontal: 22 },
+  // Instagram covers about 58 points at the top and 64 at the bottom with its own buttons.
+  card: { width: STORY_W, height: STORY_H, overflow: 'hidden', alignItems: 'center', paddingTop: 58, paddingBottom: 70, paddingHorizontal: 22 },
   kicker: { fontFamily: fonts.monoBold, fontSize: 10, letterSpacing: 3 },
-  photoRing: { width: 112, height: 112, borderRadius: 56, borderWidth: 3, marginTop: 22, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' },
+  photoRing: { width: 96, height: 96, borderRadius: 48, borderWidth: 3, marginTop: 16, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' },
   photo: { width: '100%', height: '100%' },
-  initial: { fontFamily: fonts.display, fontSize: 56 },
-  name: { fontFamily: fonts.display, fontSize: 44, letterSpacing: 1, marginTop: 14 },
+  initial: { fontFamily: fonts.display, fontSize: 50 },
+  name: { fontFamily: fonts.display, fontSize: 40, letterSpacing: 1, marginTop: 10 },
   bio: { fontFamily: fonts.mono, fontSize: 12, textAlign: 'center', lineHeight: 17, marginTop: 2 },
-  strip: { alignSelf: 'stretch', marginHorizontal: -22, marginTop: 26, paddingVertical: 6 },
+  strip: { alignSelf: 'stretch', marginHorizontal: -22, marginTop: 18, paddingVertical: 6 },
   holes: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 6 },
   hole: { width: 12, height: 8, borderRadius: 2 },
   favs: { flexDirection: 'row', justifyContent: 'center', gap: 8, paddingVertical: 8 },
-  poster: { width: 70, height: 105, borderRadius: 4, overflow: 'hidden', alignItems: 'center', justifyContent: 'center', padding: 4 },
+  poster: { width: 64, height: 96, borderRadius: 4, overflow: 'hidden', alignItems: 'center', justifyContent: 'center', padding: 4 },
   posterTitle: { fontFamily: fonts.display, fontSize: 12, textAlign: 'center' },
   caption: { fontFamily: fonts.monoBold, fontSize: 9, letterSpacing: 3, marginTop: 8 },
-  numbers: { flexDirection: 'row', alignSelf: 'stretch', justifyContent: 'space-between', marginTop: 30 },
+  numbers: { flexDirection: 'row', alignSelf: 'stretch', justifyContent: 'space-between', marginTop: 18 },
   number: { alignItems: 'center', flex: 1 },
   value: { fontFamily: fonts.display, fontSize: 36 },
   label: { fontFamily: fonts.monoBold, fontSize: 9, letterSpacing: 1.5 },
-  line: { fontFamily: fonts.monoBold, fontSize: 9, letterSpacing: 1, marginTop: 18, textAlign: 'center' },
-  brand: { position: 'absolute', bottom: 28, fontFamily: fonts.monoBold, fontSize: 11, letterSpacing: 3 },
+  line: { fontFamily: fonts.monoBold, fontSize: 9, letterSpacing: 1, marginTop: 12, textAlign: 'center' },
+  brand: { fontFamily: fonts.monoBold, fontSize: 11, letterSpacing: 3, marginTop: 10 },
 });

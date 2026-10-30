@@ -5,6 +5,7 @@ import { ActivityIndicator, Pressable, RefreshControl, ScrollView, Share, StyleS
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ActionSheet } from '@/components/ActionSheet';
+import { PeopleSearch } from '@/components/friends/PeopleSearch';
 import { Stars } from '@/components/Film';
 import { KeyboardSafe } from '@/components/KeyboardSafe';
 import { SectionLabel } from '@/components/SectionLabel';
@@ -17,7 +18,7 @@ import { friendlyDate } from '@/lib/dates';
 import { font, fonts, useTheme } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
 
-/** Your invite code, adding a friend by theirs, your friends, and what they've watched lately. */
+/** Your invite code, adding a friend by theirs or by name, your friends, and what they've watched lately. */
 export default function FriendsScreen() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
@@ -138,6 +139,8 @@ export default function FriendsScreen() {
             </Pressable>
           </View>
         </View>
+
+        <PeopleSearch theme={theme} onFriendsChanged={reload} />
 
         <View style={styles.block}>
           <SectionLabel theme={theme}>Your friends{friends.length ? ` (${friends.length})` : ''}</SectionLabel>

@@ -1,12 +1,9 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { router } from 'expo-router';
-import { useEffect, useState } from 'react';
-import { Animated, Easing, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Avatar } from '@/components/Avatar';
-import { BrandTitle } from '@/components/BrandTitle';
-import { useReducedMotion } from '@/lib/motion';
 import { font, fonts } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
 import { useSettings } from '@/settings/SettingsProvider';
@@ -14,14 +11,14 @@ import { useSync } from '@/sync/SyncProvider';
 
 type MciName = keyof typeof MaterialCommunityIcons.glyphMap;
 
-/** The top of Home: the title on a marquee, your photo (to your profile), Settings, and a line below. */
+/** The top of Home: the wordmark, your photo (to your profile), Settings, and a line below. */
 export function AppHeader({ theme, line, icon }: { theme: Theme; line: string; icon?: MciName }) {
   const { settings } = useSettings();
   const sync = useSync();
   return (
     <View style={styles.wrap}>
       <View style={styles.titleRow}>
-        <Marquee theme={theme} />
+        <Wordmark theme={theme} />
         <View style={styles.icons}>
           <Pressable
             onPress={() => router.push('/profile')}
@@ -50,50 +47,25 @@ export function AppHeader({ theme, line, icon }: { theme: Theme; line: string; i
         </View>
       </View>
       <View style={styles.lineRow}>
-        {icon && <MaterialCommunityIcons name={icon} size={16} color={theme.accent} accessibilityElementsHidden importantForAccessibility="no" />}
-        <Text style={[styles.line, { color: theme.textMuted }]}>{line}</Text>
+        {icon && <MaterialCommunityIcons name={icon} size={15} color={theme.accent} accessibilityElementsHidden importantForAccessibility="no" />}
+        <Text style={[styles.line, { color: theme.textMuted }]} numberOfLines={1}>
+          {line}
+        </Text>
       </View>
     </View>
   );
 }
 
-const BULBS = 13;
+const ICON = require('../../assets/icon.png');
 
-/**
- * The wordmark on a cinema marquee: a board framed in gold with a row of bulbs above and below that chase
- * slowly, every other bulb in turn. Still when the phone asks for less motion.
- */
-function Marquee({ theme }: { theme: Theme }) {
-  const reduced = useReducedMotion();
-  // One value drives every bulb; kept in state, made once.
-  const [phase] = useState(() => new Animated.Value(0));
-  const [lit] = useState(() => [phase.interpolate({ inputRange: [0, 1], outputRange: [1, 0.3] }), phase.interpolate({ inputRange: [0, 1], outputRange: [0.3, 1] })]);
-  useEffect(() => {
-    if (reduced) {
-      phase.setValue(0);
-      return;
-    }
-    const loop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(phase, { toValue: 1, duration: 650, easing: Easing.inOut(Easing.quad), useNativeDriver: true }),
-        Animated.timing(phase, { toValue: 0, duration: 650, easing: Easing.inOut(Easing.quad), useNativeDriver: true }),
-      ]),
-    );
-    loop.start();
-    return () => loop.stop();
-  }, [phase, reduced]);
-  const bulbs = (
-    <View style={styles.bulbs}>
-      {Array.from({ length: BULBS }, (_, i) => (
-        <Animated.View key={i} style={[styles.bulb, { backgroundColor: theme.accent, opacity: lit[i % 2] }]} />
-      ))}
-    </View>
-  );
+/** The wordmark: the app's own icon as a small tile, then WATCH HEART in the marquee face, on one line. */
+function Wordmark({ theme }: { theme: Theme }) {
   return (
-    <View style={[styles.board, { borderColor: theme.accent, backgroundColor: theme.dark ? '#000000' : theme.card }]}>
-      {bulbs}
-      <BrandTitle theme={theme} size={30} />
-      {bulbs}
+    <View style={styles.wordmark} accessibilityRole="header" accessibilityLabel="Watch Heart">
+      <Image source={ICON} style={styles.icon} />
+      <Text style={[styles.word, { color: theme.text }]}>
+        WATCH <Text style={{ color: theme.accent }}>HEART</Text>
+      </Text>
     </View>
   );
 }
@@ -121,9 +93,10 @@ const styles = StyleSheet.create({
   icons: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   avatarBtn: { padding: 4 },
   iconBtn: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
-  lineRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 },
-  line: { fontFamily: fonts.mono, fontSize: font.footnote, flexShrink: 1 },
-  board: { borderWidth: 1.5, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 4, gap: 3, flexShrink: 1 },
-  bulbs: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 2 },
-  bulb: { width: 4, height: 4, borderRadius: 2 },
+  lineRow: { flexDirection: 'row', alignItems: 'center', gap: 6, height: 18 },
+  // A fixed line height with no extra font padding keeps the icon centred on the text on Android.
+  line: { fontFamily: fonts.mono, fontSize: font.footnote, lineHeight: 18, includeFontPadding: false, flexShrink: 1 },
+  wordmark: { flexDirection: 'row', alignItems: 'center', gap: 10, flexShrink: 1 },
+  icon: { width: 30, height: 30, borderRadius: 8 },
+  word: { fontFamily: fonts.display, fontSize: 29, lineHeight: 32, letterSpacing: 1.2, includeFontPadding: false },
 });

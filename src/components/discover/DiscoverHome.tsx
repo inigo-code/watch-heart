@@ -1,23 +1,24 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Image } from 'expo-image';
-import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { BROWSE_GENRES, regionProviders } from '@/api/tmdb';
-import type { BrowseQuery, Provider } from '@/api/tmdb';
+import type { Provider } from '@/api/tmdb';
+import { browse } from '@/components/discover/browse';
+import { CuratedLists } from '@/components/discover/CuratedLists';
 import { SectionLabel } from '@/components/SectionLabel';
-import { COUNTRIES, DECADES, LANGUAGES, SHELVES, countryName, flag, seasonalShelves } from '@/lib/discover';
+import { COUNTRIES, DECADES, LANGUAGES, INDIAN_GEMS, SHELVES, countryName, flag, seasonalShelves } from '@/lib/discover';
 import { font, fonts } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
 
 const providerCache = new Map<string, Provider[]>();
 
-export const browse = (q: BrowseQuery, name: string, filters?: boolean) =>
-  router.push({ pathname: '/browse', params: { q: JSON.stringify(q), name, ...(filters ? { filters: '1' } : {}) } });
+// Re-exported, so screens that open a grid keep importing it from here.
+export { browse };
 
 /**
- * Ways into the catalogue: streaming services, ready-made shelves, and genre, decade, language and country.
+ * Ways into the catalogue: streaming services, lists, ready-made shelves, and genre, decade, language and country.
  * One page for films, series and anime alike; what's shown starts with films, and switches on the results.
  */
 export function DiscoverHome({ theme, tmdb, region }: { theme: Theme; tmdb: string; region: string }) {
@@ -60,6 +61,8 @@ export function DiscoverHome({ theme, tmdb, region }: { theme: Theme; tmdb: stri
         </View>
       )}
 
+      <CuratedLists theme={theme} tmdb={tmdb} />
+
       <View style={styles.section}>
         <SectionLabel theme={theme}>Collections</SectionLabel>
         {seasonal.map((sh) => (
@@ -78,7 +81,7 @@ export function DiscoverHome({ theme, tmdb, region }: { theme: Theme; tmdb: stri
           </Pressable>
         ))}
         <View style={[styles.shelves, { borderColor: theme.border, backgroundColor: theme.card }]}>
-          {SHELVES.map((s, i) => (
+          {(region === 'IN' ? [...SHELVES, INDIAN_GEMS] : SHELVES).map((s, i) => (
             <Pressable
               key={s.id}
               onPress={() => browse(s.q, s.name)}

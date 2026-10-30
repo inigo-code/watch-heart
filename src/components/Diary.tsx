@@ -36,17 +36,10 @@ export function TicketPrint({ kind, theme }: { kind: MediaKind; theme: Theme }) 
   return <Image source={PAPER_PRINT} style={[StyleSheet.absoluteFill, { opacity: p.print, tintColor: p.ink, width: '100%', height: '100%' }]} resizeMode="cover" pointerEvents="none" />;
 }
 
-/** A six-digit serial, the same for an entry every time, like the numbering stamp on a ticket. */
-export function ticketSerial(id: string) {
-  let h = 2166136261;
-  for (let i = 0; i < id.length; i++) h = Math.imul(h ^ id.charCodeAt(i), 16777619);
-  return String((h >>> 0) % 1000000).padStart(6, '0');
-}
-
 /**
  * One diary entry as an Indian cinema ticket: paper tinted by kind with an engraved print, a stub with the
- * date, a perforated tear line with notches cut out of the edges, then the poster, what you thought of it,
- * and the ticket's serial.
+ * date, a perforated tear line with notches cut out of the edges, then the poster and what you thought of it.
+ * Compact, so a month fits on a screen or two.
  */
 export function TicketStub({ entry, theme, onPress, onLongPress }: {
   entry: Entry;
@@ -78,7 +71,7 @@ export function TicketStub({ entry, theme, onPress, onLongPress }: {
         <View style={[styles.notch, styles.notchBottom, { backgroundColor: theme.hole, borderColor: p.border }]} />
       </View>
 
-      <Poster uri={entry.posterUrl} title={entry.title} width={54} theme={theme} radius={4} />
+      <Poster uri={entry.posterUrl} title={entry.title} width={40} theme={theme} radius={3} />
 
       <View style={styles.body}>
         <Text style={[styles.title, { color: theme.text }]} numberOfLines={2}>
@@ -97,10 +90,6 @@ export function TicketStub({ entry, theme, onPress, onLongPress }: {
           <Stars rating={entry.rating} size={13} color={theme.star} />
           {entry.liked && <Ionicons name="heart" size={13} color={theme.like} accessibilityLabel="Liked" />}
           {!!entry.review.trim() && <Ionicons name="reader-outline" size={13} color={theme.textMuted} accessibilityLabel="Has a review" />}
-          <View style={{ flex: 1 }} />
-          <Text style={[styles.serial, { color: p.ink }]} importantForAccessibility="no">
-            No. {ticketSerial(entry.id)}
-          </Text>
         </View>
       </View>
     </Pressable>
@@ -134,7 +123,7 @@ export function ReelHeader({ month, count, theme, onShare }: { month: string; co
       <View style={styles.reelRow}>
         <View style={{ flex: 1 }}>
           <Text style={[styles.reelMonth, { color: theme.dark ? theme.text : theme.bg }]}>{archive ? 'THE ARCHIVE' : monthName(month).toUpperCase()}</Text>
-          <Text style={[styles.reelMeta, { color: theme.accent }]}>
+          <Text style={[styles.reelMeta, { color: theme.accentOnDark }]}>
             {archive
               ? `NO WATCH DATE · ${count} ${count === 1 ? 'TITLE' : 'TITLES'}`
               : `${month.slice(0, 4)} · REEL ${String(reel).padStart(2, '0')} · ${count} ${count === 1 ? 'TITLE' : 'TITLES'}`}
@@ -146,10 +135,10 @@ export function ReelHeader({ month, count, theme, onShare }: { month: string; co
             hitSlop={8}
             accessibilityRole="button"
             accessibilityLabel={`Make a story for ${monthName(month)}`}
-            style={({ pressed }) => [styles.reelShare, { borderColor: theme.accent, opacity: pressed ? 0.7 : 1 }]}
+            style={({ pressed }) => [styles.reelShare, { borderColor: theme.accentOnDark, opacity: pressed ? 0.7 : 1 }]}
           >
-            <Ionicons name="sparkles" size={14} color={theme.accent} />
-            <Text style={[styles.reelShareText, { color: theme.accent }]}>STORY</Text>
+            <Ionicons name="sparkles" size={14} color={theme.accentOnDark} />
+            <Text style={[styles.reelShareText, { color: theme.accentOnDark }]}>STORY</Text>
           </Pressable>
         )}
       </View>
@@ -159,21 +148,20 @@ export function ReelHeader({ month, count, theme, onShare }: { month: string; co
 }
 
 const styles = StyleSheet.create({
-  ticket: { flexDirection: 'row', alignItems: 'center', borderRadius: 10, borderWidth: StyleSheet.hairlineWidth, paddingVertical: 10, paddingRight: 12, gap: 10, overflow: 'hidden' },
-  stub: { width: 54, alignItems: 'center', gap: 0 },
-  weekday: { fontFamily: fonts.monoBold, fontSize: 11, letterSpacing: 1 },
-  day: { fontFamily: fonts.display, fontSize: 36, lineHeight: 38, includeFontPadding: false },
-  tear: { alignSelf: 'stretch', width: NOTCH, alignItems: 'center', marginVertical: -10, marginLeft: -6 },
+  ticket: { flexDirection: 'row', alignItems: 'center', borderRadius: 10, borderWidth: StyleSheet.hairlineWidth, paddingVertical: 7, paddingRight: 12, gap: 10, overflow: 'hidden' },
+  stub: { width: 48, alignItems: 'center', gap: 0 },
+  weekday: { fontFamily: fonts.monoBold, fontSize: 10, letterSpacing: 1 },
+  day: { fontFamily: fonts.display, fontSize: 30, lineHeight: 31, includeFontPadding: false },
+  tear: { alignSelf: 'stretch', width: NOTCH, alignItems: 'center', marginVertical: -7, marginLeft: -6 },
   dashes: { flex: 1, borderLeftWidth: 1.5, borderStyle: 'dashed' },
   notch: { width: NOTCH, height: NOTCH / 2, borderWidth: StyleSheet.hairlineWidth },
   notchTop: { borderBottomLeftRadius: NOTCH, borderBottomRightRadius: NOTCH, borderTopWidth: 0 },
   notchBottom: { borderTopLeftRadius: NOTCH, borderTopRightRadius: NOTCH, borderBottomWidth: 0 },
-  body: { flex: 1, gap: 5 },
-  title: { fontSize: font.headline, fontWeight: '700', lineHeight: 21 },
+  body: { flex: 1, gap: 3 },
+  title: { fontSize: font.body, fontWeight: '700', lineHeight: 19 },
   year: { fontFamily: fonts.mono, fontSize: font.footnote, fontWeight: '400' },
   meta: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   progress: { fontFamily: fonts.mono, fontSize: font.caption, flexShrink: 1 },
-  serial: { fontFamily: fonts.monoBold, fontSize: 10, letterSpacing: 1 },
   tileMeta: { flexDirection: 'row', alignItems: 'center', gap: 3, height: 16, marginTop: 3 },
   reel: { paddingVertical: 6, gap: 8, borderRadius: 4, marginTop: 14 },
   reelRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, gap: 10 },

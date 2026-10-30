@@ -1,17 +1,19 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { FlatList, Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { search, tmdbKey } from '@/api';
 import { KeyboardSafe } from '@/components/KeyboardSafe';
 import { Poster } from '@/components/Film';
 import { KIND_LABEL } from '@/lib/stats';
 import { font, fonts } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
+import { useSettings } from '@/settings/SettingsProvider';
 import type { Favourite } from '@/settings/SettingsProvider';
 import type { Entry } from '@/store/types';
 
-/** Pick a favourite from the titles in your diary, best rated first. */
+/** Pick a favourite: the titles in your diary, best rated first, then anything on TMDB as you search. */
 export function FavouritePicker({ visible, theme, entries, onPick, onClose }: {
   visible: boolean;
   theme: Theme;
@@ -38,6 +40,39 @@ export function FavouritePicker({ visible, theme, entries, onPick, onClose }: {
   const q = query.trim().toLowerCase();
   const shown = q ? titles.filter((t) => t.fav.title.toLowerCase().includes(q)) : titles;
 
+  // Anything else, from TMDB: a favourite you watched long before you started a diary.
+  const { settings } = useSettings();
+  const key = tmdbKey(settings.tmdbKey);
+  const [found, setFound] = useState<{ q: string; favs: Favourite[] } | null>(null);
+  useEffect(() => {
+    if (!visible || q.length < 2) return;
+    let live = true;
+    const timer = setTimeout(() => {
+      Promise.all([search('movie', q, key), search('tv', q, key)])
+        .then(([films, series]) => {
+          if (!live) return;
+          const inDiary = new Set(titles.map((t) => `${t.fav.source}:${t.fav.sourceId}`));
+          const mixed = films.flatMap((f, i) => [f, series[i]]).concat(series.slice(films.length)).filter(Boolean);
+          const favs = mixed
+            .filter((t) => !inDiary.has(`${t.source}:${t.sourceId}`))
+            .slice(0, 20)
+            .map((t) => ({ kind: t.kind, source: t.source, sourceId: t.sourceId, title: t.title, year: t.year, posterUrl: t.posterUrl }));
+          setFound({ q, favs });
+        })
+        .catch(() => live && setFound({ q, favs: [] }));
+    }, 350);
+    return () => {
+      live = false;
+      clearTimeout(timer);
+    };
+  }, [visible, q, key, titles]);
+  const more = q.length >= 2 && found?.q === q ? found.favs : [];
+  type Row = { type: 'diary'; t: (typeof titles)[number] } | { type: 'head' } | { type: 'more'; fav: Favourite };
+  const rows: Row[] = [
+    ...shown.map((t) => ({ type: 'diary' as const, t })),
+    ...(more.length ? [{ type: 'head' as const }, ...more.map((fav) => ({ type: 'more' as const, fav }))] : []),
+  ];
+
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose} statusBarTranslucent>
       <KeyboardSafe style={[styles.sheet, { backgroundColor: theme.bg, paddingTop: insets.top + 12 }]}>
@@ -49,29 +84,53 @@ export function FavouritePicker({ visible, theme, entries, onPick, onClose }: {
         </View>
         <View style={[styles.search, { backgroundColor: theme.card, borderColor: theme.border }]}>
           <Ionicons name="search" size={18} color={theme.textMuted} />
-          <TextInput value={query} onChangeText={setQuery} placeholder="Search your diary" placeholderTextColor={theme.textMuted} style={[styles.input, { color: theme.text }]} />
+          <TextInput
+            value={query}
+            onChangeText={setQuery}
+            placeholder="Search your diary, or any film or series"
+            placeholderTextColor={theme.textMuted}
+            style={[styles.input, { color: theme.text }]}
+          />
         </View>
         <FlatList
-          data={shown}
-          keyExtractor={(t) => `${t.fav.kind}:${t.fav.source}:${t.fav.sourceId}:${t.fav.title}`}
+          data={rows}
+          keyExtractor={(r, i) => (r.type === 'head' ? 'head' : r.type === 'diary' ? `d:${r.t.fav.source}:${r.t.fav.sourceId}:${r.t.fav.title}` : `m:${r.fav.source}:${r.fav.sourceId}:${i}`)}
           keyboardShouldPersistTaps="handled"
           contentContainerStyle={{ paddingBottom: insets.bottom + 24, gap: 10 }}
-          ListEmptyComponent={<Text style={[styles.meta, { color: theme.textMuted }]}>Log something first, then pin it here.</Text>}
-          renderItem={({ item }) => (
-            <Pressable onPress={() => onPick(item.fav)} accessibilityRole="button" style={({ pressed }) => [styles.row, { backgroundColor: theme.card, borderColor: theme.border, opacity: pressed ? 0.8 : 1 }]}>
-              <Poster uri={item.fav.posterUrl} title={item.fav.title} width={42} theme={theme} radius={4} />
+          ListEmptyComponent={
+            <Text style={[styles.meta, { color: theme.textMuted }]}>
+              {q ? 'Searching…' : 'Type a title to find it, even one you watched long before your diary.'}
+            </Text>
+          }
+          renderItem={({ item }) =>
+            item.type === 'head' ? (
+              <Text style={[styles.head2, { color: theme.textMuted }]}>NOT IN YOUR DIARY</Text>
+            ) : item.type === 'more' ? (
+              <Pressable onPress={() => onPick(item.fav)} accessibilityRole="button" style={({ pressed }) => [styles.row, { backgroundColor: theme.card, borderColor: theme.border, opacity: pressed ? 0.8 : 1 }]}>
+                <Poster uri={item.fav.posterUrl} title={item.fav.title} width={42} theme={theme} radius={4} />
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.name, { color: theme.text }]} numberOfLines={2}>
+                    {item.fav.title}
+                  </Text>
+                  <Text style={[styles.meta, { color: theme.textMuted }]}>{[KIND_LABEL[item.fav.kind], item.fav.year].filter(Boolean).join(' · ')}</Text>
+                </View>
+              </Pressable>
+            ) : (
+            <Pressable onPress={() => onPick(item.t.fav)} accessibilityRole="button" style={({ pressed }) => [styles.row, { backgroundColor: theme.card, borderColor: theme.border, opacity: pressed ? 0.8 : 1 }]}>
+              <Poster uri={item.t.fav.posterUrl} title={item.t.fav.title} width={42} theme={theme} radius={4} />
               <View style={{ flex: 1 }}>
                 <Text style={[styles.name, { color: theme.text }]} numberOfLines={2}>
-                  {item.fav.title}
+                  {item.t.fav.title}
                 </Text>
                 <Text style={[styles.meta, { color: theme.textMuted }]}>
-                  {[KIND_LABEL[item.fav.kind], item.fav.year, item.rating ? `${'★'.repeat(Math.floor(item.rating / 2))}${item.rating % 2 ? '½' : ''}` : null, item.liked ? '♥' : null]
+                  {[KIND_LABEL[item.t.fav.kind], item.t.fav.year, item.t.rating ? `${'★'.repeat(Math.floor(item.t.rating / 2))}${item.t.rating % 2 ? '½' : ''}` : null, item.t.liked ? '♥' : null]
                     .filter(Boolean)
                     .join(' · ')}
                 </Text>
               </View>
             </Pressable>
-          )}
+            )
+          }
         />
       </KeyboardSafe>
     </Modal>
@@ -87,4 +146,5 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: StyleSheet.hairlineWidth, borderRadius: 12, padding: 10 },
   name: { fontSize: font.body, fontWeight: '700' },
   meta: { fontFamily: fonts.mono, fontSize: font.caption, marginTop: 2 },
+  head2: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 1.5, marginTop: 6 },
 });

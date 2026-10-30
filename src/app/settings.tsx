@@ -24,6 +24,7 @@ import { findPostersNow, useUpkeepProgress } from '@/lib/tmdbFreshness';
 import { useAppLock } from '@/lock/AppLockProvider';
 import { lockSupport } from '@/lock/authenticate';
 import { LOCK_AFTER_OPTIONS } from '@/lock/lockTiming';
+import { usePerks } from '@/lib/perks';
 import { useSettings } from '@/settings/SettingsProvider';
 import type { AccentKey } from '@/settings/SettingsProvider';
 import { useDiary } from '@/store/DiaryStore';
@@ -49,6 +50,7 @@ export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
   const toast = useToast();
   const { settings, update, reset } = useSettings();
+  const perks = usePerks();
   const friends = useFriends();
   const lock = useAppLock();
   const diary = useDiary();
@@ -135,7 +137,7 @@ export default function SettingsScreen() {
         </Section>
 
         {friends.available && (
-          <Section theme={theme} title="What friends can see" footer="Friends never see who you watched with, or your tags. Spoiler-marked reviews stay hidden until they tap.">
+          <Section theme={theme} title="What friends can see" footer="Friends never see who you watched with, or your tags. Spoiler-marked reviews stay hidden until they tap. If people can find you by name, they see only your name and bio until you accept them.">
             <ToggleRow
               theme={theme}
               icon="ticket-outline"
@@ -156,6 +158,13 @@ export default function SettingsScreen() {
               label="Your lists"
               value={settings.sharing.lists}
               onChange={(lists) => update({ sharing: { ...settings.sharing, lists } })}
+            />
+            <ToggleRow
+              theme={theme}
+              icon="search-outline"
+              label="Let people find me by name"
+              value={!!settings.sharing.findable}
+              onChange={(findable) => update({ sharing: { ...settings.sharing, findable } })}
               last
             />
           </Section>
@@ -179,15 +188,25 @@ export default function SettingsScreen() {
               {(Object.keys(ACCENTS) as AccentKey[]).map((key) => {
                 const [color, onColor] = ACCENTS[key][theme.dark ? 'dark' : 'light'];
                 const active = settings.accent === key;
+                const open = perks.unlocked('accent', key);
+                const perk = perks.perkFor('accent', key);
                 return (
                   <Pressable
                     key={key}
-                    onPress={() => update({ accent: key })}
-                    accessibilityLabel={`${ACCENTS[key].label} accent`}
+                    onPress={() =>
+                      open
+                        ? update({ accent: key })
+                        : toast(`${ACCENTS[key].label} is a perk: ${perk?.points} achievement points (you have ${perks.points}). Earn them on your profile.`)
+                    }
+                    accessibilityRole="button"
+                    accessibilityLabel={`${ACCENTS[key].label} accent${open ? '' : ', locked'}`}
                     accessibilityState={{ selected: active }}
                     style={[styles.swatchRing, { borderColor: active ? color : 'transparent' }]}
                   >
-                    <View style={[styles.swatch, { backgroundColor: color }]}>{active && <Ionicons name="checkmark" size={20} color={onColor} />}</View>
+                    <View style={[styles.swatch, { backgroundColor: color, opacity: open ? 1 : 0.35 }]}>
+                      {active && <Ionicons name="checkmark" size={20} color={onColor} />}
+                      {!open && <Ionicons name="lock-closed" size={16} color={theme.text} />}
+                    </View>
                   </Pressable>
                 );
               })}

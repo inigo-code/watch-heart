@@ -19,8 +19,8 @@ export default function AboutScreen() {
       <View style={[styles.card, { backgroundColor: theme.dark ? '#000000' : theme.text }]}>
         <Sprockets color={theme.bg} count={14} hole={6} />
         <View style={styles.cardBody}>
-          <BrandTitle theme={{ ...theme, text: theme.dark ? theme.text : theme.bg }} size={44} />
-          <Text style={[styles.tagline, { color: theme.accent }]}>{APP_TAGLINE.toUpperCase()}</Text>
+          <BrandTitle theme={{ ...theme, text: theme.dark ? theme.text : theme.bg, accent: theme.accentOnDark }} size={44} />
+          <Text style={[styles.tagline, { color: theme.accentOnDark }]}>{APP_TAGLINE.toUpperCase()}</Text>
           <Text style={[styles.version, { color: theme.textMuted }]}>Version {describeRunning()}</Text>
           <Pressable
             onPress={() => Linking.openURL(HEART_APPS.url)}

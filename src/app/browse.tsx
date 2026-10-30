@@ -312,7 +312,9 @@ function Filters({
               ))}
             </Group>
           )}
-          <Group theme={theme} title="TMDB score at least">
+          {/* Discover searches on TMDB, which filters by its own audience score; no source lets anyone search by
+              IMDb's, so the label says what it is. The two are usually within a few tenths. */}
+          <Group theme={theme} title="Audience score at least">
             {[6, 7, 7.5, 8].map((s) => (
               <Chip
                 key={s}
@@ -323,6 +325,7 @@ function Filters({
               />
             ))}
           </Group>
+          <Text style={[styles.groupNote, { color: theme.textMuted }]}>From TMDB’s ratings, usually close to IMDb’s.</Text>
           {draft.kind === 'movie' && (
             <Group theme={theme} title="Length">
               {[90, 120, 150].map((m) => (
@@ -395,6 +398,7 @@ const styles = StyleSheet.create({
   clear: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 1 },
   sheetBody: { paddingHorizontal: 16, gap: 18, paddingBottom: 16 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  groupNote: { fontFamily: fonts.mono, fontSize: font.caption, marginTop: -6 },
   apply: { marginHorizontal: 16, height: 50, borderRadius: 25, alignItems: 'center', justifyContent: 'center' },
   applyText: { fontFamily: fonts.monoBold, fontSize: font.body, letterSpacing: 1.5 },
 });

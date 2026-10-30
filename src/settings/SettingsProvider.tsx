@@ -8,7 +8,8 @@ import type { PaletteKey, StoryLayout } from '@/story/palettes';
 const STORAGE_KEY = 'watchheart/settings';
 
 export type ThemeMode = 'system' | 'light' | 'dark';
-export type AccentKey = 'marquee' | 'velvet' | 'neon' | 'sakura' | 'noir';
+/** The accents; emerald and platinum are perks, earned with achievements (src/lib/perks.ts). */
+export type AccentKey = 'marquee' | 'velvet' | 'neon' | 'sakura' | 'noir' | 'emerald' | 'platinum';
 
 /** A title pinned to the profile: enough to show its poster and open it. */
 export type Favourite = { kind: MediaKind; source: string; sourceId: string; title: string; year: number | null; posterUrl: string | null };
@@ -78,7 +79,8 @@ export type Settings = {
 /** The settings that make up your profile, synced across devices when you're signed in. */
 export const PROFILE_KEYS = ['name', 'bio', 'photo', 'favourites', 'yearGoal', 'sharing'] as const;
 
-export type Sharing = { diary: boolean; reviews: boolean; lists: boolean };
+/** What friends can see, and whether people can find you by name (off unless you turn it on). */
+export type Sharing = { diary: boolean; reviews: boolean; lists: boolean; findable: boolean };
 
 export const DEFAULT_SETTINGS: Settings = {
   themeMode: 'dark',
@@ -96,7 +98,7 @@ export const DEFAULT_SETTINGS: Settings = {
   photo: null,
   favourites: [],
   yearGoal: 0,
-  sharing: { diary: true, reviews: true, lists: true },
+  sharing: { diary: true, reviews: true, lists: true, findable: false },
   omdbKey: '',
   watchRegion: '',
   homeLanguage: '',

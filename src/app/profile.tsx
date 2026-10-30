@@ -24,6 +24,7 @@ import { KIND_LABEL } from '@/lib/stats';
 import { font, fonts, kindColor, useTheme } from '@/lib/theme';
 import { deviceLabel } from '@/lib/viewing';
 import type { Theme } from '@/lib/theme';
+import { PERKS, achievementPoints } from '@/lib/perks';
 import { useSettings } from '@/settings/SettingsProvider';
 import type { Favourite } from '@/settings/SettingsProvider';
 import { useDiary } from '@/store/DiaryStore';
@@ -428,6 +429,7 @@ function ProfileBody() {
         {/* Achievements */}
         <Block theme={theme} title={`Achievements · ${s.achievements.filter((a) => a.tier).length} of ${s.achievements.length} unlocked`}>
           <Achievements list={s.achievements} theme={theme} />
+          <PerksLine points={achievementPoints(s.achievements)} theme={theme} />
         </Block>
 
         <Pressable
@@ -509,7 +511,30 @@ function TopList({ theme, title, items }: { theme: Theme; title: string; items: 
   );
 }
 
+/** Perks: your achievement points, what they've unlocked, and what's next. */
+function PerksLine({ points, theme }: { points: number; theme: Theme }) {
+  const next = PERKS.find((p) => p.points > points);
+  const got = PERKS.filter((p) => p.points <= points);
+  return (
+    <View style={[styles.perks, { backgroundColor: theme.accentSoft, borderColor: theme.accent }]}>
+      <Ionicons name="gift-outline" size={20} color={theme.accent} />
+      <View style={{ flex: 1 }}>
+        <Text style={[styles.perksTitle, { color: theme.text }]}>
+          {points} achievement point{points === 1 ? '' : 's'}
+        </Text>
+        <Text style={[styles.perksNote, { color: theme.textMuted }]}>
+          {next ? `Next perk: ${next.name} at ${next.points}.` : 'Every perk unlocked.'}
+          {got.length ? ` Yours: ${got.map((p) => p.name.replace(/ (accent|story palette)$/, '')).join(', ')} (in Settings and story palettes).` : ' Each tier earns points; perks are new looks.'}
+        </Text>
+      </View>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
+  perks: { flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, borderRadius: 12, padding: 12, marginTop: 12 },
+  perksTitle: { fontSize: font.body, fontWeight: '700' },
+  perksNote: { fontFamily: fonts.mono, fontSize: font.caption, lineHeight: 16, marginTop: 2 },
   content: { padding: 16, gap: 22 },
   who: { alignItems: 'center', gap: 4, paddingTop: 8 },
   save: { flexDirection: 'row', alignItems: 'center', gap: 6, height: 40, paddingHorizontal: 22, borderRadius: 20, marginTop: 8 },

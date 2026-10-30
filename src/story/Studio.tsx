@@ -5,6 +5,7 @@ import type { ReactNode, RefObject } from 'react';
 import { ActivityIndicator, PixelRatio, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { useToast } from '@/components/Toast';
+import { usePerks } from '@/lib/perks';
 import { font, fonts } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
 
@@ -40,16 +41,29 @@ export function StoryPreview({ width, theme, target, children }: { width: number
 }
 
 export function PalettePicker({ value, onChange, theme }: { value: PaletteKey; onChange: (p: PaletteKey) => void; theme: Theme }) {
+  const perks = usePerks();
+  const toast = useToast();
   return (
     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.palettes}>
       {(Object.keys(PALETTES) as PaletteKey[]).map((key) => {
         const p = PALETTES[key];
         const active = key === value;
+        const open = perks.unlocked('palette', key);
+        const perk = perks.perkFor('palette', key);
         return (
-          <Pressable key={key} onPress={() => onChange(key)} accessibilityRole="button" accessibilityState={{ selected: active }} style={styles.palette}>
+          <Pressable
+            key={key}
+            onPress={() =>
+              open ? onChange(key) : toast(`${p.label} is a perk: ${perk?.points} achievement points (you have ${perks.points}). Earn them on your profile.`)
+            }
+            accessibilityRole="button"
+            accessibilityLabel={`${p.label}${open ? '' : ', locked'}`}
+            accessibilityState={{ selected: active }}
+            style={styles.palette}
+          >
             <View style={[styles.paletteRing, { borderColor: active ? theme.accent : 'transparent' }]}>
-              <LinearGradient colors={p.bg} style={styles.paletteSwatch}>
-                <View style={[styles.paletteDot, { backgroundColor: p.accent }]} />
+              <LinearGradient colors={p.bg} style={[styles.paletteSwatch, !open && { opacity: 0.4 }]}>
+                {open ? <View style={[styles.paletteDot, { backgroundColor: p.accent }]} /> : <Ionicons name="lock-closed" size={14} color="#FFFFFF" />}
               </LinearGradient>
             </View>
             <Text style={[styles.paletteLabel, { color: active ? theme.text : theme.textMuted }]}>{p.label.toUpperCase()}</Text>

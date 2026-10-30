@@ -113,3 +113,47 @@ export async function photoUrl(path: string): Promise<string | null> {
   const { data, error } = await client().storage.from('avatars').createSignedUrl(path, 60 * 60);
   return error ? null : data.signedUrl;
 }
+
+// --- Finding people by name (supabase/people.sql) ----------------------------------------------------
+
+/** Someone found by name: who they are, and where a request between you stands. */
+export type Person = { id: string; name: string; bio: string; status: 'none' | 'sent' | 'received' };
+export type FriendRequest = { id: string; name: string; bio: string; sentAt: string };
+
+/** True when the server hasn't had supabase/people.sql run yet (name search then stays hidden). */
+export const notSetUp = (e: unknown) => e instanceof Error && /people\.sql/.test(e.message);
+
+function failPeople(e: { message?: string } | null): never {
+  const m = e?.message ?? '';
+  if (/function .* does not exist|Could not find the function/i.test(m)) throw new Error('Finding people by name isn’t set up on the server yet (supabase/people.sql).');
+  fail(e);
+}
+
+export async function searchPeople(q: string): Promise<Person[]> {
+  const { data, error } = await client().rpc('search_people', { q });
+  if (error) failPeople(error);
+  return ((data ?? []) as { user_id: string; name: string; bio: string; status: Person['status'] }[]).map((r) => ({ id: r.user_id, name: r.name, bio: r.bio, status: r.status }));
+}
+
+/** Resolves to 'sent', or 'friends' when they had already asked you. */
+export async function sendFriendRequest(id: string): Promise<'sent' | 'friends'> {
+  const { data, error } = await client().rpc('send_friend_request', { target: id });
+  if (error) failPeople(error);
+  return data as 'sent' | 'friends';
+}
+
+export async function friendRequests(): Promise<FriendRequest[]> {
+  const { data, error } = await client().rpc('my_friend_requests');
+  if (error) failPeople(error);
+  return ((data ?? []) as { user_id: string; name: string; bio: string; sent_at: string }[]).map((r) => ({ id: r.user_id, name: r.name || 'Someone', bio: r.bio, sentAt: r.sent_at }));
+}
+
+export async function answerFriendRequest(id: string, accept: boolean): Promise<void> {
+  const { error } = await client().rpc('answer_friend_request', { requester: id, accept });
+  if (error) failPeople(error);
+}
+
+export async function cancelFriendRequest(id: string): Promise<void> {
+  const { error } = await client().rpc('cancel_friend_request', { target: id });
+  if (error) failPeople(error);
+}

@@ -1,5 +1,6 @@
 export type StoryLayout = 'strip' | 'tickets' | 'spotlight';
-export type PaletteKey = 'marquee' | 'velvet' | 'neon' | 'sakura' | 'noir' | 'paper';
+/** The story palettes; goldclass and midnight are perks, earned with achievements (src/lib/perks.ts). */
+export type PaletteKey = 'marquee' | 'velvet' | 'neon' | 'sakura' | 'noir' | 'paper' | 'goldclass' | 'midnight';
 
 export type Palette = {
   label: string;
@@ -81,6 +82,28 @@ export const PALETTES: Record<PaletteKey, Palette> = {
     like: '#B3203A',
     strip: '#1A1714',
     card: '#FBF8F1',
+  },
+  goldclass: {
+    label: 'Gold Class',
+    bg: ['#3B2A0C', '#1A1206', '#0A0703'],
+    text: '#FFF6E0',
+    muted: '#C9B07A',
+    accent: '#FFD27A',
+    star: '#FFD27A',
+    like: '#FF6B81',
+    strip: '#0A0703',
+    card: '#2A1E09',
+  },
+  midnight: {
+    label: 'Midnight',
+    bg: ['#0B1A3A', '#08102A', '#03060F'],
+    text: '#EEF3FF',
+    muted: '#8FA3CC',
+    accent: '#9DB8FF',
+    star: '#FFE08A',
+    like: '#FF7AA2',
+    strip: '#03060F',
+    card: '#111F44',
   },
 };
 

@@ -6,7 +6,7 @@ import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from
 
 import { SectionLabel } from '@/components/SectionLabel';
 import { tmdbKey } from '@/api';
-import { omdbKey as omdbKeyFor, omdbRatings, watchRegion } from '@/api/omdb';
+import { omdbByTitle, omdbKey as omdbKeyFor, omdbRatings, watchRegion } from '@/api/omdb';
 import type { OmdbRatings } from '@/api/omdb';
 import { extrasTmdb } from '@/api/tmdb';
 import type { Provider, TitleExtras as Extras } from '@/api/tmdb';
@@ -19,9 +19,18 @@ import type { Source } from '@/store/types';
 // back and forth doesn't ask again; nothing here is saved with the diary.
 const cache = new Map<string, { extras: Extras | null; omdb: OmdbRatings | null }>();
 
-type Props = { source: Source; sourceId: string; imdbId?: string | null; theme: Theme };
+type Props = {
+  source: Source;
+  sourceId: string;
+  imdbId?: string | null;
+  /** For finding the IMDb score by name when TMDB has no IMDb id. */
+  title?: string;
+  year?: number | null;
+  series?: boolean;
+  theme: Theme;
+};
 
-export function TitleExtras({ source, sourceId, imdbId, theme }: Props) {
+export function TitleExtras({ source, sourceId, imdbId, title, year, series, theme }: Props) {
   const { settings } = useSettings();
   const key = tmdbKey(settings.tmdbKey);
   const region = watchRegion(settings.watchRegion);
@@ -36,15 +45,23 @@ export function TitleExtras({ source, sourceId, imdbId, theme }: Props) {
     const controller = new AbortController();
     (async () => {
       const extras = source === 'tmdb' && key ? await extrasTmdb(key, sourceId, region, controller.signal).catch(() => null) : null;
-      const imdb = extras?.imdbId ?? imdbId ?? null;
-      const omdb = omdbKey && imdb ? await omdbRatings(omdbKey, imdb, controller.signal).catch(() => null) : null;
+      let imdb = extras?.imdbId ?? imdbId ?? null;
+      let omdb = omdbKey && imdb ? await omdbRatings(omdbKey, imdb, controller.signal).catch(() => null) : null;
+      // No IMDb id from TMDB: ask OMDb by name and year instead.
+      if (omdbKey && !imdb && title) {
+        const found = await omdbByTitle(omdbKey, title, year ?? null, !!series, controller.signal).catch(() => null);
+        if (found) {
+          imdb = found.imdbId;
+          omdb = found.ratings;
+        }
+      }
       if (controller.signal.aborted) return;
       const value = { extras: extras ? { ...extras, imdbId: imdb } : imdb ? { score: null, votes: 0, imdbId: imdb, watch: null } : null, omdb };
       cache.set(id, value);
       setFetched({ id, value });
     })();
     return () => controller.abort();
-  }, [id, source, sourceId, imdbId, key, region, omdbKey]);
+  }, [id, source, sourceId, imdbId, key, region, omdbKey, title, year, series]);
 
   if (loading) {
     return (
@@ -73,8 +90,8 @@ export function TitleExtras({ source, sourceId, imdbId, theme }: Props) {
         )}
         {data?.omdb?.rottenTomatoes && <Score theme={theme} label="Rotten Tomatoes" value={data.omdb.rottenTomatoes} />}
         {data?.omdb?.metacritic && <Score theme={theme} label="Metacritic" value={data.omdb.metacritic.split('/')[0]} />}
-        {/* TMDB's own score only when there's nothing better known to show. */}
-        {e.score !== null && !data?.omdb?.imdb && !data?.omdb?.rottenTomatoes && (
+        {/* TMDB's own score whenever IMDb has none yet (new and regional titles), so there's always a score from viewers. */}
+        {e.score !== null && !data?.omdb?.imdb && (
           <Score theme={theme} label="TMDB" value={`${e.score}`} sub={`${compact(e.votes)} votes`} />
         )}
         {imdbUrl && !data?.omdb?.imdb && (

@@ -164,7 +164,7 @@ export default function EntryScreen() {
             </View>
           )}
 
-          <TitleExtras source={entry.source} sourceId={entry.sourceId} imdbId={entry.imdbId} theme={theme} />
+          <TitleExtras source={entry.source} sourceId={entry.sourceId} imdbId={entry.imdbId} title={entry.title} year={entry.year} series={entry.kind !== 'movie'} theme={theme} />
 
           {!!entry.review && (
             <View style={styles.reviewWrap}>

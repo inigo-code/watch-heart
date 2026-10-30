@@ -1,4 +1,4 @@
-import { MINUTE, cached } from '@/api/cache';
+import { MINUTE, cached, cachedOnDisk } from '@/api/cache';
 import type { MediaKind, Title } from '@/store/types';
 
 // TMDB: free for non-commercial use with your own key (themoviedb.org/settings/api).
@@ -567,7 +567,10 @@ export type BrowseQuery = {
 /** One page of titles matching a Discover query (kept for 15 minutes). */
 export function discoverTmdb(key: string, q: BrowseQuery, page: number, signal?: AbortSignal): Promise<{ results: Title[]; pages: number }> {
   void signal;
-  return cached(`discover:${JSON.stringify(q)}:${page}`, 15 * MINUTE, () => loadDiscover(key, q, page));
+  // The first page opens Home's and Discover's rows, so it's kept on the phone for two hours; later pages
+  // only in memory.
+  const id = `discover:${JSON.stringify(q)}:${page}`;
+  return page === 1 ? cachedOnDisk(id, 120 * MINUTE, () => loadDiscover(key, q, page)) : cached(id, 15 * MINUTE, () => loadDiscover(key, q, page));
 }
 
 async function loadDiscover(key: string, q: BrowseQuery, page: number, signal?: AbortSignal): Promise<{ results: Title[]; pages: number }> {
@@ -631,7 +634,7 @@ async function loadDiscover(key: string, q: BrowseQuery, page: number, signal?: 
 
 /** This week's trending films and series together (anime included), most talked about first. Kept for an hour. */
 export function trendingAllTmdb(key: string): Promise<Title[]> {
-  return cached('trending:all', 60 * MINUTE, async () => {
+  return cachedOnDisk('trending:all', 60 * MINUTE, async () => {
     const d = await get<{ results: (Result & { media_type?: string })[] }>(key, '/trending/all/week');
     return d.results.filter((r) => r.media_type === 'movie' || r.media_type === 'tv').map((r) => toTitle(r, r.media_type as 'movie' | 'tv'));
   });
@@ -639,7 +642,7 @@ export function trendingAllTmdb(key: string): Promise<Title[]> {
 
 /** Films in cinemas in a country now, most popular first. Kept for six hours. */
 export function nowPlayingTmdb(key: string, region: string): Promise<Title[]> {
-  return cached(`now-playing:${region}`, 6 * 60 * MINUTE, async () => {
+  return cachedOnDisk(`now-playing:${region}`, 6 * 60 * MINUTE, async () => {
     const d = await get<{ results: Result[] }>(key, '/movie/now_playing', { region });
     return [...d.results].sort(byPopularity).map((r) => toTitle(r, 'movie'));
   });

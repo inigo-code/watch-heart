@@ -21,7 +21,7 @@ const NOT_DOCS = ['Documentary', 'Music'];
 
 /**
  * Home's rows for where you are. In India: FDFS (new Indian releases), favourites in a language you pick,
- * and hidden gems (your language from Settings comes first in each). Elsewhere, one row of what's popular from your country (none for the US, which Trending
+ * (your language from Settings comes first in each). Hidden gems are in Discover. Elsewhere, one row of what's popular from your country (none for the US, which Trending
  * already is).
  */
 export function RegionalRows({ region, mine, theme, seen }: { region: string; mine: Language | null; theme: Theme; seen: (t: Title) => boolean }) {
@@ -62,13 +62,6 @@ export function RegionalRows({ region, mine, theme, seen }: { region: string; mi
               })}
             </ScrollView>
           }
-        />
-        <QueryRow
-          theme={theme}
-          seen={seen}
-          title="Indian hidden gems"
-          sub="Rated highly, seen by few"
-          q={{ kind: 'movie', country: 'IN', sort: 'rating', minScore: 7.3, minVotes: 50, maxVotes: 800, notGenres: NOT_DOCS, preferLang: mine?.code }}
         />
       </>
     );

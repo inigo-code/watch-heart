@@ -11,6 +11,7 @@ import { useEffect } from 'react';
 import { Platform } from 'react-native';
 
 import { ToastProvider } from '@/components/Toast';
+import { SplashOverlay } from '@/components/SplashOverlay';
 import { UpdatePrompt } from '@/components/UpdatePrompt';
 import { fonts, useTheme } from '@/lib/theme';
 import { useMovieNightTaps } from '@/lib/movieNight';
@@ -68,15 +69,12 @@ function Navigator() {
   useTmdbFreshness();
   useMovieNightTaps();
 
-  // The splash lifts once the diary and settings are loaded, or after 2.5 s whatever happens.
+  // The native splash hands over to SplashOverlay, which lifts once the diary and settings are in. This
+  // is only a safety net, should the overlay never draw.
   useEffect(() => {
-    if (ready && settingsReady) {
-      SplashScreen.hideAsync().catch(() => {});
-      return;
-    }
-    const timer = setTimeout(() => SplashScreen.hideAsync().catch(() => {}), 2500);
+    const timer = setTimeout(() => SplashScreen.hideAsync().catch(() => {}), 4000);
     return () => clearTimeout(timer);
-  }, [ready, settingsReady]);
+  }, []);
 
   // On Android, a shared link arrives through the native module rather than a deep link,
   // so open the Share screen whenever something has been shared and not yet handled.
@@ -95,8 +93,10 @@ function Navigator() {
           headerTitleStyle: { fontFamily: fonts.display, fontSize: 24 },
           headerShadowVisible: false,
           contentStyle: { backgroundColor: theme.bg },
-          // One way of moving everywhere: pages come in from the right; the log form rises from below.
-          animation: 'slide_from_right',
+          // One way of moving everywhere: pages come in from the right with the page behind easing back a
+          // little (smoother than a plain slide); the log form rises from below.
+          animation: 'ios_from_right',
+          gestureEnabled: true,
         }}
       >
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
@@ -124,6 +124,7 @@ function Navigator() {
         <Stack.Screen name="friend/[id]" options={{ title: '' }} />
         <Stack.Screen name="friend-list" options={{ title: 'LIST' }} />
       </Stack>
+      <SplashOverlay ready={ready && settingsReady} />
     </>
   );
 }

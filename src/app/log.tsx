@@ -18,10 +18,11 @@ import { Hero } from '@/components/Hero';
 import { SectionLabel } from '@/components/SectionLabel';
 import { ViewingDetails } from '@/components/ViewingDetails';
 import { trackable } from '@/api/episodes';
-import { TitleExtras } from '@/components/TitleExtras';
 import { TitlePicker } from '@/components/TitlePicker';
 import { useToast } from '@/components/Toast';
 import { daysAgo, friendlyDate, isoDate, parseIso, today } from '@/lib/dates';
+import { easeNextLayout } from '@/lib/motion';
+import { hasViewingDetails } from '@/lib/viewing';
 import { buddies } from '@/lib/companions';
 import { applyFormat } from '@/lib/richText';
 import { KIND_LABEL } from '@/lib/stats';
@@ -109,6 +110,8 @@ function LogForm() {
   const [yearText, setYearText] = useState(() => (draft.year ? String(draft.year) : ''));
   const [iosPicker, setIosPicker] = useState(false);
   const [picking, setPicking] = useState(false);
+  // The extras (who, how, where, rewatch, tags) wait behind "More details", open when an entry already has some.
+  const [moreOpen, setMoreOpen] = useState(false);
   const [trashing, setTrashing] = useState(false);
   const reviewSel = useRef({ start: 0, end: 0 });
   const set = (patch: Partial<EntryDraft>) => setDraft((d) => ({ ...d, ...patch }));
@@ -234,6 +237,14 @@ function LogForm() {
     router.dismissTo('/');
   };
 
+  const detailCount = [
+    !!draft.companions?.length,
+    hasViewingDetails(draft),
+    draft.rewatch,
+    !!tagText.trim(),
+  ].filter(Boolean).length;
+  const showMore = moreOpen || (editing ? detailCount > 0 : false);
+
   return (
     <KeyboardSafe style={{ backgroundColor: theme.bg }}>
       <Stack.Screen
@@ -284,7 +295,6 @@ function LogForm() {
         )}
 
         <View style={styles.form}>
-          {!manual && !editing && draft.sourceId ? <TitleExtras source={draft.source} sourceId={draft.sourceId} imdbId={draft.imdbId} theme={theme} /> : null}
           {!editing && trackable(draft) && (
             <Pressable
               onPress={() => router.replace({ pathname: '/track', params: { title: params.title ?? JSON.stringify({ ...draft, originalTitle: draft.originalTitle ?? undefined }) } })}
@@ -352,22 +362,7 @@ function LogForm() {
                 <Text style={[styles.likeText, { color: draft.liked ? theme.like : theme.textMuted }]}>{draft.liked ? 'LOVED' : 'LIKE'}</Text>
               </Pressable>
             </View>
-            <Text style={[styles.hint, { color: theme.textMuted }]}>Slide across the stars; the left half of a star is a half. Tap your rating again to clear it.</Text>
           </Field>
-
-          <Field theme={theme} label="Watched with">
-            <CompanionField names={draft.companions ?? []} onChange={(companions) => set({ companions })} known={known} theme={theme} />
-          </Field>
-
-          <ViewingDetails draft={draft} onChange={set} theme={theme} />
-
-          <ToggleLine
-            theme={theme}
-            icon="repeat"
-            label={series ? 'Rewatch (seen it before)' : 'I’ve seen this before'}
-            value={draft.rewatch}
-            onChange={(rewatch) => set({ rewatch })}
-          />
 
           {series && (
             <Field theme={theme} label="What you watched">
@@ -411,18 +406,57 @@ function LogForm() {
               style={[styles.input, styles.review, { color: theme.text, backgroundColor: theme.card, borderColor: theme.border }]}
             />
           </Field>
-          <ToggleLine theme={theme} icon="eye-off-outline" label="Contains spoilers" value={draft.spoilers} onChange={(spoilers) => set({ spoilers })} />
+          {(!!draft.review.trim() || draft.spoilers) && (
+            <ToggleLine theme={theme} icon="eye-off-outline" label="Contains spoilers" value={draft.spoilers} onChange={(spoilers) => set({ spoilers })} />
+          )}
 
-          <Field theme={theme} label="Tags">
-            <TextInput
-              value={tagText}
-              onChangeText={setTagText}
-              placeholder="cinema, with friends, imax"
-              placeholderTextColor={theme.textMuted}
-              autoCapitalize="none"
-              style={[styles.input, { color: theme.text, backgroundColor: theme.card, borderColor: theme.border }]}
-            />
-          </Field>
+          <Pressable
+            onPress={() => {
+              easeNextLayout();
+              setMoreOpen((v) => !v);
+            }}
+            accessibilityRole="button"
+            accessibilityState={{ expanded: showMore }}
+            style={({ pressed }) => [styles.more, { borderColor: theme.border, backgroundColor: pressed ? theme.chip : 'transparent' }]}
+          >
+            <Ionicons name="options-outline" size={18} color={theme.accent} />
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.moreTitle, { color: theme.text }]}>More details</Text>
+              <Text style={[styles.moreNote, { color: theme.textMuted }]} numberOfLines={1}>
+                {detailCount ? `${detailCount} added · ` : ''}Who, where, on what, vibes, rewatch, tags
+              </Text>
+            </View>
+            <Ionicons name={showMore ? 'chevron-up' : 'chevron-down'} size={18} color={theme.textMuted} />
+          </Pressable>
+
+          {showMore && (
+            <>
+              <Field theme={theme} label="Watched with">
+                <CompanionField names={draft.companions ?? []} onChange={(companions) => set({ companions })} known={known} theme={theme} />
+              </Field>
+
+              <ViewingDetails draft={draft} onChange={set} theme={theme} />
+
+              <ToggleLine
+                theme={theme}
+                icon="repeat"
+                label={series ? 'Rewatch (seen it before)' : 'I’ve seen this before'}
+                value={draft.rewatch}
+                onChange={(rewatch) => set({ rewatch })}
+              />
+
+              <Field theme={theme} label="Tags">
+                <TextInput
+                  value={tagText}
+                  onChangeText={setTagText}
+                  placeholder="cinema, with friends, imax"
+                  placeholderTextColor={theme.textMuted}
+                  autoCapitalize="none"
+                  style={[styles.input, { color: theme.text, backgroundColor: theme.card, borderColor: theme.border }]}
+                />
+              </Field>
+            </>
+          )}
 
           <Pressable
             onPress={save}
@@ -496,6 +530,9 @@ const styles = StyleSheet.create({
   ratingValue: { fontFamily: fonts.display, fontSize: 36, width: 44, includeFontPadding: false },
   like: { alignItems: 'center', marginLeft: 'auto' },
   likeText: { fontFamily: fonts.monoBold, fontSize: 10, letterSpacing: 1 },
+  more: { flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12 },
+  moreTitle: { fontSize: font.body, fontWeight: '700' },
+  moreNote: { fontFamily: fonts.mono, fontSize: font.caption, marginTop: 2 },
   hint: { fontFamily: fonts.mono, fontSize: font.caption, lineHeight: 16 },
   toggle: { flexDirection: 'row', alignItems: 'center', gap: 10, borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, minHeight: 50 },
   toggleText: { flex: 1, fontSize: font.body, fontWeight: '600' },

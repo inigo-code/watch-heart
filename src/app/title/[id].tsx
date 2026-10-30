@@ -163,7 +163,7 @@ export default function TitleScreen() {
 
           <Synopsis about={a} overview={t.overview ?? ''} theme={theme} />
 
-          <TitleExtras source={t.source} sourceId={t.sourceId} theme={theme} />
+          <TitleExtras source={t.source} sourceId={t.sourceId} title={t.title} year={t.year} series={t.kind !== 'movie'} theme={theme} />
 
           <FriendsOnTitle source={t.source} sourceId={t.sourceId} theme={theme} />
 
