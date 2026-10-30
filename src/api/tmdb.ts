@@ -269,7 +269,13 @@ type RegionProviders = { link?: string; flatrate?: ProviderRow[]; free?: Provide
  * TMDB's community score, the IMDb id and where to watch in one country, in one request. Streaming data
  * is JustWatch's, through TMDB; it has to be credited to JustWatch wherever it's shown.
  */
-export async function extrasTmdb(key: string, sourceId: string, region: string, signal?: AbortSignal): Promise<TitleExtras> {
+/** A title's score, IMDb id and where to watch in a region; kept on the phone for 12 hours. */
+export function extrasTmdb(key: string, sourceId: string, region: string, signal?: AbortSignal): Promise<TitleExtras> {
+  void signal;
+  return cachedOnDisk(`extras:${sourceId}:${region}`, 12 * 60 * MINUTE, () => loadExtras(key, sourceId, region));
+}
+
+async function loadExtras(key: string, sourceId: string, region: string, signal?: AbortSignal): Promise<TitleExtras> {
   const [type, id] = sourceId.split(':') as ['movie' | 'tv', string];
   const d = await get<{
     vote_average?: number;

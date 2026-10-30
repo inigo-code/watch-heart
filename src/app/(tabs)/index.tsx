@@ -10,6 +10,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { tmdbKey } from '@/api';
 import { watchRegion } from '@/api/omdb';
 import { discoverTmdb, nowPlayingTmdb, trendingAllTmdb } from '@/api/tmdb';
+import { ScreenGlow } from '@/components/ScreenGlow';
 import { AppHeader, greetingIcon, greetingLine } from '@/components/AppHeader';
 import { KindBadge, Poster } from '@/components/Film';
 import { FriendsRow } from '@/components/home/FriendsRow';
@@ -69,10 +70,19 @@ export default function HomeScreen() {
     let live = true;
     // Only titles people know lead the slider: new releases with some votes already (Jailer 2, not a film
     // three people have heard of); in a quiet week, the most popular new release.
+    // Two slides: the best known first, then the best rated new release with a few votes, then the most
+    // popular, so a quiet week still fills both.
     const usable = (r: { results: Title[] }) => r.results.filter((t) => t.backdropUrl && t.posterUrl);
-    discoverTmdb(key, { ...regional.q, minVotes: 10 }, 1)
-      .then(async (r) => (usable(r).length ? usable(r) : usable(await discoverTmdb(key, regional.q, 1)).slice(0, 1)))
-      .then((titles) => live && setLocal({ key: regionalKey, titles: titles.slice(0, 2) }))
+    Promise.all([
+      discoverTmdb(key, { ...regional.q, minVotes: 10 }, 1).catch(() => ({ results: [] as Title[] })),
+      discoverTmdb(key, { ...regional.q, sort: 'rating', minVotes: 3 }, 1).catch(() => ({ results: [] as Title[] })),
+      discoverTmdb(key, regional.q, 1).catch(() => ({ results: [] as Title[] })),
+    ])
+      .then((answers) => {
+        const picked: Title[] = [];
+        for (const t of answers.flatMap(usable)) if (picked.length < 2 && !picked.some((p) => p.sourceId === t.sourceId)) picked.push(t);
+        if (live) setLocal({ key: regionalKey, titles: picked });
+      })
       .catch(() => live && setLocal({ key: regionalKey, titles: [] }));
     return () => {
       live = false;
@@ -113,6 +123,7 @@ export default function HomeScreen() {
       style={{ backgroundColor: theme.bg }}
       contentContainerStyle={[styles.content, { paddingTop: insets.top + 10, paddingBottom: insets.bottom + 32 }]}
     >
+      <ScreenGlow theme={theme} />
       <AppHeader theme={theme} line={greetingLine(hour, settings.name)} icon={greetingIcon(hour)} />
 
       {nights[0] && <MovieNightCard night={nights[0]} theme={theme} showTitle />}

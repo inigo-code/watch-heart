@@ -59,22 +59,27 @@ const list = (id: string, name: string, note: string, keywords: number[], extra:
   q: { kind: 'movie', keywords, sort: 'rating', minVotes: 300, notGenres: ['Documentary'], ...extra },
 });
 export const LISTS: Shelf[] = [
-  list('cold', 'Warm films for a cold day', 'Feel-good, kind, a blanket and tea', [383896, 248927], { minScore: 7, sort: 'popular' }),
-  list('mind', 'Mind-bending', 'Leave the cinema arguing', [362567, 326438]),
+  list('cold', 'Warm films for a cold day', 'Feel-good, kind, a blanket and tea', [383896, 319357, 194088, 335803, 6054, 248927], {
+    minScore: 7.2,
+    minVotes: 500,
+    sort: 'popular',
+    notGenres: ['Documentary', 'Horror', 'Thriller', 'War', 'Crime'],
+  }),
+  list('mind', 'Mind-bending', 'Leave the cinema arguing', [362567, 157171, 3307, 12565], { minVotes: 500 }),
   list('time', 'Time travel', 'Loops, paradoxes, second chances', [4379]),
   list('heist', 'Heists', 'The plan, the crew, the job', [10051, 191845]),
   list('space', 'Lost in space', 'Out past the stars', [9882, 3801], { genres: ['Science Fiction'] }),
   list('road', 'Road trips', 'Windows down, no plan', [7312]),
   list('coming', 'Coming of age', 'The summer everything changed', [10683]),
   list('true', 'True stories', 'It really happened', [9672], { minVotes: 1000 }),
-  list('twist', 'Twist endings', 'You won’t see it coming', [326438]),
-  list('one', 'One location', 'A room, a night, a few people', [368386], { minVotes: 150 }),
+  list('twist', 'Twist endings', 'You won’t see it coming', [326438, 275311, 331114, 335567], { minVotes: 150 }),
+  list('animated', 'Animated masterpieces', 'Drawn, stop-motion and CG', [], { genres: ['Animation'], minVotes: 2000 }),
   list('court', 'Courtroom dramas', 'Order in the court', [33519, 214780], { minVotes: 150 }),
   list('revenge', 'Revenge', 'Served cold', [9748], { minVotes: 1000 }),
   list('dystopia', 'Dystopias', 'Futures to worry about', [4565]),
   list('underdog', 'Underdogs', 'Root for them', [240, 367589, 371436]),
   list('smalltown', 'Small towns', 'Everyone knows everyone', [1415]),
-  list('found', 'Found family', 'Strangers who become home', [248927]),
+  list('found', 'Found family', 'Strangers who become home', [248927, 267488], { minVotes: 100 }),
 ];
 
 /** Discover's extra shelf in India: highly rated Indian films few have seen. */

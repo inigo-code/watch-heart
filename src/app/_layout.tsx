@@ -13,6 +13,9 @@ import { Platform } from 'react-native';
 import { ToastProvider } from '@/components/Toast';
 import { SplashOverlay } from '@/components/SplashOverlay';
 import { UpdatePrompt } from '@/components/UpdatePrompt';
+import { tmdbKey } from '@/api';
+import { omdbKey as omdbKeyFor, watchRegion } from '@/api/omdb';
+import { setScoreDefaults } from '@/lib/titleScores';
 import { fonts, useTheme } from '@/lib/theme';
 import { useMovieNightTaps } from '@/lib/movieNight';
 import { useTmdbFreshness } from '@/lib/tmdbFreshness';
@@ -65,7 +68,9 @@ function Navigator() {
   const pathname = usePathname();
   const { hasShareIntent } = useShareIntentContext();
   const { ready } = useDiary();
-  const { ready: settingsReady } = useSettings();
+  const { ready: settingsReady, settings } = useSettings();
+  // Scores warmed from a poster touch use your keys and country from the start.
+  useEffect(() => setScoreDefaults(tmdbKey(settings.tmdbKey), omdbKeyFor(settings.omdbKey), watchRegion(settings.watchRegion)), [settings.tmdbKey, settings.omdbKey, settings.watchRegion]);
   useTmdbFreshness();
   useMovieNightTaps();
 

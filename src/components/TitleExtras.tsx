@@ -2,22 +2,22 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { Image } from 'expo-image';
 import * as Linking from 'expo-linking';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { SectionLabel } from '@/components/SectionLabel';
 import { tmdbKey } from '@/api';
-import { omdbByTitle, omdbKey as omdbKeyFor, omdbRatings, watchRegion } from '@/api/omdb';
-import type { OmdbRatings } from '@/api/omdb';
-import { extrasTmdb } from '@/api/tmdb';
-import type { Provider, TitleExtras as Extras } from '@/api/tmdb';
+import { omdbKey as omdbKeyFor, watchRegion } from '@/api/omdb';
+import type { Provider } from '@/api/tmdb';
+import { loadTitleScores, scoresId, setScoreDefaults } from '@/lib/titleScores';
+import type { TitleScores } from '@/lib/titleScores';
 import { font, fonts } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
 import { useSettings } from '@/settings/SettingsProvider';
 import type { Source } from '@/store/types';
 
-// Scores and where to watch for one title, fetched when it's opened. Kept for the session, so going
-// back and forth doesn't ask again; nothing here is saved with the diary.
-const cache = new Map<string, { extras: Extras | null; omdb: OmdbRatings | null }>();
+// Scores and where to watch for one title (lib/titleScores.ts, which starts loading them as soon as a
+// poster is touched). Answers that came back are kept here for the session, so a page opens with them.
+const cache = new Map<string, TitleScores>();
 
 type Props = {
   source: Source;
@@ -35,38 +35,38 @@ export function TitleExtras({ source, sourceId, imdbId, title, year, series, the
   const key = tmdbKey(settings.tmdbKey);
   const region = watchRegion(settings.watchRegion);
   const omdbKey = omdbKeyFor(settings.omdbKey);
-  const id = `${source}:${sourceId}:${region}:${omdbKey ? 'o' : ''}`;
-  const [fetched, setFetched] = useState<{ id: string; value: { extras: Extras | null; omdb: OmdbRatings | null } } | null>(null);
+  const id = scoresId({ source, sourceId }, region, omdbKey);
+  const [fetched, setFetched] = useState<{ id: string; value: TitleScores } | null>(null);
   const data = cache.get(id) ?? (fetched?.id === id ? fetched.value : null);
   const loading = !data && !cache.has(id);
 
+  // Touching a poster elsewhere warms the answer with the same settings this page uses.
+  useEffect(() => setScoreDefaults(key, omdbKey, region), [key, omdbKey, region]);
+
   useEffect(() => {
     if (cache.has(id)) return;
-    const controller = new AbortController();
-    (async () => {
-      const extras = source === 'tmdb' && key ? await extrasTmdb(key, sourceId, region, controller.signal).catch(() => null) : null;
-      let imdb = extras?.imdbId ?? imdbId ?? null;
-      let omdb = omdbKey && imdb ? await omdbRatings(omdbKey, imdb, controller.signal).catch(() => null) : null;
-      // No IMDb id from TMDB: ask OMDb by name and year instead.
-      if (omdbKey && !imdb && title) {
-        const found = await omdbByTitle(omdbKey, title, year ?? null, !!series, controller.signal).catch(() => null);
-        if (found) {
-          imdb = found.imdbId;
-          omdb = found.ratings;
-        }
-      }
-      if (controller.signal.aborted) return;
-      const value = { extras: extras ? { ...extras, imdbId: imdb } : imdb ? { score: null, votes: 0, imdbId: imdb, watch: null } : null, omdb };
-      cache.set(id, value);
-      setFetched({ id, value });
-    })();
-    return () => controller.abort();
+    let live = true;
+    loadTitleScores({ source, sourceId, imdbId, title, year, series }, key, region, omdbKey)
+      .catch(() => ({ extras: null, omdb: null }))
+      .then((value) => {
+        cache.set(id, value);
+        if (live) setFetched({ id, value });
+      });
+    return () => {
+      live = false;
+    };
   }, [id, source, sourceId, imdbId, key, region, omdbKey, title, year, series]);
 
+  // While loading, the cards' shapes hold their place, so the page doesn't jump when they arrive.
   if (loading) {
     return (
-      <View style={styles.loading}>
-        <ActivityIndicator color={theme.accent} />
+      <View style={styles.wrap} accessibilityLabel="Loading scores">
+        <View style={styles.scores}>
+          {[0, 1, 2].map((i) => (
+            <View key={i} style={[styles.ghost, { backgroundColor: theme.card, borderColor: theme.border }]} />
+          ))}
+        </View>
+        <View style={[styles.ghostLine, { backgroundColor: theme.card }]} />
       </View>
     );
   }
@@ -164,7 +164,8 @@ function Providers({ theme, title, list, link }: { theme: Theme; title: string; 
 }
 
 const styles = StyleSheet.create({
-  loading: { paddingVertical: 12, alignItems: 'flex-start' },
+  ghost: { width: 104, height: 74, borderRadius: 12, borderWidth: 1 },
+  ghostLine: { height: 64, borderRadius: 12, marginTop: 4 },
   wrap: { gap: 12 },
   scores: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, alignItems: 'stretch' },
   score: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8, minWidth: 92, maxWidth: 140 },

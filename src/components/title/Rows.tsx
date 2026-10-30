@@ -5,6 +5,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Poster } from '@/components/Film';
 import { SectionLabel } from '@/components/SectionLabel';
+import { warmScores } from '@/lib/titleScores';
 import { font, fonts } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
 import { tmdbKey } from '@/api';
@@ -20,6 +21,8 @@ export function warmTitle(t: Title) {
   if (t.source !== 'tmdb' || !t.sourceId) return;
   const key = tmdbKey('');
   if (key) aboutTmdb(key, t.sourceId).catch(() => {});
+  // Scores and where to watch too, which the page used to start only once it had opened.
+  warmScores({ source: t.source, sourceId: t.sourceId, title: t.title, year: t.year, series: t.kind !== 'movie' });
   const picture = t.backdropUrl ?? t.posterUrl;
   if (picture) Image.prefetch(picture, 'memory-disk').catch(() => {});
 }

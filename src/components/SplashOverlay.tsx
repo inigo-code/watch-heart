@@ -26,7 +26,9 @@ export function SplashOverlay({ ready }: { ready: boolean }) {
   const [gone, setGone] = useState(false);
 
   // The native splash goes as soon as this, its double, is on screen.
-  const onLayout = () => SplashScreen.hideAsync().catch(() => {});
+  // Not on layout itself: layout comes a frame before anything is drawn, and closing the native splash then
+  // shows the empty window for that frame (a black blink). Two frames later the double is on screen.
+  const onLayout = () => requestAnimationFrame(() => requestAnimationFrame(() => SplashScreen.hideAsync().catch(() => {})));
 
   useEffect(() => {
     let live = true;

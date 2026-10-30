@@ -5,6 +5,7 @@ import { useMemo, useRef, useState } from 'react';
 import { Pressable, ScrollView, SectionList, StyleSheet, Text, TextInput, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { ScreenGlow } from '@/components/ScreenGlow';
 import { ActionSheet } from '@/components/ActionSheet';
 import { AddToList } from '@/components/lists/AddToList';
 import { ConfirmTrash } from '@/components/ConfirmTrash';
@@ -194,6 +195,7 @@ export default function DiaryScreen() {
 
   return (
     <View style={[styles.screen, { backgroundColor: theme.bg }]}>
+      <ScreenGlow theme={theme} />
       {header}
       <SectionList
         ref={listRef}

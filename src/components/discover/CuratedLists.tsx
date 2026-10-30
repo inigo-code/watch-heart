@@ -5,18 +5,19 @@ import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { discoverTmdb } from '@/api/tmdb';
 import { browse } from '@/components/discover/browse';
 import { SectionLabel } from '@/components/SectionLabel';
-import { LISTS } from '@/lib/discover';
+import { INDIAN_GEMS, LISTS } from '@/lib/discover';
 import type { Shelf } from '@/lib/discover';
 import { font, fonts } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
 
-/** Discover's lists, Letterboxd-style: a card per theme with its top three posters fanned out. */
-export function CuratedLists({ theme, tmdb }: { theme: Theme; tmdb: string }) {
+/** Discover's lists, Letterboxd-style: a card per theme with its top three posters fanned out; in India, hidden gems first. */
+export function CuratedLists({ theme, tmdb, region }: { theme: Theme; tmdb: string; region: string }) {
+  const lists = region === 'IN' ? [INDIAN_GEMS, ...LISTS] : LISTS;
   return (
     <View style={styles.section}>
       <SectionLabel theme={theme}>Lists</SectionLabel>
       <FlatList
-        data={LISTS}
+        data={lists}
         horizontal
         keyExtractor={(l) => l.id}
         showsHorizontalScrollIndicator={false}

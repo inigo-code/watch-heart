@@ -4,6 +4,7 @@ import { useCallback, useMemo, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { ScreenGlow } from '@/components/ScreenGlow';
 import { Chip } from '@/components/Film';
 import { RatingChart } from '@/components/RatingChart';
 import { SectionLabel } from '@/components/SectionLabel';
@@ -62,6 +63,7 @@ export default function RecapScreen() {
 
   return (
     <ScrollView style={{ backgroundColor: theme.bg }} contentContainerStyle={[styles.content, { paddingTop: insets.top + 10, paddingBottom: insets.bottom + 32 }]}>
+      <ScreenGlow theme={theme} />
       <View style={styles.titleBlock}>
         <Text style={[styles.heading, { color: theme.text }]}>
           THE <Text style={{ color: theme.accent }}>RECAP</Text>

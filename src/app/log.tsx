@@ -3,7 +3,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import DateTimePicker, { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 import * as Haptics from 'expo-haptics';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Platform, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -22,6 +22,7 @@ import { TitlePicker } from '@/components/TitlePicker';
 import { useToast } from '@/components/Toast';
 import { daysAgo, friendlyDate, isoDate, parseIso, today } from '@/lib/dates';
 import { easeNextLayout } from '@/lib/motion';
+import { useDraftPoster } from '@/lib/posterDraft';
 import { hasViewingDetails } from '@/lib/viewing';
 import { buddies } from '@/lib/companions';
 import { applyFormat } from '@/lib/richText';
@@ -115,6 +116,9 @@ function LogForm() {
   const [trashing, setTrashing] = useState(false);
   const reviewSel = useRef({ start: 0, end: 0 });
   const set = (patch: Partial<EntryDraft>) => setDraft((d) => ({ ...d, ...patch }));
+  // A poster chosen on the poster screen before logging comes back here.
+  const takePoster = useCallback((c: { posterUrl: string | null; posterPick: string | null }) => setDraft((d) => ({ ...d, posterUrl: c.posterUrl, posterPick: c.posterPick })), []);
+  useDraftPoster(draft.sourceId, takePoster);
 
   const format = (kind: 'bold' | 'italic' | 'quote') => {
     const r = applyFormat(draft.review, reviewSel.current, kind);
@@ -291,7 +295,20 @@ function LogForm() {
             </Field>
           </View>
         ) : (
-          <Hero t={draft} theme={theme} topInset={insets.top} />
+          <Hero
+            t={draft}
+            theme={theme}
+            topInset={insets.top}
+            onPoster={
+              draft.source === 'tmdb' && draft.sourceId
+                ? () =>
+                    router.push({
+                      pathname: '/poster/[id]',
+                      params: { id: 'draft', sourceId: draft.sourceId, title: draft.title, current: draft.posterUrl ?? '', picked: draft.posterPick ?? '' },
+                    })
+                : undefined
+            }
+          />
         )}
 
         <View style={styles.form}>

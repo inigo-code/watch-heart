@@ -8,7 +8,7 @@ import type { Provider } from '@/api/tmdb';
 import { browse } from '@/components/discover/browse';
 import { CuratedLists } from '@/components/discover/CuratedLists';
 import { SectionLabel } from '@/components/SectionLabel';
-import { COUNTRIES, DECADES, LANGUAGES, INDIAN_GEMS, SHELVES, countryName, flag, seasonalShelves } from '@/lib/discover';
+import { COUNTRIES, DECADES, LANGUAGES, SHELVES, countryName, flag, seasonalShelves } from '@/lib/discover';
 import { font, fonts } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
 
@@ -61,7 +61,7 @@ export function DiscoverHome({ theme, tmdb, region }: { theme: Theme; tmdb: stri
         </View>
       )}
 
-      <CuratedLists theme={theme} tmdb={tmdb} />
+      <CuratedLists theme={theme} tmdb={tmdb} region={region} />
 
       <View style={styles.section}>
         <SectionLabel theme={theme}>Collections</SectionLabel>
@@ -81,7 +81,7 @@ export function DiscoverHome({ theme, tmdb, region }: { theme: Theme; tmdb: stri
           </Pressable>
         ))}
         <View style={[styles.shelves, { borderColor: theme.border, backgroundColor: theme.card }]}>
-          {(region === 'IN' ? [...SHELVES, INDIAN_GEMS] : SHELVES).map((s, i) => (
+          {SHELVES.map((s, i) => (
             <Pressable
               key={s.id}
               onPress={() => browse(s.q, s.name)}

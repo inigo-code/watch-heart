@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { search, sourceFor, tmdbKey, trending } from '@/api';
 import { watchRegion } from '@/api/omdb';
+import { ScreenGlow } from '@/components/ScreenGlow';
 import { DiscoverHome } from '@/components/discover/DiscoverHome';
 import { Poster } from '@/components/Film';
 import { openTitle, warmTitle } from '@/components/title/Rows';
@@ -103,6 +104,7 @@ export default function SearchScreen() {
 
   return (
     <View style={[styles.screen, { backgroundColor: theme.bg, paddingTop: insets.top + 10 }]}>
+      <ScreenGlow theme={theme} />
       <View style={styles.top}>
         <Text style={[styles.heading, { color: theme.text }]}>
           WHAT DID YOU <Text style={{ color: theme.accent }}>WATCH?</Text>

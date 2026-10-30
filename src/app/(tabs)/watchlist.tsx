@@ -6,6 +6,7 @@ import { FlatList, Modal, Pressable, ScrollView, StyleSheet, Text, View, useWind
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { trackable } from '@/api/episodes';
+import { ScreenGlow } from '@/components/ScreenGlow';
 import { ActionSheet } from '@/components/ActionSheet';
 import { ContinueWatching } from '@/components/ContinueWatching';
 import { AddToList } from '@/components/lists/AddToList';
@@ -116,6 +117,7 @@ export default function WatchlistScreen() {
 
   return (
     <View style={[styles.screen, { backgroundColor: theme.bg }]}>
+      <ScreenGlow theme={theme} />
       <FlatList
         data={shown}
         key={COLS}

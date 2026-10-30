@@ -10,6 +10,7 @@ import { postersTmdb } from '@/api/tmdb';
 import { useToast } from '@/components/Toast';
 import { font, fonts, useTheme } from '@/lib/theme';
 import { useSettings } from '@/settings/SettingsProvider';
+import { choosePosterForDraft } from '@/lib/posterDraft';
 import { useDiary } from '@/store/DiaryStore';
 
 const COLUMNS = 3;
@@ -24,12 +25,19 @@ export default function PosterScreen() {
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const toast = useToast();
-  const { id } = useLocalSearchParams<{ id: string }>();
+  // An entry's id, or "draft" from the log screen (the title and its poster then come as params, and the
+  // choice goes back to the form instead of into the diary).
+  const params = useLocalSearchParams<{ id: string; sourceId?: string; title?: string; current?: string; picked?: string }>();
+  const id = params.id;
+  const draft = id === 'draft';
   const { settings } = useSettings();
   const key = tmdbKey(settings.tmdbKey);
   const { ready, entries, getEntry, patchMany } = useDiary();
-  const entry = getEntry(id);
-  const sourceId = entry?.sourceId ?? '';
+  const entry = draft ? undefined : getEntry(id);
+  const subject = draft
+    ? { title: params.title ?? '', sourceId: params.sourceId ?? '', posterUrl: params.current || null, posterPick: params.picked || null }
+    : entry;
+  const sourceId = subject?.sourceId ?? '';
   const [data, setData] = useState<{ for: string; main: string | null; posters: string[]; error: string | null } | null>(null);
 
   useEffect(() => {
@@ -44,7 +52,7 @@ export default function PosterScreen() {
   }, [key, sourceId]);
 
   if (!ready) return <View style={{ flex: 1, backgroundColor: theme.bg }} />;
-  if (!entry) {
+  if (!subject) {
     return (
       <View style={[styles.center, { backgroundColor: theme.bg }]}>
         <Text style={[styles.note, { color: theme.textMuted }]}>This entry is gone.</Text>
@@ -54,8 +62,13 @@ export default function PosterScreen() {
 
   const current = data?.for === sourceId ? data : null;
   // Every viewing of the title wears the same poster.
-  const viewings = entries.filter((e) => e.source === entry.source && e.sourceId === entry.sourceId);
+  const viewings = entry ? entries.filter((e) => e.source === entry.source && e.sourceId === entry.sourceId) : [];
   const choose = (posterUrl: string | null, posterPick: string | null, message: string) => {
+    if (draft) {
+      choosePosterForDraft({ sourceId, posterUrl, posterPick });
+      router.back();
+      return;
+    }
     patchMany(
       viewings.map((e) => ({ id: e.id, patch: { posterUrl, posterPick } })),
       [],
@@ -76,13 +89,14 @@ export default function PosterScreen() {
       ListHeaderComponent={
         <View style={styles.head}>
           <Text style={[styles.title, { color: theme.text }]} numberOfLines={2}>
-            {entry.title.toUpperCase()}
+            {subject.title.toUpperCase()}
           </Text>
           <Text style={[styles.note, { color: theme.textMuted }]}>
-            {viewings.length === 2 ? 'Used for both viewings, ' : viewings.length > 2 ? `Used for all ${viewings.length} viewings, ` : 'Used '}in your diary,
-            stories and the widget.
+            {draft
+              ? 'Used for this entry when you log it, in your diary, stories and the widget.'
+              : `${viewings.length === 2 ? 'Used for both viewings, ' : viewings.length > 2 ? `Used for all ${viewings.length} viewings, ` : 'Used '}in your diary, stories and the widget.`}
           </Text>
-          {!!entry.posterPick && !!current?.main && (
+          {!!subject.posterPick && !!current?.main && (
             <Pressable
               onPress={() => choose(current.main, null, 'Back to TMDB’s poster')}
               accessibilityRole="button"
@@ -106,7 +120,7 @@ export default function PosterScreen() {
         )
       }
       renderItem={({ item, index }) => {
-        const on = item === entry.posterUrl;
+        const on = item === subject.posterUrl;
         return (
           <Pressable
             onPress={() => (on ? router.back() : choose(item, item === current?.main ? null : item, 'Poster changed'))}
