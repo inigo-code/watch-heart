@@ -47,7 +47,7 @@ export default function AboutScreen() {
 
       {/* TMDB's required credit: its logo and notice, smaller and quieter than Watch Heart's own name. */}
       <Pressable onPress={() => Linking.openURL(DATA_SOURCES.tmdb.url)} accessibilityRole="link" accessibilityLabel="TMDB, The Movie Database" style={styles.tmdb}>
-        <Image source={require('../../assets/tmdb-logo.png')} style={styles.tmdbLogo} resizeMode="contain" accessibilityIgnoresInvertColors />
+        <Image source={require('../../../../assets/tmdb-logo.png')} style={styles.tmdbLogo} resizeMode="contain" accessibilityIgnoresInvertColors />
         <Text style={[styles.tmdbNotice, { color: theme.textMuted }]}>{DATA_SOURCES.tmdb.notice}</Text>
         <Text style={[styles.tmdbNotice, { color: theme.textMuted }]}>{DATA_SOURCES.tvmaze.notice}</Text>
       </Pressable>

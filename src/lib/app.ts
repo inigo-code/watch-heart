@@ -57,6 +57,7 @@ export const WHATS_NEW = {
     'Pick favourites from any film or series, not only ones in your diary',
     'Diary tickets look like Indian cinema tickets, and are compact so more fit on screen',
     'A new look: a cleaner title, an opening animation, screens that glow, a tab bar lit in your accent, and smoother page transitions',
+    'The tab bar stays on every page: titles, entries, people, lists and settings open inside the tab you’re in',
     'Faster: posters, scores and where to watch start loading the moment you touch a title',
     'IMDb scores found for more titles, with TMDB’s score whenever IMDb has none',
     'Sharper stories: shared at 1440×2560, with posters at full quality',

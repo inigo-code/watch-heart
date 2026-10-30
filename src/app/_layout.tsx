@@ -105,29 +105,11 @@ function Navigator() {
         }}
       >
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        {/* Above the tabs: the pop-ups. Every other page lives in the tabs' own stacks ((tabs)/(home,diary,…)),
+            so the tab bar stays on them. */}
         <Stack.Screen name="log" options={{ title: '', presentation: 'modal', animation: 'slide_from_bottom' }} />
-        <Stack.Screen name="entry/[id]" options={{ title: '', headerTransparent: true }} />
-        <Stack.Screen name="card/[id]" options={{ title: 'STORY CARD' }} />
         <Stack.Screen name="poster/[id]" options={{ title: 'CHOOSE A POSTER' }} />
-        <Stack.Screen name="settings" options={{ title: 'SETTINGS' }} />
-        <Stack.Screen name="account" options={{ title: 'ACCOUNT & SYNC' }} />
-        <Stack.Screen name="trash" options={{ title: 'TRASH' }} />
-        <Stack.Screen name="import" options={{ title: 'IMPORT' }} />
-        <Stack.Screen name="about" options={{ title: 'ABOUT' }} />
-        <Stack.Screen name="profile" options={{ title: 'PROFILE' }} />
-        <Stack.Screen name="track" options={{ title: 'EPISODES' }} />
-        <Stack.Screen name="lists" options={{ title: 'YOUR LISTS' }} />
-        <Stack.Screen name="list/[id]" options={{ title: 'LIST' }} />
-        <Stack.Screen name="list-card/[id]" options={{ title: 'LIST STORY' }} />
-        <Stack.Screen name="profile-card" options={{ title: 'PROFILE CARD' }} />
         <Stack.Screen name="share" options={{ title: '' }} />
-        <Stack.Screen name="title/[id]" options={{ title: '', headerTransparent: true }} />
-        <Stack.Screen name="credits/[id]" options={{ title: 'CAST & CREW' }} />
-        <Stack.Screen name="person/[id]" options={{ title: '' }} />
-        <Stack.Screen name="browse" options={{ title: 'DISCOVER' }} />
-        <Stack.Screen name="friends" options={{ title: 'FRIENDS' }} />
-        <Stack.Screen name="friend/[id]" options={{ title: '' }} />
-        <Stack.Screen name="friend-list" options={{ title: 'LIST' }} />
       </Stack>
       <SplashOverlay ready={ready && settingsReady} />
     </>

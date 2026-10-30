@@ -53,35 +53,35 @@ export default function TabsLayout() {
       }}
     >
       <Tabs.Screen
-        name="index"
+        name="(home)"
         options={{
           title: 'HOME',
           tabBarIcon: tabIcon('home-variant-outline'),
         }}
       />
       <Tabs.Screen
-        name="diary"
+        name="(diary)"
         options={{
           title: 'DIARY',
           tabBarIcon: tabIcon('ticket-confirmation-outline'),
         }}
       />
       <Tabs.Screen
-        name="search"
+        name="(search)"
         options={{
           title: 'FIND',
           tabBarIcon: tabIcon('movie-search-outline'),
         }}
       />
       <Tabs.Screen
-        name="watchlist"
+        name="(watchlist)"
         options={{
           title: 'WATCHLIST',
           tabBarIcon: tabIcon('bookmark-multiple-outline'),
         }}
       />
       <Tabs.Screen
-        name="recap"
+        name="(recap)"
         options={{
           title: 'RECAP',
           tabBarIcon: tabIcon('filmstrip'),
