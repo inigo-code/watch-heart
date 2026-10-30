@@ -152,7 +152,9 @@ export default function TitleScreen() {
                   style={[styles.viewing, { backgroundColor: theme.card, borderColor: theme.border }]}
                 >
                   <Ionicons name="ticket-outline" size={16} color={theme.accent} />
-                  <Text style={[styles.viewingDate, { color: theme.text }]}>{v.undated ? 'Date unknown' : friendlyDate(v.watchedOn)}</Text>
+                  <Text style={[styles.viewingDate, { color: theme.text }]}>{v.season ? `Season ${v.season} · ` : ''}
+                    {v.undated ? 'Date unknown' : friendlyDate(v.watchedOn)}
+                  </Text>
                   {v.rating ? <Stars rating={v.rating} size={13} color={theme.star} /> : null}
                   {v.liked && <Ionicons name="heart" size={14} color={theme.like} />}
                   <Ionicons name="chevron-forward" size={16} color={theme.textMuted} />

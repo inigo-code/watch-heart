@@ -1,5 +1,5 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { Stack, useLocalSearchParams } from 'expo-router';
+import { Stack, router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -185,6 +185,20 @@ export default function TrackScreen() {
             >
               <Ionicons name={seasonDone ? 'close-circle-outline' : 'checkmark-done'} size={18} color={theme.accent} />
               <Text style={[styles.seasonAllText, { color: theme.text }]}>{seasonDone ? `UNMARK SEASON ${current}` : `MARK SEASON ${current} AS SEEN`}</Text>
+            </Pressable>
+          )}
+
+          {show && current != null && (
+            <Pressable
+              onPress={() => {
+                const t: Title = { kind: show.kind, source: show.source, sourceId: show.sourceId, title: show.title, originalTitle: show.originalTitle ?? undefined, year: show.year, posterUrl: show.posterUrl, backdropUrl: show.backdropUrl, genres: show.genres, runtime: show.runtime, credit: show.credit };
+                router.push({ pathname: '/log', params: { title: JSON.stringify(t), season: String(current) } });
+              }}
+              accessibilityRole="button"
+              style={({ pressed }) => [styles.seasonAll, { borderColor: theme.border, opacity: pressed ? 0.7 : 1 }]}
+            >
+              <Ionicons name="star-outline" size={18} color={theme.accent} />
+              <Text style={[styles.seasonAllText, { color: theme.text }]}>RATE & REVIEW SEASON {current}</Text>
             </Pressable>
           )}
 

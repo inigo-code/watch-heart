@@ -17,7 +17,7 @@ import { Chip, StarInput } from '@/components/Film';
 import { Hero } from '@/components/Hero';
 import { SectionLabel } from '@/components/SectionLabel';
 import { ViewingDetails } from '@/components/ViewingDetails';
-import { trackable } from '@/api/episodes';
+import { showInfo, trackable } from '@/api/episodes';
 import { TitlePicker } from '@/components/TitlePicker';
 import { useToast } from '@/components/Toast';
 import { daysAgo, friendlyDate, isoDate, parseIso, today } from '@/lib/dates';
@@ -42,6 +42,8 @@ type Params = {
   title?: string;
   /** Add a title by hand, of this kind. */
   manual?: MediaKind;
+  /** A series: rate and review this season (from the episodes page). */
+  season?: string;
 };
 
 function blankDraft(t: Title): EntryDraft {
@@ -99,11 +101,12 @@ function LogForm() {
     if (prev) {
       // A new viewing: its own feelings, screen and place.
       const fresh = { vibes: [], device: null, context: [], platform: null, character: null };
-      return { ...prev, ...fresh, watchedOn: today(), rewatch: true, review: '', spoilers: false, progress: '', tags: [] };
+      return { ...prev, ...fresh, watchedOn: today(), rewatch: true, review: '', spoilers: false, progress: '', tags: [], season: null };
     }
     if (params.title) {
       const t = JSON.parse(params.title) as Title;
-      return { ...blankDraft(t), rewatch: viewingsOf(t.source, t.sourceId).length > 0 };
+      const season = Number(params.season) || null;
+      return { ...blankDraft(t), season, rewatch: viewingsOf(t.source, t.sourceId).length > 0 };
     }
     return blankDraft({ kind: params.manual ?? 'movie', source: 'manual', sourceId: '', title: '', year: null, posterUrl: null, backdropUrl: null, genres: [], runtime: null });
   });
@@ -180,6 +183,19 @@ function LogForm() {
   };
 
   const series = draft.kind !== 'movie';
+  // A show's seasons, so a rating and review can be for one of them.
+  const [seasons, setSeasons] = useState<number[]>([]);
+  const showSource = series && trackable(draft) ? draft.source : null;
+  const showId = draft.sourceId;
+  useEffect(() => {
+    if (!showSource) return;
+    const controller = new AbortController();
+    showInfo(settings.tmdbKey, showSource, showId, controller.signal)
+      .then((i) => !controller.signal.aborted && setSeasons(i.seasons.map((x) => x.n)))
+      .catch(() => {});
+    return () => controller.abort();
+  }, [settings.tmdbKey, showSource, showId]);
+  const seasonChoices = draft.season && !seasons.includes(draft.season) ? [...seasons, draft.season].sort((a, b) => a - b) : seasons;
   // New entries only: whether this title is waiting on the watchlist (logging takes it off).
   const queued = !editing && draft.title.trim() ? onWatchlist(draft) : undefined;
   const canSave = draft.title.trim().length > 0;
@@ -204,6 +220,7 @@ function LogForm() {
       tags: parseTags(tagText),
       review: draft.review.trim(),
       progress: draft.progress.trim(),
+      season: series && draft.season ? draft.season : null,
     };
     if (editing) updateEntry(editing.id, final);
     else addEntry(final);
@@ -318,7 +335,13 @@ function LogForm() {
         <View style={styles.form}>
           {!editing && trackable(draft) && (
             <Pressable
-              onPress={() => router.replace({ pathname: '/track', params: { title: params.title ?? JSON.stringify({ ...draft, originalTitle: draft.originalTitle ?? undefined }) } })}
+              onPress={() => {
+                // Close the form first, so the episodes page opens inside the tab you came from (replacing the
+                // form put a second set of tabs on top, with no way back).
+                const title = params.title ?? JSON.stringify({ ...draft, originalTitle: draft.originalTitle ?? undefined });
+                router.back();
+                router.push({ pathname: '/track', params: { title } });
+              }}
               accessibilityRole="button"
               style={({ pressed }) => [styles.repick, { borderColor: theme.accent + '88', opacity: pressed ? 0.7 : 1 }]}
             >
@@ -368,7 +391,18 @@ function LogForm() {
             )}
           </Field>
 
-          <Field theme={theme} label="Your rating">
+          {series && seasonChoices.length > 0 && (
+            <Field theme={theme} label="Rating and review for">
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.seasonRow}>
+                <Chip theme={theme} label="Whole show" active={!draft.season} onPress={() => set({ season: null })} />
+                {seasonChoices.map((n) => (
+                  <Chip key={n} theme={theme} label={`Season ${n}`} active={draft.season === n} onPress={() => set({ season: n })} />
+                ))}
+              </ScrollView>
+            </Field>
+          )}
+
+          <Field theme={theme} label={draft.season ? `Your rating · Season ${draft.season}` : 'Your rating'}>
             <View style={styles.ratingRow}>
               <StarInput value={draft.rating} onChange={(rating) => set({ rating })} theme={theme} size={38} />
               <Text style={[styles.ratingValue, { color: draft.rating ? theme.star : theme.textMuted }]}>
@@ -403,7 +437,7 @@ function LogForm() {
             </Field>
           )}
 
-          <Field theme={theme} label="Review">
+          <Field theme={theme} label={draft.season ? `Review · Season ${draft.season}` : 'Review'}>
             <View style={styles.formatBar}>
               {([
                 ['bold', 'B', { fontWeight: '800' }],
@@ -550,6 +584,7 @@ const styles = StyleSheet.create({
   form: { padding: 16, gap: 20 },
   field: { gap: 8 },
   row: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  seasonRow: { flexDirection: 'row', gap: 8, paddingRight: 8 },
   input: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: font.body },
   titleInput: { fontFamily: fonts.display, fontSize: 28, paddingVertical: 6 },
   review: { minHeight: 120, lineHeight: 21 },

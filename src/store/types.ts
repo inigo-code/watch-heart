@@ -73,6 +73,8 @@ export type Entry = {
    * shows these in the Archive, and recaps and stats leave them out.
    */
   undated?: boolean;
+  /** For a series or anime: the season this viewing's rating and review are about. Unset = the whole show. */
+  season?: number | null;
   /** Episodes this viewing covers, as "s1e3", when they were ticked off in the episode tracker. */
   episodes?: string[];
   /** Who you watched it with, as you typed their names ("Sam", "Priya"). */

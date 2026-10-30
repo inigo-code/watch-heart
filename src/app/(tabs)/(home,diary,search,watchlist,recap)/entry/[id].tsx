@@ -109,6 +109,7 @@ export default function EntryScreen() {
             </View>
             <View style={styles.ticketBody}>
               <Text style={[styles.watched, { color: theme.textMuted }]}>
+                {entry.season ? `SEASON ${entry.season} · ` : ''}
                 {entry.rewatch ? 'REWATCHED' : 'WATCHED'} {entry.undated ? '· DATE UNKNOWN' : friendlyDate(entry.watchedOn).toUpperCase()}
               </Text>
               <View style={styles.line}>

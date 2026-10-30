@@ -54,6 +54,7 @@ export const WHATS_NEW = {
     'Lists in Discover: heists, time travel, warm films for a cold day and more',
     'Logging is quicker: date, stars and a review, with the rest under More details',
     'Watched it long ago? Log it with Don’t remember, and it waits in the Diary’s Archive',
+    'Rate and review a single season of a series or anime, from the log form or the episodes page',
     'Pick favourites from any film or series, not only ones in your diary',
     'Diary tickets look like Indian cinema tickets, and are compact so more fit on screen',
     'A new look: a cleaner title, an opening animation, screens that glow, a tab bar lit in your accent, and smoother page transitions',

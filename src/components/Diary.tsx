@@ -80,6 +80,7 @@ export function TicketStub({ entry, theme, onPress, onLongPress }: {
         </Text>
         <View style={styles.meta}>
           <KindBadge kind={entry.kind} theme={theme} small />
+          {!!entry.season && <Text style={[styles.progress, { color: theme.accent }]}>{`S${entry.season}`}</Text>}
           {!!entry.progress && (
             <Text style={[styles.progress, { color: theme.textMuted }]} numberOfLines={1}>
               {entry.progress}
