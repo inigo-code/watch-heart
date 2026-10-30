@@ -172,7 +172,7 @@ function LogForm() {
         value,
         mode: 'date',
         maximumDate: new Date(),
-        onChange: (e, d) => e.type === 'set' && d && set({ watchedOn: isoDate(d) }),
+        onChange: (e, d) => e.type === 'set' && d && set({ watchedOn: isoDate(d), undated: false }),
       });
     } else {
       setIosPicker((v) => !v);
@@ -183,7 +183,11 @@ function LogForm() {
   // New entries only: whether this title is waiting on the watchlist (logging takes it off).
   const queued = !editing && draft.title.trim() ? onWatchlist(draft) : undefined;
   const canSave = draft.title.trim().length > 0;
-  const quickDate = useMemo(() => (draft.watchedOn === today() ? 'today' : draft.watchedOn === daysAgo(1) ? 'yesterday' : 'other'), [draft.watchedOn]);
+  // "unknown": watched long ago, date forgotten. Such entries go in the Diary's Archive, like undated imports.
+  const quickDate = useMemo(
+    () => (draft.undated ? 'unknown' : draft.watchedOn === today() ? 'today' : draft.watchedOn === daysAgo(1) ? 'yesterday' : 'other'),
+    [draft.undated, draft.watchedOn],
+  );
 
   const save = () => {
     if (!canSave) {
@@ -193,8 +197,8 @@ function LogForm() {
     const year = Number(yearText);
     const final: EntryDraft = {
       ...draft,
-      // Picking a date for an imported entry that had none files it under that month.
-      undated: draft.undated && editing?.watchedOn === draft.watchedOn ? true : undefined,
+      // "Don't remember" keeps it in the Archive; picking any date files it under that month.
+      undated: draft.undated ? true : undefined,
       title: draft.title.trim(),
       year: manual ? (year >= 1870 && year <= 2100 ? year : null) : draft.year,
       tags: parseTags(tagText),
@@ -343,17 +347,23 @@ function LogForm() {
           )}
           <Field theme={theme} label="Watched on">
             <View style={styles.row}>
-              <Chip theme={theme} label="Today" active={quickDate === 'today'} onPress={() => set({ watchedOn: today() })} />
-              <Chip theme={theme} label="Yesterday" active={quickDate === 'yesterday'} onPress={() => set({ watchedOn: daysAgo(1) })} />
+              <Chip theme={theme} label="Today" active={quickDate === 'today'} onPress={() => set({ watchedOn: today(), undated: false })} />
+              <Chip theme={theme} label="Yesterday" active={quickDate === 'yesterday'} onPress={() => set({ watchedOn: daysAgo(1), undated: false })} />
               <Chip theme={theme} icon="calendar-outline" label={quickDate === 'other' ? friendlyDate(draft.watchedOn) : 'Pick a date'} active={quickDate === 'other'} onPress={pickDate} />
+              <Chip theme={theme} icon="help-circle-outline" label="Don’t remember" active={quickDate === 'unknown'} onPress={() => set({ undated: true, watchedOn: today() })} />
             </View>
+            {quickDate === 'unknown' && (
+              <Text style={[styles.hint, { color: theme.textMuted }]}>
+                It goes in The Archive at the end of your Diary, and counts in your totals and achievements, not in a month’s recap.
+              </Text>
+            )}
             {iosPicker && Platform.OS === 'ios' && (
               <DateTimePicker
                 value={parseIso(draft.watchedOn)}
                 mode="date"
                 display="inline"
                 maximumDate={new Date()}
-                onChange={(_, d) => d && set({ watchedOn: isoDate(d) })}
+                onChange={(_, d) => d && set({ watchedOn: isoDate(d), undated: false })}
               />
             )}
           </Field>
