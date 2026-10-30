@@ -13,9 +13,6 @@ export type AccentKey = 'marquee' | 'velvet' | 'neon' | 'sakura' | 'noir';
 /** A title pinned to the profile: enough to show its poster and open it. */
 export type Favourite = { kind: MediaKind; source: string; sourceId: string; title: string; year: number | null; posterUrl: string | null };
 
-/** The look of a viewing's ticket: a single-screen talkies ticket, a multiplex thermal print, or an FDFS fan ticket. */
-export type TicketLook = 'talkies' | 'thermal' | 'fdfs';
-
 /** A night planned for a title: when, and the reminder scheduled for it. */
 export type MovieNight = {
   key: string;
@@ -69,8 +66,6 @@ export type Settings = {
   seenUpdate: string | null;
   /** Your language for Home's regional picks, e.g. "ta" ('' = any). Only used where the country has several. */
   homeLanguage: string;
-  /** The look you last chose for tickets. */
-  ticketLook: TicketLook;
   /** Movie nights you planned, with the reminder's id (null: planned without one). */
   movieNights: MovieNight[];
   /** When the profile (name, bio, photo, favourites, goal) last changed here, and when sync last matched it. */
@@ -105,7 +100,6 @@ export const DEFAULT_SETTINGS: Settings = {
   omdbKey: '',
   watchRegion: '',
   homeLanguage: '',
-  ticketLook: 'talkies',
   seenUpdate: null,
   movieNights: [],
   profileUpdatedAt: 0,

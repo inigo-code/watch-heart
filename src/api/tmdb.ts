@@ -310,8 +310,6 @@ export type TitleAbout = {
   recommendations: Title[];
   /** The director (films) or creators (series), for "By the same director". */
   makers: { id: number; name: string }[];
-  /** First release (films) or first episode (series), YYYY-MM-DD. */
-  released: string | null;
 };
 
 type Video = { key: string; site: string; type: string; official?: boolean };
@@ -379,7 +377,6 @@ async function loadAbout(key: string, sourceId: string, signal?: AbortSignal): P
       trailer: pickTrailer(d.videos),
       recommendations: (d.recommendations?.results ?? []).map((r) => toTitle(r, r.media_type === 'tv' ? 'tv' : 'movie')),
       makers: directors.map((c) => ({ id: c.id, name: c.name })),
-      released: d.release_date || null,
     };
   } else {
     const d = await get<
@@ -411,7 +408,6 @@ async function loadAbout(key: string, sourceId: string, signal?: AbortSignal): P
       trailer: pickTrailer(d.videos),
       recommendations: (d.recommendations?.results ?? []).map((r) => toTitle(r, r.media_type === 'movie' ? 'movie' : 'tv')),
       makers: (d.created_by ?? []).map((c) => ({ id: c.id, name: c.name })),
-      released: d.first_air_date || null,
     };
   }
   return about;

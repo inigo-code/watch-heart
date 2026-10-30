@@ -1,17 +1,52 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Poster, KindBadge, Sprockets, Stars } from '@/components/Film';
 import { dayParts, monthName } from '@/lib/dates';
-import { font, fonts } from '@/lib/theme';
+import { KIND_COLORS, font, fonts, kindColor } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
-import type { Entry } from '@/store/types';
+import type { Entry, MediaKind } from '@/store/types';
 
 const NOTCH = 14;
+const PAPER_PRINT = require('../../assets/ticket-paper.png');
+
+/** Mixes `b` into `a` (both #RRGGBB) by `t`. */
+function mix(a: string, b: string, t: number) {
+  const c = (hex: string, i: number) => parseInt(hex.slice(1 + i * 2, 3 + i * 2), 16);
+  return `#${[0, 1, 2].map((i) => Math.round(c(a, i) + (c(b, i) - c(a, i)) * t).toString(16).padStart(2, '0')).join('')}`;
+}
 
 /**
- * One diary entry as a cinema ticket: a stub with the date, a perforated tear line with notches cut
- * out of the edges, then the poster and what you thought of it.
+ * Ticket paper, coloured by class as old Indian cinema tickets were: films on gold, series on teal, anime
+ * on pink, faint enough that the card still reads as the app's own. `ink` prints the serial and the
+ * engraving.
+ */
+export function ticketPaper(kind: MediaKind, theme: Theme) {
+  return {
+    paper: mix(theme.card, KIND_COLORS[kind], theme.dark ? 0.075 : 0.16),
+    border: mix(theme.border, KIND_COLORS[kind], theme.dark ? 0.18 : 0.3),
+    ink: kindColor(kind, theme),
+    print: theme.dark ? 0.09 : 0.14,
+  };
+}
+
+/** The engraved security print behind a ticket. Sits first inside the ticket, which clips it. */
+export function TicketPrint({ kind, theme }: { kind: MediaKind; theme: Theme }) {
+  const p = ticketPaper(kind, theme);
+  return <Image source={PAPER_PRINT} style={[StyleSheet.absoluteFill, { opacity: p.print, tintColor: p.ink, width: '100%', height: '100%' }]} resizeMode="cover" pointerEvents="none" />;
+}
+
+/** A six-digit serial, the same for an entry every time, like the numbering stamp on a ticket. */
+export function ticketSerial(id: string) {
+  let h = 2166136261;
+  for (let i = 0; i < id.length; i++) h = Math.imul(h ^ id.charCodeAt(i), 16777619);
+  return String((h >>> 0) % 1000000).padStart(6, '0');
+}
+
+/**
+ * One diary entry as an Indian cinema ticket: paper tinted by kind with an engraved print, a stub with the
+ * date, a perforated tear line with notches cut out of the edges, then the poster, what you thought of it,
+ * and the ticket's serial.
  */
 export function TicketStub({ entry, theme, onPress, onLongPress }: {
   entry: Entry;
@@ -20,6 +55,7 @@ export function TicketStub({ entry, theme, onPress, onLongPress }: {
   onLongPress?: () => void;
 }) {
   const { day, weekday } = dayParts(entry.watchedOn);
+  const p = ticketPaper(entry.kind, theme);
   return (
     <Pressable
       onPress={onPress}
@@ -27,8 +63,9 @@ export function TicketStub({ entry, theme, onPress, onLongPress }: {
       delayLongPress={350}
       accessibilityRole="button"
       accessibilityLabel={`${entry.title}, watched ${weekday} ${day}${entry.rating ? `, ${entry.rating / 2} stars` : ''}`}
-      style={({ pressed }) => [styles.ticket, { backgroundColor: theme.card, borderColor: theme.border, opacity: pressed ? 0.85 : 1 }]}
+      style={({ pressed }) => [styles.ticket, { backgroundColor: p.paper, borderColor: p.border, opacity: pressed ? 0.85 : 1 }]}
     >
+      <TicketPrint kind={entry.kind} theme={theme} />
       <View style={styles.stub}>
         <Text style={[styles.weekday, { color: theme.textMuted }]}>{entry.undated ? 'DATE' : weekday.toUpperCase()}</Text>
         <Text style={[styles.day, { color: theme.text }]}>{entry.undated ? '?' : day}</Text>
@@ -36,9 +73,9 @@ export function TicketStub({ entry, theme, onPress, onLongPress }: {
       </View>
 
       <View style={styles.tear}>
-        <View style={[styles.notch, styles.notchTop, { backgroundColor: theme.hole, borderColor: theme.border }]} />
-        <View style={[styles.dashes, { borderColor: theme.border }]} />
-        <View style={[styles.notch, styles.notchBottom, { backgroundColor: theme.hole, borderColor: theme.border }]} />
+        <View style={[styles.notch, styles.notchTop, { backgroundColor: theme.hole, borderColor: p.border }]} />
+        <View style={[styles.dashes, { borderColor: p.border }]} />
+        <View style={[styles.notch, styles.notchBottom, { backgroundColor: theme.hole, borderColor: p.border }]} />
       </View>
 
       <Poster uri={entry.posterUrl} title={entry.title} width={54} theme={theme} radius={4} />
@@ -60,6 +97,10 @@ export function TicketStub({ entry, theme, onPress, onLongPress }: {
           <Stars rating={entry.rating} size={13} color={theme.star} />
           {entry.liked && <Ionicons name="heart" size={13} color={theme.like} accessibilityLabel="Liked" />}
           {!!entry.review.trim() && <Ionicons name="reader-outline" size={13} color={theme.textMuted} accessibilityLabel="Has a review" />}
+          <View style={{ flex: 1 }} />
+          <Text style={[styles.serial, { color: p.ink }]} importantForAccessibility="no">
+            No. {ticketSerial(entry.id)}
+          </Text>
         </View>
       </View>
     </Pressable>
@@ -132,6 +173,7 @@ const styles = StyleSheet.create({
   year: { fontFamily: fonts.mono, fontSize: font.footnote, fontWeight: '400' },
   meta: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   progress: { fontFamily: fonts.mono, fontSize: font.caption, flexShrink: 1 },
+  serial: { fontFamily: fonts.monoBold, fontSize: 10, letterSpacing: 1 },
   tileMeta: { flexDirection: 'row', alignItems: 'center', gap: 3, height: 16, marginTop: 3 },
   reel: { paddingVertical: 6, gap: 8, borderRadius: 4, marginTop: 14 },
   reelRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, gap: 10 },

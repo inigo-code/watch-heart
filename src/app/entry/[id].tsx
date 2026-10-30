@@ -9,6 +9,7 @@ import { Hero } from '@/components/Hero';
 import { trackable } from '@/api/episodes';
 import { DangerButton } from '@/components/DangerButton';
 import { AddToList } from '@/components/lists/AddToList';
+import { TicketPrint, ticketPaper } from '@/components/Diary';
 import { ConfirmTrash } from '@/components/ConfirmTrash';
 import { RichText } from '@/components/RichText';
 import { SectionLabel } from '@/components/SectionLabel';
@@ -64,6 +65,7 @@ export default function EntryScreen() {
   const onLists = listsWith(entry);
   const { day, weekday, month } = dayParts(entry.watchedOn);
   const hideReview = entry.spoilers && !reveal;
+  const paper = ticketPaper(entry.kind, theme);
 
   const remove = () => {
     deleteEntry(entry.id);
@@ -98,8 +100,9 @@ export default function EntryScreen() {
         />
 
         <View style={styles.body}>
-          <View style={[styles.ticket, { backgroundColor: theme.card, borderColor: theme.border }]}>
-            <View style={[styles.stub, { borderRightColor: theme.border }]}>
+          <View style={[styles.ticket, { backgroundColor: paper.paper, borderColor: paper.border }]}>
+            <TicketPrint kind={entry.kind} theme={theme} />
+            <View style={[styles.stub, { borderRightColor: paper.border }]}>
               <Text style={[styles.stubSmall, { color: theme.textMuted }]}>{weekday.toUpperCase()}</Text>
               <Text style={[styles.stubDay, { color: theme.text }]}>{day}</Text>
               <Text style={[styles.stubSmall, { color: theme.textMuted }]}>{month.toUpperCase()}</Text>
@@ -202,7 +205,6 @@ export default function EntryScreen() {
               onPress={() => router.push({ pathname: '/card/[id]', params: { id: entry.id } })}
               primary
             />
-            <Action theme={theme} icon="ticket-outline" label="TICKET" onPress={() => router.push({ pathname: '/ticket/[id]', params: { id: entry.id } })} />
             <Action theme={theme} icon="repeat" label="LOG AGAIN" onPress={() => router.push({ pathname: '/log', params: { again: entry.id } })} />
             <Action theme={theme} icon="albums-outline" label={onLists.length ? `LISTS (${onLists.length})` : 'ADD TO LIST'} onPress={() => setListing(true)} />
             {trackable(entry) && (

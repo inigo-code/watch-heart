@@ -4,7 +4,7 @@
  */
 export const EXPORT_W = 1440;
 export const EXPORT_H = 2560;
-export const PX_PER_POINT = 4;
+const PX_PER_POINT = 4;
 
 const POSTER_SIZES = [185, 342, 500, 780];
 
