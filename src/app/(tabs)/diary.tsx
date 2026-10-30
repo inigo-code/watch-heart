@@ -107,7 +107,7 @@ export default function DiaryScreen() {
 
   const header = (
     <View style={[styles.top, { paddingTop: insets.top + 10 }]}>
-      <Text style={[styles.heading, { color: theme.text }]} accessibilityRole="header">
+      <Text maxFontSizeMultiplier={1.15} style={[styles.heading, { color: theme.text }]} accessibilityRole="header">
         YOUR <Text style={{ color: theme.accent }}>DIARY</Text>
       </Text>
 

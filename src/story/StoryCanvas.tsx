@@ -93,7 +93,7 @@ export const StoryCanvas = forwardRef<StoryHandle, Props>(function StoryCanvas({
           <View style={[styles.brandReel, { borderColor: p.accent }]}>
             <Ionicons name="heart" size={8} color={p.accent} />
           </View>
-          <Text style={[styles.brandText, { color: p.muted }]}>WATCH HEART</Text>
+          <Text allowFontScaling={false} style={[styles.brandText, { color: p.muted }]}>WATCH HEART</Text>
         </View>
       </View>
     </View>
@@ -147,11 +147,19 @@ function Masthead({ p, title, subtitle, count, compact }: { p: Palette; title: s
   const size = Math.min(compact ? 60 : 104, (STORY_W - PAD * 2) / (title.length * 0.43));
   return (
     <View style={styles.masthead}>
-      <Text style={[styles.kicker, { color: p.accent }]}>MY WATCH DIARY</Text>
-      <Text style={[styles.title, { color: p.text, fontSize: size, lineHeight: size * 0.98 }]} numberOfLines={1}>
+      <Text allowFontScaling={false} style={[styles.kicker, { color: p.accent }]}>MY WATCH DIARY</Text>
+      {/* Story text ignores the phone's font size (it's a picture, the same for everyone); the title also
+          shrinks to fit rather than cut off, should a face ever measure wider. */}
+      <Text
+        allowFontScaling={false}
+        adjustsFontSizeToFit
+        minimumFontScale={0.6}
+        style={[styles.title, { color: p.text, fontSize: size, lineHeight: size * 0.98 }]}
+        numberOfLines={1}
+      >
         {title}
       </Text>
-      <Text style={[styles.subtitle, { color: p.muted }]}>
+      <Text allowFontScaling={false} style={[styles.subtitle, { color: p.muted }]}>
         {subtitle} · {count} {count === 1 ? 'TITLE' : 'TITLES'}
       </Text>
     </View>
@@ -192,7 +200,7 @@ function StoryPoster({ e, w, p, settled, radius = 3 }: { e: Entry; w: number; p:
         />
       ) : (
         <View style={styles.noPoster}>
-          <Text style={[styles.noPosterText, { color: p.muted, fontSize: Math.max(8, w * 0.15) }]} numberOfLines={4}>
+          <Text allowFontScaling={false} style={[styles.noPosterText, { color: p.muted, fontSize: Math.max(8, w * 0.15) }]} numberOfLines={4}>
             {e.title.toUpperCase()}
           </Text>
         </View>
@@ -204,7 +212,7 @@ function StoryPoster({ e, w, p, settled, radius = 3 }: { e: Entry; w: number; p:
 function More({ n, w, p }: { n: number; w: number; p: Palette }) {
   return (
     <View style={[styles.more, { width: w, height: w * 1.5, borderColor: p.muted }]}>
-      <Text style={[styles.moreText, { color: p.text, fontSize: Math.max(12, w * 0.3) }]}>+{n}</Text>
+      <Text allowFontScaling={false} style={[styles.moreText, { color: p.text, fontSize: Math.max(12, w * 0.3) }]}>+{n}</Text>
     </View>
   );
 }
@@ -224,7 +232,7 @@ function Strip({ p, entries, total, options, area, settled }: LayoutProps) {
             <StoryPoster e={e} w={w} p={p} settled={settled} />
             {label > 0 && (
               <View style={styles.stripMeta}>
-                {options.ranked && <Text style={[styles.rank, { color: p.accent }]}>{i + 1}</Text>}
+                {options.ranked && <Text allowFontScaling={false} style={[styles.rank, { color: p.accent }]}>{i + 1}</Text>}
                 <StoryStars rating={e.rating} size={Math.min(9, w / 6.5)} color={p.star} />
                 {e.liked && <Ionicons name="heart" size={Math.min(9, w / 6.5)} color={p.like} />}
               </View>
@@ -249,18 +257,18 @@ function Tickets({ p, entries, total, options, settled }: LayoutProps) {
           <View key={e.id} style={[styles.ticket, { backgroundColor: p.card, borderColor: p.muted + '55' }]}>
             <View style={styles.ticketStub}>
               {options.ranked ? (
-                <Text style={[styles.ticketDay, { color: p.accent }]}>{i + 1}</Text>
+                <Text allowFontScaling={false} style={[styles.ticketDay, { color: p.accent }]}>{i + 1}</Text>
               ) : (
                 <>
-                  <Text style={[styles.ticketDay, { color: p.text }]}>{day}</Text>
-                  <Text style={[styles.ticketMonth, { color: p.muted }]}>{month.toUpperCase()}</Text>
+                  <Text allowFontScaling={false} style={[styles.ticketDay, { color: p.text }]}>{day}</Text>
+                  <Text allowFontScaling={false} style={[styles.ticketMonth, { color: p.muted }]}>{month.toUpperCase()}</Text>
                 </>
               )}
             </View>
             <View style={[styles.ticketTear, { borderColor: p.muted + '88' }]} />
             <StoryPoster e={e} w={20} p={p} settled={settled} radius={2} />
             <View style={{ flex: 1, gap: 2 }}>
-              <Text style={[styles.ticketTitle, { color: p.text }]} numberOfLines={1}>
+              <Text allowFontScaling={false} style={[styles.ticketTitle, { color: p.text }]} numberOfLines={1}>
                 {e.title}
               </Text>
               <View style={styles.ticketMeta}>
@@ -268,7 +276,7 @@ function Tickets({ p, entries, total, options, settled }: LayoutProps) {
                 {e.liked && <Ionicons name="heart" size={10} color={p.like} />}
                 {e.rewatch && <Ionicons name="repeat" size={10} color={p.muted} />}
                 {!!e.progress && (
-                  <Text style={[styles.ticketProgress, { color: p.muted }]} numberOfLines={1}>
+                  <Text allowFontScaling={false} style={[styles.ticketProgress, { color: p.muted }]} numberOfLines={1}>
                     {e.progress}
                   </Text>
                 )}
@@ -277,7 +285,7 @@ function Tickets({ p, entries, total, options, settled }: LayoutProps) {
           </View>
         );
       })}
-      {extra > 0 && <Text style={[styles.andMore, { color: p.muted }]}>+ {extra} MORE IN THE DIARY</Text>}
+      {extra > 0 && <Text allowFontScaling={false} style={[styles.andMore, { color: p.muted }]}>+ {extra} MORE IN THE DIARY</Text>}
     </View>
   );
 }
@@ -288,11 +296,11 @@ function Spotlight({ p, favourite, rest, total, options, settled }: Omit<LayoutP
   const quote = favourite.review && !favourite.spoilers ? plainText(favourite.review).replace(/\s+/g, ' ').trim() : '';
   return (
     <View style={{ alignItems: 'center', gap: 7 }}>
-      <Text style={[styles.kicker, { color: p.accent }]}>★ FAVOURITE ★</Text>
+      <Text allowFontScaling={false} style={[styles.kicker, { color: p.accent }]}>★ FAVOURITE ★</Text>
       <View style={{ boxShadow: '0 10px 30px rgba(0,0,0,0.6)' }}>
         <StoryPoster e={favourite} w={96} p={p} settled={settled} radius={6} />
       </View>
-      <Text style={[styles.favTitle, { color: p.text }]} numberOfLines={1} adjustsFontSizeToFit>
+      <Text allowFontScaling={false} style={[styles.favTitle, { color: p.text }]} numberOfLines={1} adjustsFontSizeToFit>
         {favourite.title.toUpperCase()}
       </Text>
       <View style={styles.ticketMeta}>
@@ -300,7 +308,7 @@ function Spotlight({ p, favourite, rest, total, options, settled }: Omit<LayoutP
         {favourite.liked && <Ionicons name="heart" size={16} color={p.like} />}
       </View>
       {!!quote && (
-        <Text style={[styles.quote, { color: p.text }]} numberOfLines={2}>
+        <Text allowFontScaling={false} style={[styles.quote, { color: p.text }]} numberOfLines={2}>
           “{quote.length > 100 ? `${quote.slice(0, 97)}…` : quote}”
         </Text>
       )}
@@ -328,14 +336,14 @@ function StatsBar({ p, stats }: { p: Palette; stats: ReturnType<typeof computeSt
       <View style={[styles.statsRow, { borderColor: p.muted + '55' }]}>
         {cells.map((c, i) => (
           <View key={c.label} style={[styles.statCell, i > 0 && { borderLeftWidth: 1, borderLeftColor: p.muted + '55' }]}>
-            <Text style={[styles.statValue, { color: p.text }]} numberOfLines={1} adjustsFontSizeToFit>
+            <Text allowFontScaling={false} style={[styles.statValue, { color: p.text }]} numberOfLines={1} adjustsFontSizeToFit>
               {c.value}
             </Text>
-            <Text style={[styles.statLabel, { color: p.accent }]}>{c.label}</Text>
+            <Text allowFontScaling={false} style={[styles.statLabel, { color: p.accent }]}>{c.label}</Text>
           </View>
         ))}
       </View>
-      <Text style={[styles.kinds, { color: p.muted }]}>{kindSummary(stats.byKind).toUpperCase()}</Text>
+      <Text allowFontScaling={false} style={[styles.kinds, { color: p.muted }]}>{kindSummary(stats.byKind).toUpperCase()}</Text>
     </View>
   );
 }

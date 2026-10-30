@@ -106,7 +106,7 @@ export default function SearchScreen() {
     <View style={[styles.screen, { backgroundColor: theme.bg, paddingTop: insets.top + 10 }]}>
       <ScreenGlow theme={theme} />
       <View style={styles.top}>
-        <Text style={[styles.heading, { color: theme.text }]}>
+        <Text maxFontSizeMultiplier={1.15} style={[styles.heading, { color: theme.text }]}>
           WHAT DID YOU <Text style={{ color: theme.accent }}>WATCH?</Text>
         </Text>
         <View style={[styles.search, { backgroundColor: theme.chip }]}>

@@ -24,15 +24,15 @@ export const ProfileCard = forwardRef<StoryHandle, Props>(function ProfileCard({
   return (
     <View ref={ref} collapsable={false} style={styles.card}>
       <LinearGradient colors={p.bg} style={StyleSheet.absoluteFill} />
-      <Text style={[styles.kicker, { color: p.accent }]}>★ MY WATCH DIARY ★</Text>
+      <Text allowFontScaling={false} style={[styles.kicker, { color: p.accent }]}>★ MY WATCH DIARY ★</Text>
       <View style={[styles.photoRing, { borderColor: p.accent }]}>
-        {photo ? <Image source={{ uri: photo }} style={styles.photo} fadeDuration={0} resizeMethod="scale" /> : <Text style={[styles.initial, { color: p.text }]}>{(name.trim()[0] ?? '♥').toUpperCase()}</Text>}
+        {photo ? <Image source={{ uri: photo }} style={styles.photo} fadeDuration={0} resizeMethod="scale" /> : <Text allowFontScaling={false} style={[styles.initial, { color: p.text }]}>{(name.trim()[0] ?? '♥').toUpperCase()}</Text>}
       </View>
-      <Text style={[styles.name, { color: p.text }]} numberOfLines={1}>
+      <Text allowFontScaling={false} style={[styles.name, { color: p.text }]} numberOfLines={1}>
         {(name.trim() || 'Watch Heart').toUpperCase()}
       </Text>
       {!!bio.trim() && (
-        <Text style={[styles.bio, { color: p.muted }]} numberOfLines={2}>
+        <Text allowFontScaling={false} style={[styles.bio, { color: p.muted }]} numberOfLines={2}>
           {bio.trim()}
         </Text>
       )}
@@ -46,7 +46,7 @@ export const ProfileCard = forwardRef<StoryHandle, Props>(function ProfileCard({
         <View style={styles.favs}>
           {Array.from({ length: 4 }, (_, i) => favourites[i]).map((f, i) => (
             <View key={i} style={[styles.poster, { backgroundColor: p.card }]}>
-              {f?.posterUrl ? <Image source={{ uri: sharp(f.posterUrl, 64) }} style={StyleSheet.absoluteFill} fadeDuration={0} resizeMethod="scale" /> : f ? <Text style={[styles.posterTitle, { color: p.muted }]}>{f.title}</Text> : null}
+              {f?.posterUrl ? <Image source={{ uri: sharp(f.posterUrl, 64) }} style={StyleSheet.absoluteFill} fadeDuration={0} resizeMethod="scale" /> : f ? <Text allowFontScaling={false} style={[styles.posterTitle, { color: p.muted }]}>{f.title}</Text> : null}
             </View>
           ))}
         </View>
@@ -56,21 +56,21 @@ export const ProfileCard = forwardRef<StoryHandle, Props>(function ProfileCard({
           ))}
         </View>
       </View>
-      <Text style={[styles.caption, { color: p.muted }]}>FAVOURITE FOUR</Text>
+      <Text allowFontScaling={false} style={[styles.caption, { color: p.muted }]}>FAVOURITE FOUR</Text>
 
       <View style={styles.numbers}>
         {numbers.map((n) => (
           <View key={n.label} style={styles.number}>
-            <Text style={[styles.value, { color: p.text }]}>{n.value}</Text>
-            <Text style={[styles.label, { color: p.muted }]}>{n.label}</Text>
+            <Text allowFontScaling={false} style={[styles.value, { color: p.text }]}>{n.value}</Text>
+            <Text allowFontScaling={false} style={[styles.label, { color: p.muted }]}>{n.label}</Text>
           </View>
         ))}
       </View>
-      <Text style={[styles.line, { color: p.muted }]}>
+      <Text allowFontScaling={false} style={[styles.line, { color: p.muted }]}>
         {stats.thisYear} IN {year} · {stats.longestStreak}-DAY BEST STREAK{stats.avgStars ? ` · ${stats.avgStars}★ AVG` : ''}
       </Text>
       <View style={{ flex: 1 }} />
-      <Text style={[styles.brand, { color: p.accent }]}>♥ WATCH HEART</Text>
+      <Text allowFontScaling={false} style={[styles.brand, { color: p.accent }]}>♥ WATCH HEART</Text>
     </View>
   );
 });

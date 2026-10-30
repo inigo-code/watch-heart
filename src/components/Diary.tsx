@@ -122,7 +122,7 @@ export function ReelHeader({ month, count, theme, onShare }: { month: string; co
       <Sprockets color={theme.bg} count={16} hole={6} />
       <View style={styles.reelRow}>
         <View style={{ flex: 1 }}>
-          <Text style={[styles.reelMonth, { color: theme.dark ? theme.text : theme.bg }]}>{archive ? 'THE ARCHIVE' : monthName(month).toUpperCase()}</Text>
+          <Text maxFontSizeMultiplier={1.15} style={[styles.reelMonth, { color: theme.dark ? theme.text : theme.bg }]}>{archive ? 'THE ARCHIVE' : monthName(month).toUpperCase()}</Text>
           <Text style={[styles.reelMeta, { color: theme.accentOnDark }]}>
             {archive
               ? `NO WATCH DATE · ${count} ${count === 1 ? 'TITLE' : 'TITLES'}`

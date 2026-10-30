@@ -45,7 +45,7 @@ export const ReviewCard = forwardRef<StoryHandle, Props>(function ReviewCard({ e
       )}
 
       <View style={styles.inner}>
-        <Text style={[styles.kicker, { color: p.accent }]}>{entry.rewatch ? 'REWATCHED' : 'JUST WATCHED'}</Text>
+        <Text allowFontScaling={false} style={[styles.kicker, { color: p.accent }]}>{entry.rewatch ? 'REWATCHED' : 'JUST WATCHED'}</Text>
         <View style={styles.posterWrap}>
           <View style={[styles.poster, { backgroundColor: p.card }]}>
             {entry.posterUrl ? (
@@ -65,20 +65,20 @@ export const ReviewCard = forwardRef<StoryHandle, Props>(function ReviewCard({ e
           </View>
         </View>
 
-        <Text style={[styles.title, { color: p.text }]} numberOfLines={3}>
+        <Text allowFontScaling={false} style={[styles.title, { color: p.text }]} numberOfLines={3}>
           {entry.title.toUpperCase()}
         </Text>
-        <Text style={[styles.meta, { color: p.muted }]} numberOfLines={1}>
+        <Text allowFontScaling={false} style={[styles.meta, { color: p.muted }]} numberOfLines={1}>
           {[KIND_LABEL[entry.kind].toUpperCase(), entry.year, entry.progress || null].filter(Boolean).join(' · ')}
         </Text>
         {!!entry.credit && (
-          <Text style={[styles.meta, { color: p.muted }]} numberOfLines={1}>
-            {CREDIT[entry.kind]} <Text style={{ color: p.text }}>{entry.credit.toUpperCase()}</Text>
+          <Text allowFontScaling={false} style={[styles.meta, { color: p.muted }]} numberOfLines={1}>
+            {CREDIT[entry.kind]} <Text allowFontScaling={false} style={{ color: p.text }}>{entry.credit.toUpperCase()}</Text>
           </Text>
         )}
         {!!entry.companions?.length && (
-          <Text style={[styles.meta, { color: p.muted }]} numberOfLines={1}>
-            WITH <Text style={{ color: p.text }}>{namesLine(entry.companions).toUpperCase()}</Text>
+          <Text allowFontScaling={false} style={[styles.meta, { color: p.muted }]} numberOfLines={1}>
+            WITH <Text allowFontScaling={false} style={{ color: p.text }}>{namesLine(entry.companions).toUpperCase()}</Text>
           </Text>
         )}
 
@@ -88,22 +88,22 @@ export const ReviewCard = forwardRef<StoryHandle, Props>(function ReviewCard({ e
         </View>
 
         {!!review && (
-          <Text style={[styles.review, { color: p.text }]} numberOfLines={6}>
+          <Text allowFontScaling={false} style={[styles.review, { color: p.text }]} numberOfLines={6}>
             “{review.length > 240 ? `${review.slice(0, 237)}…` : review}”
           </Text>
         )}
 
         <View style={{ flex: 1 }} />
         <View style={[styles.stub, { borderColor: p.muted + '66' }]}>
-          <Text style={[styles.stubText, { color: p.muted }]}>{admit(entry.companions?.length ?? 0)}</Text>
+          <Text allowFontScaling={false} style={[styles.stubText, { color: p.muted }]}>{admit(entry.companions?.length ?? 0)}</Text>
           <View style={[styles.stubTear, { borderColor: p.muted + '66' }]} />
-          <Text style={[styles.stubText, { color: p.text }]}>{friendlyDate(entry.watchedOn).toUpperCase()}</Text>
+          <Text allowFontScaling={false} style={[styles.stubText, { color: p.text }]}>{friendlyDate(entry.watchedOn).toUpperCase()}</Text>
         </View>
         <View style={styles.brand}>
           <View style={[styles.brandReel, { borderColor: p.accent }]}>
             <Ionicons name="heart" size={8} color={p.accent} />
           </View>
-          <Text style={[styles.brandText, { color: p.muted }]}>WATCH HEART</Text>
+          <Text allowFontScaling={false} style={[styles.brandText, { color: p.muted }]}>WATCH HEART</Text>
         </View>
       </View>
     </View>

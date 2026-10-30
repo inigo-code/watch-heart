@@ -65,7 +65,7 @@ export default function RecapScreen() {
     <ScrollView style={{ backgroundColor: theme.bg }} contentContainerStyle={[styles.content, { paddingTop: insets.top + 10, paddingBottom: insets.bottom + 32 }]}>
       <ScreenGlow theme={theme} />
       <View style={styles.titleBlock}>
-        <Text style={[styles.heading, { color: theme.text }]}>
+        <Text maxFontSizeMultiplier={1.15} style={[styles.heading, { color: theme.text }]}>
           THE <Text style={{ color: theme.accent }}>RECAP</Text>
         </Text>
         <Text style={[styles.sub, { color: theme.textMuted }]}>Turn a month, or a whole year, into a story.</Text>

@@ -63,7 +63,7 @@ function Wordmark({ theme }: { theme: Theme }) {
   return (
     <View style={styles.wordmark} accessibilityRole="header" accessibilityLabel="Watch Heart">
       <Image source={ICON} style={styles.icon} />
-      <Text style={[styles.word, { color: theme.text }]}>
+      <Text maxFontSizeMultiplier={1.15} style={[styles.word, { color: theme.text }]}>
         WATCH <Text style={{ color: theme.accent }}>HEART</Text>
       </Text>
     </View>

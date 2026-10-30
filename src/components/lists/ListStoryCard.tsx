@@ -22,12 +22,12 @@ export const ListStoryCard = forwardRef<StoryHandle, { list: UserList; palette: 
     <View ref={ref} collapsable={false} style={styles.card}>
       <LinearGradient colors={p.bg} style={StyleSheet.absoluteFill} />
       <View style={styles.middle}>
-        <Text style={[styles.kicker, { color: p.accent }]}>★ {name.trim() ? `${name.trim().toUpperCase()}’S LIST` : 'MY LIST'} ★</Text>
-        <Text style={[styles.title, { color: p.text }]} numberOfLines={2} adjustsFontSizeToFit>
+        <Text allowFontScaling={false} style={[styles.kicker, { color: p.accent }]}>★ {name.trim() ? `${name.trim().toUpperCase()}’S LIST` : 'MY LIST'} ★</Text>
+        <Text allowFontScaling={false} style={[styles.title, { color: p.text }]} numberOfLines={2} adjustsFontSizeToFit>
           {list.name.toUpperCase()}
         </Text>
         {!!list.description && (
-          <Text style={[styles.desc, { color: p.muted }]} numberOfLines={2}>
+          <Text allowFontScaling={false} style={[styles.desc, { color: p.muted }]} numberOfLines={2}>
             {list.description}
           </Text>
         )}
@@ -35,16 +35,16 @@ export const ListStoryCard = forwardRef<StoryHandle, { list: UserList; palette: 
           <View style={styles.rows}>
             {items.map((it, i) => (
               <View key={i} style={[styles.row, { backgroundColor: p.card }]}>
-                <Text style={[styles.rank, { color: i < 3 ? p.accent : p.muted }]}>{i + 1}</Text>
+                <Text allowFontScaling={false} style={[styles.rank, { color: i < 3 ? p.accent : p.muted }]}>{i + 1}</Text>
                 {it.posterUrl ? (
                   <Image source={{ uri: sharp(it.posterUrl, 24) }} style={styles.thumb} fadeDuration={0} resizeMethod="scale" />
                 ) : (
                   <View style={[styles.thumb, { backgroundColor: p.strip }]} />
                 )}
-                <Text style={[styles.rowTitle, { color: p.text }]} numberOfLines={1}>
+                <Text allowFontScaling={false} style={[styles.rowTitle, { color: p.text }]} numberOfLines={1}>
                   {it.title}
                 </Text>
-                {!!it.year && <Text style={[styles.rowYear, { color: p.muted }]}>{it.year}</Text>}
+                {!!it.year && <Text allowFontScaling={false} style={[styles.rowYear, { color: p.muted }]}>{it.year}</Text>}
               </View>
             ))}
           </View>
@@ -55,18 +55,18 @@ export const ListStoryCard = forwardRef<StoryHandle, { list: UserList; palette: 
                 {it.posterUrl ? (
                   <Image source={{ uri: sharp(it.posterUrl, 74) }} style={StyleSheet.absoluteFill} fadeDuration={0} resizeMethod="scale" />
                 ) : (
-                  <Text style={[styles.posterTitle, { color: p.muted }]}>{it.title}</Text>
+                  <Text allowFontScaling={false} style={[styles.posterTitle, { color: p.muted }]}>{it.title}</Text>
                 )}
               </View>
             ))}
           </View>
         )}
-        <Text style={[styles.count, { color: p.muted }]}>
+        <Text allowFontScaling={false} style={[styles.count, { color: p.muted }]}>
           {list.items.length} {list.items.length === 1 ? 'TITLE' : 'TITLES'}
           {more > 0 ? ` · ${more} MORE IN THE APP` : ''}
         </Text>
       </View>
-      <Text style={[styles.brand, { color: p.accent }]}>♥ WATCH HEART</Text>
+      <Text allowFontScaling={false} style={[styles.brand, { color: p.accent }]}>♥ WATCH HEART</Text>
     </View>
   );
 });

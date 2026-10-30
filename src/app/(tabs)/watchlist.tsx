@@ -70,7 +70,7 @@ export default function WatchlistScreen() {
       <ContinueWatching items={watchlist} theme={theme} />
       <View style={styles.headRow}>
         <View style={styles.titleBlock}>
-          <Text style={[styles.heading, { color: theme.text }]}>
+          <Text maxFontSizeMultiplier={1.15} style={[styles.heading, { color: theme.text }]}>
             UP <Text style={{ color: theme.accent }}>NEXT</Text>
           </Text>
           <Text style={[styles.sub, { color: theme.textMuted }]}>
