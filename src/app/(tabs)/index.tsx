@@ -10,7 +10,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { tmdbKey } from '@/api';
 import { watchRegion } from '@/api/omdb';
 import { discoverTmdb, nowPlayingTmdb, trendingAllTmdb } from '@/api/tmdb';
-import { AppHeader, greetingLine } from '@/components/AppHeader';
+import { AppHeader, greetingIcon, greetingLine } from '@/components/AppHeader';
 import { KindBadge, Poster } from '@/components/Film';
 import { RegionalRows } from '@/components/home/RegionalRows';
 import { MovieNightCard, useMovieNights } from '@/components/MovieNight';
@@ -108,7 +108,7 @@ export default function HomeScreen() {
       style={{ backgroundColor: theme.bg }}
       contentContainerStyle={[styles.content, { paddingTop: insets.top + 10, paddingBottom: insets.bottom + 32 }]}
     >
-      <AppHeader theme={theme} line={greetingLine(hour, settings.name)} />
+      <AppHeader theme={theme} line={greetingLine(hour, settings.name)} icon={greetingIcon(hour)} />
 
       {nights[0] && <MovieNightCard night={nights[0]} theme={theme} showTitle />}
 

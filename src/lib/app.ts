@@ -49,6 +49,7 @@ export const WHATS_NEW = {
     'A new Home tab: this week’s top titles, picks for you, trending, in cinemas, and in India: FDFS and regional favourites',
     'Choose your country and language in Settings, and Home starts with new films in it',
     'Your own poster: tap a diary entry’s poster to choose from all of TMDB’s',
+    'Home’s title is a cinema marquee with chasing lights, and a little picture for the time of day',
     'Diary tickets look like Indian cinema tickets: tinted paper for films, series and anime, an engraved print and a serial number',
     'Sharper stories: shared at 1440×2560, with posters at full quality',
     'Moving an entry to Trash asks first',
