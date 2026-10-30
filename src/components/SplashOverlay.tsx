@@ -24,13 +24,24 @@ export function SplashOverlay({ ready }: { ready: boolean }) {
   const [introDone, setIntroDone] = useState(false);
   const [timedOut, setTimedOut] = useState(false);
   const [gone, setGone] = useState(false);
+  // The reel is drawn: only then does the native splash go, and the spin start.
+  const [shown, setShown] = useState(false);
 
-  // The native splash goes as soon as this, its double, is on screen.
-  // Not on layout itself: layout comes a frame before anything is drawn, and closing the native splash then
-  // shows the empty window for that frame (a black blink). Two frames later the double is on screen.
-  const onLayout = () => requestAnimationFrame(() => requestAnimationFrame(() => SplashScreen.hideAsync().catch(() => {})));
+  // The native splash goes once this, its double, is on screen with its reel. Android loads an image a moment
+  // after the view is drawn (and used to fade it in), so closing on layout showed plain black for a beat:
+  // the blink. So: wait for the reel to load, then two drawn frames, then close. Or 800 ms, should the
+  // image never report back.
+  const reveal = () => requestAnimationFrame(() => requestAnimationFrame(() => setShown(true)));
+  useEffect(() => {
+    const timer = setTimeout(() => setShown(true), 800);
+    return () => clearTimeout(timer);
+  }, []);
+  useEffect(() => {
+    if (shown) SplashScreen.hideAsync().catch(() => {});
+  }, [shown]);
 
   useEffect(() => {
+    if (!shown) return;
     let live = true;
     AccessibilityInfo.isReduceMotionEnabled()
       .catch(() => false)
@@ -51,7 +62,7 @@ export function SplashOverlay({ ready }: { ready: boolean }) {
       live = false;
       clearTimeout(timer);
     };
-  }, [spin, word]);
+  }, [shown, spin, word]);
 
   const leaving = introDone && (ready || timedOut);
   useEffect(() => {
@@ -65,7 +76,6 @@ export function SplashOverlay({ ready }: { ready: boolean }) {
   const beat = spin.interpolate({ inputRange: [0, 0.85, 0.93, 1], outputRange: [1, 1, 1.06, 1] });
   return (
     <Animated.View
-      onLayout={onLayout}
       pointerEvents="none"
       style={[styles.wrap, { opacity: leave.interpolate({ inputRange: [0, 1], outputRange: [1, 0] }) }]}
       accessibilityElementsHidden
@@ -73,6 +83,9 @@ export function SplashOverlay({ ready }: { ready: boolean }) {
     >
       <Animated.Image
         source={ICON}
+        fadeDuration={0}
+        onLoad={reveal}
+        onError={reveal}
         style={[styles.icon, { transform: [{ rotate }, { scale: beat }, { scale: leave.interpolate({ inputRange: [0, 1], outputRange: [1, 1.12] }) }] }]}
       />
       <Animated.View style={[styles.wordWrap, { opacity: word, transform: [{ translateY: word.interpolate({ inputRange: [0, 1], outputRange: [8, 0] }) }] }]}>
