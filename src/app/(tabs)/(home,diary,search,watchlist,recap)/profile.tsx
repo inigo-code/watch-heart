@@ -7,6 +7,7 @@ import { ActivityIndicator, Keyboard, Platform, Pressable, ScrollView, StyleShee
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { KeyboardSafe } from '@/components/KeyboardSafe';
+import { ScreenGlow } from '@/components/ScreenGlow';
 import { Poster } from '@/components/Film';
 import { ListCover } from '@/components/lists/ListCover';
 import { RatingChart } from '@/components/RatingChart';
@@ -124,8 +125,8 @@ function ProfileBody() {
 
   return (
     <KeyboardSafe style={{ backgroundColor: theme.bg }}>
+      <ScreenGlow theme={theme} />
       <ScrollView
-        style={{ backgroundColor: theme.bg }}
         contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 40 }]}
         keyboardShouldPersistTaps="handled"
       >

@@ -9,15 +9,10 @@ import type { Theme } from '@/lib/theme';
 
 type IconName = keyof typeof MaterialCommunityIcons.glyphMap;
 
-/** A tab's icon, with a short accent bar above it on the tab you're on. */
+/** A tab's icon, lit in the accent on the tab you're on. */
 const tabIcon = (name: IconName) =>
-  function TabBarIcon({ color, size, focused }: { color: ColorValue; size: number; focused: boolean }) {
-    return (
-      <View style={styles.iconWrap}>
-        <View style={[styles.mark, { backgroundColor: focused ? color : 'transparent' }]} />
-        <MaterialCommunityIcons name={name} size={size} color={color as string} />
-      </View>
-    );
+  function TabBarIcon({ color, size }: { color: ColorValue; size: number }) {
+    return <MaterialCommunityIcons name={name} size={size} color={color as string} />;
   };
 
 /** The bar's ground: a gradient from the page into black, with a line of the accent along its top edge. */
@@ -92,8 +87,6 @@ export default function TabsLayout() {
 }
 
 const styles = StyleSheet.create({
-  iconWrap: { alignItems: 'center' },
   // Sits in the space above the icon, so the icon doesn't move when the tab changes.
-  mark: { width: 18, height: 3, borderRadius: 2, marginTop: -6, marginBottom: 3 },
   line: { position: 'absolute', top: 0, left: 0, right: 0, height: 1.5 },
 });

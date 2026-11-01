@@ -144,14 +144,17 @@ export default function HomeScreen() {
                   accessibilityLabel={`${w.title}${next ? `, next: season ${next.season} episode ${next.number}` : ''}`}
                   style={({ pressed }) => [{ width: 104 }, pressed && { opacity: 0.8 }]}
                 >
-                  <Poster uri={w.posterUrl} title={w.title} width={104} theme={theme} radius={6} />
-                  {next && (
-                    <View style={[styles.episode, { backgroundColor: theme.accent }]}>
-                      <Text style={[styles.episodeText, { color: theme.accentText }]}>
-                        S{next.season} · E{next.number}
-                      </Text>
-                    </View>
-                  )}
+                  {/* The badge sits on the poster's corner, clear of the name below. */}
+                  <View>
+                    <Poster uri={w.posterUrl} title={w.title} width={104} theme={theme} radius={6} />
+                    {next && (
+                      <View style={[styles.episode, { backgroundColor: theme.accent }]}>
+                        <Text style={[styles.episodeText, { color: theme.accentText }]}>
+                          S{next.season} · E{next.number}
+                        </Text>
+                      </View>
+                    )}
+                  </View>
                   <Text style={[styles.name, { color: theme.text }]} numberOfLines={1}>
                     {w.title}
                   </Text>

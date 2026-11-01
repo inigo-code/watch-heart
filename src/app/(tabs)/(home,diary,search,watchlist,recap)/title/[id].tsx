@@ -47,7 +47,7 @@ export default function TitleScreen() {
   if (!t) {
     return (
       <View style={[styles.center, { backgroundColor: theme.bg }]}>
-        <Stack.Screen options={{ headerTransparent: false }} />
+        <Stack.Screen options={{ headerTransparent: false, headerStyle: { backgroundColor: theme.bg } }} />
         {error ? <Text style={[styles.muted, { color: theme.textMuted }]}>{error}</Text> : <ActivityIndicator color={theme.accent} />}
       </View>
     );
@@ -70,7 +70,7 @@ export default function TitleScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.bg }}>
-      <Stack.Screen options={{ headerTintColor: '#FFFFFF' }} />
+      <Stack.Screen options={{ headerTransparent: true, headerStyle: { backgroundColor: 'transparent' }, headerTintColor: '#FFFFFF' }} />
       <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 32 }}>
         <Hero t={{ ...t, genres: [] }} theme={theme} topInset={insets.top} />
 

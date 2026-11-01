@@ -43,7 +43,7 @@ export default function EntryScreen() {
   if (!entry || entry.deletedAt !== null) {
     return (
       <View style={[styles.missing, { backgroundColor: theme.bg }]}>
-        <Stack.Screen options={{ headerTransparent: false }} />
+        <Stack.Screen options={{ headerTransparent: false, headerStyle: { backgroundColor: theme.bg } }} />
         <Text style={[styles.missingText, { color: theme.textMuted }]}>This entry is gone. It may be in Trash.</Text>
       </View>
     );
@@ -78,6 +78,8 @@ export default function EntryScreen() {
     <View style={{ flex: 1, backgroundColor: theme.bg }}>
       <Stack.Screen
         options={{
+          headerTransparent: true,
+          headerStyle: { backgroundColor: 'transparent' },
           headerTintColor: '#FFFFFF',
           headerRight: () => (
             <Pressable

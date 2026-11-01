@@ -17,7 +17,7 @@ import { useSettings } from '@/settings/SettingsProvider';
 import { useDiary } from '@/store/DiaryStore';
 import type { Title, TrackStatus, WatchItem } from '@/store/types';
 
-type Params = { id?: string; title?: string };
+type Params = { id?: string; title?: string; season?: string };
 
 const STATUSES: { key: TrackStatus; label: string }[] = [
   { key: 'watching', label: 'Watching' },
@@ -42,7 +42,8 @@ export default function TrackScreen() {
 
   const [info, setInfo] = useState<ShowInfo | null>(null);
   const [failed, setFailed] = useState<string | null>(null);
-  const [season, setSeason] = useState<number | null>(null);
+  // Opened from a season's poster: that season first.
+  const [season, setSeason] = useState<number | null>(() => Number(params.season) || null);
   const [episodes, setEpisodes] = useState<{ season: number; list: Episode[] } | null>(null);
 
   // The show's seasons and air dates, fresh each time it's opened.

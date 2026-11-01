@@ -6,6 +6,7 @@ import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { KeyboardSafe } from '@/components/KeyboardSafe';
+import { ScreenGlow } from '@/components/ScreenGlow';
 import { ControlRow, Row, Section, Segmented, ToggleRow } from '@/components/SettingsUI';
 import { HeartAppsMark } from '@/components/HeartApps';
 import { useFriends } from '@/friends/FriendsProvider';
@@ -113,8 +114,8 @@ export default function SettingsScreen() {
 
   return (
     <KeyboardSafe style={{ backgroundColor: theme.bg }}>
+      <ScreenGlow theme={theme} />
       <ScrollView
-        style={{ backgroundColor: theme.bg }}
         contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 32 }]}
         keyboardShouldPersistTaps="handled"
       >

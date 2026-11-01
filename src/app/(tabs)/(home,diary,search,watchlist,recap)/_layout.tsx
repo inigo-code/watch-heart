@@ -23,8 +23,9 @@ type ScreenOptions = Exclude<Options, (...args: never[]) => unknown>;
 // The tabs' first pages draw their own titles; the others take these.
 const TAB_ROOTS = new Set(['index', 'diary', 'search', 'watchlist', 'recap']);
 const PAGES: Record<string, ScreenOptions> = {
-  'entry/[id]': { title: '', headerTransparent: true },
-  'title/[id]': { title: '', headerTransparent: true },
+  // The backdrop runs up behind the back arrow, so these headers have no ground of their own.
+  'entry/[id]': { title: '', headerTransparent: true, headerStyle: { backgroundColor: 'transparent' } },
+  'title/[id]': { title: '', headerTransparent: true, headerStyle: { backgroundColor: 'transparent' } },
   'card/[id]': { title: 'STORY CARD' },
   settings: { title: 'SETTINGS' },
   account: { title: 'ACCOUNT & SYNC' },

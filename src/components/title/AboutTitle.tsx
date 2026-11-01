@@ -103,6 +103,8 @@ export function TitleMore({ id, t, about, theme }: { id: string; t: Title; about
   const seen = (x: Title) => viewingsOf(x.source, x.sourceId).length > 0;
   const people = crewTab ? about.crew : about.cast;
   const episodes = trackable(t) ? () => router.push({ pathname: '/track', params: { title: JSON.stringify(t) } }) : undefined;
+  // A season's poster opens the episodes page on that season.
+  const openSeason = (n: number) => router.push({ pathname: '/track', params: { title: JSON.stringify(t), season: String(n) } });
 
   useEffect(() => {
     if (!key || !maker) return;
@@ -150,7 +152,14 @@ export function TitleMore({ id, t, about, theme }: { id: string; t: Title; about
           <RowHead title={`Seasons (${about.seasons.length})`} theme={theme} more="Episodes" onMore={episodes} />
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.seasons}>
             {about.seasons.map((s) => (
-              <View key={s.n} style={styles.season}>
+              <Pressable
+                key={s.n}
+                onPress={episodes ? () => openSeason(s.n) : undefined}
+                disabled={!episodes}
+                accessibilityRole={episodes ? 'button' : undefined}
+                accessibilityLabel={`${s.name}, ${s.episodes} episodes`}
+                style={({ pressed }) => [styles.season, { opacity: pressed ? 0.75 : 1 }]}
+              >
                 {s.poster ? (
                   <Image source={{ uri: s.poster }} style={[styles.seasonPoster, { backgroundColor: theme.elevated }]} contentFit="cover" />
                 ) : (
@@ -164,7 +173,7 @@ export function TitleMore({ id, t, about, theme }: { id: string; t: Title; about
                 <Text style={[styles.seasonSub, { color: theme.textMuted }]}>
                   {s.episodes} eps{s.year ? ` · ${s.year}` : ''}
                 </Text>
-              </View>
+              </Pressable>
             ))}
           </ScrollView>
         </View>

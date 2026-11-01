@@ -48,5 +48,9 @@ export const WHATS_NEW = {
   items: [
     'Plan a watch, day or night: pick the day, then your own time, and get a reminder',
     'Watchlist: tap a title to open its page; hold it for quick actions, including Plan a watch',
+    'Tap a season’s poster to open its episodes',
+    'Title pages show the backdrop right up to the top, behind the back arrow',
+    'Profile and Settings glow like the main screens, and the tab bar is cleaner',
+    'Fixed: the next-episode badge on Home covering the show’s name',
   ],
 };
