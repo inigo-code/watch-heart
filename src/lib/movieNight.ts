@@ -17,13 +17,13 @@ Notifications.setNotificationHandler({
 /** Schedules the reminder; resolves to its id, or null when notifications aren't allowed. */
 export async function scheduleMovieNight(t: { title: string; sourceId: string }, at: Date): Promise<string | null> {
   // Android 13 only asks once a channel exists.
-  await Notifications.setNotificationChannelAsync(CHANNEL, { name: 'Movie nights', importance: AndroidImportance.HIGH });
+  await Notifications.setNotificationChannelAsync(CHANNEL, { name: 'Watch reminders', importance: AndroidImportance.HIGH });
   let { status } = await Notifications.getPermissionsAsync();
   if (status !== 'granted') status = (await Notifications.requestPermissionsAsync()).status;
   if (status !== 'granted') return null;
   return Notifications.scheduleNotificationAsync({
     content: {
-      title: 'Movie night',
+      title: 'Time to watch',
       body: `It’s time for ${t.title}. Lights down, phones away.`,
       data: { url: `/title/${encodeURIComponent(t.sourceId)}` },
     },

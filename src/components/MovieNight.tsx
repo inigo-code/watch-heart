@@ -18,27 +18,26 @@ import type { Title } from '@/store/types';
 
 const HOUR = 3600000;
 
-/** "Tonight, 8:00 pm", "Tomorrow, 8:00 pm", "Sat 1 Nov, 8:00 pm". */
+/** "Today, 2:00 pm", "Tomorrow, 9:30 pm", "Sat 1 Nov, 8:00 pm". */
 export function nightLabel(at: number, now = new Date()) {
   const d = new Date(at);
   const time = d.toLocaleTimeString('en-GB', { hour: 'numeric', minute: '2-digit', hour12: true });
   const day = (x: Date) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
   const diff = Math.round((day(d) - day(now)) / (24 * HOUR));
-  if (diff === 0) return `Tonight, ${time}`;
+  if (diff === 0) return `Today, ${time}`;
   if (diff === 1) return `Tomorrow, ${time}`;
   return `${d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}, ${time}`;
 }
 
-const at = (base: Date, addDays: number, hour: number) => new Date(base.getFullYear(), base.getMonth(), base.getDate() + addDays, hour, 0, 0, 0);
+const startOfDay = (base: Date, addDays: number) => new Date(base.getFullYear(), base.getMonth(), base.getDate() + addDays);
 
-/** The quick choices: tonight (while there's time), tomorrow, and the coming Saturday, at 8 pm. */
-function quickTimes(now = new Date()) {
-  const out: { label: string; date: Date }[] = [];
-  const tonight = at(now, 0, 20);
-  if (tonight.getTime() - now.getTime() > 30 * 60000) out.push({ label: 'Tonight, 8 pm', date: tonight });
-  out.push({ label: 'Tomorrow, 8 pm', date: at(now, 1, 20) });
+/** The quick days: today (until 11 pm), tomorrow, and the coming Saturday. You choose the time after. */
+function quickDays(now = new Date()) {
+  const out: { label: string; day: Date }[] = [];
+  if (now.getHours() < 23) out.push({ label: 'Today', day: startOfDay(now, 0) });
+  out.push({ label: 'Tomorrow', day: startOfDay(now, 1) });
   const toSat = (6 - now.getDay() + 7) % 7 || 7;
-  if (toSat > 1) out.push({ label: 'This Saturday, 8 pm', date: at(now, toSat, 20) });
+  if (toSat > 1) out.push({ label: 'This Saturday', day: startOfDay(now, toSat) });
   return out;
 }
 
@@ -73,12 +72,12 @@ export function useMovieNights() {
     const old = settings.movieNights.filter((n) => n.sourceId === t.sourceId);
     await Promise.all(old.map((n) => cancelMovieNight(n.reminderId)));
     update({ movieNights: [...settings.movieNights.filter((n) => n.sourceId !== t.sourceId), night] });
-    if (!onWatchlist(t)) addToWatchlist(t, `Movie night · ${nightLabel(night.at)}`);
+    if (!onWatchlist(t)) addToWatchlist(t, `Planned · ${nightLabel(night.at)}`);
     toast(
       reminderId
-        ? `Movie night planned: ${nightLabel(night.at)}. You’ll get a reminder.`
+        ? `Planned: ${nightLabel(night.at)}. You’ll get a reminder.`
         : Platform.OS === 'web'
-          ? `Movie night planned: ${nightLabel(night.at)}`
+          ? `Planned: ${nightLabel(night.at)}`
           : `Planned for ${nightLabel(night.at)}. Turn on notifications for Watch Heart to get a reminder.`,
     );
   };
@@ -86,53 +85,64 @@ export function useMovieNights() {
   const cancel = async (n: MovieNight) => {
     await cancelMovieNight(n.reminderId);
     update({ movieNights: settings.movieNights.filter((x) => x.key !== n.key) });
-    toast('Movie night cancelled');
+    toast('Plan cancelled');
   };
 
   return { nights, plan, cancel, forTitle: (sourceId: string) => nights.find((n) => n.sourceId === sourceId) };
 }
 
-/** Choose when: tonight, tomorrow, Saturday, or any day and time. */
+/** Choose when: a day (today, tomorrow, Saturday or any), then the time, in Android's own pickers. */
 export function MovieNightSheet({ t, visible, theme, onClose }: { t: Title; visible: boolean; theme: Theme; onClose: () => void }) {
   const insets = useSafeAreaInsets();
   const { plan } = useMovieNights();
+  const toast = useToast();
   const choose = (date: Date) => {
     onClose();
     plan(t, date).catch(() => {});
   };
-  // Android's own pickers: the day, then the time.
-  const pickAny = () => {
-    const now = new Date();
+  // The time is yours to choose; the clock just opens on the next full hour.
+  const pickTime = (day: Date) => {
+    const next = new Date();
+    next.setHours(next.getHours() + 1, 0, 0, 0);
+    const opensAt = new Date(day.getFullYear(), day.getMonth(), day.getDate(), next.getHours(), 0);
+    if (Platform.OS !== 'android') {
+      choose(opensAt);
+      return;
+    }
+    onClose();
     DateTimePickerAndroid.open({
-      value: at(now, 0, 20),
+      value: opensAt,
+      mode: 'time',
+      onChange: (e, time) => {
+        if (e.type !== 'set' || !time) return;
+        const when = new Date(day.getFullYear(), day.getMonth(), day.getDate(), time.getHours(), time.getMinutes());
+        if (when.getTime() > Date.now()) plan(t, when).catch(() => {});
+        else toast('That time has passed. Pick a later one.');
+      },
+    });
+  };
+  const pickDay = () => {
+    const now = new Date();
+    onClose();
+    DateTimePickerAndroid.open({
+      value: now,
       mode: 'date',
       minimumDate: now,
-      onChange: (e, day) => {
-        if (e.type !== 'set' || !day) return;
-        DateTimePickerAndroid.open({
-          value: new Date(day.getFullYear(), day.getMonth(), day.getDate(), 20, 0),
-          mode: 'time',
-          onChange: (e2, time) => {
-            if (e2.type !== 'set' || !time) return;
-            const when = new Date(day.getFullYear(), day.getMonth(), day.getDate(), time.getHours(), time.getMinutes());
-            if (when.getTime() > Date.now()) choose(when);
-          },
-        });
-      },
+      onChange: (e, day) => e.type === 'set' && day && pickTime(day),
     });
   };
   return (
     <BottomSheet visible={visible} onClose={onClose}>
       <View style={[styles.sheet, { backgroundColor: theme.card, paddingBottom: insets.bottom + 16 }]}>
         <View style={[styles.grabber, { backgroundColor: theme.border }]} />
-        <Text style={[styles.sheetTitle, { color: theme.text }]}>MOVIE NIGHT</Text>
+        <Text style={[styles.sheetTitle, { color: theme.text }]}>PLAN A WATCH</Text>
         <Text style={[styles.sheetSub, { color: theme.textMuted }]} numberOfLines={2}>
-          When are you watching {t.title}? You’ll get a reminder then.
+          When are you watching {t.title}? Pick the day, then the time, and you’ll get a reminder then.
         </Text>
-        {quickTimes().map((q) => (
+        {quickDays().map((q) => (
           <Pressable
             key={q.label}
-            onPress={() => choose(q.date)}
+            onPress={() => pickTime(q.day)}
             accessibilityRole="button"
             style={({ pressed }) => [styles.option, { backgroundColor: pressed ? theme.chip : theme.bg, borderColor: theme.border }]}
           >
@@ -142,15 +152,12 @@ export function MovieNightSheet({ t, visible, theme, onClose }: { t: Title; visi
         ))}
         {Platform.OS === 'android' && (
           <Pressable
-            onPress={() => {
-              onClose();
-              pickAny();
-            }}
+            onPress={pickDay}
             accessibilityRole="button"
             style={({ pressed }) => [styles.option, { backgroundColor: pressed ? theme.chip : theme.bg, borderColor: theme.border }]}
           >
             <Ionicons name="time-outline" size={18} color={theme.accent} />
-            <Text style={[styles.optionText, { color: theme.text }]}>Pick a day and time…</Text>
+            <Text style={[styles.optionText, { color: theme.text }]}>Another day…</Text>
           </Pressable>
         )}
       </View>
@@ -175,7 +182,7 @@ export function MovieNightCard({ night, theme, showTitle }: { night: MovieNight;
           <Ionicons name="calendar" size={26} color={theme.accent} />
         )}
         <View style={{ flex: 1, gap: 2 }}>
-          <Text style={[styles.cardKicker, { color: theme.accent }]}>MOVIE NIGHT</Text>
+          <Text style={[styles.cardKicker, { color: theme.accent }]}>PLANNED</Text>
           <Text style={[styles.cardWhen, { color: theme.text }]}>{nightLabel(night.at)}</Text>
           {showTitle && (
             <Text style={[styles.cardTitle, { color: theme.textMuted }]} numberOfLines={1}>
@@ -184,7 +191,7 @@ export function MovieNightCard({ night, theme, showTitle }: { night: MovieNight;
           )}
         </View>
       </Pressable>
-      <Pressable onPress={() => cancel(night)} hitSlop={8} accessibilityRole="button" accessibilityLabel="Cancel movie night" style={styles.cancel}>
+      <Pressable onPress={() => cancel(night)} hitSlop={8} accessibilityRole="button" accessibilityLabel="Cancel the plan" style={styles.cancel}>
         <Ionicons name="close" size={20} color={theme.textMuted} />
       </Pressable>
     </View>

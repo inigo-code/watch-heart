@@ -124,7 +124,7 @@ export default function TitleScreen() {
             {a?.trailer && (
               <Tool theme={theme} icon="play-circle-outline" label="Trailer" onPress={() => Linking.openURL(`https://www.youtube.com/watch?v=${a.trailer}`)} />
             )}
-            <Tool theme={theme} icon="calendar-outline" label="Movie night" onPress={() => setPlanning(true)} />
+            <Tool theme={theme} icon="calendar-outline" label="Plan a watch" onPress={() => setPlanning(true)} />
             <Tool theme={theme} icon="albums-outline" label={onLists.length ? `Lists (${onLists.length})` : 'Add to list'} onPress={() => setListing(true)} />
             {trackable(t) && (
               <Tool

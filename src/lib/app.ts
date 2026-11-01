@@ -44,30 +44,8 @@ export const DATA_SOURCES = {
  * An update that leaves it alone shows nothing.
  */
 export const WHATS_NEW = {
-  id: '1.2.0',
+  id: '1.2.1',
   items: [
-    'A new Home tab: this week’s top titles, picks for you, trending, in cinemas, and in India: FDFS and regional favourites',
-    'Choose your country and language in Settings, and Home starts with new films in it',
-    'Your own poster: choose from all of TMDB’s as you log, or later from your diary',
-    'Friends: find people by name and send requests, and see what your friends watched lately on Home',
-    'Perks: achievements earn points that unlock new accents and story palettes',
-    'Lists in Discover: heists, time travel, warm films for a cold day and more',
-    'Logging is quicker: date, stars and a review, with the rest under More details',
-    'Watched it long ago? Log it with Don’t remember, and it waits in the Diary’s Archive',
-    'Rate and review a single season of a series or anime, from the log form or the episodes page',
-    'Pick favourites from any film or series, not only ones in your diary',
-    'Diary tickets look like Indian cinema tickets, and are compact so more fit on screen',
-    'A new look: a cleaner title, an opening animation, screens that glow, a tab bar lit in your accent, and smoother page transitions',
-    'The tab bar stays on every page: titles, entries, people, lists and settings open inside the tab you’re in',
-    'Faster: posters, scores and where to watch start loading the moment you touch a title',
-    'IMDb scores found for more titles, with TMDB’s score whenever IMDb has none',
-    'Sharper stories: shared at 1440×2560, with posters at full quality',
-    'Moving an entry to Trash asks first',
-    'Plan a movie night from any title, and get a reminder when it’s time',
-    'An Up next widget for your home screen: your next episode, a tap away',
-    'The Diary’s header stays put while you scroll, and Back to the top waits at the end',
-    'Discover has collections for the time of year: Diwali, Halloween, Christmas and more',
-    'Faster: a title starts loading as you touch its poster, and lists scroll more smoothly',
-    'Heart Apps: meet Prompt Heart, from the same maker, in About',
+    'Plan a watch, day or night: pick the day, then your own time, and get a reminder',
   ],
 };
