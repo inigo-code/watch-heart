@@ -10,7 +10,8 @@ import { ScreenGlow } from '@/components/ScreenGlow';
 import { ActionSheet } from '@/components/ActionSheet';
 import { ContinueWatching } from '@/components/ContinueWatching';
 import { AddToList } from '@/components/lists/AddToList';
-import { nightLabel, useMovieNights } from '@/components/MovieNight';
+import { MovieNightSheet, nightLabel, useMovieNights } from '@/components/MovieNight';
+import { openTitle } from '@/components/title/Rows';
 import { Chip, KindBadge, Poster } from '@/components/Film';
 import { useToast } from '@/components/Toast';
 import { KIND_COLORS, font, fonts, shadow, useTheme } from '@/lib/theme';
@@ -43,6 +44,7 @@ export default function WatchlistScreen() {
   const [menu, setMenu] = useState<WatchItem | null>(null);
   const [pick, setPick] = useState<WatchItem | null>(null);
   const [listing, setListing] = useState<WatchItem | null>(null);
+  const [planning, setPlanning] = useState<WatchItem | null>(null);
   const { lists } = useLists();
   const tile = (width - 32 - GAP * (COLS - 1)) / COLS;
 
@@ -128,9 +130,11 @@ export default function WatchlistScreen() {
         contentContainerStyle={[styles.list, { paddingBottom: insets.bottom + 32 }]}
         renderItem={({ item }) => (
           <Pressable
-            onPress={() => setMenu(item)}
+            // A tap opens the title's page (where you can plan a watch); a long press, the quick menu.
+            onPress={() => (item.source === 'tmdb' && item.sourceId ? openTitle(titleOf(item)) : setMenu(item))}
             onLongPress={() => setMenu(item)}
             accessibilityRole="button"
+            accessibilityHint="Long press for more"
             accessibilityLabel={`${item.title}${item.year ? `, ${item.year}` : ''}`}
             style={({ pressed }) => [{ width: tile, opacity: pressed ? 0.8 : 1 }]}
           >
@@ -179,6 +183,8 @@ export default function WatchlistScreen() {
         actions={
           menu
             ? [
+                ...(menu.source === 'tmdb' && menu.sourceId ? [{ label: 'Open the title page', icon: 'open-outline' as const, onPress: () => openTitle(titleOf(menu)) }] : []),
+                { label: 'Plan a watch', icon: 'calendar-outline' as const, onPress: () => setPlanning(menu) },
                 { label: 'Watched it: log now', icon: 'checkmark-done-outline', onPress: () => log(menu) },
                 { label: 'Add to a list', icon: 'albums-outline' as const, onPress: () => setListing(menu) },
                 ...(trackable(menu)
@@ -191,6 +197,7 @@ export default function WatchlistScreen() {
       />
 
       <AddToList item={listing} theme={theme} onClose={() => setListing(null)} />
+      {planning && <MovieNightSheet t={titleOf(planning)} visible theme={theme} onClose={() => setPlanning(null)} />}
       <TonightsFeature
         theme={theme}
         item={pick}

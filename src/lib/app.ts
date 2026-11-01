@@ -47,5 +47,6 @@ export const WHATS_NEW = {
   id: '1.2.1',
   items: [
     'Plan a watch, day or night: pick the day, then your own time, and get a reminder',
+    'Watchlist: tap a title to open its page; hold it for quick actions, including Plan a watch',
   ],
 };
