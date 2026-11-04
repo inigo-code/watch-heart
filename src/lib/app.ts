@@ -44,13 +44,8 @@ export const DATA_SOURCES = {
  * An update that leaves it alone shows nothing.
  */
 export const WHATS_NEW = {
-  id: '1.3.1',
+  id: '1.3.2',
   items: [
-    'Every page now has the same glow and the same back button',
-    'Pull down to refresh Home, your Diary, Find, Watchlist and a friend’s page',
-    'A friend’s diary is a poster wall by month, with their reviews apart, and loads a bit at a time',
-    'A friends button on Home, a clearer My Lists button, and larger text everywhere with fewer explanations',
-    'Netflix opens the title itself, and the Home slider shows up faster on a slow connection',
-    'The switches on Find and in Settings slide like the Watchlist’s, and a light follows you along the tab bar',
+    'A new Home: your month as a ticket and what you’re watching come first, with what’s new further down',
   ],
 };
