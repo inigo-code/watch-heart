@@ -1,7 +1,8 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { ActivityIndicator, Pressable, StyleSheet, Text } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet } from 'react-native';
 import type { StyleProp, ViewStyle } from 'react-native';
 
+import { Text } from '@/components/AppText';
 import { font, fonts } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
 

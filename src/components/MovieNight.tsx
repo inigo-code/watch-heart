@@ -2,13 +2,14 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Alert, Platform, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { Text } from '@/components/AppText';
 import { BottomSheet } from '@/components/BottomSheet';
 import { Poster } from '@/components/Film';
 import { useToast } from '@/components/Toast';
-import { cancelMovieNight, scheduleMovieNight } from '@/lib/movieNight';
+import { askToRemindOnTime, canRemindOnTime, cancelMovieNight, hasAlarmSwitch, scheduleMovieNight } from '@/lib/movieNight';
 import { font, fonts } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
 import { useSettings } from '@/settings/SettingsProvider';
@@ -55,6 +56,17 @@ export function useMovieNights() {
   const nights = [...settings.movieNights].filter((n) => n.at > now - 3 * HOUR).sort((a, b) => a.at - b.at);
 
   const plan = async (t: Title, date: Date) => {
+    // Once, explain the Android switch that makes reminders arrive on time, then take you to it.
+    if (!settings.askedAlarms && hasAlarmSwitch() && !(await canRemindOnTime())) {
+      update({ askedAlarms: true });
+      const yes = await new Promise<boolean>((done) =>
+        Alert.alert('Remind you on time?', 'Android holds reminders back when the app is closed. Turn on Alarms & reminders for Watch Heart and yours will arrive at the minute you choose.', [
+          { text: 'Not now', style: 'cancel', onPress: () => done(false) },
+          { text: 'Turn on', onPress: () => done(true) },
+        ], { onDismiss: () => done(false), cancelable: true }),
+      );
+      if (yes) await askToRemindOnTime();
+    }
     const reminderId = await scheduleMovieNight(t, date).catch(() => null);
     const night: MovieNight = {
       key: `${t.sourceId}:${date.getTime()}`,

@@ -67,12 +67,19 @@ function Navigator() {
   const theme = useTheme();
   const pathname = usePathname();
   const { hasShareIntent } = useShareIntentContext();
-  const { ready } = useDiary();
-  const { ready: settingsReady, settings } = useSettings();
+  const { ready, entries, watchlist } = useDiary();
+  const { ready: settingsReady, settings, update } = useSettings();
   // Scores warmed from a poster touch use your keys and country from the start.
   useEffect(() => setScoreDefaults(tmdbKey(settings.tmdbKey), omdbKeyFor(settings.omdbKey), watchRegion(settings.watchRegion)), [settings.tmdbKey, settings.omdbKey, settings.watchRegion]);
   useTmdbFreshness();
   useMovieNightTaps();
+
+  // The first run: a fresh install meets the welcome. Anyone who already has a diary, or a name, never does.
+  useEffect(() => {
+    if (!ready || !settingsReady || settings.onboarded) return;
+    if (entries.length || watchlist.length || settings.name) update({ onboarded: true });
+    else if (pathname === '/') router.replace('/welcome');
+  }, [ready, settingsReady, settings.onboarded, settings.name, entries.length, watchlist.length, pathname, update]);
 
   // The native splash hands over to SplashOverlay, which lifts once the diary and settings are in. This
   // is only a safety net, should the overlay never draw.
@@ -110,6 +117,7 @@ function Navigator() {
         <Stack.Screen name="log" options={{ title: '', presentation: 'modal', animation: 'slide_from_bottom' }} />
         <Stack.Screen name="poster/[id]" options={{ title: 'CHOOSE A POSTER' }} />
         <Stack.Screen name="share" options={{ title: '' }} />
+        <Stack.Screen name="welcome" options={{ headerShown: false, gestureEnabled: false, animation: 'fade' }} />
       </Stack>
       <SplashOverlay ready={ready && settingsReady} />
     </>

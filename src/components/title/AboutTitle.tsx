@@ -1,8 +1,9 @@
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
+import { Text } from '@/components/AppText';
 import { tmdbKey } from '@/api';
 import { trackable } from '@/api/episodes';
 import { aboutTmdb, madeBy } from '@/api/tmdb';
@@ -207,8 +208,7 @@ const styles = StyleSheet.create({
   center: { alignItems: 'center', justifyContent: 'center' },
   block: { gap: 10 },
   tagline: { fontSize: font.body, fontStyle: 'italic', lineHeight: 21 },
-  // Justified, like a printed programme note.
-  overview: { fontSize: font.body, lineHeight: 22, textAlign: 'justify' },
+  overview: { fontSize: font.body, lineHeight: 22 },
   showMore: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 1, marginTop: 4 },
   facts: { fontFamily: fonts.mono, fontSize: font.footnote },
   tabs: { flexDirection: 'row', gap: 8 },

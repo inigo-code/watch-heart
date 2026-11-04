@@ -1,7 +1,8 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Image } from 'expo-image';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
+import { Text } from '@/components/AppText';
 import { fonts } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
 import type { SyncStatus } from '@/sync/SyncProvider';

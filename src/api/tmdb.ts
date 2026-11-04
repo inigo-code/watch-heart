@@ -287,6 +287,8 @@ async function loadExtras(key: string, sourceId: string, region: string, signal?
   const r = d['watch/providers']?.results?.[region];
   const list = (rows?: ProviderRow[]) =>
     [...(rows ?? [])]
+      // The ad-supported plan of a service you already see listed ("Amazon Prime Video with Ads").
+      .filter((p) => !/with ads/i.test(p.provider_name))
       .sort((a, b) => (a.display_priority ?? 99) - (b.display_priority ?? 99))
       .map((p) => ({ id: p.provider_id, name: p.provider_name, logo: p.logo_path ? `${IMG}/w92${p.logo_path}` : '' }));
   return {

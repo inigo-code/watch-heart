@@ -1,8 +1,9 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Switch, View } from 'react-native';
 
+import { Text, TextInput } from '@/components/AppText';
 import { SectionLabel } from '@/components/SectionLabel';
 import { Face } from '@/components/title/Rows';
 import { useToast } from '@/components/Toast';

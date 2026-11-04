@@ -1,9 +1,10 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { Text } from '@/components/AppText';
 import { seasonEpisodes, showInfo } from '@/api/episodes';
 import type { Episode, ShowInfo } from '@/api/episodes';
 import { Chip, KindBadge, Poster } from '@/components/Film';
@@ -33,7 +34,7 @@ export default function TrackScreen() {
   const toast = useToast();
   const params = useLocalSearchParams<Params>();
   const { settings } = useSettings();
-  const { watchlist, onWatchlist } = useDiary();
+  const { watchlist, onWatchlist, removeFromWatchlist, importWatchlist } = useDiary();
   const tracker = useTracker();
 
   const title = useMemo(() => (params.title ? (JSON.parse(params.title) as Title) : null), [params.title]);
@@ -161,6 +162,18 @@ export default function TrackScreen() {
           {STATUSES.map((s) => (
             <Chip key={s.key} theme={theme} label={s.label} active={item.track!.status === s.key} onPress={() => tracker.setStatus(item, s.key, info ?? undefined)} />
           ))}
+          <Chip
+            theme={theme}
+            icon="close-circle-outline"
+            label="Stop tracking"
+            active={false}
+            onPress={() => {
+              const was = item;
+              removeFromWatchlist(was.id);
+              toast(`Stopped tracking “${was.title}”`, { label: 'Undo', onPress: () => importWatchlist([was]) });
+              if (router.canGoBack()) router.back();
+            }}
+          />
         </View>
       )}
 

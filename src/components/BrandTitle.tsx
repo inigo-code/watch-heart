@@ -1,34 +1,35 @@
-import Ionicons from '@expo/vector-icons/Ionicons';
-import { StyleSheet, Text, View } from 'react-native';
+import { Image } from 'expo-image';
+import { Image as PlainImage, StyleSheet, View } from 'react-native';
 
+import { Text } from '@/components/AppText';
 import { fonts } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
 
-/** A heart on a film reel: the app's mark. */
-export function HeartMark({ theme, size = 34 }: { theme: Theme; size?: number }) {
-  return (
-    <View
-      style={[styles.reel, { width: size, height: size, borderRadius: size / 2, borderColor: theme.accent, borderWidth: Math.max(2, size / 14) }]}
-      accessible={false}
-    >
-      <Ionicons name="heart" size={size * 0.52} color={theme.accent} />
-    </View>
-  );
+const ICON = require('../../assets/icon.png');
+
+/** The app's logo: the same picture as the icon on the phone. This is the only mark the app uses. */
+export function HeartMark({ size = 34 }: { size?: number }) {
+  return <Image source={ICON} style={{ width: size, height: size, borderRadius: size * 0.22 }} accessible={false} />;
 }
 
-/** "WATCH HEART" in the marquee face, with the reel mark between the words. */
-export function BrandTitle({ theme, size = 40 }: { theme: Theme; size?: number }) {
+/** The logo for story cards: drawn at once, so a card captured straight away still has it. */
+export function CardMark({ size = 14 }: { size?: number }) {
+  return <PlainImage source={ICON} style={{ width: size, height: size, borderRadius: size * 0.22 }} fadeDuration={0} />;
+}
+
+/** The logo, then WATCH HEART in the marquee face, on one line. */
+export function BrandTitle({ theme, size = 29 }: { theme: Theme; size?: number }) {
   return (
     <View style={styles.row} accessibilityRole="header" accessibilityLabel="Watch Heart">
-      <Text style={[styles.word, { color: theme.text, fontSize: size, lineHeight: size * 1.05 }]}>WATCH</Text>
-      <HeartMark theme={theme} size={size * 0.68} />
-      <Text style={[styles.word, { color: theme.accent, fontSize: size, lineHeight: size * 1.05 }]}>HEART</Text>
+      <HeartMark size={size * 1.03} />
+      <Text maxFontSizeMultiplier={1.15} style={[styles.word, { color: theme.text, fontSize: size, lineHeight: size * 1.1 }]}>
+        WATCH <Text style={{ color: theme.accent }}>HEART</Text>
+      </Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  word: { fontFamily: fonts.display, letterSpacing: 1.5, includeFontPadding: false },
-  reel: { alignItems: 'center', justifyContent: 'center' },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 10, flexShrink: 1 },
+  word: { fontFamily: fonts.display, letterSpacing: 1.2, includeFontPadding: false },
 });

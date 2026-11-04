@@ -2,8 +2,9 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Updates from 'expo-updates';
 import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
-import { ActivityIndicator, AppState, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, AppState, Modal, Pressable, StyleSheet, View } from 'react-native';
 
+import { Text } from '@/components/AppText';
 import { HeartMark } from '@/components/BrandTitle';
 import { WHATS_NEW } from '@/lib/app';
 import { font, fonts, useTheme } from '@/lib/theme';
@@ -74,7 +75,7 @@ function UpdatePromptInner() {
 
   return (
     <Ticket theme={theme} visible={isUpdatePending && !dismissed} onClose={() => setDismissed(true)}>
-      <HeartMark theme={theme} size={64} />
+      <HeartMark size={64} />
       <Text style={[styles.title, { color: theme.text }]}>A new cut is ready</Text>
       <Text style={[styles.body, { color: theme.textMuted }]}>Improvements and fixes have downloaded. Restart to start using them. It takes a second, and your diary is safe.</Text>
       <Primary

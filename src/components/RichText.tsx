@@ -1,7 +1,8 @@
 import { Fragment } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import type { TextStyle } from 'react-native';
 
+import { Text } from '@/components/AppText';
 import { parseRich } from '@/lib/richText';
 import type { Theme } from '@/lib/theme';
 

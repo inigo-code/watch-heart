@@ -1,9 +1,11 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { router } from 'expo-router';
-import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
+import { Text } from '@/components/AppText';
 import { Avatar } from '@/components/Avatar';
+import { BrandTitle } from '@/components/BrandTitle';
 import { font, fonts } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
 import { useSettings } from '@/settings/SettingsProvider';
@@ -18,7 +20,7 @@ export function AppHeader({ theme, line, icon }: { theme: Theme; line: string; i
   return (
     <View style={styles.wrap}>
       <View style={styles.titleRow}>
-        <Wordmark theme={theme} />
+        <BrandTitle theme={theme} />
         <View style={styles.icons}>
           <Pressable
             onPress={() => router.push('/profile')}
@@ -56,20 +58,6 @@ export function AppHeader({ theme, line, icon }: { theme: Theme; line: string; i
   );
 }
 
-const ICON = require('../../assets/icon.png');
-
-/** The wordmark: the app's own icon as a small tile, then WATCH HEART in the marquee face, on one line. */
-function Wordmark({ theme }: { theme: Theme }) {
-  return (
-    <View style={styles.wordmark} accessibilityRole="header" accessibilityLabel="Watch Heart">
-      <Image source={ICON} style={styles.icon} />
-      <Text maxFontSizeMultiplier={1.15} style={[styles.word, { color: theme.text }]}>
-        WATCH <Text style={{ color: theme.accent }}>HEART</Text>
-      </Text>
-    </View>
-  );
-}
-
 /** A small picture for the time of day: coffee, popcorn for the matinee, a ticket for the evening show, the moon. */
 export function greetingIcon(hour: number): MciName {
   if (hour >= 5 && hour < 12) return 'coffee-outline';
@@ -96,7 +84,4 @@ const styles = StyleSheet.create({
   lineRow: { flexDirection: 'row', alignItems: 'center', gap: 6, height: 18 },
   // A fixed line height with no extra font padding keeps the icon centred on the text on Android.
   line: { fontFamily: fonts.mono, fontSize: font.footnote, lineHeight: 18, includeFontPadding: false, flexShrink: 1 },
-  wordmark: { flexDirection: 'row', alignItems: 'center', gap: 10, flexShrink: 1 },
-  icon: { width: 30, height: 30, borderRadius: 8 },
-  word: { fontFamily: fonts.display, fontSize: 29, lineHeight: 32, letterSpacing: 1.2, includeFontPadding: false },
 });

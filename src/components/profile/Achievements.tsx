@@ -1,6 +1,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
+import { Text } from '@/components/AppText';
 import { TIER_COLORS } from '@/lib/profileStats';
 import type { Achievement } from '@/lib/profileStats';
 import { font, fonts } from '@/lib/theme';

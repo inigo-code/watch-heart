@@ -1,11 +1,12 @@
+import Constants from 'expo-constants';
 import * as Notifications from 'expo-notifications';
 import { AndroidImportance } from 'expo-notifications';
 import { router } from 'expo-router';
 import { useEffect } from 'react';
 
-// Movie-night reminders: a local notification at the time you plan, opening the title. Nothing is asked for
-// until you plan one, and then only Android's permission to show notifications (no exact-alarm permission,
-// so Android may deliver it a minute or two late).
+// Planned-watch reminders: a local notification at the time you plan, opening the title. Nothing is asked for
+// until you plan one. Android 12 and later hold ordinary alarms back while the phone is idle or the app is
+// asleep, sometimes for hours, so a reminder needs its "Alarms & reminders" permission to arrive on time.
 
 const CHANNEL = 'movie-night';
 
@@ -15,7 +16,22 @@ Notifications.setNotificationHandler({
 });
 
 /** Schedules the reminder; resolves to its id, or null when notifications aren't allowed. */
+/** Installs before 1.3.0 don't declare the permission, so Android has no switch to send anyone to. */
+export const hasAlarmSwitch = () => (Constants.nativeAppVersion ?? '0').localeCompare('1.3.0', undefined, { numeric: true }) >= 0;
+
+/** Whether reminders can arrive at the exact minute. False where the app doesn't hold the permission. */
+export async function canRemindOnTime() {
+  const exact = await Notifications.getExactAlarmPermissionsAsync().catch(() => null);
+  return !!exact?.granted;
+}
+
+/** Sends you to Android's "Alarms & reminders" switch for this app; resolves when you come back. */
+export async function askToRemindOnTime() {
+  await Notifications.requestExactAlarmPermissionsAsync().catch(() => null);
+}
+
 export async function scheduleMovieNight(t: { title: string; sourceId: string }, at: Date): Promise<string | null> {
+  const onTime = await canRemindOnTime();
   // Android 13 only asks once a channel exists.
   await Notifications.setNotificationChannelAsync(CHANNEL, { name: 'Watch reminders', importance: AndroidImportance.HIGH });
   let { status } = await Notifications.getPermissionsAsync();
@@ -27,7 +43,8 @@ export async function scheduleMovieNight(t: { title: string; sourceId: string },
       body: `It’s time for ${t.title}. Lights down, phones away.`,
       data: { url: `/title/${encodeURIComponent(t.sourceId)}` },
     },
-    trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: at, channelId: CHANNEL },
+    // An alarm-clock trigger survives idle phones and sleeping apps; Android shows its alarm icon until it fires.
+    trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: at, channelId: CHANNEL, delivery: onTime ? 'alarmClock' : 'bestEffort' },
   });
 }
 

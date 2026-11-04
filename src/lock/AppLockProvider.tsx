@@ -1,8 +1,9 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
-import { AppState, Modal, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { AppState, Modal, Platform, Pressable, StyleSheet, View } from 'react-native';
 
+import { Text } from '@/components/AppText';
 import { HeartMark } from '@/components/BrandTitle';
 import { font, fonts, useTheme } from '@/lib/theme';
 import { useSettings } from '@/settings/SettingsProvider';
@@ -127,7 +128,7 @@ function LockScreen({ confirm, onUnlocked }: { confirm: (reason: string) => Prom
 
   return (
     <View style={[styles.screen, { backgroundColor: theme.bg }]}>
-      <HeartMark theme={theme} size={88} />
+      <HeartMark size={88} />
       <View style={styles.texts}>
         <Text style={[styles.title, { color: theme.text }]}>Watch Heart is locked</Text>
         <Text style={[styles.body, { color: theme.textMuted }]}>Unlock with your fingerprint, face or screen lock.</Text>

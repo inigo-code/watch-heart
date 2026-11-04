@@ -2,9 +2,10 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, LayoutAnimation, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, LayoutAnimation, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { Text } from '@/components/AppText';
 import { ImportLogo, logoFor } from '@/components/ImportLogo';
 import type { LogoKey } from '@/components/ImportLogo';
 import { SectionLabel } from '@/components/SectionLabel';

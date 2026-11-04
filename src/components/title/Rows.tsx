@@ -1,8 +1,10 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
+import { Text } from '@/components/AppText';
+import { Tap } from '@/components/Motion';
 import { Poster } from '@/components/Film';
 import { SectionLabel } from '@/components/SectionLabel';
 import { warmScores } from '@/lib/titleScores';
@@ -41,13 +43,13 @@ export function TitleRow({ titles, theme, seen, width = 104 }: { titles: Title[]
   return (
     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>
       {titles.filter((t) => t.posterUrl).map((t) => (
-        <Pressable
+        <Tap
           key={`${t.source}:${t.sourceId}`}
           onPressIn={() => warmTitle(t)}
           onPress={() => openTitle(t)}
           accessibilityRole="button"
           accessibilityLabel={`${t.title}${t.year ? `, ${t.year}` : ''}`}
-          style={({ pressed }) => [{ width }, pressed && { opacity: 0.8 }]}
+          style={{ width }}
         >
           <View>
             <Poster uri={t.posterUrl} title={t.title} width={width} theme={theme} radius={6} style={seen?.(t) && styles.watched} />
@@ -61,7 +63,7 @@ export function TitleRow({ titles, theme, seen, width = 104 }: { titles: Title[]
             {t.title}
           </Text>
           {!!t.year && <Text style={[styles.sub, { color: theme.textMuted }]}>{t.year}</Text>}
-        </Pressable>
+        </Tap>
       ))}
     </ScrollView>
   );

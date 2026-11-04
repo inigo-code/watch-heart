@@ -1,9 +1,10 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { FlatList, Pressable, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet, Switch, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { Text, TextInput } from '@/components/AppText';
 import { KeyboardSafe } from '@/components/KeyboardSafe';
 import { ActionSheet } from '@/components/ActionSheet';
 import { DangerButton } from '@/components/DangerButton';

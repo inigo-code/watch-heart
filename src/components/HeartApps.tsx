@@ -1,7 +1,8 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Linking from 'expo-linking';
-import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, StyleSheet, View } from 'react-native';
 
+import { Text } from '@/components/AppText';
 import { HEART_APPS } from '@/lib/app';
 import { font, fonts } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';

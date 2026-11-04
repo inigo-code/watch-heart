@@ -1,8 +1,10 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { forwardRef } from 'react';
 // React Native's Image, not expo-image: see StoryCanvas (captured images must be drawn synchronously).
-import { Image, StyleSheet, Text, View } from 'react-native';
+import { Image, StyleSheet, View } from 'react-native';
 
+import { Text } from '@/components/AppText';
+import { CardMark } from '@/components/BrandTitle';
 import { fonts } from '@/lib/theme';
 import type { UserList } from '@/lists/ListsProvider';
 import { sharp } from '@/story/export';
@@ -66,7 +68,10 @@ export const ListStoryCard = forwardRef<StoryHandle, { list: UserList; palette: 
           {more > 0 ? ` · ${more} MORE IN THE APP` : ''}
         </Text>
       </View>
-      <Text allowFontScaling={false} style={[styles.brand, { color: p.accent }]}>♥ WATCH HEART</Text>
+      <View style={styles.brand}>
+        <CardMark size={16} />
+        <Text allowFontScaling={false} style={[styles.brandText, { color: p.muted }]}>WATCH HEART</Text>
+      </View>
     </View>
   );
 });
@@ -87,5 +92,6 @@ const styles = StyleSheet.create({
   poster: { width: 74, height: 111, borderRadius: 4, overflow: 'hidden', alignItems: 'center', justifyContent: 'center', padding: 4 },
   posterTitle: { fontFamily: fonts.display, fontSize: 12, textAlign: 'center' },
   count: { fontFamily: fonts.monoBold, fontSize: 9, letterSpacing: 1.5, marginTop: 14 },
-  brand: { position: 'absolute', bottom: 24, fontFamily: fonts.monoBold, fontSize: 11, letterSpacing: 3 },
+  brand: { position: 'absolute', bottom: 24, flexDirection: 'row', alignItems: 'center', gap: 5 },
+  brandText: { fontFamily: fonts.display, fontSize: 13, letterSpacing: 2 },
 });

@@ -1,7 +1,8 @@
 import { useRef } from 'react';
 import type { ComponentRef } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 
+import { Text } from '@/components/AppText';
 import { MONTHS } from '@/lib/dates';
 import type { ProfileStats } from '@/lib/profileStats';
 import { font, fonts } from '@/lib/theme';

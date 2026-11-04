@@ -1,8 +1,9 @@
 import { createContext, useCallback, useContext, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
-import { Animated, Pressable, StyleSheet, Text } from 'react-native';
+import { Animated, Pressable, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { Text } from '@/components/AppText';
 import { font, fonts, useTheme } from '@/lib/theme';
 
 type ToastAction = { label: string; onPress: () => void };

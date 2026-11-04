@@ -2,8 +2,10 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { forwardRef, useEffect, useState } from 'react';
 // React Native's Image, not expo-image: see StoryCanvas.
-import { Image, StyleSheet, Text, View } from 'react-native';
+import { Image, StyleSheet, View } from 'react-native';
 
+import { Text } from '@/components/AppText';
+import { CardMark } from '@/components/BrandTitle';
 import { admit, namesLine } from '@/lib/companions';
 import { friendlyDate } from '@/lib/dates';
 import { plainText } from '@/lib/richText';
@@ -100,9 +102,7 @@ export const ReviewCard = forwardRef<StoryHandle, Props>(function ReviewCard({ e
           <Text allowFontScaling={false} style={[styles.stubText, { color: p.text }]}>{friendlyDate(entry.watchedOn).toUpperCase()}</Text>
         </View>
         <View style={styles.brand}>
-          <View style={[styles.brandReel, { borderColor: p.accent }]}>
-            <Ionicons name="heart" size={8} color={p.accent} />
-          </View>
+          <CardMark size={16} />
           <Text allowFontScaling={false} style={[styles.brandText, { color: p.muted }]}>WATCH HEART</Text>
         </View>
       </View>
@@ -126,6 +126,5 @@ const styles = StyleSheet.create({
   stubText: { fontFamily: fonts.monoBold, fontSize: 9, letterSpacing: 2 },
   stubTear: { alignSelf: 'stretch', borderLeftWidth: 1, borderStyle: 'dashed' },
   brand: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 10 },
-  brandReel: { width: 14, height: 14, borderRadius: 7, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center' },
   brandText: { fontFamily: fonts.display, fontSize: 13, letterSpacing: 2 },
 });

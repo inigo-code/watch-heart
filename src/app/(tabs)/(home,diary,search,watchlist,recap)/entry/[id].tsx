@@ -1,9 +1,11 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { Text } from '@/components/AppText';
+import { HeaderDisc } from '@/components/BackDisc';
 import { Stars } from '@/components/Film';
 import { Hero } from '@/components/Hero';
 import { trackable } from '@/api/episodes';
@@ -82,14 +84,7 @@ export default function EntryScreen() {
           headerStyle: { backgroundColor: 'transparent' },
           headerTintColor: '#FFFFFF',
           headerRight: () => (
-            <Pressable
-              onPress={() => router.push({ pathname: '/log', params: { id: entry.id } })}
-              hitSlop={10}
-              accessibilityRole="button"
-              accessibilityLabel="Edit entry"
-            >
-              <Ionicons name="create-outline" size={24} color="#FFFFFF" />
-            </Pressable>
+            <HeaderDisc icon="create-outline" label="Edit entry" onPress={() => router.push({ pathname: '/log', params: { id: entry.id } })} />
           ),
         }}
       />

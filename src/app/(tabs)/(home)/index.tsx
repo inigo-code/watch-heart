@@ -4,9 +4,11 @@ import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
-import { FlatList, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { FlatList, Pressable, ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { Text } from '@/components/AppText';
+import { Rise, Tap } from '@/components/Motion';
 import { tmdbKey } from '@/api';
 import { watchRegion } from '@/api/omdb';
 import { discoverTmdb, nowPlayingTmdb, trendingAllTmdb } from '@/api/tmdb';
@@ -128,21 +130,27 @@ export default function HomeScreen() {
 
       {nights[0] && <MovieNightCard night={nights[0]} theme={theme} showTitle />}
 
-      {featured.length ? <FeaturedCarousel slides={featured} theme={theme} /> : <View style={[styles.featuredSkeleton, { backgroundColor: theme.card }]} />}
+      {featured.length ? (
+        <Rise>
+          <FeaturedCarousel slides={featured} theme={theme} />
+        </Rise>
+      ) : (
+        <View style={[styles.featuredSkeleton, { backgroundColor: theme.card }]} />
+      )}
 
       {continuing.length > 0 && (
         <View style={styles.block}>
-          <RowHead title="Continue watching" theme={theme} more="All" onMore={() => router.navigate('/watchlist')} />
+          <RowHead title="Continue watching" theme={theme} more="All" onMore={() => router.navigate({ pathname: '/watchlist', params: { view: 'watching' } })} />
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>
             {continuing.map((w) => {
               const next = nextUp(w.track!);
               return (
-                <Pressable
+                <Tap
                   key={w.id}
                   onPress={() => router.push({ pathname: '/track', params: { id: w.id } })}
                   accessibilityRole="button"
                   accessibilityLabel={`${w.title}${next ? `, next: season ${next.season} episode ${next.number}` : ''}`}
-                  style={({ pressed }) => [{ width: 104 }, pressed && { opacity: 0.8 }]}
+                  style={{ width: 104 }}
                 >
                   {/* The badge sits on the poster's corner, clear of the name below. */}
                   <View>
@@ -158,7 +166,7 @@ export default function HomeScreen() {
                   <Text style={[styles.name, { color: theme.text }]} numberOfLines={1}>
                     {w.title}
                   </Text>
-                </Pressable>
+                </Tap>
               );
             })}
           </ScrollView>
@@ -270,8 +278,8 @@ function FeaturedCarousel({ slides, theme }: { slides: Slide[]; theme: Theme }) 
 function Featured({ t, kicker, theme }: { t: Title; kicker: string; theme: Theme }) {
   const toast = useToast();
   const { width } = useWindowDimensions();
-  const { onWatchlist, addToWatchlist, removeFromWatchlist, viewingsOf } = useDiary();
-  const saved = onWatchlist(t);
+  const { queued, addToWatchlist, removeFromWatchlist, viewingsOf } = useDiary();
+  const saved = queued(t);
   const logged = viewingsOf(t.source, t.sourceId).length > 0;
   const height = Math.round((width - 32) * 0.62);
   return (

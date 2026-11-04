@@ -4,8 +4,10 @@ import { forwardRef, useCallback, useEffect, useMemo, useState } from 'react';
 import type { ComponentRef, ReactNode } from 'react';
 // The story uses React Native's own Image, not expo-image: it has to be drawn into a bitmap when the
 // story is captured, and expo-image's hardware bitmaps can't be.
-import { Image, StyleSheet, Text, View } from 'react-native';
+import { Image, StyleSheet, View } from 'react-native';
 
+import { Text } from '@/components/AppText';
+import { CardMark } from '@/components/BrandTitle';
 import { dayParts } from '@/lib/dates';
 import { plainText } from '@/lib/richText';
 import { computeStats, kindSummary } from '@/lib/stats';
@@ -90,9 +92,7 @@ export const StoryCanvas = forwardRef<StoryHandle, Props>(function StoryCanvas({
         </View>
         {options.stats && <StatsBar p={p} stats={stats} />}
         <View style={styles.brand}>
-          <View style={[styles.brandReel, { borderColor: p.accent }]}>
-            <Ionicons name="heart" size={8} color={p.accent} />
-          </View>
+          <CardMark size={16} />
           <Text allowFontScaling={false} style={[styles.brandText, { color: p.muted }]}>WATCH HEART</Text>
         </View>
       </View>
@@ -386,6 +386,5 @@ const styles = StyleSheet.create({
   statLabel: { fontFamily: fonts.monoBold, fontSize: 7, letterSpacing: 1.5 },
   kinds: { fontFamily: fonts.monoBold, fontSize: 8, letterSpacing: 1.5, textAlign: 'center' },
   brand: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5 },
-  brandReel: { width: 14, height: 14, borderRadius: 7, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center' },
   brandText: { fontFamily: fonts.display, fontSize: 13, letterSpacing: 2 },
 });

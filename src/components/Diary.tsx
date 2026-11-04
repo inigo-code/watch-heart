@@ -1,6 +1,8 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, StyleSheet, View } from 'react-native';
 
+import { Text } from '@/components/AppText';
+import { Tap } from '@/components/Motion';
 import { Poster, KindBadge, Sprockets, Stars } from '@/components/Film';
 import { dayParts, monthName } from '@/lib/dates';
 import { KIND_COLORS, font, fonts, kindColor } from '@/lib/theme';
@@ -50,13 +52,14 @@ export function TicketStub({ entry, theme, onPress, onLongPress }: {
   const { day, weekday } = dayParts(entry.watchedOn);
   const p = ticketPaper(entry.kind, theme);
   return (
-    <Pressable
+    <Tap
       onPress={onPress}
       onLongPress={onLongPress}
       delayLongPress={350}
+      scale={0.98}
       accessibilityRole="button"
       accessibilityLabel={`${entry.title}, watched ${weekday} ${day}${entry.rating ? `, ${entry.rating / 2} stars` : ''}`}
-      style={({ pressed }) => [styles.ticket, { backgroundColor: p.paper, borderColor: p.border, opacity: pressed ? 0.85 : 1 }]}
+      style={[styles.ticket, { backgroundColor: p.paper, borderColor: p.border }]}
     >
       <TicketPrint kind={entry.kind} theme={theme} />
       <View style={styles.stub}>
@@ -93,7 +96,7 @@ export function TicketStub({ entry, theme, onPress, onLongPress }: {
           {!!entry.review.trim() && <Ionicons name="reader-outline" size={13} color={theme.textMuted} accessibilityLabel="Has a review" />}
         </View>
       </View>
-    </Pressable>
+    </Tap>
   );
 }
 

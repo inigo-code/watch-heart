@@ -1,10 +1,12 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { router } from 'expo-router';
-import { useMemo, useState } from 'react';
-import { FlatList, Modal, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import * as Haptics from 'expo-haptics';
+import { router, useLocalSearchParams } from 'expo-router';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { FlatList, Modal, Pressable, ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { Text } from '@/components/AppText';
 import { trackable } from '@/api/episodes';
 import { ScreenGlow } from '@/components/ScreenGlow';
 import { ActionSheet } from '@/components/ActionSheet';
@@ -13,15 +15,19 @@ import { AddToList } from '@/components/lists/AddToList';
 import { MovieNightSheet, nightLabel, useMovieNights } from '@/components/MovieNight';
 import { openTitle } from '@/components/title/Rows';
 import { Chip, KindBadge, Poster } from '@/components/Film';
+import { Pop, Rise, Tap, useReducedMotion } from '@/components/Motion';
+import { Segments } from '@/components/Segments';
 import { useToast } from '@/components/Toast';
 import { KIND_COLORS, font, fonts, shadow, useTheme } from '@/lib/theme';
 import { useLists } from '@/lists/ListsProvider';
+import { useSettings } from '@/settings/SettingsProvider';
 import type { Theme } from '@/lib/theme';
 import { titleOf, useDiary } from '@/store/DiaryStore';
 import type { MediaKind, WatchItem } from '@/store/types';
 
 type Filter = 'all' | MediaKind;
 type Sort = 'added' | 'title' | 'year';
+type Side = 'next' | 'watching';
 
 const SORTS: Record<Sort, { label: string; next: Sort }> = {
   added: { label: 'Recently added', next: 'title' },
@@ -31,6 +37,8 @@ const SORTS: Record<Sort, { label: string; next: Sort }> = {
 
 const COLS = 3;
 const GAP = 12;
+// The roulette: this many posters flicker past, each a little slower than the last.
+const ROLLS = 9;
 
 export default function WatchlistScreen() {
   const theme = useTheme();
@@ -46,9 +54,25 @@ export default function WatchlistScreen() {
   const [listing, setListing] = useState<WatchItem | null>(null);
   const [planning, setPlanning] = useState<WatchItem | null>(null);
   const { lists } = useLists();
+  const { settings } = useSettings();
+  const reduced = useReducedMotion();
+  const params = useLocalSearchParams<{ view?: string }>();
+  const [rolling, setRolling] = useState(false);
+  const roll = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => void (roll.current && clearTimeout(roll.current)), []);
+  // Which side of the switch: what you last tapped, unless a link (Home's "All") has asked for one since.
+  const [chosen, setChosen] = useState<{ from: string | undefined; view: Side } | null>(null);
   const tile = (width - 32 - GAP * (COLS - 1)) / COLS;
 
   const queue = useMemo(() => watchlist.filter((w) => !w.track), [watchlist]);
+  const tracked = useMemo(() => watchlist.filter((w) => w.track), [watchlist]);
+  const view: Side = !tracked.length
+    ? 'next'
+    : chosen && chosen.from === params.view
+      ? chosen.view
+      : params.view === 'watching' || !queue.length
+        ? 'watching'
+        : 'next';
   const shown = useMemo(() => {
     const list = queue.filter((w) => filter === 'all' || w.kind === filter);
     if (sort === 'title') return [...list].sort((a, b) => a.title.localeCompare(b.title));
@@ -61,45 +85,74 @@ export default function WatchlistScreen() {
     removeFromWatchlist(w.id);
     toast(`Took “${w.title}” off your watchlist`, { label: 'Undo', onPress: () => importWatchlist([w]) });
   };
-  // Never the same title twice in a row, when there's a choice.
+  // Never the same title twice in a row, when there's a choice. A few posters flicker past first, like a
+  // reel running down, and it lands with a tap you can feel.
   const spin = () => {
     const pool = shown.length > 1 && pick ? shown.filter((w) => w.id !== pick.id) : shown;
-    setPick(pool[Math.floor(Math.random() * pool.length)] ?? null);
+    const final = pool[Math.floor(Math.random() * pool.length)] ?? null;
+    if (reduced || shown.length < 2 || !final) {
+      setPick(final);
+      return;
+    }
+    setRolling(true);
+    let step = 0;
+    const next = () => {
+      step += 1;
+      if (step >= ROLLS) {
+        setPick(final);
+        setRolling(false);
+        if (settings.haptics) Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+        return;
+      }
+      setPick(shown[step % shown.length]);
+      roll.current = setTimeout(next, 60 + step * step * 3);
+    };
+    next();
   };
 
   const header = (
     <View style={[styles.top, { paddingTop: insets.top + 10 }]}>
-      <ContinueWatching items={watchlist} theme={theme} />
       <View style={styles.headRow}>
         <View style={styles.titleBlock}>
-          <Text maxFontSizeMultiplier={1.15} style={[styles.heading, { color: theme.text }]}>
-            UP <Text style={{ color: theme.accent }}>NEXT</Text>
+          <Text maxFontSizeMultiplier={1.15} accessibilityRole="header" style={[styles.heading, { color: theme.text }]}>
+            WATCH<Text style={{ color: theme.accent }}>LIST</Text>
           </Text>
-          <Text style={[styles.sub, { color: theme.textMuted }]}>
-            {queue.length ? `${queue.length} ${queue.length === 1 ? 'title' : 'titles'} on your watchlist` : 'Your watchlist'}
+          <Text style={[styles.sub, { color: theme.textMuted }]} numberOfLines={1}>
+            {queue.length ? `${queue.length} ${queue.length === 1 ? 'title' : 'titles'} saved for later` : 'Saved for later'}
           </Text>
         </View>
-        <Pressable
-          onPress={() => router.push('/lists')}
-          accessibilityRole="button"
-          accessibilityLabel="Your lists"
-          style={({ pressed }) => [styles.listsBtn, { borderColor: theme.border, opacity: pressed ? 0.7 : 1 }]}
-        >
+        <Tap onPress={() => router.push('/lists')} accessibilityRole="button" accessibilityLabel="Your lists" style={[styles.listsBtn, { borderColor: theme.border }]}>
           <Ionicons name="albums-outline" size={16} color={theme.accent} />
-          <Text style={[styles.listsText, { color: theme.text }]}>LISTS{lists.length ? ` · ${lists.length}` : ''}</Text>
-        </Pressable>
+          <Text style={[styles.listsText, { color: theme.text }]} numberOfLines={1}>
+            LISTS{lists.length ? ` · ${lists.length}` : ''}
+          </Text>
+        </Tap>
       </View>
-      {queue.length > 0 && (
+      {tracked.length > 0 && (
+        <Segments
+          theme={theme}
+          value={view}
+          onChange={(v) => setChosen({ from: params.view, view: v })}
+          options={[
+            { key: 'next', label: `UP NEXT · ${queue.length}` },
+            { key: 'watching', label: `WATCHING · ${tracked.length}` },
+          ]}
+        />
+      )}
+      <ContinueWatching items={watchlist} theme={theme} hidden={view !== 'watching'} />
+      {view === 'next' && queue.length > 0 && (
         <>
-          <Pressable
+          <Tap
             onPress={spin}
             disabled={!shown.length}
             accessibilityRole="button"
-            style={({ pressed }) => [styles.pickBtn, { backgroundColor: theme.accent, opacity: pressed ? 0.85 : 1, boxShadow: shadow.glow(theme.accent) }]}
+            style={[styles.pickBtn, { backgroundColor: theme.accent, boxShadow: shadow.glow(theme.accent) }]}
           >
             <MaterialCommunityIcons name="dice-5-outline" size={22} color={theme.accentText} />
-            <Text style={[styles.pickText, { color: theme.accentText }]}>CAN’T DECIDE? PICK FOR ME</Text>
-          </Pressable>
+            <Text style={[styles.pickText, { color: theme.accentText }]} numberOfLines={1}>
+              CAN’T DECIDE? PICK FOR ME
+            </Text>
+          </Tap>
           <View style={styles.toolbar}>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips} style={{ flex: 1 }}>
               <Chip theme={theme} label="All" active={filter === 'all'} onPress={() => setFilter('all')} />
@@ -121,22 +174,22 @@ export default function WatchlistScreen() {
     <View style={[styles.screen, { backgroundColor: theme.bg }]}>
       <ScreenGlow theme={theme} />
       <FlatList
-        data={shown}
+        data={view === 'next' ? shown : []}
         key={COLS}
         numColumns={COLS}
         keyExtractor={(w) => w.id}
         ListHeaderComponent={header}
         columnWrapperStyle={{ gap: GAP }}
         contentContainerStyle={[styles.list, { paddingBottom: insets.bottom + 32 }]}
-        renderItem={({ item }) => (
-          <Pressable
+        renderItem={({ item, index }) => (
+          <Rise order={index} style={{ width: tile }}>
+          <Tap
             // A tap opens the title's page (where you can plan a watch); a long press, the quick menu.
             onPress={() => (item.source === 'tmdb' && item.sourceId ? openTitle(titleOf(item)) : setMenu(item))}
             onLongPress={() => setMenu(item)}
             accessibilityRole="button"
             accessibilityHint="Long press for more"
             accessibilityLabel={`${item.title}${item.year ? `, ${item.year}` : ''}`}
-            style={({ pressed }) => [{ width: tile, opacity: pressed ? 0.8 : 1 }]}
           >
             <Poster uri={item.posterUrl} title={item.title} width={tile} theme={theme} radius={6} />
             <Text style={[styles.tileTitle, { color: theme.text }]} numberOfLines={2}>
@@ -154,10 +207,11 @@ export default function WatchlistScreen() {
                 </Text>
               ) : null;
             })()}
-          </Pressable>
+          </Tap>
+          </Rise>
         )}
         ListEmptyComponent={
-          queue.length === 0 ? (
+          view !== 'next' ? undefined : queue.length === 0 ? (
             <View style={styles.empty}>
               <View style={[styles.emptyIcon, { backgroundColor: theme.accentSoft }]}>
                 <MaterialCommunityIcons name="bookmark-multiple-outline" size={38} color={theme.accent} />
@@ -198,11 +252,13 @@ export default function WatchlistScreen() {
 
       <AddToList item={listing} theme={theme} onClose={() => setListing(null)} />
       {planning && <MovieNightSheet t={titleOf(planning)} visible theme={theme} onClose={() => setPlanning(null)} />}
-      <TonightsFeature
+      <NextWatch
         theme={theme}
         item={pick}
         onClose={() => setPick(null)}
         onSpin={spin}
+        rolling={rolling}
+        tile={tile}
         onLog={(w) => (setPick(null), log(w))}
         canSpin={shown.length > 1}
       />
@@ -210,14 +266,16 @@ export default function WatchlistScreen() {
   );
 }
 
-/** The roulette's result, presented like the night's main feature. */
-function TonightsFeature({
+/** The roulette's result, presented like the main feature. */
+function NextWatch({
   theme,
   item,
   onClose,
   onSpin,
   onLog,
   canSpin,
+  rolling,
+  tile,
 }: {
   theme: Theme;
   item: WatchItem | null;
@@ -225,36 +283,59 @@ function TonightsFeature({
   onSpin: () => void;
   onLog: (w: WatchItem) => void;
   canSpin: boolean;
+  rolling: boolean;
+  tile: number;
 }) {
+  const { height } = useWindowDimensions();
+  // Room for the card on a short phone; the title and buttons must never be pushed off it.
+  const poster = Math.min(150, Math.round(height * 0.2));
   return (
     <Modal visible={item !== null} transparent animationType="fade" onRequestClose={onClose}>
       <Pressable style={[styles.backdrop, { backgroundColor: theme.overlay }]} onPress={onClose}>
         {item && (
           <View style={[styles.feature, { backgroundColor: theme.card, borderColor: theme.accent + '66' }]} onStartShouldSetResponder={() => true}>
-            <Text style={[styles.featureKicker, { color: theme.accent }]}>★ TONIGHT’S FEATURE ★</Text>
-            <Poster uri={item.posterUrl} title={item.title} width={150} theme={theme} radius={8} style={{ boxShadow: '0 12px 30px rgba(0,0,0,0.5)' }} />
+            <Text style={[styles.featureKicker, { color: theme.accent }]}>★ YOUR NEXT WATCH ★</Text>
+            <Pop when={rolling ? 'rolling' : item.id}>
+              {/* While it rolls, the tile-sized poster: already loaded, so nothing flashes blank. */}
+              <Pressable
+                onPress={() => item.source === 'tmdb' && item.sourceId && (onClose(), openTitle(titleOf(item)))}
+                accessibilityRole="button"
+                accessibilityLabel={`Open ${item.title}`}
+                style={{ width: poster, height: poster * 1.5, alignItems: 'center', justifyContent: 'center' }}
+              >
+                {rolling ? (
+                  <Poster uri={item.posterUrl} title={item.title} width={tile} theme={theme} radius={8} style={{ transform: [{ scale: poster / tile }] }} />
+                ) : (
+                  <Poster uri={item.posterUrl} title={item.title} width={poster} theme={theme} radius={8} style={{ boxShadow: '0 12px 30px rgba(0,0,0,0.5)' }} />
+                )}
+              </Pressable>
+            </Pop>
             <KindBadge kind={item.kind} theme={theme} />
-            <Text style={[styles.featureTitle, { color: theme.text }]} numberOfLines={3}>
+            <Text style={[styles.featureTitle, { color: theme.text }]} numberOfLines={2}>
               {item.title.toUpperCase()}
             </Text>
             {!!item.year && (
-              <Text style={[styles.featureMeta, { color: theme.textMuted }]}>
+              <Text style={[styles.featureMeta, { color: theme.textMuted }]} numberOfLines={2}>
                 {item.year}
                 {item.credit ? ` · ${item.credit}` : ''}
               </Text>
             )}
-            {!!item.note && <Text style={[styles.featureMeta, { color: theme.textMuted }]}>“{item.note}”</Text>}
+            {!!item.note && (
+              <Text style={[styles.featureMeta, { color: theme.textMuted }]} numberOfLines={2}>
+                “{item.note}”
+              </Text>
+            )}
             <View style={styles.featureButtons}>
-              {canSpin && (
-                <Pressable onPress={onSpin} style={[styles.featureBtn, { borderColor: theme.border, borderWidth: 1 }]} accessibilityRole="button">
-                  <MaterialCommunityIcons name="dice-5-outline" size={18} color={theme.text} />
-                  <Text style={[styles.featureBtnText, { color: theme.text }]}>SPIN AGAIN</Text>
-                </Pressable>
-              )}
-              <Pressable onPress={() => onLog(item)} style={[styles.featureBtn, { backgroundColor: theme.accent }]} accessibilityRole="button">
+              <Tap onPress={() => onLog(item)} disabled={rolling} style={[styles.featureBtn, { backgroundColor: theme.accent }]} accessibilityRole="button">
                 <MaterialCommunityIcons name="movie-open-check-outline" size={18} color={theme.accentText} />
                 <Text style={[styles.featureBtnText, { color: theme.accentText }]}>WATCHED IT</Text>
-              </Pressable>
+              </Tap>
+              {canSpin && (
+                <Tap onPress={onSpin} disabled={rolling} style={[styles.featureBtn, { borderColor: theme.border, borderWidth: 1 }]} accessibilityRole="button">
+                  <MaterialCommunityIcons name="dice-5-outline" size={18} color={theme.text} />
+                  <Text style={[styles.featureBtnText, { color: theme.text }]}>SPIN AGAIN</Text>
+                </Tap>
+              )}
             </View>
           </View>
         )}
@@ -269,13 +350,13 @@ const styles = StyleSheet.create({
   top: { gap: 12, marginBottom: 2 },
   heading: { fontFamily: fonts.display, fontSize: font.marquee, lineHeight: 46, letterSpacing: 1, includeFontPadding: false },
   // The gold word is a span a little taller than the line; the gap keeps it off the line below.
-  titleBlock: { gap: 4 },
+  titleBlock: { flex: 1, gap: 4 },
   sub: { fontFamily: fonts.mono, fontSize: font.footnote },
   pickBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, height: 50, borderRadius: 25 },
   pickText: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 1.2 },
   toolbar: { flexDirection: 'row', alignItems: 'center' },
   headRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
-  listsBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, height: 36, paddingHorizontal: 14, borderRadius: 18, borderWidth: 1 },
+  listsBtn: { flexShrink: 0, flexDirection: 'row', alignItems: 'center', gap: 6, height: 40, paddingHorizontal: 14, borderRadius: 20, borderWidth: 1 },
   listsText: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 1 },
   chips: { gap: 8 },
   sortBtn: { flexDirection: 'row', alignItems: 'center', gap: 5, alignSelf: 'flex-end' },
@@ -294,7 +375,7 @@ const styles = StyleSheet.create({
   featureKicker: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 3 },
   featureTitle: { fontFamily: fonts.display, fontSize: 32, lineHeight: 34, textAlign: 'center', letterSpacing: 1 },
   featureMeta: { fontFamily: fonts.mono, fontSize: font.footnote, textAlign: 'center' },
-  featureButtons: { flexDirection: 'row', gap: 10, marginTop: 6, alignSelf: 'stretch' },
-  featureBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: 46, borderRadius: 23 },
+  featureButtons: { gap: 8, marginTop: 8, alignSelf: 'stretch' },
+  featureBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: 46, borderRadius: 23 },
   featureBtnText: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 1 },
 });

@@ -2,8 +2,9 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Stack, router } from 'expo-router';
 import { useShareIntentContext } from 'expo-share-intent';
 import { useEffect, useRef } from 'react';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
+import { Text } from '@/components/AppText';
 import { tmdbKey } from '@/api';
 import { resolveShared } from '@/api/links';
 import { useToast } from '@/components/Toast';

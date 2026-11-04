@@ -2,9 +2,11 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Linking from 'expo-linking';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Animated, ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { Text } from '@/components/AppText';
+import { Tap } from '@/components/Motion';
 import { trackable } from '@/api/episodes';
 import { browseGenre } from '@/api/tmdb';
 import { Stars } from '@/components/Film';
@@ -30,10 +32,11 @@ import type { Title } from '@/store/types';
 export default function TitleScreen() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
+  const [scrollY] = useState(() => new Animated.Value(0));
   const toast = useToast();
   const params = useLocalSearchParams<{ id: string; t?: string }>();
   const id = params.id;
-  const { viewingsOf, onWatchlist, addToWatchlist, removeFromWatchlist } = useDiary();
+  const { viewingsOf, queued, addToWatchlist, removeFromWatchlist } = useDiary();
   const { listsWith } = useLists();
   const seed = useMemo(() => (params.t ? (JSON.parse(params.t) as Title) : null), [params.t]);
   const { about: a, error } = useAbout(id);
@@ -54,7 +57,7 @@ export default function TitleScreen() {
   }
 
   const viewings = viewingsOf(t.source, t.sourceId);
-  const saved = onWatchlist(t);
+  const saved = queued(t);
   const onLists = listsWith(t);
 
   const log = () => router.push({ pathname: '/log', params: { title: JSON.stringify(t) } });
@@ -71,8 +74,12 @@ export default function TitleScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: theme.bg }}>
       <Stack.Screen options={{ headerTransparent: true, headerStyle: { backgroundColor: 'transparent' }, headerTintColor: '#FFFFFF' }} />
-      <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 32 }}>
-        <Hero t={{ ...t, genres: [] }} theme={theme} topInset={insets.top} />
+      <Animated.ScrollView
+        contentContainerStyle={{ paddingBottom: insets.bottom + 32 }}
+        scrollEventThrottle={16}
+        onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], { useNativeDriver: true })}
+      >
+        <Hero t={{ ...t, genres: [] }} theme={theme} topInset={insets.top} scrollY={scrollY} />
 
         <View style={styles.body}>
           {t.genres.length > 0 && (
@@ -171,7 +178,7 @@ export default function TitleScreen() {
 
           {a && <TitleMore id={id} t={t} about={a} theme={theme} />}
         </View>
-      </ScrollView>
+      </Animated.ScrollView>
       <AddToList item={listing ? t : null} theme={theme} onClose={() => setListing(false)} />
       <MovieNightSheet t={t} visible={planning} theme={theme} onClose={() => setPlanning(false)} />
     </View>
@@ -180,10 +187,10 @@ export default function TitleScreen() {
 
 function Tool({ theme, icon, label, onPress }: { theme: Theme; icon: keyof typeof Ionicons.glyphMap; label: string; onPress: () => void }) {
   return (
-    <Pressable onPress={onPress} accessibilityRole="button" style={({ pressed }) => [styles.tool, { borderColor: theme.border, opacity: pressed ? 0.7 : 1 }]}>
+    <Tap onPress={onPress} accessibilityRole="button" style={[styles.tool, { borderColor: theme.border }]}>
       <Ionicons name={icon} size={17} color={theme.text} />
       <Text style={[styles.toolText, { color: theme.text }]}>{label.toUpperCase()}</Text>
-    </Pressable>
+    </Tap>
   );
 }
 

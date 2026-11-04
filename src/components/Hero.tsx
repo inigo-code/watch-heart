@@ -2,8 +2,9 @@ import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import type { ReactNode } from 'react';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { Animated, Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
 
+import { Text } from '@/components/AppText';
 import { KindBadge, Poster } from '@/components/Film';
 import { formatRuntime } from '@/lib/dates';
 import { font, fonts } from '@/lib/theme';
@@ -28,7 +29,7 @@ const CREDIT_LABEL: Record<MediaKind, string> = { movie: 'DIRECTED BY', tv: 'ON'
  * The top of a title's page: its backdrop fading into the screen like the lights going down, the poster
  * in front, and the title on the marquee.
  */
-export function Hero({ t, theme, topInset = 0, onPoster, children }: { t: HeroTitle; theme: Theme; topInset?: number; onPoster?: () => void; children?: ReactNode }) {
+export function Hero({ t, theme, topInset = 0, onPoster, scrollY, children }: { t: HeroTitle; theme: Theme; topInset?: number; onPoster?: () => void; scrollY?: Animated.Value; children?: ReactNode }) {
   const { width } = useWindowDimensions();
   const backdrop = t.backdropUrl ?? t.posterUrl;
   const height = Math.round(width * 0.56) + topInset;
@@ -38,8 +39,11 @@ export function Hero({ t, theme, topInset = 0, onPoster, children }: { t: HeroTi
   const meta = [t.year, t.runtime ? formatRuntime(t.runtime) + (perEpisode ? ' / ep' : '') : null].filter(Boolean).join(' · ');
   return (
     <View>
-      <View style={{ height, backgroundColor: theme.elevated }}>
-        {backdrop && <Image source={backdrop} style={StyleSheet.absoluteFill} contentFit="cover" cachePolicy="memory-disk" transition={250} blurRadius={t.backdropUrl ? 0 : 18} />}
+      <View style={{ height, backgroundColor: theme.elevated, overflow: 'hidden' }}>
+        {/* The backdrop falls behind as the page scrolls over it, a little slower than the page. */}
+        <Animated.View style={[StyleSheet.absoluteFill, scrollY && { transform: [{ translateY: scrollY.interpolate({ inputRange: [0, height], outputRange: [0, height * 0.35], extrapolate: 'clamp' }) }] }]}>
+          {backdrop && <Image source={backdrop} style={StyleSheet.absoluteFill} contentFit="cover" cachePolicy="memory-disk" transition={250} blurRadius={t.backdropUrl ? 0 : 18} />}
+        </Animated.View>
         <LinearGradient colors={['rgba(0,0,0,0.45)', 'transparent', theme.bg]} locations={[0, 0.35, 1]} style={StyleSheet.absoluteFill} />
       </View>
       <View style={styles.row}>

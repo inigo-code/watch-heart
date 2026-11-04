@@ -1,7 +1,8 @@
 import { Image } from 'expo-image';
 import { useEffect, useState } from 'react';
-import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 
+import { Text } from '@/components/AppText';
 import { discoverTmdb } from '@/api/tmdb';
 import { browse } from '@/components/discover/browse';
 import { SectionLabel } from '@/components/SectionLabel';

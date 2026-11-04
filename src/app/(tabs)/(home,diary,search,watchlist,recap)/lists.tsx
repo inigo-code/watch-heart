@@ -1,9 +1,10 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { Text, TextInput } from '@/components/AppText';
 import { KeyboardSafe } from '@/components/KeyboardSafe';
 import { ListCover } from '@/components/lists/ListCover';
 import { SectionLabel } from '@/components/SectionLabel';

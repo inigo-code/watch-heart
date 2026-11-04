@@ -1,8 +1,9 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
+import { Text } from '@/components/AppText';
 import { cached, MINUTE } from '@/api/cache';
 import { Poster } from '@/components/Film';
 import { Face, RowHead, openTitle, warmTitle } from '@/components/title/Rows';

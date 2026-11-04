@@ -5,22 +5,27 @@ import * as Haptics from 'expo-haptics';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
-import { Platform, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
+import { Platform, Pressable, ScrollView, StyleSheet, Switch, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { Text, TextInput } from '@/components/AppText';
 import { details, tmdbKey } from '@/api';
 import { KeyboardSafe } from '@/components/KeyboardSafe';
+import { BackDisc } from '@/components/BackDisc';
 import { CompanionField } from '@/components/CompanionField';
 import { DangerButton } from '@/components/DangerButton';
 import { ConfirmTrash } from '@/components/ConfirmTrash';
 import { Chip, StarInput } from '@/components/Film';
 import { Hero } from '@/components/Hero';
+import { LoggedStamp } from '@/components/LoggedStamp';
+import { Pop, Tap, useReducedMotion } from '@/components/Motion';
 import { SectionLabel } from '@/components/SectionLabel';
 import { ViewingDetails } from '@/components/ViewingDetails';
 import { showInfo, trackable } from '@/api/episodes';
 import { TitlePicker } from '@/components/TitlePicker';
 import { useToast } from '@/components/Toast';
 import { daysAgo, friendlyDate, isoDate, parseIso, today } from '@/lib/dates';
+import { blankDraft } from '@/lib/entryDraft';
 import { easeNextLayout } from '@/lib/motion';
 import { useDraftPoster } from '@/lib/posterDraft';
 import { hasViewingDetails } from '@/lib/viewing';
@@ -45,31 +50,6 @@ type Params = {
   /** A series: rate and review this season (from the episodes page). */
   season?: string;
 };
-
-function blankDraft(t: Title): EntryDraft {
-  return {
-    kind: t.kind,
-    source: t.source,
-    sourceId: t.sourceId,
-    title: t.title,
-    originalTitle: t.originalTitle ?? null,
-    year: t.year,
-    posterUrl: t.posterUrl,
-    backdropUrl: t.backdropUrl,
-    genres: t.genres,
-    runtime: t.runtime,
-    credit: t.credit ?? null,
-    watchedOn: today(),
-    rating: 0,
-    liked: false,
-    rewatch: false,
-    progress: '',
-    review: '',
-    spoilers: false,
-    tags: [],
-    fetchedAt: t.source === 'tmdb' ? (t.fetchedAt ?? Date.now()) : null,
-  };
-}
 
 const parseTags = (s: string) => [...new Set(s.split(',').map((t) => t.trim().replace(/^#/, '')).filter(Boolean))];
 
@@ -119,6 +99,9 @@ function LogForm() {
   const [trashing, setTrashing] = useState(false);
   const reviewSel = useRef({ start: 0, end: 0 });
   const set = (patch: Partial<EntryDraft>) => setDraft((d) => ({ ...d, ...patch }));
+  const reduced = useReducedMotion();
+  const [stamped, setStamped] = useState<string | null>(null);
+  const closeForm = useCallback(() => (router.canGoBack() ? router.back() : router.replace('/diary')), []);
   // A poster chosen on the poster screen before logging comes back here.
   const takePoster = useCallback((c: { posterUrl: string | null; posterPick: string | null }) => setDraft((d) => ({ ...d, posterUrl: c.posterUrl, posterPick: c.posterPick })), []);
   useDraftPoster(draft.sourceId, takePoster);
@@ -206,6 +189,7 @@ function LogForm() {
   );
 
   const save = () => {
+    if (stamped) return;
     if (!canSave) {
       toast('Give it a title first');
       return;
@@ -226,8 +210,9 @@ function LogForm() {
     else addEntry(final);
     if (settings.haptics) Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
     toast(editing ? 'Entry updated' : `Logged · ${friendlyDate(final.watchedOn)}${queued ? ' · off your watchlist' : ''}`);
-    if (router.canGoBack()) router.back();
-    else router.replace('/diary');
+    // A new entry gets the stamp, which closes the form when it's done.
+    if (editing || reduced) closeForm();
+    else setStamped(final.title);
   };
 
   const saveForLater = () => {
@@ -276,11 +261,14 @@ function LogForm() {
         options={{
           title: editing ? 'EDIT ENTRY' : manual ? 'ADD BY HAND' : '',
           headerTransparent: !manual,
-          headerTintColor: manual ? theme.text : '#FFFFFF',
+          headerStyle: { backgroundColor: manual ? theme.bg : 'transparent' },
+          headerTintColor: theme.text,
+          headerBackVisible: manual,
+          headerLeft: manual ? undefined : () => <BackDisc />,
           headerRight: () => (
-            <Pressable onPress={save} hitSlop={10} accessibilityRole="button" accessibilityLabel="Save">
+            <Tap onPress={save} hitSlop={10} accessibilityRole="button" accessibilityLabel="Save" style={!manual && styles.headerSaveDisc}>
               <Text style={[styles.headerSave, { color: manual ? theme.accent : '#FFFFFF' }]}>SAVE</Text>
-            </Pressable>
+            </Tap>
           ),
         }}
       />
@@ -419,7 +407,9 @@ function LogForm() {
                 accessibilityState={{ checked: draft.liked }}
                 style={styles.like}
               >
-                <Ionicons name={draft.liked ? 'heart' : 'heart-outline'} size={36} color={draft.liked ? theme.like : theme.textMuted} />
+                <Pop when={draft.liked}>
+                  <Ionicons name={draft.liked ? 'heart' : 'heart-outline'} size={36} color={draft.liked ? theme.like : theme.textMuted} />
+                </Pop>
                 <Text style={[styles.likeText, { color: draft.liked ? theme.like : theme.textMuted }]}>{draft.liked ? 'LOVED' : 'LIKE'}</Text>
               </Pressable>
             </View>
@@ -543,6 +533,7 @@ function LogForm() {
       </ScrollView>
       <ConfirmTrash title={trashing && editing ? editing.title : null} onConfirm={remove} onClose={() => setTrashing(false)} />
       <TitlePicker visible={picking} theme={theme} initialQuery={draft.title} initialKind={draft.kind} onPick={repick} onClose={() => setPicking(false)} />
+      {!!stamped && <LoggedStamp theme={theme} title={stamped} onDone={closeForm} />}
     </KeyboardSafe>
   );
 }
@@ -583,6 +574,7 @@ const styles = StyleSheet.create({
   manual: { padding: 16, gap: 18 },
   form: { padding: 16, gap: 20 },
   field: { gap: 8 },
+  headerSaveDisc: { height: 40, paddingHorizontal: 16, borderRadius: 20, backgroundColor: 'rgba(0,0,0,0.5)', alignItems: 'center', justifyContent: 'center' },
   row: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   seasonRow: { flexDirection: 'row', gap: 8, paddingRight: 8 },
   input: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: font.body },

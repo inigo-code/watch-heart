@@ -2,9 +2,10 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
 import * as Linking from 'expo-linking';
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { Text, TextInput } from '@/components/AppText';
 import { KeyboardSafe } from '@/components/KeyboardSafe';
 import { ScreenGlow } from '@/components/ScreenGlow';
 import { ControlRow, Row, Section, Segmented, ToggleRow } from '@/components/SettingsUI';
@@ -116,15 +117,29 @@ export default function SettingsScreen() {
     <KeyboardSafe style={{ backgroundColor: theme.bg }}>
       <ScreenGlow theme={theme} />
       <ScrollView
-        contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 32 }]}
+        contentContainerStyle={[styles.content, { paddingTop: insets.top + 64, paddingBottom: insets.bottom + 32 }]}
         keyboardShouldPersistTaps="handled"
       >
+        <Text maxFontSizeMultiplier={1.15} accessibilityRole="header" style={[styles.heading, { color: theme.text }]}>
+          SETTINGS
+        </Text>
+        <Section theme={theme} title="Account and sync">
+          <Row
+            theme={theme}
+            icon="cloud-outline"
+            label={sync.email ?? 'Account & sync'}
+            value={SYNC_LABEL[sync.status]}
+            onPress={() => router.push('/account')}
+            last
+          />
+        </Section>
+
         <Section theme={theme} title="Your profile">
           <Row
             theme={theme}
             icon="person-circle-outline"
             label={settings.name.trim() || 'Your profile'}
-            value="Stats, favourites, goal"
+            value="Stats and goal"
             onPress={() => router.push('/profile')}
           />
           <Row
@@ -411,17 +426,6 @@ export default function SettingsScreen() {
           <Row theme={theme} icon="trash-outline" label="Trash" value={String(diary.trash.length)} onPress={() => router.push('/trash')} last />
         </Section>
 
-        <Section theme={theme} title="Account and sync">
-          <Row
-            theme={theme}
-            icon="cloud-outline"
-            label={sync.email ?? 'Account & sync'}
-            value={SYNC_LABEL[sync.status]}
-            onPress={() => router.push('/account')}
-            last
-          />
-        </Section>
-
         <UpdateCard theme={theme} />
 
         <Section theme={theme} title="About">
@@ -466,11 +470,12 @@ export default function SettingsScreen() {
 
 const styles = StyleSheet.create({
   content: { padding: 16, gap: 24 },
+  heading: { fontFamily: fonts.display, fontSize: font.marquee, lineHeight: 46, letterSpacing: 1, includeFontPadding: false, marginBottom: -8 },
   inputRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, minHeight: 52 },
   input: { flex: 1, fontSize: font.body, paddingVertical: 12 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   flag: { fontSize: 18, width: 24, textAlign: 'center' },
-  swatches: { flexDirection: 'row', gap: 10 },
+  swatches: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   swatchRing: { width: 46, height: 46, borderRadius: 23, borderWidth: 2.5, alignItems: 'center', justifyContent: 'center' },
   swatch: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center' },
 });

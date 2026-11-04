@@ -63,6 +63,10 @@ export type Settings = {
   omdbKey: string;
   /** Country for "Where to watch", e.g. "IN" ('' = the phone's region). */
   watchRegion: string;
+  /** The first-run welcome was seen, skipped, or wasn't needed. */
+  onboarded: boolean;
+  /** You were asked once about Android's Alarms & reminders switch. */
+  askedAlarms: boolean;
   /** The update whose "What's new" card was already shown. */
   seenUpdate: string | null;
   /** Your language for Home's regional picks, e.g. "ta" ('' = any). Only used where the country has several. */
@@ -102,6 +106,8 @@ export const DEFAULT_SETTINGS: Settings = {
   omdbKey: '',
   watchRegion: '',
   homeLanguage: '',
+  onboarded: false,
+  askedAlarms: false,
   seenUpdate: null,
   movieNights: [],
   profileUpdatedAt: 0,

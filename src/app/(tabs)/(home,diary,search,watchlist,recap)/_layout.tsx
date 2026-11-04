@@ -1,6 +1,7 @@
 import { Stack } from 'expo-router';
 import type { ComponentProps } from 'react';
 
+import { BackDisc } from '@/components/BackDisc';
 import { fonts, useTheme } from '@/lib/theme';
 
 /**
@@ -22,17 +23,25 @@ type ScreenOptions = Exclude<Options, (...args: never[]) => unknown>;
 
 // The tabs' first pages draw their own titles; the others take these.
 const TAB_ROOTS = new Set(['index', 'diary', 'search', 'watchlist', 'recap']);
+// These pages run up to the top of the screen, a backdrop or the page's own glow, so their header has no
+// ground of its own and the way back sits on a disc that reads over anything.
+const FLOATING: ScreenOptions = {
+  title: '',
+  headerTransparent: true,
+  headerStyle: { backgroundColor: 'transparent' },
+  headerBackVisible: false,
+  headerLeft: () => <BackDisc />,
+};
 const PAGES: Record<string, ScreenOptions> = {
-  // The backdrop runs up behind the back arrow, so these headers have no ground of their own.
-  'entry/[id]': { title: '', headerTransparent: true, headerStyle: { backgroundColor: 'transparent' } },
-  'title/[id]': { title: '', headerTransparent: true, headerStyle: { backgroundColor: 'transparent' } },
+  'entry/[id]': FLOATING,
+  'title/[id]': FLOATING,
   'card/[id]': { title: 'STORY CARD' },
-  settings: { title: 'SETTINGS' },
+  settings: FLOATING,
   account: { title: 'ACCOUNT & SYNC' },
   trash: { title: 'TRASH' },
   import: { title: 'IMPORT' },
   about: { title: 'ABOUT' },
-  profile: { title: 'PROFILE' },
+  profile: FLOATING,
   track: { title: 'EPISODES' },
   lists: { title: 'YOUR LISTS' },
   'list/[id]': { title: 'LIST' },

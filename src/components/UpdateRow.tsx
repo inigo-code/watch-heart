@@ -2,8 +2,9 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import Constants from 'expo-constants';
 import * as Updates from 'expo-updates';
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 
+import { Text } from '@/components/AppText';
 import { useToast } from '@/components/Toast';
 import { font, fonts } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';

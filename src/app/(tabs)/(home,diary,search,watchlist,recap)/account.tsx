@@ -2,8 +2,9 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
+import { Text, TextInput } from '@/components/AppText';
 import { KeyboardSafe } from '@/components/KeyboardSafe';
 import { ActionSheet } from '@/components/ActionSheet';
 import { DangerButton } from '@/components/DangerButton';

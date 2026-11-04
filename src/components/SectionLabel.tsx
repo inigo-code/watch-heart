@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import type { StyleProp, ViewStyle } from 'react-native';
 
+import { Text } from '@/components/AppText';
 import { font, fonts } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
 

@@ -1,8 +1,9 @@
 import { useLocalSearchParams } from 'expo-router';
 import { useRef } from 'react';
-import { ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { Text } from '@/components/AppText';
 import { ListStoryCard } from '@/components/lists/ListStoryCard';
 import { SectionLabel } from '@/components/SectionLabel';
 import { font, fonts, useTheme } from '@/lib/theme';

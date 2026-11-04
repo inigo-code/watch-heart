@@ -81,6 +81,8 @@ type DiaryStore = {
   /** Titles you want to watch, most recently added first. */
   watchlist: WatchItem[];
   onWatchlist: (t: TitleRef) => WatchItem | undefined;
+  /** On the watchlist and still to watch: a show you finished or dropped doesn't count. */
+  queued: (t: TitleRef) => WatchItem | undefined;
   addToWatchlist: (t: Title, note?: string) => WatchItem;
   updateWatchItem: (id: string, patch: Partial<WatchItem>) => void;
   /** Background changes to many records at once (posters found, details refreshed): one save, one redraw. */
@@ -492,6 +494,7 @@ export function DiaryStoreProvider({ children }: { children: ReactNode }) {
       importEntries,
       watchlist,
       onWatchlist: (t) => watchlist.find((w) => sameTitle(w, t)),
+      queued: (t) => watchlist.find((w) => sameTitle(w, t) && w.track?.status !== 'completed' && w.track?.status !== 'dropped'),
       addToWatchlist,
       updateWatchItem,
       patchMany,

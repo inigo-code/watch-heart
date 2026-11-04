@@ -1,11 +1,14 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Image } from 'expo-image';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
-import { ActivityIndicator, Keyboard, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Keyboard, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { Text, TextInput } from '@/components/AppText';
+import { CountUp } from '@/components/Motion';
 import { KeyboardSafe } from '@/components/KeyboardSafe';
 import { ScreenGlow } from '@/components/ScreenGlow';
 import { Poster } from '@/components/Film';
@@ -127,9 +130,16 @@ function ProfileBody() {
     <KeyboardSafe style={{ backgroundColor: theme.bg }}>
       <ScreenGlow theme={theme} />
       <ScrollView
-        contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 40 }]}
+        contentContainerStyle={[styles.content, { paddingTop: insets.top + 56, paddingBottom: insets.bottom + 40 }]}
         keyboardShouldPersistTaps="handled"
       >
+        {/* Your favourite film, blurred behind you, fading into the page. */}
+        {!!settings.favourites[0]?.posterUrl && (
+          <View style={[styles.banner, { height: insets.top + 300 }]} pointerEvents="none">
+            <Image source={settings.favourites[0].posterUrl} style={StyleSheet.absoluteFill} contentFit="cover" blurRadius={28} cachePolicy="memory-disk" />
+            <LinearGradient colors={[theme.bg + '66', theme.bg + 'B3', theme.bg]} locations={[0, 0.55, 1]} style={StyleSheet.absoluteFill} />
+          </View>
+        )}
         {/* Who */}
         <View style={styles.who}>
           <Pressable
@@ -470,7 +480,7 @@ function Count({ theme, value, label, color }: { theme: Theme; value: number; la
   return (
     <View style={[styles.number, { backgroundColor: theme.card, borderColor: theme.border }]}>
       <Text style={[styles.numberValue, { color: theme.text }]} adjustsFontSizeToFit numberOfLines={1}>
-        {value.toLocaleString()}
+        <CountUp value={value} format={(n) => n.toLocaleString()} />
       </Text>
       <View style={styles.numberLabelRow}>
         <View style={[styles.dot, { backgroundColor: color }]} />
@@ -537,6 +547,7 @@ const styles = StyleSheet.create({
   perksTitle: { fontSize: font.body, fontWeight: '700' },
   perksNote: { fontFamily: fonts.mono, fontSize: font.caption, lineHeight: 16, marginTop: 2 },
   content: { padding: 16, gap: 22 },
+  banner: { position: 'absolute', top: 0, left: 0, right: 0, overflow: 'hidden' },
   who: { alignItems: 'center', gap: 4, paddingTop: 8 },
   save: { flexDirection: 'row', alignItems: 'center', gap: 6, height: 40, paddingHorizontal: 22, borderRadius: 20, marginTop: 8 },
   saveText: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 1.5 },

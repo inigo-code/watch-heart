@@ -1,7 +1,8 @@
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState } from 'react';
-import { AccessibilityInfo, Animated, Easing, StyleSheet, Text, View } from 'react-native';
+import { AccessibilityInfo, Animated, Easing, StyleSheet, View } from 'react-native';
 
+import { Text } from '@/components/AppText';
 import { fonts } from '@/lib/theme';
 
 // The native splash: assets/splash-icon.png at 160 points on the projector black (app.json). The reel below is

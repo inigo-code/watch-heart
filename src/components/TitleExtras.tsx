@@ -2,8 +2,10 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { Image } from 'expo-image';
 import * as Linking from 'expo-linking';
 import { useEffect, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
+import { Text } from '@/components/AppText';
+import { Tap } from '@/components/Motion';
 import { SectionLabel } from '@/components/SectionLabel';
 import { tmdbKey } from '@/api';
 import { omdbKey as omdbKeyFor, watchRegion } from '@/api/omdb';
@@ -12,6 +14,7 @@ import { loadTitleScores, scoresId, setScoreDefaults } from '@/lib/titleScores';
 import type { TitleScores } from '@/lib/titleScores';
 import { font, fonts } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
+import { watchLink } from '@/lib/watchLinks';
 import { useSettings } from '@/settings/SettingsProvider';
 import type { Source } from '@/store/types';
 
@@ -106,10 +109,10 @@ export function TitleExtras({ source, sourceId, imdbId, title, year, series, the
       <SectionLabel theme={theme}>WHERE TO WATCH · {region}</SectionLabel>
       {w && (w.stream.length || w.free.length || w.rent.length || w.buy.length) ? (
         <View style={{ gap: 10 }}>
-          <Providers theme={theme} title="Stream" list={w.stream} link={w.link} />
-          <Providers theme={theme} title="Free" list={w.free} link={w.link} />
-          <Providers theme={theme} title="Rent" list={w.rent} link={w.link} />
-          <Providers theme={theme} title="Buy" list={w.buy} link={w.link} />
+          <Providers theme={theme} kind="Stream" list={w.stream} title={title ?? ''} />
+          <Providers theme={theme} kind="Free" list={w.free} title={title ?? ''} />
+          <Providers theme={theme} kind="Rent" list={w.rent} title={title ?? ''} />
+          <Providers theme={theme} kind="Buy" list={w.buy} title={title ?? ''} />
         </View>
       ) : (
         <Text style={[styles.note, { color: theme.textMuted }]}>Not streaming, to rent or to buy in this country right now.</Text>
@@ -145,18 +148,18 @@ function Score({
   );
 }
 
-function Providers({ theme, title, list, link }: { theme: Theme; title: string; list: Provider[]; link: string | null }) {
+function Providers({ theme, kind, list, title }: { theme: Theme; kind: string; list: Provider[]; title: string }) {
   if (!list.length) return null;
   return (
     <View style={styles.providerRow}>
       <Text style={[styles.providerKind, { color: theme.text }]} numberOfLines={1}>
-        {title.toUpperCase()}
+        {kind.toUpperCase()}
       </Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.logos}>
         {list.map((p) => (
-          <Pressable key={p.id} onPress={link ? () => Linking.openURL(link) : undefined} accessibilityRole="link" accessibilityLabel={p.name}>
+          <Tap key={p.id} onPress={() => Linking.openURL(watchLink(p.name, title)).catch(() => {})} scale={0.92} accessibilityRole="link" accessibilityLabel={`Find ${title} on ${p.name}`}>
             {p.logo ? <Image source={p.logo} style={styles.logo} /> : <Text style={[styles.note, { color: theme.text }]}>{p.name}</Text>}
-          </Pressable>
+          </Tap>
         ))}
       </ScrollView>
     </View>

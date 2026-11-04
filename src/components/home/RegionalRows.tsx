@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
+import { Text } from '@/components/AppText';
 import { tmdbKey } from '@/api';
 import { discoverTmdb } from '@/api/tmdb';
 import type { BrowseQuery } from '@/api/tmdb';

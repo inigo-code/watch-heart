@@ -1,9 +1,11 @@
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { Text } from '@/components/AppText';
+import { CountUp } from '@/components/Motion';
 import { ScreenGlow } from '@/components/ScreenGlow';
 import { Chip } from '@/components/Film';
 import { RatingChart } from '@/components/RatingChart';
@@ -130,12 +132,12 @@ function Label({ theme, children }: { theme: Theme; children: string }) {
 /** The period in numbers: tiles, the mix of films/series/anime, and how you rated. */
 function Numbers({ theme, stats }: { theme: Theme; stats: Stats }) {
   const tiles = [
-    { value: String(stats.total), label: 'Titles' },
+    { value: stats.total, label: 'Titles' },
     { value: stats.minutes ? formatRuntime(stats.minutes) : '—', label: 'Screen time' },
     { value: stats.avgStars ? `${stats.avgStars}★` : '—', label: 'Avg rating' },
-    { value: String(stats.liked), label: 'Loved' },
-    { value: String(stats.rewatches), label: 'Rewatches' },
-    { value: String(stats.reviews), label: 'Reviews' },
+    { value: stats.liked, label: 'Loved' },
+    { value: stats.rewatches, label: 'Rewatches' },
+    { value: stats.reviews, label: 'Reviews' },
   ];
   return (
     <View style={styles.numbers}>
@@ -144,7 +146,7 @@ function Numbers({ theme, stats }: { theme: Theme; stats: Stats }) {
         {tiles.map((t) => (
           <View key={t.label} style={[styles.tile, { backgroundColor: theme.card, borderColor: theme.border }]}>
             <Text style={[styles.tileValue, { color: theme.text }]} numberOfLines={1} adjustsFontSizeToFit>
-              {t.value}
+              {typeof t.value === 'number' ? <CountUp value={t.value} /> : t.value}
             </Text>
             <Text style={[styles.tileLabel, { color: theme.accent }]}>{t.label.toUpperCase()}</Text>
           </View>

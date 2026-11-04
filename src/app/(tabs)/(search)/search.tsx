@@ -2,9 +2,10 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, FlatList, Keyboard, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, FlatList, Keyboard, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { Text, TextInput } from '@/components/AppText';
 import { search, sourceFor, tmdbKey, trending } from '@/api';
 import { watchRegion } from '@/api/omdb';
 import { ScreenGlow } from '@/components/ScreenGlow';
@@ -34,7 +35,7 @@ export default function SearchScreen() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const { settings, update } = useSettings();
-  const { viewingsOf, onWatchlist, addToWatchlist, removeFromWatchlist } = useDiary();
+  const { viewingsOf, queued, addToWatchlist, removeFromWatchlist } = useDiary();
   const toast = useToast();
   const kind = settings.searchKind;
   const key = tmdbKey(settings.tmdbKey);
@@ -197,7 +198,7 @@ export default function SearchScreen() {
         }
         renderItem={({ item }) => {
           const seen = viewingsOf(item.source, item.sourceId).length;
-          const saved = onWatchlist(item);
+          const saved = queued(item);
           // Two buttons side by side (log it, bookmark it), not one inside the other.
           return (
             <View style={[styles.row, { borderBottomColor: theme.border }]}>

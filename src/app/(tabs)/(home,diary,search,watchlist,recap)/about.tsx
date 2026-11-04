@@ -1,7 +1,8 @@
 import * as Linking from 'expo-linking';
-import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { Text } from '@/components/AppText';
 import { BrandTitle } from '@/components/BrandTitle';
 import { HeartAppsCard, HeartAppsMark } from '@/components/HeartApps';
 import { Sprockets } from '@/components/Film';

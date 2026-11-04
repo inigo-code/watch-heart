@@ -44,13 +44,14 @@ export const DATA_SOURCES = {
  * An update that leaves it alone shows nothing.
  */
 export const WHATS_NEW = {
-  id: '1.2.1',
+  id: '1.2.2',
   items: [
-    'Plan a watch, day or night: pick the day, then your own time, and get a reminder',
-    'Watchlist: tap a title to open its page; hold it for quick actions, including Plan a watch',
-    'Tap a season’s poster to open its episodes',
-    'Title pages show the backdrop right up to the top, behind the back arrow',
-    'Profile and Settings glow like the main screens, and the tab bar is cleaner',
-    'Fixed: the next-episode badge on Home covering the show’s name',
+    'A proper welcome: set your name and country, tap what you’ve loved, and Home is yours from the first minute',
+    'Where to watch opens Netflix, Prime and the rest, searching for the title (ad-supported duplicates are gone)',
+    'Watchlist: Up next and Watching side by side, and you can stop tracking finished or dropped shows',
+    'Logging stamps your ticket, and the app moves more smoothly everywhere',
+    'Profile and Settings run right to the top of the screen, and the back button reads on any picture',
+    'The real Watch Heart logo everywhere, and Account & sync first in Settings',
+    'Text stays in place on phones with a large font size',
   ],
 };

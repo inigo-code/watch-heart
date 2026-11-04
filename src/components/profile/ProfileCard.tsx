@@ -1,8 +1,10 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { forwardRef } from 'react';
 // React Native's Image, not expo-image: see StoryCanvas (captured images must be drawn synchronously).
-import { Image, StyleSheet, Text, View } from 'react-native';
+import { Image, StyleSheet, View } from 'react-native';
 
+import { Text } from '@/components/AppText';
+import { CardMark } from '@/components/BrandTitle';
 import type { ProfileStats } from '@/lib/profileStats';
 import { fonts } from '@/lib/theme';
 import type { Favourite } from '@/settings/SettingsProvider';
@@ -21,11 +23,13 @@ export const ProfileCard = forwardRef<StoryHandle, Props>(function ProfileCard({
     { value: stats.titles.anime, label: 'ANIME' },
     { value: stats.hours, label: 'HOURS' },
   ];
+  // With a bio there's a line or two more to fit between the same margins, so the photo and gaps give way.
+  const tight = !!bio.trim();
   return (
     <View ref={ref} collapsable={false} style={styles.card}>
       <LinearGradient colors={p.bg} style={StyleSheet.absoluteFill} />
       <Text allowFontScaling={false} style={[styles.kicker, { color: p.accent }]}>★ MY WATCH DIARY ★</Text>
-      <View style={[styles.photoRing, { borderColor: p.accent }]}>
+      <View style={[styles.photoRing, { borderColor: p.accent }, tight && styles.photoTight]}>
         {photo ? <Image source={{ uri: photo }} style={styles.photo} fadeDuration={0} resizeMethod="scale" /> : <Text allowFontScaling={false} style={[styles.initial, { color: p.text }]}>{(name.trim()[0] ?? '♥').toUpperCase()}</Text>}
       </View>
       <Text allowFontScaling={false} style={[styles.name, { color: p.text }]} numberOfLines={1}>
@@ -58,7 +62,7 @@ export const ProfileCard = forwardRef<StoryHandle, Props>(function ProfileCard({
       </View>
       <Text allowFontScaling={false} style={[styles.caption, { color: p.muted }]}>FAVOURITE FOUR</Text>
 
-      <View style={styles.numbers}>
+      <View style={[styles.numbers, tight && { marginTop: 10 }]}>
         {numbers.map((n) => (
           <View key={n.label} style={styles.number}>
             <Text allowFontScaling={false} style={[styles.value, { color: p.text }]}>{n.value}</Text>
@@ -70,7 +74,10 @@ export const ProfileCard = forwardRef<StoryHandle, Props>(function ProfileCard({
         {stats.thisYear} IN {year} · {stats.longestStreak}-DAY BEST STREAK{stats.avgStars ? ` · ${stats.avgStars}★ AVG` : ''}
       </Text>
       <View style={{ flex: 1 }} />
-      <Text allowFontScaling={false} style={[styles.brand, { color: p.accent }]}>♥ WATCH HEART</Text>
+      <View style={styles.brand}>
+        <CardMark size={16} />
+        <Text allowFontScaling={false} style={[styles.brandText, { color: p.muted }]}>WATCH HEART</Text>
+      </View>
     </View>
   );
 });
@@ -80,6 +87,7 @@ const styles = StyleSheet.create({
   card: { width: STORY_W, height: STORY_H, overflow: 'hidden', alignItems: 'center', paddingTop: 58, paddingBottom: 70, paddingHorizontal: 22 },
   kicker: { fontFamily: fonts.monoBold, fontSize: 10, letterSpacing: 3 },
   photoRing: { width: 96, height: 96, borderRadius: 48, borderWidth: 3, marginTop: 16, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' },
+  photoTight: { width: 68, height: 68, borderRadius: 34, marginTop: 10 },
   photo: { width: '100%', height: '100%' },
   initial: { fontFamily: fonts.display, fontSize: 50 },
   name: { fontFamily: fonts.display, fontSize: 40, letterSpacing: 1, marginTop: 10 },
@@ -96,5 +104,6 @@ const styles = StyleSheet.create({
   value: { fontFamily: fonts.display, fontSize: 36 },
   label: { fontFamily: fonts.monoBold, fontSize: 9, letterSpacing: 1.5 },
   line: { fontFamily: fonts.monoBold, fontSize: 9, letterSpacing: 1, marginTop: 12, textAlign: 'center' },
-  brand: { fontFamily: fonts.monoBold, fontSize: 11, letterSpacing: 3, marginTop: 10 },
+  brand: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 10 },
+  brandText: { fontFamily: fonts.display, fontSize: 13, letterSpacing: 2 },
 });

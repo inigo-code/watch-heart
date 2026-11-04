@@ -2,8 +2,9 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useState } from 'react';
 import type { ReactNode, RefObject } from 'react';
-import { ActivityIndicator, PixelRatio, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, PixelRatio, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
+import { Text } from '@/components/AppText';
 import { useToast } from '@/components/Toast';
 import { usePerks } from '@/lib/perks';
 import { font, fonts } from '@/lib/theme';

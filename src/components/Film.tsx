@@ -2,9 +2,11 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { Image } from 'expo-image';
 import { useRef, useState } from 'react';
 import type { ReactNode } from 'react';
-import { PixelRatio, Pressable, StyleSheet, Text, View } from 'react-native';
+import { PixelRatio, StyleSheet, View } from 'react-native';
 import type { StyleProp, ViewStyle } from 'react-native';
 
+import { Text } from '@/components/AppText';
+import { Pop, Tap } from '@/components/Motion';
 import { KIND_LABEL } from '@/lib/stats';
 import { font, fonts, kindColor } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
@@ -124,9 +126,11 @@ export function StarInput({ value, onChange, theme, size = 40 }: { value: number
       onAccessibilityAction={(e) => onChange(Math.min(10, Math.max(0, value + (e.nativeEvent.actionName === 'increment' ? 1 : -1))))}
       style={styles.starInput}
     >
-      <View pointerEvents="none">
-        <Stars rating={value} size={size} color={theme.star} emptyColor={theme.border} showEmpty />
-      </View>
+      <Pop when={value}>
+        <View pointerEvents="none">
+          <Stars rating={value} size={size} color={theme.star} emptyColor={theme.border} showEmpty />
+        </View>
+      </Pop>
     </View>
   );
 }
@@ -163,20 +167,17 @@ export function Chip({ label, active, icon, color, theme, onPress }: {
 }) {
   const fg = active ? theme.chipActiveText : theme.text;
   return (
-    <Pressable
+    <Tap
       onPress={onPress}
+      scale={0.95}
       accessibilityRole="button"
       accessibilityState={{ selected: !!active }}
-      style={({ pressed }) => [
-        styles.chip,
-        { backgroundColor: active ? theme.chipActive : 'transparent', borderColor: active ? theme.chipActive : theme.border },
-        pressed && { opacity: 0.7 },
-      ]}
+      style={[styles.chip, { backgroundColor: active ? theme.chipActive : 'transparent', borderColor: active ? theme.chipActive : theme.border }]}
     >
       {icon && <Ionicons name={icon} size={14} color={color && !active ? color : fg} />}
       {!icon && color && <View style={[styles.dot, { backgroundColor: color }]} />}
       <Text style={[styles.chipText, { color: fg }]}>{label.toUpperCase()}</Text>
-    </Pressable>
+    </Tap>
   );
 }
 
