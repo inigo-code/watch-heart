@@ -44,8 +44,10 @@ export const DATA_SOURCES = {
  * An update that leaves it alone shows nothing.
  */
 export const WHATS_NEW = {
-  id: '1.2.2',
+  id: '1.3.0',
   items: [
+    'Reminders arrive on time, even when the app is closed',
+    'No more dark strip while the app opens',
     'A proper welcome: set your name and country, tap what you’ve loved, and Home is yours from the first minute',
     'Where to watch opens Netflix, Prime and the rest, searching for the title (ad-supported duplicates are gone)',
     'Watchlist: Up next and Watching side by side, and you can stop tracking finished or dropped shows',
