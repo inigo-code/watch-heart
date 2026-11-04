@@ -1,11 +1,13 @@
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useSegments } from 'expo-router';
 import { Tabs } from 'expo-router/js-tabs';
-import { StyleSheet, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Animated, StyleSheet, View, useWindowDimensions } from 'react-native';
 import type { ColorValue } from 'react-native';
 
 import { Text } from '@/components/AppText';
-import { Pop } from '@/components/Motion';
+import { EASE, Pop, useReducedMotion } from '@/components/Motion';
 import { fonts, useTheme } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
 
@@ -30,17 +32,49 @@ function TabLabel({ color, children }: { color: ColorValue; children: string }) 
   );
 }
 
-/** The bar's ground: a gradient from the page into black, with a line of the accent along its top edge. */
+const TABS = ['(home)', '(diary)', '(search)', '(watchlist)', '(recap)'];
+
+/** A soft light on the bar's top edge, over the tab you're on: it glides across when you change tabs. */
+function TabLight({ theme }: { theme: Theme }) {
+  const { width } = useWindowDimensions();
+  const reduced = useReducedMotion();
+  const segments = useSegments() as string[];
+  const index = Math.max(0, TABS.indexOf(segments[1] ?? ''));
+  const each = width / TABS.length;
+  const [at] = useState(() => new Animated.Value(index * each));
+  const [stretch] = useState(() => new Animated.Value(1));
+  useEffect(() => {
+    if (reduced) {
+      at.setValue(index * each);
+      return;
+    }
+    Animated.parallel([
+      Animated.timing(at, { toValue: index * each, duration: 460, easing: EASE, useNativeDriver: true }),
+      Animated.sequence([
+        Animated.timing(stretch, { toValue: 1.7, duration: 140, easing: EASE, useNativeDriver: true }),
+        Animated.timing(stretch, { toValue: 1, duration: 320, easing: EASE, useNativeDriver: true }),
+      ]),
+    ]).start();
+  }, [at, stretch, index, each, reduced]);
+  return (
+    <Animated.View pointerEvents="none" style={[styles.light, { width: each, transform: [{ translateX: at }] }]}>
+      <Animated.View style={[styles.lightBar, { backgroundColor: theme.accent, boxShadow: `0 0 16px 3px ${theme.accent}`, transform: [{ scaleX: stretch }] }]} />
+    </Animated.View>
+  );
+}
+
+/** The bar's ground: a gradient from the page into black, with a faint line of the accent along its top edge. */
 function TabBarBackground({ theme }: { theme: Theme }) {
   return (
     <View style={StyleSheet.absoluteFill}>
       <LinearGradient colors={theme.dark ? ['#17141C', '#060508'] : [theme.card, theme.bg]} style={StyleSheet.absoluteFill} />
       <LinearGradient
-        colors={[theme.accent + '00', theme.accent, theme.accent + '00']}
+        colors={[theme.accent + '00', theme.accent + '55', theme.accent + '00']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={styles.line}
       />
+      <TabLight theme={theme} />
     </View>
   );
 }
@@ -104,6 +138,8 @@ export default function TabsLayout() {
 const styles = StyleSheet.create({
   // Sits in the space above the icon, so the icon doesn't move when the tab changes.
   line: { position: 'absolute', top: 0, left: 0, right: 0, height: 1.5 },
+  light: { position: 'absolute', top: 0, left: 0, height: 2, alignItems: 'center' },
+  lightBar: { width: 36, height: 2, borderRadius: 1 },
   // Five tabs: small and tight enough that WATCHLIST fits on a narrow phone.
   label: { fontFamily: fonts.monoBold, fontSize: 10, letterSpacing: 0, textAlign: 'center', alignSelf: 'stretch' },
 });

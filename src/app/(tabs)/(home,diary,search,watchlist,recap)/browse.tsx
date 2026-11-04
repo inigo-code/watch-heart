@@ -99,7 +99,7 @@ export default function BrowseScreen() {
   const kindName = query.kind === 'movie' ? 'films' : query.kind === 'tv' ? 'series' : 'anime';
 
   return (
-    <View style={{ flex: 1, backgroundColor: theme.bg }}>
+    <View style={{ flex: 1 }}>
       <Stack.Screen options={{ title: name.toUpperCase() }} />
       <FlatList
         data={items}

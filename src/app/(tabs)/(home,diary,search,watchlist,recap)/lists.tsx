@@ -26,9 +26,8 @@ export default function ListsScreen() {
   };
 
   return (
-    <KeyboardSafe style={{ backgroundColor: theme.bg }}>
+    <KeyboardSafe>
       <FlatList
-        style={{ backgroundColor: theme.bg }}
         data={lists}
         keyExtractor={(l) => l.id}
         contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 32 }]}
@@ -36,7 +35,7 @@ export default function ListsScreen() {
         ListHeaderComponent={
           <View style={{ gap: 12 }}>
             <Text style={[styles.lede, { color: theme.textMuted }]}>
-              Your own lists: best of the year, a director ranked, what to show a friend. Share any of them as a story.
+              Best of the year, a director ranked, what to show a friend
             </Text>
             <View style={[styles.newRow, { backgroundColor: theme.card, borderColor: theme.border }]}>
               <Ionicons name="add-circle-outline" size={22} color={theme.accent} />

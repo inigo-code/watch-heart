@@ -77,7 +77,7 @@ function UpdatePromptInner() {
     <Ticket theme={theme} visible={isUpdatePending && !dismissed} onClose={() => setDismissed(true)}>
       <HeartMark size={64} />
       <Text style={[styles.title, { color: theme.text }]}>A new cut is ready</Text>
-      <Text style={[styles.body, { color: theme.textMuted }]}>Improvements and fixes have downloaded. Restart to start using them. It takes a second, and your diary is safe.</Text>
+      <Text style={[styles.body, { color: theme.textMuted }]}>Restart to use it. Your diary is safe.</Text>
       <Primary
         theme={theme}
         label="Restart now"

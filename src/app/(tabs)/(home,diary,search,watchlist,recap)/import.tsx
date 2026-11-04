@@ -119,7 +119,7 @@ export default function ImportScreen() {
   const total = found ? found.entries.length + found.watchlist.length : 0;
 
   return (
-    <ScrollView style={{ backgroundColor: theme.bg }} contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 32 }]}>
+    <ScrollView contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 32 }]}>
       <View>
         <Text style={[styles.heading, { color: theme.text }]}>
           BRING YOUR <Text style={{ color: theme.accent }}>HISTORY</Text>
@@ -166,7 +166,7 @@ export default function ImportScreen() {
               <Text style={[styles.primaryText, { color: theme.accentText }]}>ADD {total} TO WATCH HEART</Text>
             </Pressable>
           )}
-          <Text style={[styles.meta, { color: theme.textMuted }]}>Importing again later adds only what’s new; nothing is duplicated or deleted.</Text>
+          <Text style={[styles.meta, { color: theme.textMuted }]}>Importing again adds only what’s new</Text>
         </View>
       )}
 

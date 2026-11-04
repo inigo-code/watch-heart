@@ -32,10 +32,10 @@ export default function ListScreen() {
   const [adding, setAdding] = useState<'diary' | 'search' | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
-  if (!ready) return <View style={{ flex: 1, backgroundColor: theme.bg }} />;
+  if (!ready) return <View style={{ flex: 1 }} />;
   if (!list) {
     return (
-      <View style={[styles.missing, { backgroundColor: theme.bg }]}>
+      <View style={styles.missing}>
         <Text style={[styles.lede, { color: theme.textMuted }]}>This list is gone.</Text>
       </View>
     );
@@ -56,7 +56,7 @@ export default function ListScreen() {
   };
 
   return (
-    <KeyboardSafe style={{ backgroundColor: theme.bg }}>
+    <KeyboardSafe>
       <Stack.Screen
         options={{
           title: 'LIST',
@@ -73,7 +73,6 @@ export default function ListScreen() {
         }}
       />
       <FlatList
-        style={{ backgroundColor: theme.bg }}
         data={list.items}
         keyExtractor={(it, i) => `${it.source}:${it.sourceId}:${it.title}:${i}`}
         contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 40 }]}

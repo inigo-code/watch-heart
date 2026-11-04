@@ -63,8 +63,8 @@ const styles = StyleSheet.create({
   summaryText: { fontFamily: fonts.mono, fontSize: font.caption, lineHeight: 17 },
   bars: { flexDirection: 'row', alignItems: 'flex-end', gap: 4 },
   col: { flex: 1, alignItems: 'center', justifyContent: 'flex-end', gap: 3 },
-  count: { fontFamily: fonts.monoBold, fontSize: 10 },
+  count: { fontFamily: fonts.monoBold, fontSize: 12 },
   bar: { width: '100%', borderRadius: 3 },
   labels: { flexDirection: 'row', gap: 4 },
-  label: { flex: 1, textAlign: 'center', fontFamily: fonts.mono, fontSize: 10 },
+  label: { flex: 1, textAlign: 'center', fontFamily: fonts.mono, fontSize: 12 },
 });

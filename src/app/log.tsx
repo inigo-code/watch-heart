@@ -444,7 +444,6 @@ function LogForm() {
                   <Text style={[styles.formatLabel, look, { color: theme.text }]}>{label}</Text>
                 </Pressable>
               ))}
-              <Text style={[styles.formatHint, { color: theme.textMuted }]}>Select words, then tap. A blank line starts a new paragraph.</Text>
             </View>
             <TextInput
               value={draft.review}
@@ -583,7 +582,7 @@ const styles = StyleSheet.create({
   ratingRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   ratingValue: { fontFamily: fonts.display, fontSize: 36, width: 44, includeFontPadding: false },
   like: { alignItems: 'center', marginLeft: 'auto' },
-  likeText: { fontFamily: fonts.monoBold, fontSize: 10, letterSpacing: 1 },
+  likeText: { fontFamily: fonts.monoBold, fontSize: 12, letterSpacing: 1 },
   more: { flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12 },
   moreTitle: { fontSize: font.body, fontWeight: '700' },
   moreNote: { fontFamily: fonts.mono, fontSize: font.caption, marginTop: 2 },

@@ -66,9 +66,9 @@ export const fonts = {
 
 /** The type scale. Pick the nearest step rather than a new number. */
 export const font = {
-  caption: 12,
-  footnote: 13,
-  body: 15,
+  caption: 13,
+  footnote: 14,
+  body: 16,
   headline: 17,
   title: 20,
   title2: 24,

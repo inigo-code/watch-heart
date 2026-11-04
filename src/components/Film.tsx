@@ -189,7 +189,7 @@ const styles = StyleSheet.create({
   badge: { borderWidth: 1, borderRadius: 4, paddingHorizontal: 6, paddingVertical: 1, alignSelf: 'flex-start' },
   badgeSmall: { paddingHorizontal: 4, paddingVertical: 0 },
   badgeText: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 1 },
-  badgeTextSmall: { fontSize: 10 },
+  badgeTextSmall: { fontSize: 12 },
   sprockets: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 6 },
   chip: { flexDirection: 'row', alignItems: 'center', gap: 6, height: 32, paddingHorizontal: 12, borderRadius: 16, borderWidth: 1 },
   dot: { width: 7, height: 7, borderRadius: 4 },

@@ -33,7 +33,7 @@ export default function CreditsScreen() {
 
   if (!about) {
     return (
-      <View style={[styles.center, { backgroundColor: theme.bg }]}>
+      <View style={styles.center}>
         {failed ? <Text style={[styles.role, { color: theme.textMuted }]}>Couldn’t load the cast. Check your connection.</Text> : <ActivityIndicator color={theme.accent} />}
       </View>
     );
@@ -46,7 +46,6 @@ export default function CreditsScreen() {
 
   return (
     <SectionList<Person>
-      style={{ backgroundColor: theme.bg }}
       contentContainerStyle={{ padding: 16, paddingBottom: insets.bottom + 24 }}
       sections={sections}
       keyExtractor={(p, i) => `${p.id}:${i}`}

@@ -50,7 +50,6 @@ export function HeartAppsCard({ theme }: { theme: Theme }) {
         accessibilityRole="link"
         style={({ pressed }) => [styles.home, { backgroundColor: pressed ? theme.border : theme.chip }]}
       >
-        <HeartAppsMark size={22} />
         <Text style={[styles.homeText, { color: theme.text }]}>All Heart Apps</Text>
       </Pressable>
     </View>

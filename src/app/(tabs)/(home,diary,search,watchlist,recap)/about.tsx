@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Text } from '@/components/AppText';
 import { BrandTitle } from '@/components/BrandTitle';
-import { HeartAppsCard, HeartAppsMark } from '@/components/HeartApps';
+import { HeartAppsCard } from '@/components/HeartApps';
 import { Sprockets } from '@/components/Film';
 import { Row, Section } from '@/components/SettingsUI';
 import { UpdateCard, describeRunning } from '@/components/UpdateRow';
@@ -16,7 +16,7 @@ export default function AboutScreen() {
   const insets = useSafeAreaInsets();
 
   return (
-    <ScrollView style={{ backgroundColor: theme.bg }} contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 32 }]}>
+    <ScrollView contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 32 }]}>
       <View style={[styles.card, { backgroundColor: theme.dark ? '#000000' : theme.text }]}>
         <Sprockets color={theme.bg} count={14} hole={6} />
         <View style={styles.cardBody}>
@@ -29,7 +29,6 @@ export default function AboutScreen() {
             accessibilityLabel="A Heart App. Open the Heart Apps website"
             style={({ pressed }) => [styles.family, pressed && { opacity: 0.75 }]}
           >
-            <HeartAppsMark size={20} />
             <Text style={styles.familyText}>A HEART APP</Text>
           </Pressable>
         </View>

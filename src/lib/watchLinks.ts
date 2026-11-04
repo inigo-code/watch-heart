@@ -1,8 +1,9 @@
+import * as Linking from 'expo-linking';
+
 // TMDB says which services carry a title, but gives no link into them (only its own page). So a tap opens
 // the service's search for the title: Android hands these to the service's app when it's installed and the
 // app claims the link, otherwise they open on its site. Each address here was checked by hand.
 const SEARCHES: [RegExp, (title: string) => string][] = [
-  [/netflix/i, (t) => `https://www.netflix.com/search?q=${t}`],
   [/prime video|amazon video/i, (t) => `https://www.primevideo.com/search?phrase=${t}`],
   [/hotstar|disney/i, (t) => `https://www.hotstar.com/in/explore?search_query=${t}`],
   [/zee ?5/i, (t) => `https://www.zee5.com/search?q=${t}`],
@@ -23,4 +24,26 @@ export function watchLink(service: string, title: string) {
   const search = SEARCHES.find(([name]) => name.test(service));
   if (search) return search[1](encodeURIComponent(title));
   return `https://www.google.com/search?q=${encodeURIComponent(`${title} on ${service}`)}`;
+}
+
+/** Google's first answer for the title on Netflix, as Netflix's own page for it (which the app opens). */
+async function netflixPage(title: string) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 4000);
+  try {
+    const q = encodeURIComponent(`site:netflix.com/title ${title}`);
+    const res = await fetch(`https://www.google.com/search?q=${q}&btnI=1`, { signal: controller.signal, headers: { 'User-Agent': 'Mozilla/5.0 (Linux; Android 14) Mobile' } });
+    const id = `${res.url} ${await res.text()}`.match(/netflix\.com(?:\/[a-z-]+)?\/title\/(\d+)/)?.[1];
+    return id ? `https://www.netflix.com/title/${id}` : null;
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/** Opens a service for a title. */
+export async function openOnService(service: string, title: string) {
+  const page = /netflix/i.test(service) ? await netflixPage(title) : null;
+  await Linking.openURL(page ?? watchLink(service, title));
 }

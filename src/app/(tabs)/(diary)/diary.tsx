@@ -6,7 +6,7 @@ import { Pressable, ScrollView, SectionList, StyleSheet, View, useWindowDimensio
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Text, TextInput } from '@/components/AppText';
-import { ScreenGlow } from '@/components/ScreenGlow';
+import { usePullRefresh } from '@/components/PullRefresh';
 import { ActionSheet } from '@/components/ActionSheet';
 import { AddToList } from '@/components/lists/AddToList';
 import { ConfirmTrash } from '@/components/ConfirmTrash';
@@ -19,6 +19,7 @@ import { computeStats } from '@/lib/stats';
 import { KIND_COLORS, font, fonts, shadow, useTheme } from '@/lib/theme';
 import { useSettings } from '@/settings/SettingsProvider';
 import { useDiary } from '@/store/DiaryStore';
+import { useSync } from '@/sync/SyncProvider';
 import type { Entry } from '@/store/types';
 
 type Filter = 'all' | 'movie' | 'tv' | 'anime' | 'liked' | 'reviewed' | 'rewatch';
@@ -58,6 +59,8 @@ export default function DiaryScreen() {
   const { width } = useWindowDimensions();
   const { settings, update } = useSettings();
   const { entries, ready, deleteEntry, restoreEntry } = useDiary();
+  const sync = useSync();
+  const pull = usePullRefresh(theme, () => sync.syncNow());
   const [filter, setFilter] = useState<Filter>('all');
   const [query, setQuery] = useState('');
   // Opened on a search from elsewhere (a name on an entry, a movie buddy): show it.
@@ -167,7 +170,7 @@ export default function DiaryScreen() {
   const tip = showTip ? (
     <View style={styles.tip}>
       <TipCard theme={theme} title="Every month is a reel" onDismiss={dismissTip}>
-        Tap STORY on a month to turn it into an Instagram story. Long-press a ticket to edit, log again or delete it.
+        Tap STORY to share a month. Hold a ticket for more.
       </TipCard>
     </View>
   ) : undefined;
@@ -195,11 +198,11 @@ export default function DiaryScreen() {
     ) : undefined;
 
   return (
-    <View style={[styles.screen, { backgroundColor: theme.bg }]}>
-      <ScreenGlow theme={theme} />
+    <View style={styles.screen}>
       {header}
       <SectionList
         ref={listRef}
+        refreshControl={pull}
         style={styles.scroller}
         sections={sections}
         keyExtractor={(row) => row.map((e) => e.id).join('|')}
@@ -327,7 +330,7 @@ const styles = StyleSheet.create({
   marquee: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderRadius: 12, paddingVertical: 10 },
   marqueeStat: { flex: 1, alignItems: 'center' },
   marqueeValue: { fontFamily: fonts.display, fontSize: 28, lineHeight: 30, includeFontPadding: false },
-  marqueeLabel: { fontFamily: fonts.monoBold, fontSize: 10, letterSpacing: 1.2 },
+  marqueeLabel: { fontFamily: fonts.monoBold, fontSize: 12, letterSpacing: 1.2 },
   marqueeRule: { width: 1, alignSelf: 'stretch' },
   search: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, height: 44, borderRadius: 12 },
   searchInput: { flex: 1, fontSize: font.body, height: '100%' },

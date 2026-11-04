@@ -8,7 +8,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Text } from '@/components/AppText';
 import { trackable } from '@/api/episodes';
-import { ScreenGlow } from '@/components/ScreenGlow';
 import { ActionSheet } from '@/components/ActionSheet';
 import { ContinueWatching } from '@/components/ContinueWatching';
 import { AddToList } from '@/components/lists/AddToList';
@@ -16,6 +15,7 @@ import { MovieNightSheet, nightLabel, useMovieNights } from '@/components/MovieN
 import { openTitle } from '@/components/title/Rows';
 import { Chip, KindBadge, Poster } from '@/components/Film';
 import { Pop, Rise, Tap, useReducedMotion } from '@/components/Motion';
+import { usePullRefresh } from '@/components/PullRefresh';
 import { Segments } from '@/components/Segments';
 import { useToast } from '@/components/Toast';
 import { KIND_COLORS, font, fonts, shadow, useTheme } from '@/lib/theme';
@@ -23,6 +23,7 @@ import { useLists } from '@/lists/ListsProvider';
 import { useSettings } from '@/settings/SettingsProvider';
 import type { Theme } from '@/lib/theme';
 import { titleOf, useDiary } from '@/store/DiaryStore';
+import { useSync } from '@/sync/SyncProvider';
 import type { MediaKind, WatchItem } from '@/store/types';
 
 type Filter = 'all' | MediaKind;
@@ -54,6 +55,8 @@ export default function WatchlistScreen() {
   const [listing, setListing] = useState<WatchItem | null>(null);
   const [planning, setPlanning] = useState<WatchItem | null>(null);
   const { lists } = useLists();
+  const sync = useSync();
+  const pull = usePullRefresh(theme, () => sync.syncNow());
   const { settings } = useSettings();
   const reduced = useReducedMotion();
   const params = useLocalSearchParams<{ view?: string }>();
@@ -121,10 +124,10 @@ export default function WatchlistScreen() {
             {queue.length ? `${queue.length} ${queue.length === 1 ? 'title' : 'titles'} saved for later` : 'Saved for later'}
           </Text>
         </View>
-        <Tap onPress={() => router.push('/lists')} accessibilityRole="button" accessibilityLabel="Your lists" style={[styles.listsBtn, { borderColor: theme.border }]}>
-          <Ionicons name="albums-outline" size={16} color={theme.accent} />
+        <Tap onPress={() => router.push('/lists')} accessibilityRole="button" accessibilityLabel="Your lists" style={[styles.listsBtn, { borderColor: theme.accent, backgroundColor: theme.accentSoft }]}>
+          <Ionicons name="albums" size={20} color={theme.accent} />
           <Text style={[styles.listsText, { color: theme.text }]} numberOfLines={1}>
-            LISTS{lists.length ? ` · ${lists.length}` : ''}
+            MY LISTS{lists.length ? ` · ${lists.length}` : ''}
           </Text>
         </Tap>
       </View>
@@ -171,10 +174,10 @@ export default function WatchlistScreen() {
   );
 
   return (
-    <View style={[styles.screen, { backgroundColor: theme.bg }]}>
-      <ScreenGlow theme={theme} />
+    <View style={styles.screen}>
       <FlatList
         data={view === 'next' ? shown : []}
+        refreshControl={pull}
         key={COLS}
         numColumns={COLS}
         keyExtractor={(w) => w.id}
@@ -218,7 +221,7 @@ export default function WatchlistScreen() {
               </View>
               <Text style={[styles.emptyTitle, { color: theme.text }]}>NOTHING QUEUED UP</Text>
               <Text style={[styles.emptyText, { color: theme.textMuted }]}>
-                Tap the bookmark on any title in Find to save it for later. Share links from IMDb, Letterboxd or AniList work too.
+                Tap the bookmark on any title to save it here
               </Text>
               <Pressable onPress={() => router.navigate('/search')} style={[styles.emptyBtn, { backgroundColor: theme.accent }]} accessibilityRole="button">
                 <Text style={[styles.emptyBtnText, { color: theme.accentText }]}>FIND A TITLE</Text>
@@ -356,13 +359,13 @@ const styles = StyleSheet.create({
   pickText: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 1.2 },
   toolbar: { flexDirection: 'row', alignItems: 'center' },
   headRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
-  listsBtn: { flexShrink: 0, flexDirection: 'row', alignItems: 'center', gap: 6, height: 40, paddingHorizontal: 14, borderRadius: 20, borderWidth: 1 },
-  listsText: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 1 },
+  listsBtn: { flexShrink: 0, flexDirection: 'row', alignItems: 'center', gap: 6, height: 46, paddingHorizontal: 16, borderRadius: 23, borderWidth: 1.5 },
+  listsText: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 0.8 },
   chips: { gap: 8 },
   sortBtn: { flexDirection: 'row', alignItems: 'center', gap: 5, alignSelf: 'flex-end' },
-  sortText: { fontFamily: fonts.monoBold, fontSize: 11, letterSpacing: 1 },
+  sortText: { fontFamily: fonts.monoBold, fontSize: 12, letterSpacing: 1 },
   tileTitle: { fontSize: font.footnote, fontWeight: '700', marginTop: 6, lineHeight: 17 },
-  tileNight: { fontFamily: fonts.monoBold, fontSize: 10, letterSpacing: 0.5, marginTop: 1 },
+  tileNight: { fontFamily: fonts.monoBold, fontSize: 12, letterSpacing: 0.5, marginTop: 1 },
   tileMeta: { fontFamily: fonts.mono, fontSize: font.caption, marginTop: 2 },
   empty: { alignItems: 'center', gap: 10, paddingTop: 50, paddingHorizontal: 24 },
   emptyIcon: { width: 84, height: 84, borderRadius: 42, alignItems: 'center', justifyContent: 'center', marginBottom: 6 },

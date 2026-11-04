@@ -6,7 +6,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Text } from '@/components/AppText';
 import { CountUp } from '@/components/Motion';
-import { ScreenGlow } from '@/components/ScreenGlow';
 import { Chip } from '@/components/Film';
 import { RatingChart } from '@/components/RatingChart';
 import { SectionLabel } from '@/components/SectionLabel';
@@ -64,13 +63,12 @@ export default function RecapScreen() {
   const previewWidth = Math.min(width - 32, 300);
 
   return (
-    <ScrollView style={{ backgroundColor: theme.bg }} contentContainerStyle={[styles.content, { paddingTop: insets.top + 10, paddingBottom: insets.bottom + 32 }]}>
-      <ScreenGlow theme={theme} />
+    <ScrollView contentContainerStyle={[styles.content, { paddingTop: insets.top + 10, paddingBottom: insets.bottom + 32 }]}>
       <View style={styles.titleBlock}>
         <Text maxFontSizeMultiplier={1.15} style={[styles.heading, { color: theme.text }]}>
           THE <Text style={{ color: theme.accent }}>RECAP</Text>
         </Text>
-        <Text style={[styles.sub, { color: theme.textMuted }]}>Turn a month, or a whole year, into a story.</Text>
+        <Text style={[styles.sub, { color: theme.textMuted }]}>Your month or year, as a story</Text>
       </View>
 
       {entries.length === 0 ? (
@@ -211,10 +209,10 @@ const styles = StyleSheet.create({
   tiles: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   tile: { width: '31.5%', flexGrow: 1, borderWidth: 1, borderRadius: 10, paddingVertical: 10, alignItems: 'center' },
   tileValue: { fontFamily: fonts.display, fontSize: 28, lineHeight: 30, includeFontPadding: false },
-  tileLabel: { fontFamily: fonts.monoBold, fontSize: 9, letterSpacing: 1.2 },
+  tileLabel: { fontFamily: fonts.monoBold, fontSize: 12, letterSpacing: 1.2 },
   mix: { flexDirection: 'row', height: 10, borderRadius: 5, overflow: 'hidden', gap: 2 },
   mixLegend: { flexDirection: 'row', justifyContent: 'space-between' },
-  mixText: { fontFamily: fonts.monoBold, fontSize: 10, letterSpacing: 1 },
+  mixText: { fontFamily: fonts.monoBold, fontSize: 12, letterSpacing: 1 },
   facts: { borderTopWidth: 1, paddingTop: 10, gap: 6 },
   fact: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 1 },
 });

@@ -87,7 +87,7 @@ export default function TrackScreen() {
 
   if (!show) {
     return (
-      <View style={[styles.center, { backgroundColor: theme.bg }]}>
+      <View style={styles.center}>
         <Text style={[styles.note, { color: theme.textMuted }]}>This show isn’t on your list any more.</Text>
       </View>
     );
@@ -115,7 +115,7 @@ export default function TrackScreen() {
   };
 
   return (
-    <ScrollView style={{ backgroundColor: theme.bg }} contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 40 }]}>
+    <ScrollView contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 40 }]}>
       <Stack.Screen options={{ title: 'EPISODES' }} />
       <View style={styles.head}>
         <Poster uri={show.posterUrl} title={show.title} width={92} theme={theme} radius={6} />
@@ -134,7 +134,7 @@ export default function TrackScreen() {
               </View>
             </>
           ) : (
-            <Text style={[styles.note, { color: theme.textMuted }]}>Tick an episode to start tracking. It shows under Continue watching.</Text>
+            <Text style={[styles.note, { color: theme.textMuted }]}>Tick an episode to start tracking</Text>
           )}
         </View>
       </View>
@@ -250,7 +250,7 @@ export default function TrackScreen() {
               })}
             </View>
           )}
-          <Text style={[styles.note, { color: theme.textMuted }]}>Tap to tick an episode: it goes in today’s diary. Hold one to catch up to it (marks it and everything before as seen, without diary entries).</Text>
+          <Text style={[styles.note, { color: theme.textMuted }]}>Tap to log. Hold to catch up to here.</Text>
         </>
       )}
     </ScrollView>

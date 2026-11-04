@@ -3,8 +3,9 @@ import type { ReactNode } from 'react';
 import { ActivityIndicator, Platform, Pressable, StyleSheet, Switch, View } from 'react-native';
 
 import { Text } from '@/components/AppText';
+import { Segments } from '@/components/Segments';
 import { SectionLabel } from '@/components/SectionLabel';
-import { font, fonts, shadow } from '@/lib/theme';
+import { font, fonts } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
 
 // Small building blocks for settings-style screens.
@@ -104,30 +105,7 @@ export function Segmented<T extends string | number>({ theme, options, value, on
   value: T;
   onChange: (v: T) => void;
 }) {
-  return (
-    <View style={[styles.segmented, { backgroundColor: theme.chip }]}>
-      {options.map((o) => {
-        const active = o.value === value;
-        const color = active ? theme.accentText : theme.textMuted;
-        return (
-          <Pressable
-            key={String(o.value)}
-            onPress={() => onChange(o.value)}
-            accessibilityRole="button"
-            accessibilityLabel={o.label}
-            accessibilityState={{ selected: active }}
-            style={({ pressed }) => [
-              styles.segment,
-              active ? { backgroundColor: theme.accent, boxShadow: shadow.subtle } : pressed ? { backgroundColor: theme.border } : null,
-            ]}
-          >
-            {o.icon && <Ionicons name={o.icon} size={15} color={color} />}
-            <Text style={[styles.segmentText, { color }, active && styles.segmentTextActive]}>{o.label}</Text>
-          </Pressable>
-        );
-      })}
-    </View>
-  );
+  return <Segments theme={theme} value={value} onChange={onChange} pill={theme.accent} onPill={theme.accentText} options={options.map((o) => ({ key: o.value, label: o.label, icon: options.length < 3 ? o.icon : undefined }))} />;
 }
 
 /** A labelled control row inside a Section (for Segmented and swatches). */

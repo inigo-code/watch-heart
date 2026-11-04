@@ -11,6 +11,7 @@ import { useEffect } from 'react';
 import { Platform } from 'react-native';
 
 import { ToastProvider } from '@/components/Toast';
+import { BackDisc } from '@/components/BackDisc';
 import { SplashOverlay } from '@/components/SplashOverlay';
 import { UpdatePrompt } from '@/components/UpdatePrompt';
 import { tmdbKey } from '@/api';
@@ -62,6 +63,9 @@ export default function RootLayout() {
     </ShareIntentProvider>
   );
 }
+
+// Pages above the tabs wear the same header as the ones in them.
+const PAGE_HEADER = { headerTransparent: true, headerStyle: { backgroundColor: 'transparent' }, headerBackVisible: false, headerLeft: () => <BackDisc /> };
 
 function Navigator() {
   const theme = useTheme();
@@ -115,8 +119,8 @@ function Navigator() {
         {/* Above the tabs: the pop-ups. Every other page lives in the tabs' own stacks ((tabs)/(home,diary,…)),
             so the tab bar stays on them. */}
         <Stack.Screen name="log" options={{ title: '', presentation: 'modal', animation: 'slide_from_bottom' }} />
-        <Stack.Screen name="poster/[id]" options={{ title: 'CHOOSE A POSTER' }} />
-        <Stack.Screen name="share" options={{ title: '' }} />
+        <Stack.Screen name="poster/[id]" options={{ title: 'CHOOSE A POSTER', ...PAGE_HEADER }} />
+        <Stack.Screen name="share" options={{ title: '', ...PAGE_HEADER }} />
         <Stack.Screen name="welcome" options={{ headerShown: false, gestureEnabled: false, animation: 'fade' }} />
       </Stack>
       <SplashOverlay ready={ready && settingsReady} />

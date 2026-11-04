@@ -41,11 +41,10 @@ export default function EntryScreen() {
   const { listsWith } = useLists();
   const { about } = useAbout(entry?.source === 'tmdb' ? entry.sourceId : null);
 
-  if (!ready) return <View style={{ flex: 1, backgroundColor: theme.bg }} />;
+  if (!ready) return <View style={{ flex: 1 }} />;
   if (!entry || entry.deletedAt !== null) {
     return (
-      <View style={[styles.missing, { backgroundColor: theme.bg }]}>
-        <Stack.Screen options={{ headerTransparent: false, headerStyle: { backgroundColor: theme.bg } }} />
+      <View style={styles.missing}>
         <Text style={[styles.missingText, { color: theme.textMuted }]}>This entry is gone. It may be in Trash.</Text>
       </View>
     );
@@ -77,12 +76,9 @@ export default function EntryScreen() {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: theme.bg }}>
+    <View style={{ flex: 1 }}>
       <Stack.Screen
         options={{
-          headerTransparent: true,
-          headerStyle: { backgroundColor: 'transparent' },
-          headerTintColor: '#FFFFFF',
           headerRight: () => (
             <HeaderDisc icon="create-outline" label="Edit entry" onPress={() => router.push({ pathname: '/log', params: { id: entry.id } })} />
           ),
@@ -310,7 +306,7 @@ const styles = StyleSheet.create({
   vibe: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 1, borderRadius: 4, paddingHorizontal: 8, paddingVertical: 4, overflow: 'hidden' },
   viewingLine: { fontFamily: fonts.mono, fontSize: font.footnote },
   character: { flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, borderRadius: 12, padding: 10 },
-  characterLabel: { fontFamily: fonts.monoBold, fontSize: 10, letterSpacing: 1.5 },
+  characterLabel: { fontFamily: fonts.monoBold, fontSize: 12, letterSpacing: 1.5 },
   characterName: { fontSize: font.body, fontWeight: '700' },
   characterActor: { fontFamily: fonts.mono, fontSize: font.caption },
   with: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 8, marginTop: 6 },
@@ -321,10 +317,10 @@ const styles = StyleSheet.create({
   body: { padding: 16, gap: 20 },
   ticket: { flexDirection: 'row', borderWidth: 1, borderRadius: 12, overflow: 'hidden' },
   stub: { width: 76, alignItems: 'center', justifyContent: 'center', paddingVertical: 12, borderRightWidth: 1.5, borderStyle: 'dashed' },
-  stubSmall: { fontFamily: fonts.monoBold, fontSize: 11, letterSpacing: 1 },
+  stubSmall: { fontFamily: fonts.monoBold, fontSize: 12, letterSpacing: 1 },
   stubDay: { fontFamily: fonts.display, fontSize: 44, lineHeight: 46, includeFontPadding: false },
   ticketBody: { flex: 1, padding: 14, gap: 8, justifyContent: 'center' },
-  watched: { fontFamily: fonts.monoBold, fontSize: 11, letterSpacing: 1.2 },
+  watched: { fontFamily: fonts.monoBold, fontSize: 12, letterSpacing: 1.2 },
   line: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   unrated: { fontFamily: fonts.mono, fontSize: font.body },
   progress: { fontFamily: fonts.mono, fontSize: font.footnote },

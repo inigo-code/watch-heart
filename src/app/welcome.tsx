@@ -161,7 +161,7 @@ function Intro({ theme, posters, bottom, onStart, onSignIn }: { theme: Theme; po
           </Text>
         </Rise>
         <Rise order={3}>
-          <Text style={[styles.lead, { color: theme.textMuted }]}>A diary for films, series and anime, with your ratings, your reviews and what to watch next.</Text>
+          <Text style={[styles.lead, { color: theme.textMuted }]}>A diary for films, series and anime</Text>
         </Rise>
         <Rise order={4} style={styles.actions}>
           <Primary theme={theme} label="START YOUR DIARY" onPress={onStart} />
@@ -204,7 +204,7 @@ function You({ theme, onNext, bottom }: { theme: Theme; onNext: () => void; bott
         </Rise>
         <Rise order={2} style={styles.block}>
           <Text style={[styles.label, { color: theme.accent }]}>WHERE YOU WATCH</Text>
-          <Text style={[styles.lead, { color: theme.textMuted }]}>Home opens with new films from here, and Where to watch shows the services you can use.</Text>
+          <Text style={[styles.lead, { color: theme.textMuted }]}>For new releases and where to watch</Text>
           <Tap onPress={() => setPicking(true)} accessibilityRole="button" accessibilityLabel={`Country: ${countryName(region)}. Change`} style={[styles.country, { backgroundColor: theme.card, borderColor: theme.border }]}>
             <Text style={styles.flag}>{flag(region)}</Text>
             <Text style={[styles.countryName, { color: theme.text }]}>{countryName(region)}</Text>
@@ -280,7 +280,7 @@ function Seen({ theme, titles, picked, setPicked, bottom, onDone }: { theme: The
           </Text>
         </Rise>
         <Rise order={1}>
-          <Text style={[styles.lead, { color: theme.textMuted }]}>They go in your Diary, and Home picks what to watch next from them. You can add dates and ratings later.</Text>
+          <Text style={[styles.lead, { color: theme.textMuted }]}>Home learns your taste from these</Text>
         </Rise>
         <View style={styles.grid}>
           {(titles ?? []).slice(0, 18).map((t, i) => (

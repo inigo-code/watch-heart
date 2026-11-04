@@ -24,11 +24,11 @@ export default function ListCardScreen() {
   const { settings, update } = useSettings();
   const ref = useRef<StoryHandle>(null);
 
-  if (!ready) return <View style={{ flex: 1, backgroundColor: theme.bg }} />;
+  if (!ready) return <View style={{ flex: 1 }} />;
   if (!list) return <Text style={[styles.note, { color: theme.textMuted, padding: 24 }]}>This list is gone.</Text>;
 
   return (
-    <ScrollView style={{ backgroundColor: theme.bg }} contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 32 }]}>
+    <ScrollView contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 32 }]}>
       <StoryPreview width={Math.min(width - 32, 300)} theme={theme} target={ref}>
         <ListStoryCard list={list} palette={PALETTES[settings.story.palette]} name={settings.name} />
       </StoryPreview>

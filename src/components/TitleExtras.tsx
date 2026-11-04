@@ -14,7 +14,7 @@ import { loadTitleScores, scoresId, setScoreDefaults } from '@/lib/titleScores';
 import type { TitleScores } from '@/lib/titleScores';
 import { font, fonts } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
-import { watchLink } from '@/lib/watchLinks';
+import { openOnService } from '@/lib/watchLinks';
 import { useSettings } from '@/settings/SettingsProvider';
 import type { Source } from '@/store/types';
 
@@ -104,7 +104,6 @@ export function TitleExtras({ source, sourceId, imdbId, title, year, series, the
           </Pressable>
         )}
       </View>
-      {imdbUrl && !omdbKey && <Text style={[styles.note, { color: theme.textMuted }]}>Add a free OMDb key in Settings to see the IMDb rating here.</Text>}
 
       <SectionLabel theme={theme}>WHERE TO WATCH · {region}</SectionLabel>
       {w && (w.stream.length || w.free.length || w.rent.length || w.buy.length) ? (
@@ -157,7 +156,7 @@ function Providers({ theme, kind, list, title }: { theme: Theme; kind: string; l
       </Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.logos}>
         {list.map((p) => (
-          <Tap key={p.id} onPress={() => Linking.openURL(watchLink(p.name, title)).catch(() => {})} scale={0.92} accessibilityRole="link" accessibilityLabel={`Find ${title} on ${p.name}`}>
+          <Tap key={p.id} onPress={() => openOnService(p.name, title).catch(() => {})} scale={0.92} accessibilityRole="link" accessibilityLabel={`Find ${title} on ${p.name}`}>
             {p.logo ? <Image source={p.logo} style={styles.logo} /> : <Text style={[styles.note, { color: theme.text }]}>{p.name}</Text>}
           </Tap>
         ))}
@@ -172,9 +171,9 @@ const styles = StyleSheet.create({
   wrap: { gap: 12 },
   scores: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, alignItems: 'stretch' },
   score: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8, minWidth: 92, maxWidth: 140 },
-  scoreLabel: { fontFamily: fonts.monoBold, fontSize: 10, letterSpacing: 1 },
+  scoreLabel: { fontFamily: fonts.monoBold, fontSize: 12, letterSpacing: 1 },
   scoreValue: { fontFamily: fonts.display, fontSize: 28, lineHeight: 32, includeFontPadding: false },
-  scoreSub: { fontFamily: fonts.mono, fontSize: 10 },
+  scoreSub: { fontFamily: fonts.mono, fontSize: 12 },
   imdb: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -192,5 +191,5 @@ const styles = StyleSheet.create({
   providerKind: { fontFamily: fonts.monoBold, fontSize: font.caption, width: 66, letterSpacing: 1 },
   logos: { gap: 8 },
   logo: { width: 40, height: 40, borderRadius: 10 },
-  credit: { fontFamily: fonts.mono, fontSize: 10 },
+  credit: { fontFamily: fonts.mono, fontSize: 12 },
 });

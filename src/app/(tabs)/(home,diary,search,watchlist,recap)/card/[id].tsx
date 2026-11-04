@@ -27,17 +27,17 @@ export default function CardScreen() {
   const onReady = useCallback((r: boolean) => setReady(r), []);
   const [showReview, setShowReview] = useState(true);
 
-  if (!loaded) return <View style={{ flex: 1, backgroundColor: theme.bg }} />;
+  if (!loaded) return <View style={{ flex: 1 }} />;
   if (!entry) {
     return (
-      <View style={[styles.missing, { backgroundColor: theme.bg }]}>
+      <View style={styles.missing}>
         <Text style={[styles.note, { color: theme.textMuted }]}>This entry is gone.</Text>
       </View>
     );
   }
 
   return (
-    <ScrollView style={{ backgroundColor: theme.bg }} contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 32 }]}>
+    <ScrollView contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 32 }]}>
       <StoryPreview width={Math.min(width - 32, 300)} theme={theme} target={ref}>
         <ReviewCard entry={entry} palette={settings.story.palette} showReview={showReview} onReady={onReady} />
       </StoryPreview>

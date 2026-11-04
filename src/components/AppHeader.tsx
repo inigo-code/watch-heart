@@ -38,6 +38,15 @@ export function AppHeader({ theme, line, icon }: { theme: Theme; line: string; i
             />
           </Pressable>
           <Pressable
+            onPress={() => router.push('/friends')}
+            hitSlop={6}
+            accessibilityRole="button"
+            accessibilityLabel="Friends"
+            style={({ pressed }) => [styles.iconBtn, { backgroundColor: pressed ? theme.chip : 'transparent' }]}
+          >
+            <Ionicons name="people-outline" size={24} color={theme.text} />
+          </Pressable>
+          <Pressable
             onPress={() => router.push('/settings')}
             hitSlop={6}
             accessibilityRole="button"

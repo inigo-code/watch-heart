@@ -44,7 +44,7 @@ export default function FriendsScreen() {
 
   if (!available) {
     return (
-      <View style={[styles.center, { backgroundColor: theme.bg }]}>
+      <View style={styles.center}>
         <Ionicons name="people-outline" size={44} color={theme.accent} />
         <Text style={[styles.emptyTitle, { color: theme.text }]}>FRIENDS NEED AN ACCOUNT</Text>
         <Text style={[styles.emptyText, { color: theme.textMuted }]}>
@@ -87,7 +87,7 @@ export default function FriendsScreen() {
   };
 
   return (
-    <KeyboardSafe style={{ backgroundColor: theme.bg }}>
+    <KeyboardSafe>
       <ScrollView
         contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 32 }]}
         keyboardShouldPersistTaps="handled"
@@ -102,11 +102,11 @@ export default function FriendsScreen() {
           ) : (
             <ActivityIndicator color={theme.accent} style={{ marginVertical: 14 }} />
           )}
-          <Text style={[styles.hint, { color: theme.textMuted }]}>Anyone who enters it becomes your friend, both ways. Share it only with people you know.</Text>
+          <Text style={[styles.hint, { color: theme.textMuted }]}>Share it only with people you know</Text>
           <View style={styles.codeButtons}>
             <Pressable onPress={share} disabled={!code} accessibilityRole="button" style={[styles.primary, styles.grow, { backgroundColor: theme.accent }]}>
               <Ionicons name="share-social-outline" size={18} color={theme.accentText} />
-              <Text style={[styles.primaryText, { color: theme.accentText }]}>SHARE CODE</Text>
+              <Text style={[styles.primaryText, { color: theme.accentText }]}>SHARE</Text>
             </Pressable>
             <Pressable onPress={() => setConfirmReset(true)} disabled={!code} accessibilityRole="button" style={[styles.secondary, { borderColor: theme.border }]}>
               <Ionicons name="refresh" size={17} color={theme.text} />
@@ -264,7 +264,7 @@ const styles = StyleSheet.create({
   secondaryText: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 1 },
   block: { gap: 10 },
   addRow: { flexDirection: 'row', gap: 10 },
-  input: { flex: 1, height: 48, borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, fontFamily: fonts.monoBold, fontSize: font.body, letterSpacing: 2 },
+  input: { flex: 1, minWidth: 0, height: 48, borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, fontFamily: fonts.monoBold, fontSize: font.body, letterSpacing: 2 },
   addBtn: { width: 76, height: 48, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   friend: { flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, borderRadius: 14, padding: 12 },
   friendName: { fontSize: font.body, fontWeight: '700' },

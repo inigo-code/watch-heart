@@ -19,22 +19,38 @@ export function cached<T>(key: string, maxAgeMs: number, load: () => Promise<T>)
 
 export const MINUTE = 60_000;
 
+let refreshedAt = 0;
+
+/** Pull to refresh: forget what's kept, so the next question goes to the network. */
+export function refreshAnswers() {
+  store.clear();
+  refreshedAt = Date.now();
+}
+
 /**
  * Like `cached`, and also kept on the phone: after a cold start the last answer (if it's younger than
  * `maxAgeMs`) is there at once, without waiting on the network. For small, slow-changing answers that
- * open screens (trending, in cinemas, Discover rows).
+ * open screens (trending, in cinemas, Discover rows). On a bad connection an older answer is better than
+ * none, so one past its age is still used when the network fails.
  */
 export function cachedOnDisk<T>(key: string, maxAgeMs: number, load: () => Promise<T>): Promise<T> {
   return cached(key, maxAgeMs, async () => {
+    let old: { value: T } | null = null;
     try {
       const raw = await storage.getItem(`net:${key}`);
       if (raw) {
         const hit = JSON.parse(raw) as { at: number; value: T };
-        if (Date.now() - hit.at < maxAgeMs) return hit.value;
+        if (Date.now() - hit.at < maxAgeMs && hit.at > refreshedAt) return hit.value;
+        old = hit;
       }
     } catch {}
-    const value = await load();
-    storage.setItem(`net:${key}`, JSON.stringify({ at: Date.now(), value })).catch(() => {});
-    return value;
+    try {
+      const value = await load();
+      storage.setItem(`net:${key}`, JSON.stringify({ at: Date.now(), value })).catch(() => {});
+      return value;
+    } catch (e) {
+      if (old) return old.value;
+      throw e;
+    }
   });
 }

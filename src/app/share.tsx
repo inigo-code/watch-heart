@@ -5,6 +5,7 @@ import { useEffect, useRef } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/AppText';
+import { PageGround } from '@/components/PageGround';
 import { tmdbKey } from '@/api';
 import { resolveShared } from '@/api/links';
 import { useToast } from '@/components/Toast';
@@ -14,6 +15,14 @@ import { useSettings } from '@/settings/SettingsProvider';
 // Opened when a link or text is shared to the app (see +native-intent.ts): an IMDb, Letterboxd, TMDB,
 // AniList, MyAnimeList or TVmaze link opens that title ready to log; anything else becomes a search.
 export default function ShareScreen() {
+  return (
+    <PageGround>
+      <ShareBody />
+    </PageGround>
+  );
+}
+
+function ShareBody() {
   const theme = useTheme();
   const toast = useToast();
   const { settings } = useSettings();
@@ -42,7 +51,7 @@ export default function ShareScreen() {
   }, [shared, pageTitle, settings.tmdbKey, resetShareIntent, toast]);
 
   return (
-    <View style={[styles.screen, { backgroundColor: theme.bg }]}>
+    <View style={styles.screen}>
       <Stack.Screen options={{ title: '' }} />
       <MaterialCommunityIcons name="ticket-confirmation-outline" size={56} color={theme.accent} />
       <Text style={[styles.title, { color: theme.text }]}>READING YOUR TICKET</Text>

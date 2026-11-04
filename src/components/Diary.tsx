@@ -154,7 +154,7 @@ export function ReelHeader({ month, count, theme, onShare }: { month: string; co
 const styles = StyleSheet.create({
   ticket: { flexDirection: 'row', alignItems: 'center', borderRadius: 10, borderWidth: StyleSheet.hairlineWidth, paddingVertical: 7, paddingRight: 12, gap: 10, overflow: 'hidden' },
   stub: { width: 48, alignItems: 'center', gap: 0 },
-  weekday: { fontFamily: fonts.monoBold, fontSize: 10, letterSpacing: 1 },
+  weekday: { fontFamily: fonts.monoBold, fontSize: 12, letterSpacing: 1 },
   day: { fontFamily: fonts.display, fontSize: 30, lineHeight: 31, includeFontPadding: false },
   tear: { alignSelf: 'stretch', width: NOTCH, alignItems: 'center', marginVertical: -7, marginLeft: -6 },
   dashes: { flex: 1, borderLeftWidth: 1.5, borderStyle: 'dashed' },
@@ -170,7 +170,7 @@ const styles = StyleSheet.create({
   reel: { paddingVertical: 6, gap: 8, borderRadius: 4, marginTop: 14 },
   reelRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, gap: 10 },
   reelMonth: { fontFamily: fonts.display, fontSize: 34, lineHeight: 36, letterSpacing: 2, includeFontPadding: false },
-  reelMeta: { fontFamily: fonts.monoBold, fontSize: 11, letterSpacing: 1.2 },
+  reelMeta: { fontFamily: fonts.monoBold, fontSize: 12, letterSpacing: 1.2 },
   reelShare: { flexDirection: 'row', alignItems: 'center', gap: 5, borderWidth: 1, borderRadius: 14, height: 28, paddingHorizontal: 10 },
-  reelShareText: { fontFamily: fonts.monoBold, fontSize: 11, letterSpacing: 1 },
+  reelShareText: { fontFamily: fonts.monoBold, fontSize: 12, letterSpacing: 1 },
 });

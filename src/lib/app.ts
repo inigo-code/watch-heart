@@ -44,16 +44,13 @@ export const DATA_SOURCES = {
  * An update that leaves it alone shows nothing.
  */
 export const WHATS_NEW = {
-  id: '1.3.0',
+  id: '1.3.1',
   items: [
-    'Reminders arrive on time, even when the app is closed',
-    'No more dark strip while the app opens',
-    'A proper welcome: set your name and country, tap what you’ve loved, and Home is yours from the first minute',
-    'Where to watch opens Netflix, Prime and the rest, searching for the title (ad-supported duplicates are gone)',
-    'Watchlist: Up next and Watching side by side, and you can stop tracking finished or dropped shows',
-    'Logging stamps your ticket, and the app moves more smoothly everywhere',
-    'Profile and Settings run right to the top of the screen, and the back button reads on any picture',
-    'The real Watch Heart logo everywhere, and Account & sync first in Settings',
-    'Text stays in place on phones with a large font size',
+    'Every page now has the same glow and the same back button',
+    'Pull down to refresh Home, your Diary, Find, Watchlist and a friend’s page',
+    'A friend’s diary is a poster wall by month, with their reviews apart, and loads a bit at a time',
+    'A friends button on Home, a clearer My Lists button, and larger text everywhere with fewer explanations',
+    'Netflix opens the title itself, and the Home slider shows up faster on a slow connection',
+    'The switches on Find and in Settings slide like the Watchlist’s, and a light follows you along the tab bar',
   ],
 };

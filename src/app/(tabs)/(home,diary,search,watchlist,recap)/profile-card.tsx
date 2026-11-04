@@ -25,7 +25,7 @@ export default function ProfileCardScreen() {
   const stats = useMemo(() => profileStats(entries, todayIso), [entries, todayIso]);
 
   return (
-    <ScrollView style={{ backgroundColor: theme.bg }} contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 32 }]}>
+    <ScrollView contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 32 }]}>
       <StoryPreview width={Math.min(width - 32, 300)} theme={theme} target={ref}>
         <ProfileCard
           name={settings.name}

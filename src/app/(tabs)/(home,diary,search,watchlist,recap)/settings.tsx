@@ -7,9 +7,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Text, TextInput } from '@/components/AppText';
 import { KeyboardSafe } from '@/components/KeyboardSafe';
-import { ScreenGlow } from '@/components/ScreenGlow';
 import { ControlRow, Row, Section, Segmented, ToggleRow } from '@/components/SettingsUI';
-import { HeartAppsMark } from '@/components/HeartApps';
+import { HeartMark } from '@/components/BrandTitle';
 import { useFriends } from '@/friends/FriendsProvider';
 import { useToast } from '@/components/Toast';
 import { UpdateCard } from '@/components/UpdateRow';
@@ -114,15 +113,11 @@ export default function SettingsScreen() {
   const posterValue = posters.running ? `${posters.done}/${posters.total}` : missingPosters ? `${missingPosters} missing` : 'All found';
 
   return (
-    <KeyboardSafe style={{ backgroundColor: theme.bg }}>
-      <ScreenGlow theme={theme} />
+    <KeyboardSafe>
       <ScrollView
-        contentContainerStyle={[styles.content, { paddingTop: insets.top + 64, paddingBottom: insets.bottom + 32 }]}
+        contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 32 }]}
         keyboardShouldPersistTaps="handled"
       >
-        <Text maxFontSizeMultiplier={1.15} accessibilityRole="header" style={[styles.heading, { color: theme.text }]}>
-          SETTINGS
-        </Text>
         <Section theme={theme} title="Account and sync">
           <Row
             theme={theme}
@@ -153,7 +148,7 @@ export default function SettingsScreen() {
         </Section>
 
         {friends.available && (
-          <Section theme={theme} title="What friends can see" footer="Friends never see who you watched with, or your tags. Spoiler-marked reviews stay hidden until they tap. If people can find you by name, they see only your name and bio until you accept them.">
+          <Section theme={theme} title="What friends can see" footer="Who you watched with and your tags stay private">
             <ToggleRow
               theme={theme}
               icon="ticket-outline"
@@ -255,7 +250,6 @@ export default function SettingsScreen() {
         <Section
           theme={theme}
           title="Region and language"
-          footer={`Home starts with new films ${languages.length && settings.homeLanguage ? 'in your language' : 'from your country'}, and Where to watch shows streaming services there.`}
         >
           <Row
             theme={theme}
@@ -282,8 +276,8 @@ export default function SettingsScreen() {
           title="Film and anime search (TMDB)"
           footer={
             builtInKey
-              ? 'This build has a key built in, so search already works. Paste your own to use it instead.'
-              : 'TMDB keys are free for personal use. TMDB powers film and anime search; series search works without a key (TVmaze), and TMDB adds better series posters.'
+              ? 'Built in. Paste your own to replace it.'
+              : 'Free for personal use'
           }
         >
           <View style={styles.inputRow}>
@@ -310,7 +304,7 @@ export default function SettingsScreen() {
         <Section
           theme={theme}
           title="Ratings and streaming"
-          footer={`${omdbKey('') ? 'IMDb, Rotten Tomatoes and Metacritic scores are on, with the key built into this build; paste your own to use it instead.' : 'IMDb has no free official API. A free OMDb key (1,000 lookups a day) adds IMDb, Rotten Tomatoes and Metacritic scores to every title.'}`}
+          footer={omdbKey('') ? 'Built in. Paste your own to replace it.' : 'Free from omdbapi.com'}
         >
           <View style={styles.inputRow}>
             <Ionicons name="star-half-outline" size={18} color={theme.textMuted} />
@@ -330,7 +324,7 @@ export default function SettingsScreen() {
         <Section
           theme={theme}
           title="Security"
-          footer={`App lock uses your fingerprint, face or phone screen lock, and hides your diary in the recent-apps screen. ${APP_NAME} never sees your fingerprint or PIN.`}
+          footer="Uses your fingerprint or screen lock"
         >
           <ToggleRow
             theme={theme}
@@ -355,7 +349,7 @@ export default function SettingsScreen() {
         <Section
           theme={theme}
           title="Your data"
-          footer="Everything is saved on this phone, and in your account when you sign in. Back up now and then; importing a backup merges it in and never deletes anything. Posters for imported titles are found automatically."
+          footer="Importing a backup never deletes anything"
         >
           <Row
             theme={theme}
@@ -429,7 +423,7 @@ export default function SettingsScreen() {
         <UpdateCard theme={theme} />
 
         <Section theme={theme} title="About">
-          <Row theme={theme} leading={<HeartAppsMark size={30} />} label={`About ${APP_NAME}`} value="Heart Apps" onPress={() => router.push('/about')} />
+          <Row theme={theme} leading={<HeartMark size={30} />} label={`About ${APP_NAME}`} value="Heart Apps" onPress={() => router.push('/about')} />
           <Row theme={theme} icon="refresh-outline" label="Reset settings" destructive last onPress={() => setConfirmReset(true)} />
         </Section>
         <ActionSheet
@@ -470,7 +464,6 @@ export default function SettingsScreen() {
 
 const styles = StyleSheet.create({
   content: { padding: 16, gap: 24 },
-  heading: { fontFamily: fonts.display, fontSize: font.marquee, lineHeight: 46, letterSpacing: 1, includeFontPadding: false, marginBottom: -8 },
   inputRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, minHeight: 52 },
   input: { flex: 1, fontSize: font.body, paddingVertical: 12 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },

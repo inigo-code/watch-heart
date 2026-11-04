@@ -219,7 +219,7 @@ const styles = StyleSheet.create({
   optionText: { fontSize: font.body, fontWeight: '600' },
   card: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderRadius: 14, padding: 10, gap: 8 },
   cardMain: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 12 },
-  cardKicker: { fontFamily: fonts.monoBold, fontSize: 10, letterSpacing: 1.5 },
+  cardKicker: { fontFamily: fonts.monoBold, fontSize: 12, letterSpacing: 1.5 },
   cardWhen: { fontSize: font.body, fontWeight: '700' },
   cardTitle: { fontFamily: fonts.mono, fontSize: font.caption },
   cancel: { padding: 6 },

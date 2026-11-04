@@ -36,10 +36,10 @@ export default function FriendListScreen() {
   }, [lists, params.friend]);
 
   const list = lists?.find((l) => l.id === params.list);
-  if (!lists) return <ActivityIndicator color={theme.accent} style={{ flex: 1, backgroundColor: theme.bg }} />;
+  if (!lists) return <ActivityIndicator color={theme.accent} style={{ flex: 1 }} />;
   if (!list) {
     return (
-      <View style={[styles.center, { backgroundColor: theme.bg }]}>
+      <View style={styles.center}>
         <Text style={[styles.hint, { color: theme.textMuted }]}>This list isn’t shared any more.</Text>
       </View>
     );
@@ -53,7 +53,6 @@ export default function FriendListScreen() {
   return (
     <FlatList
       key={list.ranked ? 'rows' : 'grid'}
-      style={{ backgroundColor: theme.bg }}
       data={list.items}
       numColumns={list.ranked ? 1 : columns}
       keyExtractor={(i) => `${i.source}:${i.sourceId}:${i.title}`}
@@ -110,6 +109,6 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 8, borderBottomWidth: StyleSheet.hairlineWidth },
   rank: { width: 30, fontFamily: fonts.display, fontSize: 26, textAlign: 'center' },
   rowTitle: { flex: 1, fontSize: font.body, fontWeight: '700' },
-  seen: { fontFamily: fonts.monoBold, fontSize: 10, letterSpacing: 1 },
+  seen: { fontFamily: fonts.monoBold, fontSize: 12, letterSpacing: 1 },
   cellTitle: { fontSize: font.footnote, fontWeight: '700', marginTop: 6 },
 });

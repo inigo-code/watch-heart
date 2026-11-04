@@ -23,7 +23,7 @@ export default function AccountScreen() {
   const sync = useSync();
 
   return (
-    <KeyboardSafe style={{ backgroundColor: theme.bg }}>
+    <KeyboardSafe>
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         {sync.status === 'unconfigured' ? (
           <Card theme={theme}>

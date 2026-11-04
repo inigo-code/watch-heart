@@ -43,7 +43,7 @@ export default function PersonScreen() {
 
   if (!person) {
     return (
-      <View style={[styles.center, { backgroundColor: theme.bg }]}>
+      <View style={styles.center}>
         {failed ? (
           <Text style={[styles.meta, { color: theme.textMuted }]}>Couldn’t load this person. Check your connection.</Text>
         ) : (
@@ -60,7 +60,6 @@ export default function PersonScreen() {
 
   return (
     <FlatList
-      style={{ backgroundColor: theme.bg }}
       data={credits}
       numColumns={columns}
       keyExtractor={(t) => t.sourceId}
@@ -156,7 +155,7 @@ const styles = StyleSheet.create({
   more: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 1, marginTop: 4 },
   filterRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   filter: { borderWidth: 1, borderRadius: 14, height: 28, paddingHorizontal: 10, alignItems: 'center', justifyContent: 'center' },
-  filterText: { fontFamily: fonts.monoBold, fontSize: 10, letterSpacing: 1 },
+  filterText: { fontFamily: fonts.monoBold, fontSize: 12, letterSpacing: 1 },
   watched: { opacity: 0.25 },
   tick: { position: 'absolute', top: 6, right: 6, width: 22, height: 22, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
   cellTitle: { fontSize: font.footnote, fontWeight: '700', marginTop: 6, lineHeight: 17 },

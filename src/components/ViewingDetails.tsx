@@ -204,5 +204,5 @@ const styles = StyleSheet.create({
   person: { width: 76, alignItems: 'center' },
   ring: { borderWidth: 2.5, borderRadius: 40, padding: 2 },
   character: { fontSize: font.caption, fontWeight: '700', textAlign: 'center', marginTop: 6 },
-  actor: { fontFamily: fonts.mono, fontSize: 10, textAlign: 'center' },
+  actor: { fontFamily: fonts.mono, fontSize: 12, textAlign: 'center' },
 });

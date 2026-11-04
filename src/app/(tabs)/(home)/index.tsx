@@ -9,10 +9,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Text } from '@/components/AppText';
 import { Rise, Tap } from '@/components/Motion';
+import { usePullRefresh } from '@/components/PullRefresh';
 import { tmdbKey } from '@/api';
 import { watchRegion } from '@/api/omdb';
+import { refreshAnswers } from '@/api/cache';
 import { discoverTmdb, nowPlayingTmdb, trendingAllTmdb } from '@/api/tmdb';
-import { ScreenGlow } from '@/components/ScreenGlow';
 import { AppHeader, greetingIcon, greetingLine } from '@/components/AppHeader';
 import { KindBadge, Poster } from '@/components/Film';
 import { FriendsRow } from '@/components/home/FriendsRow';
@@ -30,6 +31,8 @@ import type { Theme } from '@/lib/theme';
 import { continueWatching, nextUp } from '@/lib/tracking';
 import { useSettings } from '@/settings/SettingsProvider';
 import { useDiary } from '@/store/DiaryStore';
+import { useSync } from '@/sync/SyncProvider';
+import { useFriends } from '@/friends/FriendsProvider';
 import type { Title } from '@/store/types';
 
 /**
@@ -52,19 +55,23 @@ export default function HomeScreen() {
   const regional = regionalFeatured(region, lang);
   const regionalKey = regional ? JSON.stringify(regional.q) : '';
   const [local, setLocal] = useState<{ key: string; titles: Title[] } | null>(null);
+  // Each pull to refresh asks everything again.
+  const [round, setRound] = useState(0);
+  const friends = useFriends();
+  const sync = useSync();
 
   useEffect(() => {
     if (!key) return;
     trendingAllTmdb(key)
       .then(setTrending)
-      .catch(() => setTrending([]));
-  }, [key]);
+      .catch(() => setTrending((t) => t ?? []));
+  }, [key, round]);
   useEffect(() => {
     if (!key) return;
     nowPlayingTmdb(key, region)
       .then((titles) => setCinema({ region, titles }))
-      .catch(() => setCinema({ region, titles: [] }));
-  }, [key, region]);
+      .catch(() => setCinema((c) => c ?? { region, titles: [] }));
+  }, [key, region, round]);
 
   // The slider's first cards: new films in your language, or from your country.
   useEffect(() => {
@@ -91,7 +98,15 @@ export default function HomeScreen() {
     };
     // The query is compared by its JSON (`regionalKey`), not by identity.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key, regionalKey]);
+  }, [key, regionalKey, round]);
+
+  // On a slow connection the regional cards shouldn't hold back a slider that's ready: after a moment it
+  // shows what it has, and they join it when they come.
+  const [waited, setWaited] = useState(false);
+  useEffect(() => {
+    const timer = setTimeout(() => setWaited(true), 1500);
+    return () => clearTimeout(timer);
+  }, []);
 
   const seeds = useMemo(() => favouriteSeeds(entries), [entries]);
   const seedKey = seeds.map((s) => s.sourceId).join(',');
@@ -104,13 +119,19 @@ export default function HomeScreen() {
     };
     // The picks follow your favourites; a new viewing of something else doesn't need a refetch.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key, seedKey]);
+  }, [key, seedKey, round]);
+
+  const pull = usePullRefresh(theme, async () => {
+    refreshAnswers();
+    setRound((r) => r + 1);
+    await Promise.all([key ? trendingAllTmdb(key).then(setTrending) : null, friends.refresh(), sync.syncNow()]);
+  });
 
   const seen = (t: Title) => viewingsOf(t.source, t.sourceId).length > 0;
   const up = continueWatching(watchlist, today());
   const continuing = [...up.ongoing, ...up.oldFriends].slice(0, 10);
-  // Wait for both, so the slider doesn't shift when the regional cards arrive.
-  const localTitles = !regional ? [] : local?.key === regionalKey ? local.titles : null;
+  // Wait for both for a moment, so the slider doesn't shift when the regional cards arrive.
+  const localTitles = !regional ? [] : local?.key === regionalKey ? local.titles : waited ? [] : null;
   const top = (trending ?? []).filter((t) => t.backdropUrl && !localTitles?.some((l) => l.sourceId === t.sourceId)).slice(0, 4);
   const featured: Slide[] =
     trending && localTitles
@@ -122,10 +143,9 @@ export default function HomeScreen() {
 
   return (
     <ScrollView
-      style={{ backgroundColor: theme.bg }}
+      refreshControl={pull}
       contentContainerStyle={[styles.content, { paddingTop: insets.top + 10, paddingBottom: insets.bottom + 32 }]}
     >
-      <ScreenGlow theme={theme} />
       <AppHeader theme={theme} line={greetingLine(hour, settings.name)} icon={greetingIcon(hour)} />
 
       {nights[0] && <MovieNightCard night={nights[0]} theme={theme} showTitle />}
@@ -211,9 +231,9 @@ export default function HomeScreen() {
         </Pressable>
       )}
 
-      <FriendsRow theme={theme} />
+      <FriendsRow key={round} theme={theme} />
 
-      <RegionalRows key={lang?.code ?? ''} region={region} mine={lang} theme={theme} seen={seen} />
+      <RegionalRows key={`${lang?.code ?? ''}:${round}`} region={region} mine={lang} theme={theme} seen={seen} />
 
       <View style={styles.block}>
         <RowHead title="Trending this week" theme={theme} more="More" onMore={() => router.navigate('/search')} />
@@ -291,7 +311,16 @@ function Featured({ t, kicker, theme }: { t: Title; kicker: string; theme: Theme
         accessibilityLabel={`${t.title}, ${kicker.toLowerCase()}`}
         style={StyleSheet.absoluteFill}
       >
-        <Image source={t.backdropUrl} style={StyleSheet.absoluteFill} contentFit="cover" cachePolicy="memory-disk" transition={200} />
+        {/* The poster, already fetched for the rows below, holds the place while the wider picture comes. */}
+        <Image
+          source={t.backdropUrl}
+          placeholder={t.posterUrl ? { uri: t.posterUrl } : undefined}
+          placeholderContentFit="cover"
+          style={StyleSheet.absoluteFill}
+          contentFit="cover"
+          cachePolicy="memory-disk"
+          transition={200}
+        />
         <LinearGradient colors={['transparent', 'rgba(0,0,0,0.85)']} style={StyleSheet.absoluteFill} />
       </Pressable>
       <View style={styles.featuredBody} pointerEvents="box-none">
@@ -354,7 +383,7 @@ const styles = StyleSheet.create({
   headGroup: { gap: 4 },
   because: { fontFamily: fonts.mono, fontSize: font.caption, lineHeight: 17 },
   episode: { position: 'absolute', left: 6, bottom: 6, borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2 },
-  episodeText: { fontFamily: fonts.monoBold, fontSize: 10, letterSpacing: 0.5 },
+  episodeText: { fontFamily: fonts.monoBold, fontSize: 12, letterSpacing: 0.5 },
   featured: { borderRadius: 16, overflow: 'hidden', justifyContent: 'flex-end' },
   featuredSkeleton: { height: 220, borderRadius: 16 },
   carousel: { gap: 10 },

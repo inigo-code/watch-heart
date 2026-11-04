@@ -166,7 +166,7 @@ const styles = StyleSheet.create({
   person: { width: 64, alignItems: 'center', gap: 3 },
   personName: { fontSize: font.caption, fontWeight: '700', marginTop: 3 },
   personMeta: { flexDirection: 'row', alignItems: 'center', gap: 3 },
-  small: { fontFamily: fonts.mono, fontSize: 10 },
+  small: { fontFamily: fonts.mono, fontSize: 12 },
   review: { borderWidth: 1, borderRadius: 12, padding: 12, gap: 8 },
   reviewHead: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   reviewWho: { fontSize: font.footnote, fontWeight: '700' },

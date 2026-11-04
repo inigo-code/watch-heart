@@ -99,6 +99,6 @@ const styles = StyleSheet.create({
   face: { position: 'absolute', right: -4, bottom: -6, borderRadius: 16, borderWidth: 2 },
   name: { fontSize: font.footnote, fontWeight: '700', marginTop: 8 },
   meta: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 },
-  stars: { fontSize: 11 },
+  stars: { fontSize: 12 },
   who: { fontFamily: fonts.mono, fontSize: font.caption, flexShrink: 1 },
 });

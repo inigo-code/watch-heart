@@ -1,6 +1,6 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Linking from 'expo-linking';
-import { Stack, router, useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Animated, ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -49,8 +49,7 @@ export default function TitleScreen() {
 
   if (!t) {
     return (
-      <View style={[styles.center, { backgroundColor: theme.bg }]}>
-        <Stack.Screen options={{ headerTransparent: false, headerStyle: { backgroundColor: theme.bg } }} />
+      <View style={styles.center}>
         {error ? <Text style={[styles.muted, { color: theme.textMuted }]}>{error}</Text> : <ActivityIndicator color={theme.accent} />}
       </View>
     );
@@ -72,8 +71,7 @@ export default function TitleScreen() {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: theme.bg }}>
-      <Stack.Screen options={{ headerTransparent: true, headerStyle: { backgroundColor: 'transparent' }, headerTintColor: '#FFFFFF' }} />
+    <View style={{ flex: 1 }}>
       <Animated.ScrollView
         contentContainerStyle={{ paddingBottom: insets.bottom + 32 }}
         scrollEventThrottle={16}

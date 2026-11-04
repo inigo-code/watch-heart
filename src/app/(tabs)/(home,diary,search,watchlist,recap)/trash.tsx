@@ -26,7 +26,7 @@ export default function TrashScreen() {
   const daysLeft = (e: Entry) => Math.max(0, Math.ceil(((e.deletedAt ?? 0) + TRASH_DAYS * DAY - now) / DAY));
 
   return (
-    <View style={[styles.screen, { backgroundColor: theme.bg }]}>
+    <View style={styles.screen}>
       <FlatList
         data={trash}
         keyExtractor={(e) => e.id}
@@ -72,7 +72,7 @@ export default function TrashScreen() {
           <View style={styles.empty}>
             <Ionicons name="trash-outline" size={36} color={theme.textMuted} />
             <Text style={[styles.emptyTitle, { color: theme.text }]}>TRASH IS EMPTY</Text>
-            <Text style={[styles.emptyText, { color: theme.textMuted }]}>Entries you delete wait here for {TRASH_DAYS} days, so you can bring them back.</Text>
+            <Text style={[styles.emptyText, { color: theme.textMuted }]}>Deleted entries stay here for {TRASH_DAYS} days</Text>
           </View>
         }
       />

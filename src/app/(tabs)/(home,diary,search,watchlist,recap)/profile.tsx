@@ -10,7 +10,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text, TextInput } from '@/components/AppText';
 import { CountUp } from '@/components/Motion';
 import { KeyboardSafe } from '@/components/KeyboardSafe';
-import { ScreenGlow } from '@/components/ScreenGlow';
 import { Poster } from '@/components/Film';
 import { ListCover } from '@/components/lists/ListCover';
 import { RatingChart } from '@/components/RatingChart';
@@ -40,9 +39,8 @@ const GOALS = [25, 52, 100, 150, 365];
 /** You: photo, name and a line, your favourite four, and everything your diary adds up to. */
 /** Waits for saved settings, so the name and bio drafts start from them, not from empty defaults. */
 export default function ProfileScreen() {
-  const theme = useTheme();
   const { ready } = useSettings();
-  if (!ready) return <View style={{ flex: 1, backgroundColor: theme.bg }} />;
+  if (!ready) return <View style={{ flex: 1 }} />;
   return <ProfileBody />;
 }
 
@@ -127,8 +125,7 @@ function ProfileBody() {
   const onPace = goal ? Math.round((goal * dayOfYear) / 365) : 0;
 
   return (
-    <KeyboardSafe style={{ backgroundColor: theme.bg }}>
-      <ScreenGlow theme={theme} />
+    <KeyboardSafe>
       <ScrollView
         contentContainerStyle={[styles.content, { paddingTop: insets.top + 56, paddingBottom: insets.bottom + 40 }]}
         keyboardShouldPersistTaps="handled"
@@ -215,7 +212,6 @@ function ProfileBody() {
               );
             })}
           </View>
-          <Text style={[styles.hint, { color: theme.textMuted }]}>Tap to choose from your diary. Hold one to remove it.</Text>
         </Block>
 
         {/* The numbers */}
@@ -267,8 +263,8 @@ function ProfileBody() {
                 {s.thisYear >= goal
                   ? 'Goal reached. Encore?'
                   : s.thisYear >= onPace
-                    ? `Ahead of pace by ${s.thisYear - onPace}. The line marks where you’d be today.`
-                    : `${onPace - s.thisYear} behind pace. The line marks where you’d be today.`}
+                    ? `${s.thisYear - onPace} ahead of pace`
+                    : `${onPace - s.thisYear} behind pace`}
               </Text>
             </>
           ) : (
@@ -567,7 +563,7 @@ const styles = StyleSheet.create({
   numberValue: { fontFamily: fonts.display, fontSize: 34, includeFontPadding: false },
   numberLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   dot: { width: 6, height: 6, borderRadius: 3 },
-  numberLabel: { fontFamily: fonts.monoBold, fontSize: 10, letterSpacing: 1 },
+  numberLabel: { fontFamily: fonts.monoBold, fontSize: 12, letterSpacing: 1 },
   facts: { borderWidth: 1, borderRadius: 12, padding: 14, gap: 10, marginTop: -8 },
   fact: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   factText: { flex: 1, fontSize: font.footnote },

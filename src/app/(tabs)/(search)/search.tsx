@@ -5,10 +5,12 @@ import { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, Keyboard, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { refreshAnswers } from '@/api/cache';
 import { Text, TextInput } from '@/components/AppText';
+import { usePullRefresh } from '@/components/PullRefresh';
+import { Segments } from '@/components/Segments';
 import { search, sourceFor, tmdbKey, trending } from '@/api';
 import { watchRegion } from '@/api/omdb';
-import { ScreenGlow } from '@/components/ScreenGlow';
 import { DiscoverHome } from '@/components/discover/DiscoverHome';
 import { Poster } from '@/components/Film';
 import { openTitle, warmTitle } from '@/components/title/Rows';
@@ -63,6 +65,11 @@ export default function SearchScreen() {
     if (params.mode) setMode(params.mode);
   }
   const discovering = !q && mode === 'discover' && source === 'tmdb';
+  const [round, setRound] = useState(0);
+  const pull = usePullRefresh(theme, async () => {
+    refreshAnswers();
+    setRound((r) => r + 1);
+  });
 
   // Search as you type, after a short pause; with no query, show what's trending.
   useEffect(() => {
@@ -87,7 +94,7 @@ export default function SearchScreen() {
       clearTimeout(timer);
       controller.abort();
     };
-  }, [kind, q, key, source, discovering]);
+  }, [kind, q, key, source, discovering, round]);
 
   const open = (t: Title) => {
     Keyboard.dismiss();
@@ -104,8 +111,7 @@ export default function SearchScreen() {
   );
 
   return (
-    <View style={[styles.screen, { backgroundColor: theme.bg, paddingTop: insets.top + 10 }]}>
-      <ScreenGlow theme={theme} />
+    <View style={[styles.screen, { paddingTop: insets.top + 10 }]}>
       <View style={styles.top}>
         <Text maxFontSizeMultiplier={1.15} style={[styles.heading, { color: theme.text }]}>
           WHAT DID YOU <Text style={{ color: theme.accent }}>WATCH?</Text>
@@ -132,47 +138,34 @@ export default function SearchScreen() {
           )}
         </View>
         {!q && source === 'tmdb' && (
-          <View style={[styles.modes, { backgroundColor: theme.chip }]} accessibilityRole="tablist">
-            {(['trending', 'discover'] as const).map((m) => {
-              const on = mode === m;
-              return (
-                <Pressable
-                  key={m}
-                  onPress={() => setMode(m)}
-                  accessibilityRole="tab"
-                  accessibilityState={{ selected: on }}
-                  style={[styles.mode, on && { backgroundColor: theme.accent }]}
-                >
-                  <Ionicons name={m === 'discover' ? 'compass' : 'flame'} size={16} color={on ? theme.accentText : theme.textMuted} />
-                  <Text style={[styles.modeText, { color: on ? theme.accentText : theme.textMuted }]}>{m === 'discover' ? 'DISCOVER' : 'TRENDING'}</Text>
-                </Pressable>
-              );
-            })}
-          </View>
+          <Segments
+            theme={theme}
+            value={mode}
+            onChange={setMode}
+            pill={theme.accent}
+            onPill={theme.accentText}
+            options={[
+              { key: 'trending', label: 'TRENDING', icon: 'flame' },
+              { key: 'discover', label: 'DISCOVER', icon: 'compass' },
+            ]}
+          />
         )}
         {/* Discover covers films, series and anime alike; the kind is for trending and search. */}
         {!discovering && (
-          <View style={[styles.kinds, { borderColor: theme.border }]}>
-            {KINDS.map((k) => {
-              const active = k.kind === kind;
-              return (
-                <Pressable
-                  key={k.kind}
-                  onPress={() => update({ searchKind: k.kind })}
-                  accessibilityRole="tab"
-                  accessibilityState={{ selected: active }}
-                  style={[styles.kind, active && { backgroundColor: KIND_COLORS[k.kind] }]}
-                >
-                  <Text style={[styles.kindText, { color: active ? '#0B0A0D' : theme.textMuted }]}>{k.label}</Text>
-                </Pressable>
-              );
-            })}
-          </View>
+          <Segments
+            theme={theme}
+            value={kind}
+            onChange={(k) => update({ searchKind: k })}
+            pill={KIND_COLORS[kind]}
+            onPill="#0B0A0D"
+            options={KINDS.map((k) => ({ key: k.kind, label: k.label }))}
+          />
         )}
       </View>
 
       <FlatList
         data={source && !discovering ? results : []}
+        refreshControl={pull}
         keyExtractor={(t) => `${t.source}:${t.sourceId}`}
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
@@ -322,7 +315,7 @@ const styles = StyleSheet.create({
   original: { fontFamily: fonts.mono, fontSize: font.caption },
   overview: { fontSize: font.footnote, lineHeight: 18 },
   seen: { flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'flex-start', borderWidth: 1, borderRadius: 4, paddingHorizontal: 5, marginTop: 2 },
-  seenText: { fontFamily: fonts.monoBold, fontSize: 10, letterSpacing: 1 },
+  seenText: { fontFamily: fonts.monoBold, fontSize: 12, letterSpacing: 1 },
   footer: { alignItems: 'center', gap: 12, paddingTop: 20 },
   manual: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderStyle: 'dashed', borderRadius: 22, height: 44, paddingHorizontal: 18 },
   manualText: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 1 },

@@ -93,5 +93,5 @@ const styles = StyleSheet.create({
   title: { fontFamily: fonts.display, fontSize: 34, lineHeight: 35, letterSpacing: 0.5, includeFontPadding: false },
   original: { fontFamily: fonts.mono, fontSize: font.footnote },
   meta: { fontFamily: fonts.mono, fontSize: font.caption, letterSpacing: 0.5 },
-  genres: { fontFamily: fonts.monoBold, fontSize: 11, letterSpacing: 1.2, paddingHorizontal: 16, marginTop: 12 },
+  genres: { fontFamily: fonts.monoBold, fontSize: 12, letterSpacing: 1.2, paddingHorizontal: 16, marginTop: 12 },
 });

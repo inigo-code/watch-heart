@@ -79,9 +79,9 @@ export function ActivityKey({ theme }: { theme: Theme }) {
 const styles = StyleSheet.create({
   wrap: { flexDirection: 'row', gap: 6 },
   days: { paddingTop: 16, gap: GAP },
-  dayLabel: { height: CELL, fontFamily: fonts.mono, fontSize: 9, lineHeight: CELL },
+  dayLabel: { height: CELL, fontFamily: fonts.mono, fontSize: 10, lineHeight: CELL },
   months: { flexDirection: 'row', gap: GAP, height: 14 },
-  monthLabel: { width: CELL, fontFamily: fonts.mono, fontSize: 9, overflow: 'visible' },
+  monthLabel: { width: CELL, fontFamily: fonts.mono, fontSize: 10, overflow: 'visible' },
   grid: { flexDirection: 'row', gap: GAP, marginTop: 2 },
   week: { gap: GAP },
   cell: { width: CELL, height: CELL, borderRadius: 3 },

@@ -71,8 +71,9 @@ export async function myFriends(): Promise<Friend[]> {
   }));
 }
 
-export async function friendDiary(id: string): Promise<FriendEntry[]> {
-  const { data, error } = await client().rpc('friend_diary', { friend: id });
+/** One page of a friend's diary, newest first. */
+export async function friendDiary(id: string, from: number, count: number): Promise<FriendEntry[]> {
+  const { data, error } = await client().rpc('friend_diary', { friend: id, max_rows: 2000 }).range(from, from + count - 1);
   if (error) fail(error);
   return ((data ?? []) as Entry[]).map((e) => ({ ...e, userId: id }));
 }

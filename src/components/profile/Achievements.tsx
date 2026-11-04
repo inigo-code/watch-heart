@@ -45,7 +45,7 @@ const styles = StyleSheet.create({
   badge: { width: '48.4%', borderWidth: 1, borderRadius: 12, padding: 12, gap: 4 },
   top: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 },
   medal: { width: 36, height: 36, borderRadius: 18, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
-  tier: { fontFamily: fonts.monoBold, fontSize: 10, letterSpacing: 1.5 },
+  tier: { fontFamily: fonts.monoBold, fontSize: 12, letterSpacing: 1.5 },
   name: { fontFamily: fonts.display, fontSize: font.title, letterSpacing: 0.5 },
   goal: { fontFamily: fonts.mono, fontSize: font.caption, lineHeight: 15, minHeight: 30 },
   track: { height: 5, borderRadius: 3, overflow: 'hidden', marginTop: 4 },

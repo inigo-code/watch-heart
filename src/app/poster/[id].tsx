@@ -6,6 +6,7 @@ import { ActivityIndicator, FlatList, Pressable, StyleSheet, View, useWindowDime
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Text } from '@/components/AppText';
+import { PageGround } from '@/components/PageGround';
 import { tmdbKey } from '@/api';
 import { postersTmdb } from '@/api/tmdb';
 import { useToast } from '@/components/Toast';
@@ -22,6 +23,14 @@ const GAP = 10;
  * viewing of the title, in the Diary, stories and the widget, and refreshes from TMDB keep it.
  */
 export default function PosterScreen() {
+  return (
+    <PageGround>
+      <PosterBody />
+    </PageGround>
+  );
+}
+
+function PosterBody() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
@@ -52,10 +61,10 @@ export default function PosterScreen() {
     };
   }, [key, sourceId]);
 
-  if (!ready) return <View style={{ flex: 1, backgroundColor: theme.bg }} />;
+  if (!ready) return <View style={{ flex: 1 }} />;
   if (!subject) {
     return (
-      <View style={[styles.center, { backgroundColor: theme.bg }]}>
+      <View style={styles.center}>
         <Text style={[styles.note, { color: theme.textMuted }]}>This entry is gone.</Text>
       </View>
     );
@@ -81,7 +90,6 @@ export default function PosterScreen() {
 
   return (
     <FlatList
-      style={{ backgroundColor: theme.bg }}
       data={current?.posters ?? []}
       keyExtractor={(u) => u}
       numColumns={COLUMNS}

@@ -185,7 +185,7 @@ export function PeopleSearch({ theme, onFriendsChanged }: { theme: Theme; onFrie
           <View style={{ flex: 1 }}>
             <Text style={[styles.name, { color: theme.text }]}>Let people find me by name</Text>
             <Text style={[styles.bio, { color: theme.textMuted }]}>
-              {settings.name.trim() ? 'They see your name and bio, and can ask to be friends. Nothing else until you accept.' : 'Add your name on your profile first.'}
+              {settings.name.trim() ? 'They see only your name and bio' : 'Add your name on your profile first.'}
             </Text>
           </View>
           <Switch
