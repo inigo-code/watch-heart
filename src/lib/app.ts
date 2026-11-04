@@ -44,9 +44,13 @@ export const DATA_SOURCES = {
  * An update that leaves it alone shows nothing.
  */
 export const WHATS_NEW = {
-  id: '1.3.2',
+  id: '1.3.3',
   items: [
     'A new Home: your month as a ticket and what you’re watching come first, with what’s new further down',
+    'Every page has the same glow and back button, and you can pull down to refresh',
+    'A friend’s diary is a poster wall by month, loading a bit at a time',
+    'Larger text with fewer explanations, and a friends button on Home',
     'Fixed: signing in on a new phone now brings your profile, favourites and photo back',
+    'Fixed: the dark strip while the app opens',
   ],
 };
