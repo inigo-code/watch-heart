@@ -47,5 +47,6 @@ export const WHATS_NEW = {
   id: '1.3.2',
   items: [
     'A new Home: your month as a ticket and what you’re watching come first, with what’s new further down',
+    'Fixed: signing in on a new phone now brings your profile, favourites and photo back',
   ],
 };

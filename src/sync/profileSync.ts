@@ -18,25 +18,34 @@ const photos = Platform.OS !== 'web';
 /** Whether this phone has a profile worth sending (anything filled in). */
 export const hasProfile = (s: Settings) => !!(s.name.trim() || s.bio.trim() || s.photo || s.favourites.length || s.yearGoal);
 
-/** What changes in settings when the cloud's profile is newer than this phone's (null: nothing to do). */
+/**
+ * What changes in settings from the cloud's profile (null: nothing to do). Normally the newer one wins. But a
+ * phone that has never synced with this account (a fresh install where you typed your name in the welcome,
+ * say) always counts as newer, and it mustn't blank the account: there the cloud fills in whatever this
+ * phone doesn't have.
+ */
 export async function pullProfile(client: SupabaseClient, userId: string, s: Settings): Promise<Partial<Settings> | null> {
   const { data, error } = await client.from('profiles').select('data, photo_path, modified_at').eq('user_id', userId).maybeSingle<ProfileRow>();
   if (error) throw error;
   if (!data) return null;
   const at = Number(data.modified_at);
-  if (at <= s.profileUpdatedAt) return null;
+  const cloudNewer = at > s.profileUpdatedAt;
+  if (!cloudNewer && s.profileSyncedAt) return null;
+  // Only on that first meeting with an older cloud profile: what this phone has filled in stays.
+  const mine = !cloudNewer;
 
   const d = data.data ?? {};
   const patch: Partial<Settings> = {
-    name: d.name ?? s.name,
-    bio: d.bio ?? s.bio,
-    favourites: Array.isArray(d.favourites) ? d.favourites.slice(0, 4) : s.favourites,
-    yearGoal: typeof d.yearGoal === 'number' ? d.yearGoal : s.yearGoal,
+    name: mine && s.name.trim() ? s.name : (d.name ?? s.name),
+    bio: mine && s.bio.trim() ? s.bio : (d.bio ?? s.bio),
+    favourites: mine && s.favourites.length ? s.favourites : Array.isArray(d.favourites) ? d.favourites.slice(0, 4) : s.favourites,
+    yearGoal: mine && s.yearGoal ? s.yearGoal : typeof d.yearGoal === 'number' ? d.yearGoal : s.yearGoal,
     sharing: { ...DEFAULT_SETTINGS.sharing, ...(d.sharing ?? s.sharing) },
-    profileUpdatedAt: at,
+    // Newer than the cloud, if this phone added something: the merged profile then goes back up.
+    profileUpdatedAt: Math.max(at, s.profileUpdatedAt),
     profileSyncedAt: at,
   };
-  if (photos && data.photo_path !== s.photoPath) {
+  if (photos && data.photo_path !== s.photoPath && !(mine && s.photo)) {
     if (!data.photo_path) {
       patch.photo = null;
       patch.photoPath = null;

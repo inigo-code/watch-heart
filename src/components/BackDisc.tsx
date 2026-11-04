@@ -22,9 +22,15 @@ export function HeaderDisc({ icon, label, onPress }: { icon: keyof typeof Ionico
 
 /** The way back, for pages whose top is a picture or the page's own glow. */
 export function BackDisc() {
-  return <HeaderDisc icon="arrow-back" label="Go back" onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))} />;
+  return (
+    <View style={styles.back}>
+      <HeaderDisc icon="arrow-back" label="Go back" onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))} />
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
+  // Room between the disc and the page's title beside it.
+  back: { marginRight: 14 },
   disc: { width: SIZE, height: SIZE, borderRadius: SIZE / 2, backgroundColor: DISC, alignItems: 'center', justifyContent: 'center' },
 });
