@@ -17,6 +17,7 @@ import { Chip } from '@/components/Film';
 import { COUNTRIES, countryName, flag } from '@/lib/discover';
 import { languagesFor } from '@/lib/regional';
 import { omdbKey, watchRegion } from '@/api/omdb';
+import { askForNotifications } from '@/lib/nudgeSchedule';
 import { APP_NAME, DATA_SOURCES } from '@/lib/app';
 import { tmdbKey } from '@/api';
 import { exportBackup, exportCsv, exportLetterboxd, pickBackup } from '@/lib/backup';
@@ -101,6 +102,12 @@ export default function SettingsScreen() {
     toast(on ? 'App lock is on' : 'App lock is off');
   };
 
+  // Turning one on is the moment to ask Android, if it hasn't been allowed yet.
+  const setNudge = (patch: Partial<typeof settings.nudges>) => {
+    update({ nudges: { ...settings.nudges, ...patch } });
+    if (Object.values(patch).some(Boolean)) askForNotifications().catch(() => {});
+  };
+
   const saveKey = () => {
     const tmdbKey = keyText.trim();
     if (tmdbKey === settings.tmdbKey) return;
@@ -180,6 +187,12 @@ export default function SettingsScreen() {
             />
           </Section>
         )}
+
+        <Section theme={theme} title="Notifications">
+          <ToggleRow theme={theme} icon="tv-outline" label="New episodes" value={settings.nudges.episodes} onChange={(episodes) => setNudge({ episodes })} />
+          <ToggleRow theme={theme} icon="sparkles-outline" label="Picks and new releases" value={settings.nudges.picks} onChange={(picks) => setNudge({ picks })} />
+          <ToggleRow theme={theme} icon="calendar-outline" label="Monthly recap" value={settings.nudges.recap} onChange={(recap) => setNudge({ recap })} last />
+        </Section>
 
         <Section theme={theme} title="Look">
           <ControlRow theme={theme} label="Screen">

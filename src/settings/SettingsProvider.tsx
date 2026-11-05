@@ -65,6 +65,8 @@ export type Settings = {
   watchRegion: string;
   /** The first-run welcome was seen, skipped, or wasn't needed. */
   onboarded: boolean;
+  /** Which notifications you want. */
+  nudges: { episodes: boolean; picks: boolean; recap: boolean };
   /** You were asked once about Android's Alarms & reminders switch. */
   askedAlarms: boolean;
   /** The update whose "What's new" card was already shown. */
@@ -108,6 +110,7 @@ export const DEFAULT_SETTINGS: Settings = {
   homeLanguage: '',
   onboarded: false,
   askedAlarms: false,
+  nudges: { episodes: true, picks: true, recap: true },
   seenUpdate: null,
   movieNights: [],
   profileUpdatedAt: 0,

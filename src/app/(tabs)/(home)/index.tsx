@@ -16,6 +16,7 @@ import { discoverTmdb, nowPlayingTmdb, trendingAllTmdb } from '@/api/tmdb';
 import { AppHeader, greetingIcon, greetingLine } from '@/components/AppHeader';
 import { Poster } from '@/components/Film';
 import { FriendsRow } from '@/components/home/FriendsRow';
+import { NotifyInvite } from '@/components/home/NotifyInvite';
 import { WeekStrip } from '@/components/home/WeekStrip';
 import { RegionalRows } from '@/components/home/RegionalRows';
 import { MovieNightCard, useMovieNights } from '@/components/MovieNight';
@@ -23,6 +24,7 @@ import { RowHead, TitleRow, openTitle, warmTitle } from '@/components/title/Rows
 import { today } from '@/lib/dates';
 import { countryName } from '@/lib/discover';
 import { useHour } from '@/lib/greeting';
+import { useNudges } from '@/lib/useNudges';
 import { homeLanguage, regionalFeatured } from '@/lib/regional';
 import { favouriteSeeds, forYou } from '@/lib/home';
 import { font, fonts, useTheme } from '@/lib/theme';
@@ -137,6 +139,7 @@ export default function HomeScreen() {
       ? [...localTitles.map((t) => ({ t, kicker: regional!.kicker })), ...top.map((t, i) => ({ t, kicker: `#${i + 1} THIS WEEK` }))]
       : [];
   const rest = (trending ?? []).filter((t) => !top.includes(t));
+  useNudges(featured[0]?.t ?? null);
   const upNext = watchlist.filter((w) => !w.track && w.posterUrl).slice(0, 10).map(titleOf);
   const forYouTitles = picks?.seeds === seedKey ? picks.titles : null;
   const cinemaTitles = cinema?.region === region ? cinema.titles : null;
@@ -149,6 +152,8 @@ export default function HomeScreen() {
       <AppHeader theme={theme} line={greetingLine(hour)} icon={greetingIcon(hour)} />
 
       <WeekStrip entries={entries} theme={theme} />
+
+      <NotifyInvite />
 
       {nights[0] && <MovieNightCard night={nights[0]} theme={theme} showTitle />}
 

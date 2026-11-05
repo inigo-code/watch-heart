@@ -44,8 +44,8 @@ export const DATA_SOURCES = {
  * An update that leaves it alone shows nothing.
  */
 export const WHATS_NEW = {
-  id: '1.3.6',
+  id: '1.3.7',
   items: [
-    'A shorter greeting on Home, with its icon given some room',
+    'Notifications for new episodes, weekend picks and your monthly recap. Choose which in Settings.',
   ],
 };
