@@ -7,14 +7,13 @@ import { Text } from '@/components/AppText';
 import { Poster, Stars } from '@/components/Film';
 import { Rise, Tap } from '@/components/Motion';
 import { SectionLabel } from '@/components/SectionLabel';
-import { friendlyDate, isoDate, monthKey, parseIso, today } from '@/lib/dates';
+import { friendlyDate, isoDate, monthKey, ordinal, parseIso, today } from '@/lib/dates';
 import { easeNextLayout } from '@/lib/motion';
 import { computeStats } from '@/lib/stats';
 import { font, fonts } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
 import type { Entry } from '@/store/types';
 
-const LETTERS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 const GAP = 6;
 const TRAY = 72;
 
@@ -22,7 +21,7 @@ const TRAY = 72;
 function weekOf(day: string) {
   const d = parseIso(day);
   const monday = d.getDate() - ((d.getDay() + 6) % 7);
-  return LETTERS.map((_, i) => isoDate(new Date(d.getFullYear(), d.getMonth(), monday + i)));
+  return Array.from({ length: 7 }, (_, i) => isoDate(new Date(d.getFullYear(), d.getMonth(), monday + i)));
 }
 
 /**
@@ -55,7 +54,7 @@ export function WeekStrip({ entries, theme }: { entries: Entry[]; theme: Theme }
         )}
       </View>
       <View style={styles.week}>
-        {weekOf(now).map((day, i) => {
+        {weekOf(now).map((day) => {
           const that = entries.filter((e) => !e.undated && e.watchedOn === day);
           const shown = that.find((e) => e.posterUrl) ?? that[0];
           const isToday = day === now;
@@ -71,7 +70,9 @@ export function WeekStrip({ entries, theme }: { entries: Entry[]; theme: Theme }
               accessibilityState={that.length > 1 ? { expanded: open === day } : undefined}
               style={{ width: tile }}
             >
-              <Text style={[styles.letter, { color: isToday ? theme.accent : theme.textMuted }]}>{LETTERS[i]}</Text>
+              <Text numberOfLines={1} maxFontSizeMultiplier={1.1} style={[styles.dayDate, { color: isToday ? theme.accent : theme.textMuted }]}>
+                {ordinal(Number(day.slice(8)))}
+              </Text>
               {/* A pile: the day's other posters peek out from behind the top one. */}
               <View style={{ width: tile, height: tile * 1.5 }}>
                 {that.slice(1, 3).map((e, n) => (
@@ -84,9 +85,7 @@ export function WeekStrip({ entries, theme }: { entries: Entry[]; theme: Theme }
                   <Poster uri={shown.posterUrl} title={shown.title} width={tile} theme={theme} radius={5} />
                 ) : isToday ? (
                   <Ionicons name="add" size={20} color={theme.accent} />
-                ) : (
-                  <Text style={[styles.date, { color: theme.textMuted }]}>{Number(day.slice(8))}</Text>
-                )}
+                ) : null}
                 {that.length > 1 && (
                   <View style={[styles.more, { backgroundColor: theme.accent }]}>
                     <Text style={[styles.moreText, { color: theme.accentText }]}>{that.length}</Text>
@@ -134,7 +133,7 @@ const styles = StyleSheet.create({
   head: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   month: { fontSize: font.footnote, fontWeight: '600' },
   week: { flexDirection: 'row', gap: GAP },
-  letter: { fontFamily: fonts.monoBold, fontSize: font.caption, textAlign: 'center', marginBottom: 4 },
+  dayDate: { fontFamily: fonts.monoBold, fontSize: font.caption, textAlign: 'center', marginBottom: 4 },
   behind: { opacity: 0.75 },
   tray: { borderWidth: 1, borderRadius: 12, padding: 12, gap: 10 },
   trayHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
@@ -143,7 +142,6 @@ const styles = StyleSheet.create({
   trayItem: { width: TRAY, gap: 4 },
   trayTitle: { fontSize: font.caption, fontWeight: '600' },
   day: { borderWidth: 1, borderRadius: 6, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' },
-  date: { fontFamily: fonts.display, fontSize: 20 },
   more: { position: 'absolute', top: 2, right: 2, minWidth: 16, height: 16, borderRadius: 8, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 3 },
   moreText: { fontFamily: fonts.monoBold, fontSize: 12, lineHeight: 15 },
   log: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: 52, borderRadius: 26, marginTop: 4 },
