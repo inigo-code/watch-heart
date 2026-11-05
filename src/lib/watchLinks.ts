@@ -1,5 +1,7 @@
 import * as Linking from 'expo-linking';
 
+import { AppLauncher } from '../../modules/app-launcher';
+
 // TMDB says which services carry a title, but gives no link into them (only its own page). So a tap opens
 // the service's search for the title: Android hands these to the service's app when it's installed and the
 // app claims the link, otherwise they open on its site. Each address here was checked by hand.
@@ -26,14 +28,34 @@ export function watchLink(service: string, title: string) {
   return `https://www.google.com/search?q=${encodeURIComponent(`${title} on ${service}`)}`;
 }
 
-/** Netflix's id for a title: Google's first answer for it on Netflix. */
-async function netflixId(title: string) {
+// Each service's Android app. Keep in sync with plugins/withStreamingQueries.js.
+const APPS: [RegExp, string][] = [
+  [/netflix/i, 'com.netflix.mediaclient'],
+  [/prime video|amazon video/i, 'com.amazon.avod.thirdpartyclient'],
+  [/hotstar|disney/i, 'in.startv.hotstar'],
+  [/zee ?5/i, 'com.graymatrix.did'],
+  [/sony ?liv/i, 'com.sonyliv'],
+  [/apple tv/i, 'com.apple.atve.androidtv.appletv'],
+  [/youtube/i, 'com.google.android.youtube'],
+  [/sun ?nxt/i, 'com.suntv.sunnxt'],
+  [/^aha/i, 'ahaflix.tv'],
+  [/hoichoi/i, 'com.viewlift.hoichoi'],
+  [/crunchyroll/i, 'com.crunchyroll.crunchyroid'],
+  [/mubi/i, 'com.mubi'],
+  [/eros ?now/i, 'com.erosnow'],
+  [/manorama/i, 'com.mmtv.manoramamax.android'],
+  [/mx ?player/i, 'com.mxtech.videoplayer.ad'],
+];
+
+/** Netflix's page for a title, from Google's first answer for it on Netflix. */
+async function netflixPage(title: string) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 4000);
   try {
     const q = encodeURIComponent(`site:netflix.com/title ${title}`);
     const res = await fetch(`https://www.google.com/search?q=${q}&btnI=1`, { signal: controller.signal, headers: { 'User-Agent': 'Mozilla/5.0 (Linux; Android 14) Mobile' } });
-    return `${res.url} ${await res.text()}`.match(/netflix\.com(?:\/[a-z-]+)?\/title\/(\d+)/)?.[1] ?? null;
+    const id = `${res.url} ${await res.text()}`.match(/netflix\.com(?:\/[a-z-]+)?\/title\/(\d+)/)?.[1];
+    return id ? `https://www.netflix.com/title/${id}` : null;
   } catch {
     return null;
   } finally {
@@ -41,17 +63,17 @@ async function netflixId(title: string) {
   }
 }
 
-/** Opens a service for a title. */
+/**
+ * Opens a service for a title: in its app when it's installed, at the title or its search if the app takes
+ * that link, otherwise on the app's home screen. Without the app, the website or a web search.
+ */
 export async function openOnService(service: string, title: string) {
-  if (/netflix/i.test(service)) {
-    const id = await netflixId(title);
-    // In a browser Netflix stops at its login page, so go to the app when it's there.
-    const opened = await Linking.openURL(id ? `nflx://www.netflix.com/title/${id}` : 'nflx://www.netflix.com/browse').then(
-      () => true,
-      () => false,
-    );
-    if (opened) return;
-    if (id) return void (await Linking.openURL(`https://www.netflix.com/title/${id}`));
+  const netflix = /netflix/i.test(service);
+  const link = netflix ? await netflixPage(title) : watchLink(service, title);
+  const app = APPS.find(([name]) => name.test(service))?.[1];
+  if (app && AppLauncher?.isInstalled(app)) {
+    if (link && AppLauncher.openLink(link, app)) return;
+    if (AppLauncher.openApp(app)) return;
   }
-  await Linking.openURL(watchLink(service, title));
+  await Linking.openURL(link ?? watchLink(service, title));
 }
