@@ -75,6 +75,8 @@ export type Entry = {
   undated?: boolean;
   /** For a series or anime: the season this viewing's rating and review are about. Unset = the whole show. */
   season?: number | null;
+  /** Your stars for single episodes this viewing covers, by "s1e3". */
+  episodeRatings?: Record<string, number>;
   /** Episodes this viewing covers, as "s1e3", when they were ticked off in the episode tracker. */
   episodes?: string[];
   /** Who you watched it with, as you typed their names ("Sam", "Priya"). */
@@ -132,6 +134,8 @@ export type Track = {
   status: TrackStatus;
   /** Episodes seen: "s1e3" -> the day, YYYY-MM-DD. */
   seen: Record<string, string>;
+  /** Your stars for single episodes, by "s1e3". */
+  ratings?: Record<string, number>;
   /** Regular seasons (no specials) and their episode counts, from TMDB or TVmaze. */
   seasons: { n: number; count: number }[];
   /** The latest episode that has aired. */

@@ -17,6 +17,7 @@ import type { FriendEntry } from '@/friends/friendsApi';
 import { useFriends } from '@/friends/FriendsProvider';
 import { friendlyDate } from '@/lib/dates';
 import { font, fonts, useTheme } from '@/lib/theme';
+import { viewingRating, watchedLabel } from '@/lib/watched';
 import type { Theme } from '@/lib/theme';
 
 /** Your invite code, adding a friend by theirs or by name, your friends, and what they've watched lately. */
@@ -207,6 +208,8 @@ export default function FriendsScreen() {
 
 /** "Sam · Past Lives ★★★★½ · Sat 24 Oct": opens the title. */
 function FeedRow({ e, theme }: { e: FriendEntry; theme: Theme }) {
+  const what = watchedLabel(e);
+  const rating = viewingRating(e);
   const { byId, photos } = useFriends();
   const who = byId(e.userId);
   return (
@@ -233,11 +236,12 @@ function FeedRow({ e, theme }: { e: FriendEntry; theme: Theme }) {
         <Text style={[styles.feedText, { color: theme.text }]} numberOfLines={2}>
           <Text style={{ fontWeight: '700' }}>{who?.name ?? 'A friend'}</Text>
           {e.rewatch ? ' rewatched ' : ' watched '}
+          {what ? `${what} of ` : ''}
           <Text style={{ fontWeight: '700' }}>{e.title}</Text>
-          {e.year ? ` (${e.year})` : ''}
+          {e.year && !what ? ` (${e.year})` : ''}
         </Text>
         <View style={styles.feedMeta}>
-          {e.rating ? <Stars rating={e.rating} size={12} color={theme.star} /> : null}
+          {rating ? <Stars rating={rating} size={12} color={theme.star} /> : null}
           {e.liked && <Ionicons name="heart" size={12} color={theme.like} />}
           <Text style={[styles.hint, { color: theme.textMuted }]}>{friendlyDate(e.watchedOn)}</Text>
           {!!e.review && <Ionicons name="chatbubble-outline" size={12} color={theme.textMuted} accessibilityLabel="Has a review" />}

@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '@/components/AppText';
 import { seasonEpisodes, showInfo } from '@/api/episodes';
 import type { Episode, ShowInfo } from '@/api/episodes';
+import { EpisodeSheet } from '@/components/EpisodeSheet';
 import { Chip, KindBadge, Poster } from '@/components/Film';
 import { useToast } from '@/components/Toast';
 import { friendlyDate, today } from '@/lib/dates';
@@ -46,6 +47,7 @@ export default function TrackScreen() {
   // Opened from a season's poster: that season first.
   const [season, setSeason] = useState<number | null>(() => Number(params.season) || null);
   const [episodes, setEpisodes] = useState<{ season: number; list: Episode[] } | null>(null);
+  const [opened, setOpened] = useState<Episode | null>(null);
 
   // The show's seasons and air dates, fresh each time it's opened.
   const source = show?.source;
@@ -106,6 +108,7 @@ export default function TrackScreen() {
     tracker.toggle(item ?? show, e.season, e.number, info ?? undefined);
     toast(was ? `Unticked S${e.season} · E${e.number}` : `S${e.season} · E${e.number} logged · today`);
   };
+  const rated = (e: Episode) => track?.ratings?.[epKey(e.season, e.number)] ?? 0;
   const upToHere = (e: Episode) => {
     if (!info) return;
     const keys: string[] = [];
@@ -191,8 +194,8 @@ export default function TrackScreen() {
           {list && seasonKeys.length > 0 && (
             <Pressable
               onPress={() => {
-                tracker.markMany(item ?? show, seasonKeys, !seasonDone, info);
-                toast(seasonDone ? `Season ${current} unmarked` : `Season ${current} marked as seen`);
+                if (current != null) tracker.logSeason(item ?? show, current, seasonKeys, !seasonDone, info);
+                toast(seasonDone ? `Season ${current} unmarked` : `Season ${current} logged · today`);
               }}
               accessibilityRole="button"
               style={({ pressed }) => [styles.seasonAll, { borderColor: theme.border, opacity: pressed ? 0.7 : 1 }]}
@@ -226,11 +229,10 @@ export default function TrackScreen() {
                 return (
                   <Pressable
                     key={e.number}
-                    onPress={() => out && tick(e)}
+                    onPress={() => setOpened(e)}
                     onLongPress={() => out && upToHere(e)}
-                    disabled={!out}
-                    accessibilityRole="checkbox"
-                    accessibilityState={{ checked: seen, disabled: !out }}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Episode ${e.number}, ${e.name}`}
                     style={({ pressed }) => [styles.episode, { backgroundColor: theme.card, borderColor: seen ? theme.accent + '66' : theme.border, opacity: !out ? 0.55 : pressed ? 0.8 : 1 }]}
                   >
                     <Text style={[styles.epNum, { color: seen ? theme.accent : theme.textMuted }]}>{e.number}</Text>
@@ -244,15 +246,42 @@ export default function TrackScreen() {
                           .join(' · ')}
                       </Text>
                     </View>
-                    <Ionicons name={seen ? 'checkmark-circle' : 'ellipse-outline'} size={26} color={seen ? theme.accent : theme.textMuted} />
+                    {!!rated(e) && (
+                      <View style={styles.epRating}>
+                        <Ionicons name="star" size={13} color={theme.star} />
+                        <Text style={[styles.epMeta, styles.epRatingText, { color: theme.text }]}>{rated(e) / 2}</Text>
+                      </View>
+                    )}
+                    <Pressable
+                      onPress={() => out && tick(e)}
+                      disabled={!out}
+                      hitSlop={10}
+                      accessibilityRole="checkbox"
+                      accessibilityLabel={`Watched episode ${e.number}`}
+                      accessibilityState={{ checked: seen, disabled: !out }}
+                    >
+                      <Ionicons name={seen ? 'checkmark-circle' : 'ellipse-outline'} size={28} color={seen ? theme.accent : theme.textMuted} />
+                    </Pressable>
                   </Pressable>
                 );
               })}
             </View>
           )}
-          <Text style={[styles.note, { color: theme.textMuted }]}>Tap to log. Hold to catch up to here.</Text>
+          <Text style={[styles.note, { color: theme.textMuted }]}>Tap an episode for details. Hold to catch up to it.</Text>
         </>
       )}
+      <EpisodeSheet
+        episode={opened}
+        theme={theme}
+        seen={!!opened && isSeen(opened)}
+        rating={opened ? rated(opened) : 0}
+        onRate={(r) => opened && tracker.rateEpisode(item ?? show, epKey(opened.season, opened.number), r, info ?? undefined)}
+        onTick={() => {
+          if (opened) tick(opened);
+          setOpened(null);
+        }}
+        onClose={() => setOpened(null)}
+      />
     </ScrollView>
   );
 }
@@ -292,4 +321,6 @@ const styles = StyleSheet.create({
   epNum: { fontFamily: fonts.display, fontSize: 26, width: 32, textAlign: 'center' },
   epName: { fontSize: font.body, fontWeight: '600' },
   epMeta: { fontFamily: fonts.mono, fontSize: font.caption, marginTop: 2 },
+  epRating: { flexDirection: 'row', alignItems: 'center', gap: 3 },
+  epRatingText: { marginTop: 0 },
 });

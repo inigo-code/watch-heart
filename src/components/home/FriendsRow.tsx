@@ -11,6 +11,7 @@ import { useFriends } from '@/friends/FriendsProvider';
 import { friendsFeed } from '@/friends/friendsApi';
 import type { FriendEntry } from '@/friends/friendsApi';
 import { font, fonts } from '@/lib/theme';
+import { viewingRating, watchedLabel } from '@/lib/watched';
 import type { Theme } from '@/lib/theme';
 import type { Title } from '@/store/types';
 
@@ -43,6 +44,8 @@ export function FriendsRow({ theme }: { theme: Theme }) {
         {feed.map((e) => {
           const who = byId(e.userId);
           const name = who?.name ?? 'A friend';
+          const what = watchedLabel(e);
+          const rating = viewingRating(e);
           const t: Title = {
             kind: e.kind,
             source: e.source,
@@ -61,7 +64,7 @@ export function FriendsRow({ theme }: { theme: Theme }) {
               onPressIn={() => warmTitle(t)}
               onPress={() => openTitle(t)}
               accessibilityRole="button"
-              accessibilityLabel={`${name} watched ${e.title}${e.rating ? `, ${e.rating / 2} stars` : ''}`}
+              accessibilityLabel={`${name} watched ${what ? `${what} of ` : ''}${e.title}${rating ? `, ${rating / 2} stars` : ''}`}
               style={({ pressed }) => [{ width: 104 }, pressed && { opacity: 0.8 }]}
             >
               <View>
@@ -73,11 +76,16 @@ export function FriendsRow({ theme }: { theme: Theme }) {
               <Text style={[styles.name, { color: theme.text }]} numberOfLines={1}>
                 {e.title}
               </Text>
+              {!!what && (
+                <Text style={[styles.what, { color: theme.accent }]} numberOfLines={1}>
+                  {what}
+                </Text>
+              )}
               <View style={styles.meta}>
-                {!!e.rating && (
+                {!!rating && (
                   <Text style={[styles.stars, { color: theme.star }]}>
-                    {'★'.repeat(Math.floor(e.rating / 2))}
-                    {e.rating % 2 ? '½' : ''}
+                    {'★'.repeat(Math.floor(rating / 2))}
+                    {rating % 2 ? '½' : ''}
                   </Text>
                 )}
                 {e.liked && <Ionicons name="heart" size={11} color={theme.like} />}
@@ -100,5 +108,6 @@ const styles = StyleSheet.create({
   name: { fontSize: font.footnote, fontWeight: '700', marginTop: 8 },
   meta: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 },
   stars: { fontSize: 12 },
+  what: { fontFamily: fonts.monoBold, fontSize: 12 },
   who: { fontFamily: fonts.mono, fontSize: font.caption, flexShrink: 1 },
 });

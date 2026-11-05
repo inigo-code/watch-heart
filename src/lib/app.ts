@@ -44,13 +44,10 @@ export const DATA_SOURCES = {
  * An update that leaves it alone shows nothing.
  */
 export const WHATS_NEW = {
-  id: '1.3.3',
+  id: '1.3.4',
   items: [
-    'A new Home: your month as a ticket and what you’re watching come first, with what’s new further down',
-    'Every page has the same glow and back button, and you can pull down to refresh',
-    'A friend’s diary is a poster wall by month, loading a bit at a time',
-    'Larger text with fewer explanations, and a friends button on Home',
-    'Fixed: signing in on a new phone now brings your profile, favourites and photo back',
-    'Fixed: the dark strip while the app opens',
+    'Friends’ activity says what they watched: S2 E4, or Season 2 if they binged it',
+    'Tap an episode for its summary, details and your own rating',
+    'Marking a whole season logs it in your Diary',
   ],
 };

@@ -13,6 +13,7 @@ import { useFriends } from '@/friends/FriendsProvider';
 import { friendlyDate } from '@/lib/dates';
 import { easeNextLayout } from '@/lib/motion';
 import { font, fonts } from '@/lib/theme';
+import { viewingRating, watchedLabel } from '@/lib/watched';
 import type { Theme } from '@/lib/theme';
 import type { UserList } from '@/lists/ListsProvider';
 
@@ -135,7 +136,8 @@ function Review({ e, who, photo, theme }: { e: FriendEntry; who: string; photo: 
       <View style={styles.reviewHead}>
         <Face uri={photo} name={who} theme={theme} size={30} round />
         <Text style={[styles.reviewWho, { color: theme.text }]}>{who}</Text>
-        {e.rating ? <Stars rating={e.rating} size={12} color={theme.star} /> : null}
+        {viewingRating(e) ? <Stars rating={viewingRating(e)} size={12} color={theme.star} /> : null}
+        {!!watchedLabel(e) && <Text style={[styles.small, { color: theme.accent }]}>{watchedLabel(e)}</Text>}
         {e.liked && <Ionicons name="heart" size={12} color={theme.like} />}
         <Text style={[styles.small, { color: theme.textMuted, marginLeft: 'auto' }]}>{friendlyDate(e.watchedOn)}</Text>
       </View>

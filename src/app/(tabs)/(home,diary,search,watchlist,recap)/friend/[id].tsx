@@ -21,6 +21,7 @@ import type { FriendEntry } from '@/friends/friendsApi';
 import { useFriends } from '@/friends/FriendsProvider';
 import { friendlyDate } from '@/lib/dates';
 import { easeNextLayout } from '@/lib/motion';
+import { viewingRating, watchedLabel } from '@/lib/watched';
 import { font, fonts, useTheme } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
 import type { UserList } from '@/lists/ListsProvider';
@@ -262,9 +263,14 @@ function Month({ month, tile, theme, order }: { month: { label: string; items: F
           <Tap key={e.id} onPress={() => openTitle(asTitle(e))} accessibilityRole="button" accessibilityLabel={`${e.title}${e.rating ? `, ${e.rating / 2} stars` : ''}`} style={{ width: tile }}>
             <Poster uri={e.posterUrl} title={e.title} width={tile} theme={theme} radius={6} />
             <View style={styles.marks}>
-              {e.rating ? <Stars rating={e.rating} size={12} color={theme.star} /> : null}
+              {viewingRating(e) ? <Stars rating={viewingRating(e)} size={12} color={theme.star} /> : null}
               {e.liked && <Ionicons name="heart" size={12} color={theme.like} />}
             </View>
+            {!!watchedLabel(e) && (
+              <Text style={[styles.what, { color: theme.accent }]} numberOfLines={1}>
+                {watchedLabel(e)}
+              </Text>
+            )}
           </Tap>
         ))}
       </View>
@@ -284,8 +290,9 @@ function Review({ e, theme }: { e: FriendEntry; theme: Theme }) {
           <Text style={[styles.rowTitle, { color: theme.text }]} numberOfLines={2}>
             {e.title}
           </Text>
+          {!!watchedLabel(e) && <Text style={[styles.what, { color: theme.accent }]}>{watchedLabel(e)}</Text>}
           <View style={styles.marks}>
-            {e.rating ? <Stars rating={e.rating} size={14} color={theme.star} /> : null}
+            {viewingRating(e) ? <Stars rating={viewingRating(e)} size={14} color={theme.star} /> : null}
             {e.liked && <Ionicons name="heart" size={14} color={theme.like} />}
           </View>
           <Text style={[styles.meta, { color: theme.textMuted }]}>{e.undated ? 'Date unknown' : friendlyDate(e.watchedOn)}</Text>
@@ -326,6 +333,7 @@ const styles = StyleSheet.create({
   month: { gap: 10 },
   wall: { flexDirection: 'row', flexWrap: 'wrap', gap: GAP },
   marks: { flexDirection: 'row', alignItems: 'center', gap: 4, minHeight: 18, marginTop: 2 },
+  what: { fontFamily: fonts.monoBold, fontSize: font.caption },
   empty: { fontSize: font.body, textAlign: 'center', paddingVertical: 24 },
   footer: { gap: 16, marginTop: 8 },
   more: { height: 48, borderWidth: 1.5, borderRadius: 24, alignItems: 'center', justifyContent: 'center' },

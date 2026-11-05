@@ -4,7 +4,18 @@ import { tmdbKey } from './tmdb';
 
 // Seasons and episodes for the tracker, from TMDB (with a key) or TVmaze (keyless).
 
-export type Episode = { season: number; number: number; name: string; airDate: string | null; runtime: number | null };
+export type Episode = {
+  season: number;
+  number: number;
+  name: string;
+  airDate: string | null;
+  runtime: number | null;
+  overview: string;
+  still: string | null;
+  /** The audience score out of 10, when there is one. */
+  score: number | null;
+  director: string | null;
+};
 export type ShowInfo = {
   seasons: { n: number; count: number; name: string }[];
   lastAired: { season: number; number: number } | null;
@@ -32,7 +43,16 @@ async function mazeGet<T>(path: string, signal?: AbortSignal): Promise<T> {
 /** Whether a title can be tracked episode by episode (a series on TMDB or TVmaze). */
 export const trackable = (t: { source: Source; sourceId: string }) => (t.source === 'tmdb' && t.sourceId.startsWith('tv:')) || t.source === 'tvmaze';
 
-type MazeEpisode = { season: number; number: number | null; name: string; airdate: string; runtime: number | null };
+type MazeEpisode = {
+  season: number;
+  number: number | null;
+  name: string;
+  airdate: string;
+  runtime: number | null;
+  summary?: string | null;
+  image?: { medium?: string } | null;
+  rating?: { average?: number | null };
+};
 const mazeCache = new Map<string, MazeEpisode[]>();
 async function mazeEpisodes(id: string, signal?: AbortSignal) {
   if (!mazeCache.has(id)) mazeCache.set(id, (await mazeGet<MazeEpisode[]>(`/shows/${id}/episodes`, signal)).filter((e) => e.number !== null));
@@ -79,16 +99,48 @@ export async function seasonEpisodes(userKey: string, source: Source, sourceId: 
   if (seasonCache.has(cacheKey)) return seasonCache.get(cacheKey)!;
   let list: Episode[];
   if (source === 'tmdb') {
-    const d = await tmdbGet<{ episodes?: { episode_number: number; name: string; air_date: string | null; runtime: number | null }[] }>(
+    const d = await tmdbGet<{
+      episodes?: {
+        episode_number: number;
+        name: string;
+        air_date: string | null;
+        runtime: number | null;
+        overview?: string;
+        still_path?: string | null;
+        vote_average?: number;
+        vote_count?: number;
+        crew?: { job?: string; name?: string }[];
+      }[];
+    }>(
       tmdbKey(userKey),
       `/tv/${sourceId.split(':')[1]}/season/${season}`,
       signal,
     );
-    list = (d.episodes ?? []).map((e) => ({ season, number: e.episode_number, name: e.name, airDate: e.air_date, runtime: e.runtime }));
+    list = (d.episodes ?? []).map((e) => ({
+      season,
+      number: e.episode_number,
+      name: e.name,
+      airDate: e.air_date,
+      runtime: e.runtime,
+      overview: e.overview ?? '',
+      still: e.still_path ? `https://image.tmdb.org/t/p/w500${e.still_path}` : null,
+      score: e.vote_count ? (e.vote_average ?? null) : null,
+      director: e.crew?.find((c) => c.job === 'Director')?.name ?? null,
+    }));
   } else {
     list = (await mazeEpisodes(sourceId, signal))
       .filter((e) => e.season === season)
-      .map((e) => ({ season, number: e.number!, name: e.name, airDate: e.airdate || null, runtime: e.runtime }));
+      .map((e) => ({
+        season,
+        number: e.number!,
+        name: e.name,
+        airDate: e.airdate || null,
+        runtime: e.runtime,
+        overview: (e.summary ?? '').replace(/<[^>]+>/g, '').trim(),
+        still: e.image?.medium ?? null,
+        score: e.rating?.average ?? null,
+        director: null,
+      }));
   }
   seasonCache.set(cacheKey, list);
   return list;
