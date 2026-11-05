@@ -1,3 +1,7 @@
+// The widget library calls these components as plain functions, outside React. The React Compiler (on for
+// the whole app, in app.json) would give them a hook, which throws there and leaves the widget blank.
+'use no memo';
+
 import { FlexWidget, ImageWidget, TextWidget } from 'react-native-android-widget';
 import type { ColorProp } from 'react-native-android-widget';
 

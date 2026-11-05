@@ -44,9 +44,9 @@ export const DATA_SOURCES = {
  * An update that leaves it alone shows nothing.
  */
 export const WHATS_NEW = {
-  id: '1.4.1',
+  id: '1.4.2',
   items: [
-    'Fixed: the Up next widget appearing blank',
+    'Fixed: the Up next widget now shows on your home screen instead of staying blank',
     'Where to watch opens the app when you have it installed, at the title where the app allows',
     'Notifications for new episodes, weekend picks and your monthly recap. Choose which in Settings.',
     'A new Home, season and episode ratings, and friends’ activity down to the episode',
