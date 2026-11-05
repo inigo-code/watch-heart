@@ -1,6 +1,7 @@
 import { FlexWidget, ImageWidget, TextWidget } from 'react-native-android-widget';
 import type { ColorProp } from 'react-native-android-widget';
 
+import { WIDGET_LOGO } from './logo';
 import type { UpNextItem, UpNextSnapshot } from './upNext';
 
 type Colours = UpNextSnapshot['dark'];
@@ -20,7 +21,7 @@ export function UpNextWidget({ snap, colours, rows }: { snap: UpNextSnapshot; co
         <FlexWidget clickAction="OPEN_URI" clickActionData={{ uri: 'watchheart://watchlist' }} style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
           <TextWidget text="UP NEXT" style={{ fontFamily: 'BebasNeue_400Regular', fontSize: 24, color: c(colours.text), letterSpacing: 0.05 }} />
           <FlexWidget style={{ width: 8, height: 8 }} />
-          <ImageWidget image={require('../../assets/icon.png')} imageWidth={16} imageHeight={16} radius={4} />
+          <ImageWidget image={WIDGET_LOGO} imageWidth={16} imageHeight={16} radius={4} />
           <TextWidget text=" WATCH HEART" style={{ fontFamily: 'CourierPrime_700Bold', fontSize: 10, color: c(colours.accent), letterSpacing: 0.1 }} />
         </FlexWidget>
         <FlexWidget
