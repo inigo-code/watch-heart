@@ -14,7 +14,7 @@ import { DEFAULT_SETTINGS, STORAGE_KEY } from '@/settings/SettingsProvider';
 import type { Settings } from '@/settings/SettingsProvider';
 import { openDiary } from '@/store/db';
 import type { WatchItem } from '@/store/types';
-import { upNextSnapshot } from '@/widget/upNext';
+import { upNextSnapshot, widgetLocked } from '@/widget/upNext';
 import { updateWidgets } from '@/widget/widgets';
 
 // Once a day or so, with the app closed: new air dates and release dates, so alerts and the widget stay right
@@ -68,7 +68,7 @@ async function check() {
   const entries = (await db.load()).filter((e) => e.deletedAt === null);
   const { episodes, releases } = settings.nudges;
   await applyNudges(planNudges({ now: new Date(), entries, watchlist: latest, fresh: null, episodes, releases, picks: false, recap: false }), ['nudge-ep-', 'nudge-release-']);
-  await updateWidgets(upNextSnapshot(latest, today(), settings.accent, settings.themeMode)).catch(() => {});
+  await updateWidgets(upNextSnapshot(latest, today(), settings.accent, settings.themeMode, widgetLocked(settings))).catch(() => {});
 }
 
 /** Called once from the app's entry (index.ts): Android can start this with the app closed. */

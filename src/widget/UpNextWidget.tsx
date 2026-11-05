@@ -29,15 +29,26 @@ export function UpNextWidget({ snap, colours, rows }: { snap: UpNextSnapshot; co
           <ImageWidget image={WIDGET_LOGO} imageWidth={16} imageHeight={16} radius={4} />
           <TextWidget text=" WATCH HEART" style={{ fontFamily: 'CourierPrime_700Bold', fontSize: 10, color: c(colours.accent), letterSpacing: 0.1 }} />
         </FlexWidget>
+        {snap.locked ? null : (
+          <FlexWidget
+            clickAction="OPEN_URI"
+            clickActionData={{ uri: 'watchheart://search' }}
+            style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: c(colours.accent), justifyContent: 'center', alignItems: 'center' }}
+          >
+            <TextWidget text="+" style={{ fontSize: 24, color: c(colours.onAccent), fontWeight: 'bold' }} />
+          </FlexWidget>
+        )}
+      </FlexWidget>
+      {snap.locked ? (
         <FlexWidget
           clickAction="OPEN_URI"
-          clickActionData={{ uri: 'watchheart://search' }}
-          style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: c(colours.accent), justifyContent: 'center', alignItems: 'center' }}
+          clickActionData={{ uri: 'watchheart://watchlist' }}
+          style={{ flex: 1, justifyContent: 'center', width: 'match_parent', flexDirection: 'column' }}
         >
-          <TextWidget text="+" style={{ fontSize: 24, color: c(colours.onAccent), fontWeight: 'bold' }} />
+          <TextWidget text="Watch Heart is locked" style={{ fontSize: 14, fontWeight: 'bold', color: c(colours.text) }} maxLines={1} />
+          <TextWidget text="Tap to unlock" style={{ fontSize: 13, color: c(colours.muted) }} maxLines={1} />
         </FlexWidget>
-      </FlexWidget>
-      {items.length ? (
+      ) : items.length ? (
         items.map((it, i) => <Row key={i} it={it} colours={colours} />)
       ) : (
         <FlexWidget

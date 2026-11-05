@@ -51,6 +51,8 @@ export type Settings = {
   appLock: boolean;
   /** How long the app can be in the background before it locks again, in seconds (0 = straight away). */
   lockAfter: 0 | 60 | 300;
+  /** With App lock on, keep showing titles in the home-screen widget. */
+  widgetWhileLocked: boolean;
   /** The profile: a line about you, a photo saved in the app's files, and four favourite titles. */
   bio: string;
   photo: string | null;
@@ -100,6 +102,7 @@ export const DEFAULT_SETTINGS: Settings = {
   dismissedTips: [],
   appLock: false,
   lockAfter: 60,
+  widgetWhileLocked: false,
   bio: '',
   photo: null,
   favourites: [],
@@ -168,6 +171,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
         ...DEFAULT_SETTINGS,
         appLock: s.appLock,
         lockAfter: s.lockAfter,
+        widgetWhileLocked: s.widgetWhileLocked,
         name: s.name,
         bio: s.bio,
         photo: s.photo,

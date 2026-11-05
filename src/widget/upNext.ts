@@ -1,7 +1,7 @@
 import { friendlyDate } from '@/lib/dates';
 import { KIND_LABEL } from '@/lib/stats';
 import { buildTheme } from '@/lib/theme';
-import type { AccentKey } from '@/settings/SettingsProvider';
+import type { AccentKey, Settings } from '@/settings/SettingsProvider';
 import { continueWatching, counts, nextUp } from '@/lib/tracking';
 import type { WatchItem } from '@/store/types';
 
@@ -22,7 +22,14 @@ export type UpNextItem = {
 type Colours = { bg: string; card: string; text: string; muted: string; accent: string; onAccent: string };
 /** The app's look: one chosen look, or 'system' to follow the phone's light and dark. */
 export type WidgetMode = 'dark' | 'light' | 'system';
-export type UpNextSnapshot = { items: UpNextItem[]; dark: Colours; light: Colours; mode: WidgetMode };
+export type UpNextSnapshot = {
+  items: UpNextItem[];
+  dark: Colours;
+  light: Colours;
+  mode: WidgetMode;
+  /** App lock is hiding the widget's titles. They aren't saved either, so the widget has none to show. */
+  locked?: boolean;
+};
 
 export const WIDGET_KEY = 'watchheart/widget-up-next';
 export const MAX_ITEMS = 8;
@@ -32,8 +39,11 @@ const episode = (s: number, n: number) => `S${s} · E${n}`;
 const small = (url: string | null) => (url ? url.replace('/w342/', '/w154/').replace('/w500/', '/w154/') : null);
 const page = (w: WatchItem) => (w.source === 'tmdb' && w.sourceId ? `watchheart://title/${encodeURIComponent(w.sourceId)}` : 'watchheart://watchlist');
 
+/** Whether App lock hides the widget's titles. Everything that redraws the widget goes by this. */
+export const widgetLocked = (s: Pick<Settings, 'appLock' | 'widgetWhileLocked'>) => s.appLock && !s.widgetWhileLocked;
+
 /** Shows with an episode waiting first (as Continue watching orders them), then the watchlist, newest first. */
-export function upNextSnapshot(watchlist: WatchItem[], todayIso: string, accent: AccentKey, mode: WidgetMode = 'dark'): UpNextSnapshot {
+export function upNextSnapshot(watchlist: WatchItem[], todayIso: string, accent: AccentKey, mode: WidgetMode = 'dark', locked = false): UpNextSnapshot {
   const items: UpNextItem[] = [];
   const groups = continueWatching(watchlist, todayIso);
   for (const w of [...groups.ongoing, ...groups.oldFriends]) {
@@ -70,5 +80,5 @@ export function upNextSnapshot(watchlist: WatchItem[], todayIso: string, accent:
     const t = buildTheme(dark, accent);
     return { bg: t.bg, card: t.card, text: t.text, muted: t.textMuted, accent: t.accent, onAccent: t.accentText };
   };
-  return { items: items.slice(0, MAX_ITEMS), dark: colours(true), light: colours(false), mode };
+  return { items: locked ? [] : items.slice(0, MAX_ITEMS), dark: colours(true), light: colours(false), mode, locked };
 }

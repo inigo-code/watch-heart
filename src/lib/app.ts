@@ -46,6 +46,7 @@ export const DATA_SOURCES = {
 export const WHATS_NEW = {
   id: '1.5.0',
   items: [
+    'With App lock on, the widget hides your titles. To keep them showing, turn on Show titles in the widget in Settings.',
     'This week shows dates, like 1st and 2nd, instead of repeated day letters',
     'Resize the widget and it shows more; its buttons respond right away',
     'Air dates and release alerts stay up to date even if you don’t open the app',
