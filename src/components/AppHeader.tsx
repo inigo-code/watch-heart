@@ -83,7 +83,7 @@ export function greetingIcon(hour: number): MciName {
 export function greetingLine(hour: number) {
   if (hour >= 5 && hour < 12) return 'Coffee and a film?';
   if (hour >= 12 && hour < 17) return 'Matinee o’clock';
-  if (hour >= 17 && hour < 22) return 'Phones on silent';
+  if (hour >= 17 && hour < 22) return 'Evening show?';
   return 'Just one more?';
 }
 
