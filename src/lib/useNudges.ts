@@ -3,6 +3,7 @@ import { AppState } from 'react-native';
 
 import { watchRegion } from '@/api/omdb';
 import { releaseDay } from '@/api/tmdb';
+import { startBackgroundCheck } from '@/lib/backgroundCheck';
 import { applyNudges } from '@/lib/nudgeSchedule';
 import { planNudges, releaseDue } from '@/lib/nudges';
 import { useTracker } from '@/lib/useTracker';
@@ -25,6 +26,9 @@ export function useNudges(fresh: { title: string; sourceId: string } | null) {
     return () => sub.remove();
   }, []);
   const { refresh } = useTracker();
+  useEffect(() => {
+    startBackgroundCheck().catch(() => {});
+  }, []);
   const { episodes, picks, recap, releases } = settings.nudges;
 
   // Air dates for tracked shows, whenever the app opens, a few shows at a time.

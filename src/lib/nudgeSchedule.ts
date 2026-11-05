@@ -23,12 +23,15 @@ export async function askForNotifications() {
   return status === 'granted';
 }
 
-/** Replaces what's scheduled with this plan. Does nothing without permission: this never asks by itself. */
-export async function applyNudges(plan: Nudge[]) {
+/**
+ * Replaces what's scheduled with this plan, or only the kinds named. Does nothing without permission:
+ * this never asks by itself.
+ */
+export async function applyNudges(plan: Nudge[], kinds: string[] = [PREFIX]) {
   if (!(await notificationsAllowed())) return;
   await channel();
   const scheduled = await Notifications.getAllScheduledNotificationsAsync();
-  await Promise.all(scheduled.filter((n) => n.identifier.startsWith(PREFIX)).map((n) => Notifications.cancelScheduledNotificationAsync(n.identifier)));
+  await Promise.all(scheduled.filter((n) => kinds.some((k) => n.identifier.startsWith(k))).map((n) => Notifications.cancelScheduledNotificationAsync(n.identifier)));
   await Promise.all(
     plan.map((n) =>
       Notifications.scheduleNotificationAsync({

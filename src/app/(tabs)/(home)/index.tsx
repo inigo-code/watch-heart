@@ -114,7 +114,9 @@ export default function HomeScreen() {
   useEffect(() => {
     if (!key || !seedKey) return;
     let live = true;
-    forYou(key, seeds, entries, watchlist).then((titles) => live && setPicks({ seeds: seedKey, titles }));
+    forYou(key, seeds, entries, watchlist)
+      .then((titles) => live && setPicks({ seeds: seedKey, titles }))
+      .catch(() => {});
     return () => {
       live = false;
     };

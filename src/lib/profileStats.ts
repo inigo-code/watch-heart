@@ -115,7 +115,7 @@ export function profileStats(all: Entry[], todayIso: string): ProfileStats {
   // 53 weeks ending with this week, Monday first.
   const end = parseIso(todayIso);
   const mondayOffset = (end.getDay() + 6) % 7;
-  const start = new Date(end.getTime() - (mondayOffset + 52 * 7) * DAY);
+  const start = new Date(end.getFullYear(), end.getMonth(), end.getDate() - (mondayOffset + 52 * 7));
   const weeks: ProfileStats['weeks'] = [];
   for (let w = 0; w < 53; w++) {
     const week = [];

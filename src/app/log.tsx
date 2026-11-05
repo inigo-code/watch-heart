@@ -147,7 +147,7 @@ function LogForm() {
       matchTriedAt: null,
     });
     setYearText(t.year ? String(t.year) : '');
-    details(t, tmdbKey(settings.tmdbKey)).then((full) =>
+    details(t, tmdbKey(settings.tmdbKey)).catch(() => t).then((full) =>
       setDraft((d) => (d.sourceId === t.sourceId ? { ...d, genres: full.genres.length ? full.genres : d.genres, runtime: full.runtime ?? d.runtime, credit: full.credit ?? d.credit } : d)),
     );
   };

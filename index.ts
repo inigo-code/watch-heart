@@ -2,6 +2,8 @@
 // app closed (so it has to be registered here, not inside a screen).
 import 'expo-router/entry';
 
+import { defineBackgroundCheck } from '@/lib/backgroundCheck';
 import { registerWidgets } from '@/widget/widgets';
 
 registerWidgets();
+defineBackgroundCheck();

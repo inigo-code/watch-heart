@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import type { ReactNode } from 'react';
 
 import { newId } from '@/lib/id';
-import { settle } from '@/lib/tracking';
+import { mergeTrack, settle } from '@/lib/tracking';
 import { plainText } from '@/lib/richText';
 import { storage } from '@/lib/storage';
 
@@ -87,7 +87,7 @@ type DiaryStore = {
   addToWatchlist: (t: Title, note?: string) => WatchItem;
   updateWatchItem: (id: string, patch: Partial<WatchItem> | ((w: WatchItem) => Partial<WatchItem>), opts?: { quiet?: boolean }) => void;
   /** Background changes to many records at once (posters found, details refreshed): one save, one redraw. */
-  patchMany: (entries: { id: string; patch: Partial<Entry> }[], watchlist: { id: string; patch: Partial<WatchItem> }[]) => void;
+  patchMany: (entries: { id: string; patch: Partial<Entry> }[], watchlist: { id: string; patch: Partial<WatchItem> }[], opts?: { quiet?: boolean }) => void;
   removeFromWatchlist: (id: string) => void;
   /** Adds items not already on the list (by id or title); returns how many were added. */
   importWatchlist: (items: WatchItem[]) => number;
@@ -304,7 +304,7 @@ export function DiaryStoreProvider({ children }: { children: ReactNode }) {
       setWatchlist((list) =>
         list.map((w) => {
           if (w.id !== id) return w;
-          const next = { ...w, ...(typeof patch === 'function' ? patch(w) : patch), id };
+          const next = { ...w, ...(typeof patch === 'function' ? patch(w) : patch), id, ...(opts?.quiet ? {} : { updatedAt: Date.now() }) };
           write((d) => d.saveWatchlist([next]));
           return next;
         }),
@@ -365,7 +365,7 @@ export function DiaryStoreProvider({ children }: { children: ReactNode }) {
   );
 
   const patchMany = useCallback<DiaryStore['patchMany']>(
-    (entryPatches, watchPatches) => {
+    (entryPatches, watchPatches, opts) => {
       // Patched against the current lists, not the refs: a background job can call this in the same
       // commit as the first load, before the refs catch up, and patching the stale (empty) ref would
       // replace the whole diary with nothing.
@@ -376,7 +376,7 @@ export function DiaryStoreProvider({ children }: { children: ReactNode }) {
           const next = list.map((e) => {
             const patch = byId.get(e.id);
             if (!patch) return e;
-            const updated = { ...e, ...patch, id: e.id, updatedAt: Date.now() };
+            const updated = { ...e, ...patch, id: e.id, updatedAt: opts?.quiet ? e.updatedAt : Date.now() };
             changed.push(updated);
             return updated;
           });
@@ -401,6 +401,7 @@ export function DiaryStoreProvider({ children }: { children: ReactNode }) {
           return next;
         });
       }
+      if (opts?.quiet) return;
       touch(
         entryPatches.map((p) => p.id),
         watchPatches.map((p) => p.id),
@@ -461,7 +462,22 @@ export function DiaryStoreProvider({ children }: { children: ReactNode }) {
         if (removed.length) write((d) => d.remove(removed));
       }
 
-      const queued = remote.watchlist.filter((r) => keep(r, pending.watchlist));
+      // Both this phone and another changed a tracked show: keep every tick from each, and send the result.
+      const mineNow = new Map(watchRef.current.map((w) => [w.id, w]));
+      const clashes = remote.watchlist.filter((r) => !r.removed && pending.watchlist[r.id] !== undefined && r.data.track && mineNow.get(r.id)?.track);
+      if (clashes.length) {
+        const merged = clashes.map((r) => {
+          const mine = mineNow.get(r.id)!;
+          return { ...mine, track: mergeTrack(mine.track!, r.data.track!), updatedAt: Date.now() };
+        });
+        const byId = new Map(merged.map((w) => [w.id, w]));
+        watchRef.current = watchRef.current.map((w) => byId.get(w.id) ?? w);
+        setWatchlist(watchRef.current);
+        write((d) => d.saveWatchlist(merged));
+        touch([], merged.map((w) => w.id));
+      }
+
+      const queued = remote.watchlist.filter((r) => keep(r, pending.watchlist) && !clashes.includes(r));
       if (queued.length) {
         const byId = new Map(watchRef.current.map((w) => [w.id, w]));
         const saved: WatchItem[] = [];
@@ -482,7 +498,7 @@ export function DiaryStoreProvider({ children }: { children: ReactNode }) {
 
       setMeta((m) => ({ ...m, lastPulledAt }));
     },
-    [write],
+    [write, touch],
   );
 
   const markPushed = useCallback<SyncStoreApi['markPushed']>((sent) => {
@@ -502,7 +518,7 @@ export function DiaryStoreProvider({ children }: { children: ReactNode }) {
       lastPulledAt: null,
       // Each with its real age, so signing back in can't put an old copy over newer work in the cloud.
       entries: Object.fromEntries(allRef.current.map((e) => [e.id, e.updatedAt])),
-      watchlist: Object.fromEntries(watchRef.current.map((w) => [w.id, w.addedAt])),
+      watchlist: Object.fromEntries(watchRef.current.map((w) => [w.id, w.updatedAt ?? w.addedAt])),
     };
     metaRef.current = next;
     setMeta(next);

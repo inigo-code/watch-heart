@@ -97,7 +97,9 @@ export default function TrackScreen() {
 
   const c = track ? counts(track) : null;
   const todayIso = today();
-  const list = episodes?.season === current ? episodes.list : null;
+  // Air dates in your own time zone, when the exact time is known.
+  const localDay = (e: Episode) => track?.upcoming?.find((u) => u.season === e.season && u.number === e.number)?.date ?? e.airDate;
+  const list = episodes?.season === current ? episodes.list.map((e) => ({ ...e, airDate: localDay(e) })) : null;
   const aired = (e: Episode) => !!e.airDate && e.airDate <= todayIso;
   const isSeen = (e: Episode) => !!track?.seen[epKey(e.season, e.number)];
   const seasonKeys = (list ?? []).filter(aired).map((e) => epKey(e.season, e.number));

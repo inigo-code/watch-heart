@@ -3,7 +3,7 @@
     "name": "Watch Heart",
     "slug": "watch-heart",
     "owner": "inigojo",
-    "version": "1.4.0",
+    "version": "1.5.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "scheme": "watchheart",
@@ -116,12 +116,12 @@
             {
               "name": "UpNext",
               "label": "Up next",
-              "description": "Your next episode, or the top of your watchlist. Tap to open it; + to log something.",
+              "description": "Your next episode, or the top of your watchlist. Tap to open it; + to find something to add.",
               "minWidth": "250dp",
               "minHeight": "180dp",
               "targetCellWidth": 4,
               "targetCellHeight": 2,
-              "maxResizeHeight": "400dp",
+              "maxResizeHeight": "650dp",
               "resizeMode": "horizontal|vertical",
               "previewImage": "./assets/widget-preview/up-next.png",
               "updatePeriodMillis": 0
@@ -135,7 +135,8 @@
           "icon": "./assets/notification-icon.png",
           "color": "#F2B84B"
         }
-      ]
+      ],
+      "expo-background-task"
     ],
     "experiments": {
       "typedRoutes": true,

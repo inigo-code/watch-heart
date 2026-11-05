@@ -44,16 +44,15 @@ export const DATA_SOURCES = {
  * An update that leaves it alone shows nothing.
  */
 export const WHATS_NEW = {
-  id: '1.4.6',
+  id: '1.5.0',
   items: [
-    'The widget redraws each time you open the app, and shows more when there’s room',
+    'Resize the widget and it shows more; its buttons respond right away',
+    'Air dates and release alerts stay up to date even if you don’t open the app',
+    'A show changed on two phones keeps the ticks from both',
     'Unticking an episode now takes it out of the Diary, whichever day it was logged',
     'Hours watched count every episode in a viewing',
-    'Ticks from another phone no longer get overwritten by an older copy',
     'Episode alerts follow the season you’re on to its end, then wait for the next one',
     'Air dates and alerts use your own time zone when the exact time is known',
     'Added a title before it’s out? Get an alert the day it’s released, on or off in Settings',
-    'Logged a title more than once? Delete one viewing right from its page',
-    'Leaving the log form with unsaved words now asks first',
   ],
 };

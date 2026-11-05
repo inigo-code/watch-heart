@@ -5,7 +5,7 @@ import { storage } from '@/lib/storage';
 import type { MediaKind } from '@/store/types';
 import type { PaletteKey, StoryLayout } from '@/story/palettes';
 
-const STORAGE_KEY = 'watchheart/settings';
+export const STORAGE_KEY = 'watchheart/settings';
 
 export type ThemeMode = 'system' | 'light' | 'dark';
 /** The accents; emerald and platinum are perks, earned with achievements (src/lib/perks.ts). */

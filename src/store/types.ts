@@ -114,6 +114,8 @@ export type WatchItem = {
   /** Why it's on the list, e.g. "Recommended by Sam". */
   note: string;
   addedAt: number;
+  /** When you last changed it. */
+  updatedAt?: number;
   /**
    * When the TMDB details (poster, genres, running time, credit) were last fetched. TMDB allows keeping
    * them for 6 months, so older ones are refreshed (src/lib/tmdbFreshness.ts). 0 = removed, refresh when possible.

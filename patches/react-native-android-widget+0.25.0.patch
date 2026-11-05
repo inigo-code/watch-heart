@@ -1,0 +1,60 @@
+diff --git a/node_modules/react-native-android-widget/android/src/main/java/com/reactnativeandroidwidget/RNWidgetProvider.java b/node_modules/react-native-android-widget/android/src/main/java/com/reactnativeandroidwidget/RNWidgetProvider.java
+index 983ff91..98d61df 100644
+--- a/node_modules/react-native-android-widget/android/src/main/java/com/reactnativeandroidwidget/RNWidgetProvider.java
++++ b/node_modules/react-native-android-widget/android/src/main/java/com/reactnativeandroidwidget/RNWidgetProvider.java
+@@ -18,10 +18,10 @@ public class RNWidgetProvider extends AppWidgetProvider {
+     public void onAppWidgetOptionsChanged(Context context, AppWidgetManager appWidgetManager, int appWidgetId, Bundle newOptions) {
+         super.onAppWidgetOptionsChanged(context, appWidgetManager, appWidgetId, newOptions);
+ 
+-        if (RNWidgetSizing.updateStoredSize(context, appWidgetId)) {
+-            Data data = RNWidgetJsCommunication.buildData(context, getClass().getSimpleName(), appWidgetId, "WIDGET_RESIZED");
+-            RNWidgetJsCommunication.startBackgroundTask(context, data);
+-        }
++        // Always redraw: click targets are tied to these options, so taps would be lost until the next draw.
++        RNWidgetSizing.updateStoredSize(context, appWidgetId);
++        Data data = RNWidgetJsCommunication.buildData(context, getClass().getSimpleName(), appWidgetId, "WIDGET_RESIZED");
++        RNWidgetJsCommunication.startBackgroundTask(context, data);
+     }
+ 
+     @Override
+@@ -47,16 +47,13 @@ public class RNWidgetProvider extends AppWidgetProvider {
+ 
+         int widgetId = incomingIntent.getIntExtra("widgetId", -1);
+ 
+-        if (RNWidgetSizing.correct(context, widgetId, incomingIntent)) {
++        // Redraw at the right size, and still do what was tapped: a tap that does nothing is worse.
++        if (RNWidgetSizing.correct(context, widgetId, incomingIntent)
++            || RNWidgetSizing.hasOutdatedSize(context, widgetId, incomingIntent)) {
+             RNWidgetSizing.updateStoredSize(context, widgetId);
+             Data resizeData = RNWidgetJsCommunication.buildData(context, getClass().getSimpleName(), widgetId, "WIDGET_RESIZED");
+             RNWidgetJsCommunication.startBackgroundTask(context, resizeData);
+-            // Before correction, the image and hit areas may disagree. Consume this tap
+-            // instead of executing a potentially unintended custom or native action.
+-            return;
+         }
+-        // A second tap can arrive before the corrective render replaces the old overlays.
+-        if (RNWidgetSizing.hasOutdatedSize(context, widgetId, incomingIntent)) return;
+         String clickAction = incomingIntent.getStringExtra("clickAction");
+         if (clickAction != null) {
+             switch (clickAction) {
+diff --git a/node_modules/react-native-android-widget/android/src/main/java/com/reactnativeandroidwidget/RNWidgetSizing.java b/node_modules/react-native-android-widget/android/src/main/java/com/reactnativeandroidwidget/RNWidgetSizing.java
+index fb19f26..74650e8 100644
+--- a/node_modules/react-native-android-widget/android/src/main/java/com/reactnativeandroidwidget/RNWidgetSizing.java
++++ b/node_modules/react-native-android-widget/android/src/main/java/com/reactnativeandroidwidget/RNWidgetSizing.java
+@@ -79,8 +79,14 @@ public final class RNWidgetSizing {
+                 }
+             }
+             // Keep the pair together, including launchers that provide only one size.
+-            if (selected != null) return new Point(Math.max(1, Math.round(selected.getWidth())),
+-                Math.max(1, Math.round(selected.getHeight())));
++            // A launcher that sets only the min and max leaves this list behind: then they win.
++            int current = options.getInt(landscape ? AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH
++                : AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT);
++            if (selected != null && (current <= 0
++                || Math.abs(current - (landscape ? selected.getWidth() : selected.getHeight())) <= 1)) {
++                return new Point(Math.max(1, Math.round(selected.getWidth())),
++                    Math.max(1, Math.round(selected.getHeight())));
++            }
+         }
+         return new Point(options.getInt(landscape ? AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH
+                 : AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH),

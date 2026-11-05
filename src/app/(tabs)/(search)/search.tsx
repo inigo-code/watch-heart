@@ -80,7 +80,7 @@ export default function SearchScreen() {
         setLoading(true);
         setError(null);
         (q ? search(kind, q, key, controller.signal) : trending(kind, key, controller.signal))
-          .then((r) => setResults(r))
+          .then((r) => !controller.signal.aborted && setResults(r))
           .catch((e) => {
             if (controller.signal.aborted) return;
             setResults([]);
@@ -93,6 +93,7 @@ export default function SearchScreen() {
     return () => {
       clearTimeout(timer);
       controller.abort();
+      setLoading(false);
     };
   }, [kind, q, key, source, discovering, round]);
 

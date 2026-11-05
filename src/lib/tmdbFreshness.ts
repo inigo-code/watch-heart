@@ -136,6 +136,7 @@ export function useTmdbFreshness() {
       patchMany(
         dk.map((e) => ({ id: e.id, patch: { kind: 'tv' as const } })),
         wk.map((x) => ({ id: x.id, patch: { kind: 'tv' as const } })),
+        { quiet: true },
       );
     }
     if (!key) return;
@@ -162,7 +163,7 @@ export function useTmdbFreshness() {
     const buffer = { diary: [] as { id: string; patch: Partial<Entry> }[], watch: [] as { id: string; patch: Partial<WatchItem> }[] };
     const flush = () => {
       if (!buffer.diary.length && !buffer.watch.length) return;
-      patchMany(buffer.diary.splice(0), buffer.watch.splice(0));
+      patchMany(buffer.diary.splice(0), buffer.watch.splice(0), { quiet: true });
     };
     setProgress({ running: true, done: 0, total: jobs.length, found: 0 });
 

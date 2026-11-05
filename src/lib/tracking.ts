@@ -75,6 +75,12 @@ export function seasonOn(seen: Track['seen']) {
   return Math.max(0, ...Object.keys(seen).map((k) => parseKey(k)?.season ?? 0));
 }
 
+/** Two phones changed the same show: every tick and rating from both stays, and the newer details win. */
+export function mergeTrack(mine: Track, theirs: Track): Track {
+  const fresher = theirs.checkedAt > mine.checkedAt ? theirs : mine;
+  return settle({ ...mine, ...(fresher === theirs ? { seasons: theirs.seasons, lastAired: theirs.lastAired, nextAir: theirs.nextAir, upcoming: theirs.upcoming, ended: theirs.ended, checkedAt: theirs.checkedAt } : {}), seen: { ...theirs.seen, ...mine.seen }, ratings: { ...theirs.ratings, ...mine.ratings } });
+}
+
 /** Completed once an ended show is all seen; back to watching if new episodes appear. */
 export function settle(t: Track): Track {
   const c = counts(t);

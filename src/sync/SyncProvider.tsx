@@ -170,7 +170,10 @@ export function SyncProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!supabase) return;
-    supabase.auth.getSession().then(({ data }) => setSession(data.session));
+    supabase.auth
+      .getSession()
+      .then(({ data }) => setSession(data.session))
+      .catch(() => {});
     const { data } = supabase.auth.onAuthStateChange((_event, s) => setSession(s));
     return () => data.subscription.unsubscribe();
   }, []);
@@ -234,8 +237,9 @@ export function SyncProvider({ children }: { children: ReactNode }) {
     try {
       do {
         again.current = false;
-        await push(supabase, userId, storeRef.current, sent.current);
+        // Pull first, so a show changed on two phones can be merged before it's sent.
         await pull(supabase, userId, storeRef.current);
+        await push(supabase, userId, storeRef.current, sent.current);
       } while (again.current);
       await syncProfile();
       await syncAllLists();
