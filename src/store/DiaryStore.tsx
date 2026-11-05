@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import type { ReactNode } from 'react';
 
 import { newId } from '@/lib/id';
+import { settle } from '@/lib/tracking';
 import { plainText } from '@/lib/richText';
 import { storage } from '@/lib/storage';
 
@@ -309,6 +310,55 @@ export function DiaryStoreProvider({ children }: { children: ReactNode }) {
     [write, touch],
   );
 
+  /**
+   * Moving a viewing to Trash takes back what it did: its episodes come off the tracker (unless another
+   * viewing has them), and if it was the first viewing, the next one is no longer a rewatch. Undo puts both back.
+   */
+  const othersOf = (e: Entry) =>
+    allRef.current.filter((x) => x.id !== e.id && x.deletedAt === null && sameTitle(x, e)).sort((a, b) => a.watchedOn.localeCompare(b.watchedOn));
+  const trashEntry = useCallback(
+    (id: string) => {
+      const e = allRef.current.find((x) => x.id === id);
+      deleteEntry(id);
+      if (!e) return;
+      const others = othersOf(e);
+      if (!e.rewatch && !e.episodes?.length && others[0]?.rewatch) updateEntry(others[0].id, { rewatch: false });
+      if (!e.episodes?.length) return;
+      const item = watchRef.current.find((w) => w.track && sameTitle(w, e));
+      if (!item?.track) return;
+      const kept = new Set(others.flatMap((x) => x.episodes ?? []));
+      const seen = { ...item.track.seen };
+      const ratings = { ...item.track.ratings };
+      for (const k of e.episodes) {
+        if (kept.has(k)) continue;
+        delete seen[k];
+        delete ratings[k];
+      }
+      updateWatchItem(item.id, { track: settle({ ...item.track, seen, ratings }) });
+    },
+    [deleteEntry, updateEntry, updateWatchItem],
+  );
+  const bringBack = useCallback(
+    (id: string) => {
+      restoreEntry(id);
+      const e = allRef.current.find((x) => x.id === id);
+      if (!e) return;
+      const others = othersOf(e);
+      if (!e.rewatch && !e.episodes?.length && others[0] && !others[0].rewatch && !others[0].episodes?.length && others[0].watchedOn >= e.watchedOn) updateEntry(others[0].id, { rewatch: true });
+      if (!e.episodes?.length) return;
+      const item = watchRef.current.find((w) => w.track && sameTitle(w, e));
+      if (!item?.track) return;
+      const seen = { ...item.track.seen };
+      const ratings = { ...item.track.ratings };
+      for (const k of e.episodes) {
+        seen[k] = seen[k] ?? e.watchedOn;
+        if (e.episodeRatings?.[k]) ratings[k] = e.episodeRatings[k];
+      }
+      updateWatchItem(item.id, { track: settle({ ...item.track, seen, ratings }) });
+    },
+    [restoreEntry, updateEntry, updateWatchItem],
+  );
+
   const patchMany = useCallback<DiaryStore['patchMany']>(
     (entryPatches, watchPatches) => {
       // Patched against the current lists, not the refs: a background job can call this in the same
@@ -487,8 +537,8 @@ export function DiaryStoreProvider({ children }: { children: ReactNode }) {
         source === 'manual' || !sourceId ? [] : entries.filter((e) => e.source === source && e.sourceId === sourceId),
       addEntry,
       updateEntry,
-      deleteEntry,
-      restoreEntry,
+      deleteEntry: trashEntry,
+      restoreEntry: bringBack,
       purgeEntry,
       emptyTrash,
       importEntries,
@@ -502,7 +552,7 @@ export function DiaryStoreProvider({ children }: { children: ReactNode }) {
       importWatchlist,
       sync,
     };
-  }, [all, ready, addEntry, updateEntry, deleteEntry, restoreEntry, purgeEntry, emptyTrash, importEntries, watchlist, addToWatchlist, updateWatchItem, patchMany, removeFromWatchlist, importWatchlist, sync]);
+  }, [all, ready, addEntry, updateEntry, trashEntry, bringBack, purgeEntry, emptyTrash, importEntries, watchlist, addToWatchlist, updateWatchItem, patchMany, removeFromWatchlist, importWatchlist, sync]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

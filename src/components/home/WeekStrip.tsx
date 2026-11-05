@@ -34,7 +34,8 @@ export function WeekStrip({ entries, theme }: { entries: Entry[]; theme: Theme }
   const now = today();
   const tile = (width - 32 - GAP * 6) / 7;
   const month = entries.filter((e) => !e.undated && monthKey(e.watchedOn) === monthKey(now));
-  const hours = Math.round(computeStats(month).minutes / 60);
+  const stats = computeStats(month);
+  const hours = Math.round(stats.minutes / 60);
   const [open, setOpen] = useState<string | null>(null);
   const toggle = (day: string) => {
     easeNextLayout();
@@ -48,7 +49,7 @@ export function WeekStrip({ entries, theme }: { entries: Entry[]; theme: Theme }
         {month.length > 0 && (
           <Tap onPress={() => router.navigate('/diary')} accessibilityRole="button" accessibilityLabel="Open your diary">
             <Text style={[styles.month, { color: theme.textMuted }]}>
-              {month.length} this month{hours ? ` · ${hours}h` : ''}
+              {stats.total} this month{hours ? ` · ${hours}h` : ''}
             </Text>
           </Tap>
         )}

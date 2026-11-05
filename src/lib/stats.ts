@@ -34,6 +34,7 @@ export function runtimeOf(e: Entry): number {
 
 export function computeStats(entries: Entry[]): Stats {
   const byKind: Record<MediaKind, number> = { movie: 0, tv: 0, anime: 0 };
+  const counted = new Set<string>();
   const ratings = new Array(11).fill(0) as number[];
   const genres = new Map<string, number>();
   const vibes = new Map<string, number>();
@@ -41,7 +42,11 @@ export function computeStats(entries: Entry[]): Stats {
   let rated = 0;
   let ratingSum = 0;
   for (const e of entries) {
-    byKind[e.kind]++;
+    const title = e.source !== 'manual' && e.sourceId ? `${e.source}:${e.sourceId}` : `${e.kind}:${e.title}`;
+    if (!counted.has(title)) {
+      counted.add(title);
+      byKind[e.kind]++;
+    }
     ratings[e.rating]++;
     if (e.rating) {
       rated++;
@@ -54,7 +59,7 @@ export function computeStats(entries: Entry[]): Stats {
   const favourite =
     [...entries].sort((a, b) => b.rating - a.rating || Number(b.liked) - Number(a.liked) || b.watchedOn.localeCompare(a.watchedOn))[0] ?? null;
   return {
-    total: entries.length,
+    total: counted.size,
     byKind,
     avgStars: rated ? Math.round((ratingSum / rated / 2) * 10) / 10 : null,
     minutes,

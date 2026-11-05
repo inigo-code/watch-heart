@@ -49,6 +49,7 @@ export const WHATS_NEW = {
     'Logged a title more than once? Delete one viewing right from its page',
     'Leaving the log form with unsaved words now asks first',
     'Remove a favourite with one tap',
+    'Deleting a viewing unticks its episodes, and counts show titles, not diary lines',
     'Several titles in a day stack up in This week: tap to open them',
     'A friend’s page stays still when you switch between Diary, Reviews and Lists',
   ],
