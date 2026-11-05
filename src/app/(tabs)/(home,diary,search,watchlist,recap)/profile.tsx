@@ -198,11 +198,16 @@ function ProfileBody() {
                   onPress={() => setPicking(f || i <= settings.favourites.length ? Math.min(i, settings.favourites.length) : settings.favourites.length)}
                   onLongPress={() => f && setFavourite(i, null)}
                   accessibilityRole="button"
-                  accessibilityLabel={f ? `${f.title}. Tap to change, hold to remove` : 'Add a favourite'}
+                  accessibilityLabel={f ? `${f.title}. Tap to change` : 'Add a favourite'}
                   style={styles.fav}
                 >
                   {f ? (
-                    <Poster uri={f.posterUrl} title={f.title} width={74} theme={theme} radius={6} />
+                    <View>
+                      <Poster uri={f.posterUrl} title={f.title} width={74} theme={theme} radius={6} />
+                      <Pressable onPress={() => setFavourite(i, null)} hitSlop={8} accessibilityRole="button" accessibilityLabel={`Remove ${f.title} from your favourites`} style={styles.favRemove}>
+                        <Ionicons name="close" size={14} color="#FFFFFF" />
+                      </Pressable>
+                    </View>
                   ) : (
                     <View style={[styles.emptyFav, { borderColor: theme.border }]}>
                       <Ionicons name="add" size={26} color={theme.textMuted} />
@@ -543,6 +548,7 @@ const styles = StyleSheet.create({
   perksTitle: { fontSize: font.body, fontWeight: '700' },
   perksNote: { fontFamily: fonts.mono, fontSize: font.caption, lineHeight: 16, marginTop: 2 },
   content: { padding: 16, gap: 22 },
+  favRemove: { position: 'absolute', top: 4, right: 4, width: 22, height: 22, borderRadius: 11, backgroundColor: 'rgba(0,0,0,0.6)', alignItems: 'center', justifyContent: 'center' },
   banner: { position: 'absolute', top: 0, left: 0, right: 0, overflow: 'hidden' },
   who: { alignItems: 'center', gap: 4, paddingTop: 8 },
   save: { flexDirection: 'row', alignItems: 'center', gap: 6, height: 40, paddingHorizontal: 22, borderRadius: 20, marginTop: 8 },

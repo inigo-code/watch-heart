@@ -2,12 +2,13 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import DateTimePicker, { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 import * as Haptics from 'expo-haptics';
-import { Stack, router, useLocalSearchParams } from 'expo-router';
+import { Stack, router, useLocalSearchParams, usePreventRemove } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Platform, Pressable, ScrollView, StyleSheet, Switch, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { ActionSheet } from '@/components/ActionSheet';
 import { Text, TextInput } from '@/components/AppText';
 import { details, tmdbKey } from '@/api';
 import { KeyboardSafe } from '@/components/KeyboardSafe';
@@ -102,6 +103,15 @@ function LogForm() {
   const reduced = useReducedMotion();
   const [stamped, setStamped] = useState<string | null>(null);
   const closeForm = useCallback(() => (router.canGoBack() ? router.back() : router.replace('/diary')), []);
+  // Set once saved or deleted, so closing the form doesn't ask about unsaved changes.
+  const [leaving, setLeaving] = useState(false);
+  const [askDiscard, setAskDiscard] = useState(false);
+  const nextPage = useRef<Parameters<typeof router.push>[0] | null>(null);
+  useEffect(() => {
+    if (!leaving) return;
+    closeForm();
+    if (nextPage.current) router.push(nextPage.current);
+  }, [leaving, closeForm]);
   // A poster chosen on the poster screen before logging comes back here.
   const takePoster = useCallback((c: { posterUrl: string | null; posterPick: string | null }) => setDraft((d) => ({ ...d, posterUrl: c.posterUrl, posterPick: c.posterPick })), []);
   useDraftPoster(draft.sourceId, takePoster);
@@ -211,7 +221,7 @@ function LogForm() {
     if (settings.haptics) Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
     toast(editing ? 'Entry updated' : `Logged · ${friendlyDate(final.watchedOn)}${queued ? ' · off your watchlist' : ''}`);
     // A new entry gets the stamp, which closes the form when it's done.
-    if (editing || reduced) closeForm();
+    if (editing || reduced) setLeaving(true);
     else setStamped(final.title);
   };
 
@@ -236,8 +246,7 @@ function LogForm() {
       fetchedAt: draft.fetchedAt,
     });
     toast('Saved to your watchlist');
-    if (router.canGoBack()) router.back();
-    else router.replace('/diary');
+    setLeaving(true);
   };
 
   const remove = () => {
@@ -246,6 +255,10 @@ function LogForm() {
     toast(`Moved “${editing.title}” to Trash`, { label: 'Undo', onPress: () => restoreEntry(editing.id) });
     router.dismissTo('/');
   };
+
+  // Words and stars you haven't saved shouldn't vanish on a stray Back.
+  const unsaved = editing ? draft.review.trim() !== editing.review.trim() || draft.rating !== editing.rating : !!draft.review.trim() || draft.rating > 0;
+  usePreventRemove(unsaved && !stamped && !leaving, () => setAskDiscard(true));
 
   const detailCount = [
     !!draft.companions?.length,
@@ -327,8 +340,8 @@ function LogForm() {
                 // Close the form first, so the episodes page opens inside the tab you came from (replacing the
                 // form put a second set of tabs on top, with no way back).
                 const title = params.title ?? JSON.stringify({ ...draft, originalTitle: draft.originalTitle ?? undefined });
-                router.back();
-                router.push({ pathname: '/track', params: { title } });
+                nextPage.current = { pathname: '/track', params: { title } };
+                setLeaving(true);
               }}
               accessibilityRole="button"
               style={({ pressed }) => [styles.repick, { borderColor: theme.accent + '88', opacity: pressed ? 0.7 : 1 }]}
@@ -530,6 +543,12 @@ function LogForm() {
           )}
         </View>
       </ScrollView>
+      <ActionSheet
+        visible={askDiscard}
+        title="Discard your changes?"
+        onClose={() => setAskDiscard(false)}
+        actions={[{ label: 'Discard', icon: 'trash-outline', destructive: true, onPress: () => setLeaving(true) }]}
+      />
       <ConfirmTrash title={trashing && editing ? editing.title : null} onConfirm={remove} onClose={() => setTrashing(false)} />
       <TitlePicker visible={picking} theme={theme} initialQuery={draft.title} initialKind={draft.kind} onPick={repick} onClose={() => setPicking(false)} />
       {!!stamped && <LoggedStamp theme={theme} title={stamped} onDone={closeForm} />}

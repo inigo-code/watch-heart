@@ -6,6 +6,7 @@ import { Animated, ActivityIndicator, Pressable, StyleSheet, View } from 'react-
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Text } from '@/components/AppText';
+import { ConfirmTrash } from '@/components/ConfirmTrash';
 import { Tap } from '@/components/Motion';
 import { trackable } from '@/api/episodes';
 import { browseGenre } from '@/api/tmdb';
@@ -23,7 +24,7 @@ import { font, fonts, useTheme } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
 import { useLists } from '@/lists/ListsProvider';
 import { useDiary } from '@/store/DiaryStore';
-import type { Title } from '@/store/types';
+import type { Entry, Title } from '@/store/types';
 
 /**
  * A film or series before (or after) you log it: what it is, who made it, where to watch it, and what
@@ -36,7 +37,8 @@ export default function TitleScreen() {
   const toast = useToast();
   const params = useLocalSearchParams<{ id: string; t?: string }>();
   const id = params.id;
-  const { viewingsOf, queued, addToWatchlist, removeFromWatchlist } = useDiary();
+  const { viewingsOf, queued, addToWatchlist, removeFromWatchlist, deleteEntry, restoreEntry } = useDiary();
+  const [trashing, setTrashing] = useState<Entry | null>(null);
   const { listsWith } = useLists();
   const seed = useMemo(() => (params.t ? (JSON.parse(params.t) as Title) : null), [params.t]);
   const { about: a, error } = useAbout(id);
@@ -149,21 +151,24 @@ export default function TitleScreen() {
           {viewings.length > 0 && (
             <View style={styles.block}>
               <SectionLabel theme={theme}>IN YOUR DIARY · {viewings.length === 1 ? 'SEEN ONCE' : `SEEN ${viewings.length}×`}</SectionLabel>
-              {viewings.slice(0, 5).map((v) => (
-                <Pressable
-                  key={v.id}
-                  onPress={() => router.push({ pathname: '/entry/[id]', params: { id: v.id } })}
-                  accessibilityRole="button"
-                  style={[styles.viewing, { backgroundColor: theme.card, borderColor: theme.border }]}
-                >
+              {viewings.map((v) => (
+                <View key={v.id} style={[styles.viewing, { backgroundColor: theme.card, borderColor: theme.border }]}>
+                  <Pressable
+                    onPress={() => router.push({ pathname: '/entry/[id]', params: { id: v.id } })}
+                    accessibilityRole="button"
+                    style={styles.viewingOpen}
+                  >
                   <Ionicons name="ticket-outline" size={16} color={theme.accent} />
                   <Text style={[styles.viewingDate, { color: theme.text }]}>{v.season ? `Season ${v.season} · ` : ''}
                     {v.undated ? 'Date unknown' : friendlyDate(v.watchedOn)}
                   </Text>
                   {v.rating ? <Stars rating={v.rating} size={13} color={theme.star} /> : null}
                   {v.liked && <Ionicons name="heart" size={14} color={theme.like} />}
-                  <Ionicons name="chevron-forward" size={16} color={theme.textMuted} />
-                </Pressable>
+                  </Pressable>
+                  <Pressable onPress={() => setTrashing(v)} hitSlop={8} accessibilityRole="button" accessibilityLabel={`Delete the viewing from ${v.undated ? 'an unknown date' : friendlyDate(v.watchedOn)}`} style={styles.viewingDelete}>
+                    <Ionicons name="trash-outline" size={18} color={theme.textMuted} />
+                  </Pressable>
+                </View>
               ))}
             </View>
           )}
@@ -179,6 +184,16 @@ export default function TitleScreen() {
       </Animated.ScrollView>
       <AddToList item={listing ? t : null} theme={theme} onClose={() => setListing(false)} />
       <MovieNightSheet t={t} visible={planning} theme={theme} onClose={() => setPlanning(false)} />
+      <ConfirmTrash
+        title={trashing?.title ?? null}
+        onConfirm={() => {
+          if (!trashing) return;
+          const gone = trashing;
+          deleteEntry(gone.id);
+          toast('Viewing moved to Trash', { label: 'Undo', onPress: () => restoreEntry(gone.id) });
+        }}
+        onClose={() => setTrashing(null)}
+      />
     </View>
   );
 }
@@ -217,6 +232,8 @@ const styles = StyleSheet.create({
   },
   toolText: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 1 },
   block: { gap: 10 },
-  viewing: { flexDirection: 'row', alignItems: 'center', gap: 10, borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, height: 46 },
+  viewing: { flexDirection: 'row', alignItems: 'center', gap: 4, borderWidth: 1, borderRadius: 10, paddingLeft: 12 },
+  viewingOpen: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10, height: 46 },
+  viewingDelete: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
   viewingDate: { flex: 1, fontFamily: fonts.mono, fontSize: font.body },
 });

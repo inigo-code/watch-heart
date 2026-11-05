@@ -44,8 +44,11 @@ export const DATA_SOURCES = {
  * An update that leaves it alone shows nothing.
  */
 export const WHATS_NEW = {
-  id: '1.4.3',
+  id: '1.4.4',
   items: [
+    'Logged a title more than once? Delete one viewing right from its page',
+    'Leaving the log form with unsaved words now asks first',
+    'Remove a favourite with one tap',
     'Several titles in a day stack up in This week: tap to open them',
     'A friend’s page stays still when you switch between Diary, Reviews and Lists',
   ],
