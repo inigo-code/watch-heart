@@ -354,7 +354,7 @@ function ProfileBody() {
                 <Ionicons name={friends.friends.length ? 'people-outline' : 'person-add-outline'} size={24} color={theme.accent} />
               </View>
               <Text style={[styles.buddyName, { color: theme.text }]} numberOfLines={1}>
-                {friends.friends.length ? 'All friends' : 'Add friends'}
+                {friends.friends.length ? 'All' : 'Add'}
               </Text>
             </Pressable>
           </ScrollView>

@@ -262,7 +262,7 @@ function LogForm() {
           title: editing ? 'EDIT ENTRY' : manual ? 'ADD BY HAND' : '',
           headerTransparent: !manual,
           headerStyle: { backgroundColor: manual ? theme.bg : 'transparent' },
-          headerTintColor: theme.text,
+          headerTintColor: manual ? theme.text : '#FFFFFF',
           headerBackVisible: manual,
           headerLeft: manual ? undefined : () => <BackDisc />,
           headerRight: () => (
@@ -393,7 +393,7 @@ function LogForm() {
           <Field theme={theme} label={draft.season ? `Your rating · Season ${draft.season}` : 'Your rating'}>
             <View style={styles.ratingRow}>
               <StarInput value={draft.rating} onChange={(rating) => set({ rating })} theme={theme} size={38} />
-              <Text style={[styles.ratingValue, { color: draft.rating ? theme.star : theme.textMuted }]}>
+              <Text style={[styles.ratingValue, { color: draft.rating ? theme.text : theme.textMuted }]}>
                 {draft.rating ? (draft.rating / 2).toFixed(1) : '—'}
               </Text>
               <Pressable
@@ -473,7 +473,7 @@ function LogForm() {
             <View style={{ flex: 1 }}>
               <Text style={[styles.moreTitle, { color: theme.text }]}>More details</Text>
               <Text style={[styles.moreNote, { color: theme.textMuted }]} numberOfLines={1}>
-                {detailCount ? `${detailCount} added · ` : ''}Who, where, on what, vibes, rewatch, tags
+                {detailCount ? `${detailCount} added` : 'Who, where, vibes, tags'}
               </Text>
             </View>
             <Ionicons name={showMore ? 'chevron-up' : 'chevron-down'} size={18} color={theme.textMuted} />

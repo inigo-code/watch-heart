@@ -81,7 +81,7 @@ export function greetingIcon(hour: number): MciName {
 
 /** A few words beside the time-of-day picture, like the next showing on a marquee. Short enough for one line. */
 export function greetingLine(hour: number) {
-  if (hour >= 5 && hour < 12) return 'Coffee and a film?';
+  if (hour >= 5 && hour < 12) return 'Coffee & a film?';
   if (hour >= 12 && hour < 17) return 'Matinee o’clock';
   if (hour >= 17 && hour < 22) return 'Evening show?';
   return 'Just one more?';
@@ -90,8 +90,8 @@ export function greetingLine(hour: number) {
 const styles = StyleSheet.create({
   wrap: { gap: 4 },
   titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  icons: { flexDirection: 'row', alignItems: 'center' },
-  avatarBtn: { paddingHorizontal: 2, paddingVertical: 4 },
+  icons: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  avatarBtn: { paddingVertical: 4, marginRight: 10 },
   iconBtn: { width: 40, height: 44, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
   lineRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   greeting: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8 },

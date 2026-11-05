@@ -308,7 +308,7 @@ const styles = StyleSheet.create({
   mode: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, height: 36, borderRadius: 18 },
   modeText: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 1.5 },
   rowMain: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10, borderRadius: 8 },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 4, borderBottomWidth: StyleSheet.hairlineWidth },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 8, borderBottomWidth: StyleSheet.hairlineWidth },
   rowBody: { flex: 1, gap: 3 },
   title: { fontSize: font.headline, fontWeight: '700' },
   year: { fontFamily: fonts.mono, fontSize: font.footnote, fontWeight: '400' },

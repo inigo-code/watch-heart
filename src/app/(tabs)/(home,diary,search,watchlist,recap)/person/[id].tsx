@@ -135,7 +135,7 @@ export default function PersonScreen() {
           <Text style={[styles.cellTitle, { color: theme.text }]} numberOfLines={2}>
             {item.title}
           </Text>
-          <Text style={[styles.cellRole, { color: theme.textMuted }]} numberOfLines={1}>
+          <Text style={[styles.cellRole, { color: theme.textMuted }]} numberOfLines={2}>
             {[item.year, item.role].filter(Boolean).join(' · ')}
           </Text>
         </Pressable>

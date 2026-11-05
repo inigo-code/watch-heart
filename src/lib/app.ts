@@ -47,5 +47,6 @@ export const WHATS_NEW = {
   id: '1.3.7',
   items: [
     'Notifications for new episodes, weekend picks and your monthly recap. Choose which in Settings.',
+    'One highlight colour throughout, more room between buttons, and no more cut-off text',
   ],
 };

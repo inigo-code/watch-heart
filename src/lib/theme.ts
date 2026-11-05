@@ -46,7 +46,7 @@ const light: typeof dark = {
   chip: '#E9E1D2',
   chipActive: '#1A1714',
   chipActiveText: '#F3EDE1',
-  star: '#C8901E',
+  star: '#A06E00',
   like: '#E0314B',
   danger: '#C93636',
   toast: '#1A1714',
@@ -101,7 +101,8 @@ export function buildTheme(isDark: boolean, accent: AccentKey): Theme {
   const base = isDark ? dark : light;
   const [a, aText, aSoft] = ACCENTS[accent][isDark ? 'dark' : 'light'];
   // Surfaces that stay dark in both looks (the Diary's film strip, the About card) take the bright accent.
-  return { ...base, accent: a, accentText: aText, accentSoft: aSoft, accentOnDark: ACCENTS[accent].dark[0] };
+  // One highlight everywhere: anything selected or chosen wears the accent.
+  return { ...base, accent: a, accentText: aText, accentSoft: aSoft, chipActive: a, chipActiveText: aText, accentOnDark: ACCENTS[accent].dark[0] };
 }
 
 export function useTheme(): Theme {

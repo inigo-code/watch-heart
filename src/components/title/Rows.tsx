@@ -121,7 +121,7 @@ export function RowHead({ title, theme, more, onMore }: { title: string; theme: 
         {title}
       </SectionLabel>
       {onMore && (
-        <Pressable onPress={onMore} hitSlop={10} accessibilityRole="button" style={styles.more}>
+        <Pressable onPress={onMore} hitSlop={16} accessibilityRole="button" style={styles.more}>
           <Text style={[styles.moreText, { color: theme.textMuted }]}>{(more ?? 'See all').toUpperCase()}</Text>
           <Ionicons name="chevron-forward" size={14} color={theme.textMuted} />
         </Pressable>

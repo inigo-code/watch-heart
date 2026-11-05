@@ -127,7 +127,7 @@ const styles = StyleSheet.create({
   paletteRing: { borderWidth: 2.5, borderRadius: 26, padding: 2 },
   paletteSwatch: { width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center' },
   paletteDot: { width: 12, height: 12, borderRadius: 6 },
-  paletteLabel: { fontFamily: fonts.monoBold, fontSize: 10, letterSpacing: 1 },
+  paletteLabel: { fontFamily: fonts.monoBold, fontSize: 12, letterSpacing: 0.5 },
   buttons: { flexDirection: 'row', gap: 10 },
   primary: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, height: 52, borderRadius: 26 },
   primaryText: { fontFamily: fonts.monoBold, fontSize: font.body, letterSpacing: 1.5 },

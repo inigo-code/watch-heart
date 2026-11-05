@@ -175,7 +175,7 @@ export function Chip({ label, active, icon, color, theme, onPress }: {
       style={[styles.chip, { backgroundColor: active ? theme.chipActive : 'transparent', borderColor: active ? theme.chipActive : theme.border }]}
     >
       {icon && <Ionicons name={icon} size={14} color={color && !active ? color : fg} />}
-      {!icon && color && <View style={[styles.dot, { backgroundColor: color }]} />}
+      {!icon && color && !active && <View style={[styles.dot, { backgroundColor: color }]} />}
       <Text style={[styles.chipText, { color: fg }]}>{label.toUpperCase()}</Text>
     </Tap>
   );

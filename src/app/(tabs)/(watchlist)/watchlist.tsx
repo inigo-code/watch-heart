@@ -121,7 +121,7 @@ export default function WatchlistScreen() {
             WATCH<Text style={{ color: theme.accent }}>LIST</Text>
           </Text>
           <Text style={[styles.sub, { color: theme.textMuted }]} numberOfLines={1}>
-            {queue.length ? `${queue.length} ${queue.length === 1 ? 'title' : 'titles'} saved for later` : 'Saved for later'}
+            {queue.length ? `${queue.length} saved` : 'For later'}
           </Text>
         </View>
         <Tap onPress={() => router.push('/lists')} accessibilityRole="button" accessibilityLabel="Your lists" style={[styles.listsBtn, { borderColor: theme.accent, backgroundColor: theme.accentSoft }]}>
@@ -164,7 +164,7 @@ export default function WatchlistScreen() {
               <Chip theme={theme} label="Anime" color={KIND_COLORS.anime} active={filter === 'anime'} onPress={() => setFilter('anime')} />
             </ScrollView>
           </View>
-          <Pressable onPress={() => setSort(SORTS[sort].next)} hitSlop={8} accessibilityRole="button" style={styles.sortBtn}>
+          <Pressable onPress={() => setSort(SORTS[sort].next)} hitSlop={16} accessibilityRole="button" style={styles.sortBtn}>
             <Ionicons name="swap-vertical" size={14} color={theme.textMuted} />
             <Text style={[styles.sortText, { color: theme.textMuted }]}>{SORTS[sort].label.toUpperCase()}</Text>
           </Pressable>

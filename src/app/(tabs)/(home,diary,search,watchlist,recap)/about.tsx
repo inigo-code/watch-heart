@@ -22,7 +22,7 @@ export default function AboutScreen() {
         <View style={styles.cardBody}>
           <BrandTitle theme={{ ...theme, text: theme.dark ? theme.text : theme.bg, accent: theme.accentOnDark }} size={44} />
           <Text style={[styles.tagline, { color: theme.accentOnDark }]}>{APP_TAGLINE.toUpperCase()}</Text>
-          <Text style={[styles.version, { color: theme.textMuted }]}>Version {describeRunning()}</Text>
+          <Text style={styles.version}>Version {describeRunning()}</Text>
           <Pressable
             onPress={() => Linking.openURL(HEART_APPS.url)}
             accessibilityRole="link"
@@ -38,11 +38,11 @@ export default function AboutScreen() {
       <UpdateCard theme={theme} />
 
       <Section theme={theme} title="Credits">
-        <Row theme={theme} icon="film-outline" label="Films, series and anime" value="TMDB" onPress={() => Linking.openURL(DATA_SOURCES.tmdb.url)} />
+        <Row theme={theme} icon="film-outline" label="Films and series" value="TMDB" onPress={() => Linking.openURL(DATA_SOURCES.tmdb.url)} />
         {ANILIST_ALLOWED && (
-          <Row theme={theme} icon="sparkles-outline" label="Anime (without a TMDB key)" value="AniList" onPress={() => Linking.openURL(DATA_SOURCES.anilist.url)} />
+          <Row theme={theme} icon="sparkles-outline" label="Anime" value="AniList" onPress={() => Linking.openURL(DATA_SOURCES.anilist.url)} />
         )}
-        <Row theme={theme} icon="tv-outline" label="Series (without a TMDB key)" value="TVmaze" onPress={() => Linking.openURL(DATA_SOURCES.tvmaze.url)} last />
+        <Row theme={theme} icon="tv-outline" label="Series" value="TVmaze" onPress={() => Linking.openURL(DATA_SOURCES.tvmaze.url)} last />
       </Section>
 
       {/* TMDB's required credit: its logo and notice, smaller and quieter than Watch Heart's own name. */}
@@ -72,7 +72,8 @@ const styles = StyleSheet.create({
   card: { borderRadius: 6, paddingVertical: 8, gap: 12 },
   cardBody: { alignItems: 'center', gap: 6, paddingVertical: 14 },
   tagline: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 1.5 },
-  version: { fontFamily: fonts.mono, fontSize: font.caption },
+  // On the card that stays dark in both looks.
+  version: { fontFamily: fonts.mono, fontSize: font.caption, color: '#B8B2A7' },
   family: {
     flexDirection: 'row',
     alignItems: 'center',
