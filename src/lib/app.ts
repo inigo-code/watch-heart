@@ -44,9 +44,8 @@ export const DATA_SOURCES = {
  * An update that leaves it alone shows nothing.
  */
 export const WHATS_NEW = {
-  id: '1.3.5',
+  id: '1.3.6',
   items: [
-    'Home starts with your week: a tile a day, with the poster of what you watched',
-    'Netflix opens in its app',
+    'A shorter greeting on Home, with its icon given some room',
   ],
 };

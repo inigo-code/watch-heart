@@ -6,7 +6,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { Text } from '@/components/AppText';
 import { Avatar } from '@/components/Avatar';
 import { BrandTitle } from '@/components/BrandTitle';
-import { font, fonts } from '@/lib/theme';
+import { font } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
 import { useSettings } from '@/settings/SettingsProvider';
 import { useSync } from '@/sync/SyncProvider';
@@ -22,8 +22,12 @@ export function AppHeader({ theme, line, icon }: { theme: Theme; line: string; i
       <BrandTitle theme={theme} size={font.marquee} />
       <View style={styles.lineRow}>
         <View style={styles.greeting}>
-          {icon && <MaterialCommunityIcons name={icon} size={15} color={theme.accent} accessibilityElementsHidden importantForAccessibility="no" />}
-          <Text style={[styles.line, { color: theme.textMuted }]} numberOfLines={2}>
+          {icon && (
+            <View style={[styles.badge, { backgroundColor: theme.accentSoft }]} accessibilityElementsHidden importantForAccessibility="no">
+              <MaterialCommunityIcons name={icon} size={17} color={theme.accent} />
+            </View>
+          )}
+          <Text style={[styles.line, { color: theme.textMuted }]} numberOfLines={1}>
             {line}
           </Text>
         </View>
@@ -75,23 +79,23 @@ export function greetingIcon(hour: number): MciName {
   return 'weather-night';
 }
 
-/** A line under the title that changes with the hour, like the next showing on a marquee. */
-export function greetingLine(hour: number, name: string) {
-  const who = name.trim() ? `, ${name.trim()}` : '';
-  if (hour >= 5 && hour < 12) return `Morning${who}. Coffee and a classic?`;
-  if (hour >= 12 && hour < 17) return `Afternoon${who}. Matinee time.`;
-  if (hour >= 17 && hour < 22) return `Evening${who}. Lights down, phones away.`;
-  return `Still up${who}? One more episode…`;
+/** A few words beside the time-of-day picture, like the next showing on a marquee. Short enough for one line. */
+export function greetingLine(hour: number) {
+  if (hour >= 5 && hour < 12) return 'Coffee and a film?';
+  if (hour >= 12 && hour < 17) return 'Matinee o’clock';
+  if (hour >= 17 && hour < 22) return 'Phones on silent';
+  return 'One more episode?';
 }
 
 const styles = StyleSheet.create({
   wrap: { gap: 4 },
   titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  icons: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  avatarBtn: { padding: 4 },
-  iconBtn: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
+  icons: { flexDirection: 'row', alignItems: 'center' },
+  avatarBtn: { paddingHorizontal: 2, paddingVertical: 4 },
+  iconBtn: { width: 40, height: 44, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
   lineRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  greeting: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 6 },
+  greeting: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8 },
+  badge: { width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
   // A fixed line height with no extra font padding keeps the icon centred on the text on Android.
-  line: { fontFamily: fonts.mono, fontSize: font.footnote, lineHeight: 18, includeFontPadding: false, flexShrink: 1 },
+  line: { fontSize: font.footnote, fontWeight: '600', lineHeight: 18, includeFontPadding: false, flexShrink: 1 },
 });

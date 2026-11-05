@@ -146,7 +146,7 @@ export default function HomeScreen() {
       refreshControl={pull}
       contentContainerStyle={[styles.content, { paddingTop: insets.top + 10, paddingBottom: insets.bottom + 32 }]}
     >
-      <AppHeader theme={theme} line={greetingLine(hour, settings.name)} icon={greetingIcon(hour)} />
+      <AppHeader theme={theme} line={greetingLine(hour)} icon={greetingIcon(hour)} />
 
       <WeekStrip entries={entries} theme={theme} />
 
