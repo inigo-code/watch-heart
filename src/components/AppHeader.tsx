@@ -19,8 +19,14 @@ export function AppHeader({ theme, line, icon }: { theme: Theme; line: string; i
   const sync = useSync();
   return (
     <View style={styles.wrap}>
-      <View style={styles.titleRow}>
-        <BrandTitle theme={theme} />
+      <BrandTitle theme={theme} size={font.marquee} />
+      <View style={styles.lineRow}>
+        <View style={styles.greeting}>
+          {icon && <MaterialCommunityIcons name={icon} size={15} color={theme.accent} accessibilityElementsHidden importantForAccessibility="no" />}
+          <Text style={[styles.line, { color: theme.textMuted }]} numberOfLines={2}>
+            {line}
+          </Text>
+        </View>
         <View style={styles.icons}>
           <Pressable
             onPress={() => router.push('/profile')}
@@ -57,12 +63,6 @@ export function AppHeader({ theme, line, icon }: { theme: Theme; line: string; i
           </Pressable>
         </View>
       </View>
-      <View style={styles.lineRow}>
-        {icon && <MaterialCommunityIcons name={icon} size={15} color={theme.accent} accessibilityElementsHidden importantForAccessibility="no" />}
-        <Text style={[styles.line, { color: theme.textMuted }]} numberOfLines={1}>
-          {line}
-        </Text>
-      </View>
     </View>
   );
 }
@@ -90,7 +90,8 @@ const styles = StyleSheet.create({
   icons: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   avatarBtn: { padding: 4 },
   iconBtn: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
-  lineRow: { flexDirection: 'row', alignItems: 'center', gap: 6, height: 18 },
+  lineRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  greeting: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 6 },
   // A fixed line height with no extra font padding keeps the icon centred on the text on Android.
   line: { fontFamily: fonts.mono, fontSize: font.footnote, lineHeight: 18, includeFontPadding: false, flexShrink: 1 },
 });

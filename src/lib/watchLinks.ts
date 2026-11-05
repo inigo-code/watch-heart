@@ -26,15 +26,14 @@ export function watchLink(service: string, title: string) {
   return `https://www.google.com/search?q=${encodeURIComponent(`${title} on ${service}`)}`;
 }
 
-/** Google's first answer for the title on Netflix, as Netflix's own page for it (which the app opens). */
-async function netflixPage(title: string) {
+/** Netflix's id for a title: Google's first answer for it on Netflix. */
+async function netflixId(title: string) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 4000);
   try {
     const q = encodeURIComponent(`site:netflix.com/title ${title}`);
     const res = await fetch(`https://www.google.com/search?q=${q}&btnI=1`, { signal: controller.signal, headers: { 'User-Agent': 'Mozilla/5.0 (Linux; Android 14) Mobile' } });
-    const id = `${res.url} ${await res.text()}`.match(/netflix\.com(?:\/[a-z-]+)?\/title\/(\d+)/)?.[1];
-    return id ? `https://www.netflix.com/title/${id}` : null;
+    return `${res.url} ${await res.text()}`.match(/netflix\.com(?:\/[a-z-]+)?\/title\/(\d+)/)?.[1] ?? null;
   } catch {
     return null;
   } finally {
@@ -44,6 +43,15 @@ async function netflixPage(title: string) {
 
 /** Opens a service for a title. */
 export async function openOnService(service: string, title: string) {
-  const page = /netflix/i.test(service) ? await netflixPage(title) : null;
-  await Linking.openURL(page ?? watchLink(service, title));
+  if (/netflix/i.test(service)) {
+    const id = await netflixId(title);
+    // In a browser Netflix stops at its login page, so go to the app when it's there.
+    const opened = await Linking.openURL(id ? `nflx://www.netflix.com/title/${id}` : 'nflx://www.netflix.com/browse').then(
+      () => true,
+      () => false,
+    );
+    if (opened) return;
+    if (id) return void (await Linking.openURL(`https://www.netflix.com/title/${id}`));
+  }
+  await Linking.openURL(watchLink(service, title));
 }

@@ -44,10 +44,9 @@ export const DATA_SOURCES = {
  * An update that leaves it alone shows nothing.
  */
 export const WHATS_NEW = {
-  id: '1.3.4',
+  id: '1.3.5',
   items: [
-    'Friends’ activity says what they watched: S2 E4, or Season 2 if they binged it',
-    'Tap an episode for its summary, details and your own rating',
-    'Marking a whole season logs it in your Diary',
+    'Home starts with your week: a tile a day, with the poster of what you watched',
+    'Netflix opens in its app',
   ],
 };

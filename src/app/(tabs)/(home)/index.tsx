@@ -16,7 +16,7 @@ import { discoverTmdb, nowPlayingTmdb, trendingAllTmdb } from '@/api/tmdb';
 import { AppHeader, greetingIcon, greetingLine } from '@/components/AppHeader';
 import { Poster } from '@/components/Film';
 import { FriendsRow } from '@/components/home/FriendsRow';
-import { MonthTicket } from '@/components/home/MonthTicket';
+import { WeekStrip } from '@/components/home/WeekStrip';
 import { RegionalRows } from '@/components/home/RegionalRows';
 import { MovieNightCard, useMovieNights } from '@/components/MovieNight';
 import { RowHead, TitleRow, openTitle, warmTitle } from '@/components/title/Rows';
@@ -148,7 +148,7 @@ export default function HomeScreen() {
     >
       <AppHeader theme={theme} line={greetingLine(hour, settings.name)} icon={greetingIcon(hour)} />
 
-      <MonthTicket entries={entries} theme={theme} />
+      <WeekStrip entries={entries} theme={theme} />
 
       {nights[0] && <MovieNightCard night={nights[0]} theme={theme} showTitle />}
 
