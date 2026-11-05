@@ -1,5 +1,5 @@
 diff --git a/node_modules/react-native-android-widget/android/src/main/java/com/reactnativeandroidwidget/RNWidgetProvider.java b/node_modules/react-native-android-widget/android/src/main/java/com/reactnativeandroidwidget/RNWidgetProvider.java
-index 983ff91..98d61df 100644
+index 983ff91..28ae3f8 100644
 --- a/node_modules/react-native-android-widget/android/src/main/java/com/reactnativeandroidwidget/RNWidgetProvider.java
 +++ b/node_modules/react-native-android-widget/android/src/main/java/com/reactnativeandroidwidget/RNWidgetProvider.java
 @@ -18,10 +18,10 @@ public class RNWidgetProvider extends AppWidgetProvider {
@@ -17,14 +17,17 @@ index 983ff91..98d61df 100644
      }
  
      @Override
-@@ -47,16 +47,13 @@ public class RNWidgetProvider extends AppWidgetProvider {
+@@ -47,16 +47,17 @@ public class RNWidgetProvider extends AppWidgetProvider {
  
          int widgetId = incomingIntent.getIntExtra("widgetId", -1);
  
 -        if (RNWidgetSizing.correct(context, widgetId, incomingIntent)) {
-+        // Redraw at the right size, and still do what was tapped: a tap that does nothing is worse.
-+        if (RNWidgetSizing.correct(context, widgetId, incomingIntent)
-+            || RNWidgetSizing.hasOutdatedSize(context, widgetId, incomingIntent)) {
++        // A measurement that differs redraws the widget and still does what was tapped: launchers that scale
++        // widgets can measure differently on every tap, and consuming those would leave the buttons dead.
++        boolean measuredAnew = RNWidgetSizing.correct(context, widgetId, incomingIntent);
++        // Drawn for another size: these areas may hit the wrong row, so redraw and wait for the next tap.
++        boolean outdated = !measuredAnew && RNWidgetSizing.hasOutdatedSize(context, widgetId, incomingIntent);
++        if (measuredAnew || outdated) {
              RNWidgetSizing.updateStoredSize(context, widgetId);
              Data resizeData = RNWidgetJsCommunication.buildData(context, getClass().getSimpleName(), widgetId, "WIDGET_RESIZED");
              RNWidgetJsCommunication.startBackgroundTask(context, resizeData);
@@ -34,11 +37,12 @@ index 983ff91..98d61df 100644
          }
 -        // A second tap can arrive before the corrective render replaces the old overlays.
 -        if (RNWidgetSizing.hasOutdatedSize(context, widgetId, incomingIntent)) return;
++        if (outdated) return;
          String clickAction = incomingIntent.getStringExtra("clickAction");
          if (clickAction != null) {
              switch (clickAction) {
 diff --git a/node_modules/react-native-android-widget/android/src/main/java/com/reactnativeandroidwidget/RNWidgetSizing.java b/node_modules/react-native-android-widget/android/src/main/java/com/reactnativeandroidwidget/RNWidgetSizing.java
-index fb19f26..74650e8 100644
+index fb19f26..b6e544e 100644
 --- a/node_modules/react-native-android-widget/android/src/main/java/com/reactnativeandroidwidget/RNWidgetSizing.java
 +++ b/node_modules/react-native-android-widget/android/src/main/java/com/reactnativeandroidwidget/RNWidgetSizing.java
 @@ -79,8 +79,14 @@ public final class RNWidgetSizing {
@@ -58,3 +62,14 @@ index fb19f26..74650e8 100644
          }
          return new Point(options.getInt(landscape ? AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH
                  : AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH),
+@@ -100,8 +106,8 @@ public final class RNWidgetSizing {
+ 
+     static boolean hasOutdatedSize(Context context, int id, Intent intent) {
+         Point renderedSize = intent.getParcelableExtra(RENDERED_SIZE);
+-        return renderedSize != null && (!profile(context, id).equals(intent.getStringExtra(PROFILE))
+-            || !renderedSize.equals(getSize(context, id)));
++        // Only a different size moves the tap areas.
++        return renderedSize != null && !renderedSize.equals(getSize(context, id));
+     }
+ 
+     static boolean correct(Context context, int id, Intent intent) {
