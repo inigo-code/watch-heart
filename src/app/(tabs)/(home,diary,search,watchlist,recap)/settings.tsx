@@ -190,6 +190,7 @@ export default function SettingsScreen() {
 
         <Section theme={theme} title="Notifications">
           <ToggleRow theme={theme} icon="tv-outline" label="New episodes" value={settings.nudges.episodes} onChange={(episodes) => setNudge({ episodes })} />
+          <ToggleRow theme={theme} icon="bookmark-outline" label="Watchlist releases" value={settings.nudges.releases} onChange={(releases) => setNudge({ releases })} />
           <ToggleRow theme={theme} icon="sparkles-outline" label="Picks and new releases" value={settings.nudges.picks} onChange={(picks) => setNudge({ picks })} />
           <ToggleRow theme={theme} icon="calendar-outline" label="Monthly recap" value={settings.nudges.recap} onChange={(recap) => setNudge({ recap })} last />
         </Section>

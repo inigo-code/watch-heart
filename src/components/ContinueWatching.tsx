@@ -1,6 +1,6 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ActionSheet } from '@/components/ActionSheet';
@@ -17,8 +17,6 @@ import { useTracker } from '@/lib/useTracker';
 import { useDiary } from '@/store/DiaryStore';
 import type { WatchItem } from '@/store/types';
 
-const STALE = 12 * 60 * 60 * 1000;
-
 /**
  * Shows you're tracking, grouped: Ongoing, Old friends, Coming back; and the ones you've finished or dropped,
  * each with a way to stop tracking it. Stays mounted while `hidden`, to keep air dates fresh in the background.
@@ -31,16 +29,6 @@ export function ContinueWatching({ items, theme, hidden }: { items: WatchItem[];
   const tracked = items.filter((w) => w.track);
   const groups = continueWatching(tracked, today());
   const finished = tracked.filter((w) => w.track!.status === 'completed' || w.track!.status === 'dropped');
-
-  // Air dates and new episodes, refreshed in the background (a few shows at a time).
-  const refreshing = useRef(false);
-  useEffect(() => {
-    if (refreshing.current) return;
-    const stale = tracked.filter((w) => w.track!.status !== 'dropped' && Date.now() - w.track!.checkedAt > STALE).slice(0, 6);
-    if (!stale.length) return;
-    refreshing.current = true;
-    void Promise.all(stale.map((w) => tracker.refresh(w).catch(() => null))).finally(() => (refreshing.current = false));
-  }, [tracked, tracker]);
 
   if (hidden || !tracked.length) return null;
   const open = (w: WatchItem) => router.push({ pathname: '/track', params: { id: w.id } });

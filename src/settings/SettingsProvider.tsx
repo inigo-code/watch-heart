@@ -66,7 +66,7 @@ export type Settings = {
   /** The first-run welcome was seen, skipped, or wasn't needed. */
   onboarded: boolean;
   /** Which notifications you want. */
-  nudges: { episodes: boolean; picks: boolean; recap: boolean };
+  nudges: { episodes: boolean; picks: boolean; recap: boolean; releases: boolean };
   /** You were asked once about Android's Alarms & reminders switch. */
   askedAlarms: boolean;
   /** The update whose "What's new" card was already shown. */
@@ -110,7 +110,7 @@ export const DEFAULT_SETTINGS: Settings = {
   homeLanguage: '',
   onboarded: false,
   askedAlarms: false,
-  nudges: { episodes: true, picks: true, recap: true },
+  nudges: { episodes: true, picks: true, recap: true, releases: true },
   seenUpdate: null,
   movieNights: [],
   profileUpdatedAt: 0,
@@ -139,7 +139,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
         if (!raw) return;
         const saved = JSON.parse(raw) as Partial<Settings>;
         // Merge the story style too, so options added in later versions get their default.
-        setSettings({ ...DEFAULT_SETTINGS, ...saved, story: { ...DEFAULT_SETTINGS.story, ...saved.story } });
+        setSettings({ ...DEFAULT_SETTINGS, ...saved, story: { ...DEFAULT_SETTINGS.story, ...saved.story }, nudges: { ...DEFAULT_SETTINGS.nudges, ...saved.nudges } });
       })
       .catch(() => {})
       .finally(() => {

@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 
-import { showInfo } from '@/api/episodes';
+import { comingEpisodes, showInfo } from '@/api/episodes';
 import type { ShowInfo } from '@/api/episodes';
 import { today } from '@/lib/dates';
 import { epKey, newTrack, parseKey, progressLabel, settle, withInfo } from '@/lib/tracking';
@@ -63,7 +63,8 @@ export function useTracker() {
   const refresh = useCallback(
     async (item: WatchItem, signal?: AbortSignal) => {
       const info = await showInfo(settings.tmdbKey, item.source, item.sourceId, signal);
-      const track = withInfo(item.track, info, Date.now());
+      const upcoming = info.nextAir ? await comingEpisodes(settings.tmdbKey, item.source, item.sourceId, info.nextAir, signal).catch(() => undefined) : [];
+      const track = withInfo(item.track, { ...info, upcoming }, Date.now());
       updateWatchItem(item.id, { track });
       return { info, track };
     },

@@ -16,11 +16,14 @@ export type Episode = {
   score: number | null;
   director: string | null;
 };
+/** An episode to come. `date` is your local day when the exact moment (`at`) is known. */
+export type Coming = { season: number; number: number; date: string; at?: string };
 export type ShowInfo = {
   seasons: { n: number; count: number; name: string }[];
   lastAired: { season: number; number: number } | null;
   nextAir: { season: number; number: number; date: string } | null;
   ended: boolean;
+  upcoming?: Coming[];
 };
 
 const TMDB = 'https://api.tmdb.org/3';
@@ -48,6 +51,9 @@ type MazeEpisode = {
   number: number | null;
   name: string;
   airdate: string;
+  /** Blank for most streaming shows, whose airstamp is then only a placeholder. */
+  airtime?: string;
+  airstamp?: string | null;
   runtime: number | null;
   summary?: string | null;
   image?: { medium?: string } | null;
@@ -144,4 +150,55 @@ export async function seasonEpisodes(userKey: string, source: Source, sourceId: 
   }
   seasonCache.set(cacheKey, list);
   return list;
+}
+
+const mazeIds = new Map<string, string | null>();
+
+/** TVmaze's id for a show, which is how an exact air time is found for a TMDB title. */
+async function mazeIdFor(userKey: string, source: Source, sourceId: string, signal?: AbortSignal) {
+  if (source === 'tvmaze') return sourceId;
+  const id = sourceId.split(':')[1];
+  if (mazeIds.has(id)) return mazeIds.get(id)!;
+  const ids = await tmdbGet<{ tvdb_id?: number | null; imdb_id?: string | null }>(tmdbKey(userKey), `/tv/${id}/external_ids`, signal);
+  let found: string | null = null;
+  for (const q of [ids.tvdb_id ? `thetvdb=${ids.tvdb_id}` : '', ids.imdb_id ? `imdb=${ids.imdb_id}` : '']) {
+    if (!q) continue;
+    const res = await fetch(`${TVMAZE}/lookup/shows?${q}`, { signal });
+    if (res.ok) {
+      found = String(((await res.json()) as { id: number }).id);
+      break;
+    }
+  }
+  mazeIds.set(id, found);
+  return found;
+}
+
+const DAY = 24 * 60 * 60 * 1000;
+
+function localDay(iso: string) {
+  const d = new Date(iso);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+/**
+ * The rest of the airing season, fresh. Exact times come from TVmaze: only when it really has one, and only
+ * when its episode falls on about the same day, since the two sites can number a show differently.
+ */
+export async function comingEpisodes(userKey: string, source: Source, sourceId: string, next: { season: number; number: number }, signal?: AbortSignal): Promise<Coming[]> {
+  seasonCache.delete(`${source}:${sourceId}:${next.season}`);
+  const season = await seasonEpisodes(userKey, source, sourceId, next.season, signal);
+  const timed = await mazeIdFor(userKey, source, sourceId, signal)
+    .then(async (id) => {
+      if (!id) return [];
+      mazeCache.delete(id);
+      return mazeEpisodes(id, signal);
+    })
+    .catch(() => [] as MazeEpisode[]);
+  return season.flatMap((e) => {
+    if (!e.airDate || e.number < next.number) return [];
+    const maze = timed.find((m) => m.season === e.season && m.number === e.number);
+    const near = maze?.airdate && Math.abs(Date.parse(maze.airdate) - Date.parse(e.airDate)) <= DAY;
+    const at = near && maze.airtime ? maze.airstamp : null;
+    return [at ? { season: e.season, number: e.number, date: localDay(at), at } : { season: e.season, number: e.number, date: e.airDate }];
+  });
 }

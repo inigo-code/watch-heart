@@ -62,7 +62,16 @@ export const newTrack = (now: number): Track => ({ status: 'watching', seen: {},
 /** A track with fresh show details. */
 export function withInfo(t: Track | undefined, info: ShowInfo, now: number): Track {
   const base = t ?? newTrack(now);
-  return settle({ ...base, seasons: info.seasons.map(({ n, count }) => ({ n, count })), lastAired: info.lastAired, nextAir: info.nextAir, ended: info.ended, checkedAt: now });
+  const upcoming = info.upcoming ?? base.upcoming;
+  // The next episode's day in your own time zone, when its exact time is known.
+  const local = upcoming?.find((e) => e.season === info.nextAir?.season && e.number === info.nextAir?.number);
+  const nextAir = local ? { season: local.season, number: local.number, date: local.date } : info.nextAir;
+  return settle({ ...base, seasons: info.seasons.map(({ n, count }) => ({ n, count })), lastAired: info.lastAired, nextAir, upcoming, ended: info.ended, checkedAt: now });
+}
+
+/** The season you're on: the latest one you've ticked an episode of. 0 before you've started. */
+export function seasonOn(seen: Track['seen']) {
+  return Math.max(0, ...Object.keys(seen).map((k) => parseKey(k)?.season ?? 0));
 }
 
 /** Completed once an ended show is all seen; back to watching if new episodes appear. */

@@ -123,6 +123,10 @@ export type WatchItem = {
   imdbId?: string | null;
   /** When a TMDB match was last looked for and not found (so it isn't retried on every launch). */
   matchTriedAt?: number | null;
+  /** The day it comes out, in your country when known. For alerts about titles added before release. */
+  releaseDate?: string | null;
+  /** When the release date was last looked up. */
+  releaseCheckedAt?: number | null;
   /** Set when you track a series or anime episode by episode; it then shows under Continue watching. */
   track?: Track;
 };
@@ -142,6 +146,8 @@ export type Track = {
   lastAired: { season: number; number: number } | null;
   /** The next one to air, when announced. */
   nextAir: { season: number; number: number; date: string } | null;
+  /** The rest of that season, soonest first. `at` is the exact moment, when it's known. */
+  upcoming?: { season: number; number: number; date: string; at?: string }[];
   ended: boolean;
   /** When the show's details were last fetched. */
   checkedAt: number;

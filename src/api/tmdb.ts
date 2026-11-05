@@ -299,6 +299,21 @@ async function loadExtras(key: string, sourceId: string, region: string, signal?
   };
 }
 
+/** The day a title comes out: in this country when TMDB knows it, otherwise its first release. Null until there's a date. */
+export async function releaseDay(userKey: string, sourceId: string, region: string, signal?: AbortSignal): Promise<string | null> {
+  const key = tmdbKey(userKey);
+  const [type, id] = sourceId.split(':');
+  if (type === 'tv') return (await get<{ first_air_date?: string | null }>(key, `/tv/${id}`, {}, signal)).first_air_date || null;
+  const d = await get<{
+    release_date?: string | null;
+    release_dates?: { results?: { iso_3166_1: string; release_dates: { type: number; release_date: string }[] }[] };
+  }>(key, `/movie/${id}`, { append_to_response: 'release_dates' }, signal);
+  const here = d.release_dates?.results?.find((r) => r.iso_3166_1 === region)?.release_dates ?? [];
+  // Limited or full cinema release, digital, or TV: not premieres.
+  const days = here.filter((r) => [2, 3, 4, 6].includes(r.type)).map((r) => r.release_date.slice(0, 10));
+  return days.sort()[0] || d.release_date || null;
+}
+
 // ── The title page, people, and Discover ────────────────────────────────────────────────────────────
 
 export type Person = { id: number; name: string; role: string; photo: string | null };
