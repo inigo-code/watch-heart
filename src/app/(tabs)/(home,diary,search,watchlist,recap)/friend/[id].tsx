@@ -188,13 +188,10 @@ export default function FriendScreen() {
     <View style={{ flex: 1 }}>
       <Stack.Screen options={{ title: '' }} />
       <FlatList<unknown>
-        key={tab}
-        data={tab === 'diary' ? months : tab === 'reviews' ? reviews : (lists ?? [])}
-        numColumns={tab === 'lists' ? 2 : 1}
+        data={tab === 'diary' ? months : tab === 'reviews' ? reviews : lists?.length ? [{ key: 'lists' }] : []}
         refreshControl={pull}
         keyExtractor={(x) => (x as { key?: string; id?: string }).key ?? (x as { id: string }).id}
         contentContainerStyle={[styles.list, { paddingBottom: insets.bottom + 32 }]}
-        columnWrapperStyle={tab === 'lists' ? styles.listRow : undefined}
         ListHeaderComponent={header}
         ListFooterComponent={footer}
         ListEmptyComponent={
@@ -216,17 +213,17 @@ export default function FriendScreen() {
           ) : tab === 'reviews' ? (
             <Review e={item as FriendEntry} theme={theme} />
           ) : (
-            <Tap
-              onPress={() => router.push({ pathname: '/friend-list', params: { friend: friend.id, list: (item as UserList).id } })}
-              accessibilityRole="button"
-              style={styles.listCard}
-            >
-              <ListCover items={(item as UserList).items} theme={theme} width={150} />
-              <Text style={[styles.listName, { color: theme.text }]} numberOfLines={2}>
-                {(item as UserList).name}
-              </Text>
-              <Text style={[styles.meta, { color: theme.textMuted }]}>{(item as UserList).items.length} titles</Text>
-            </Tap>
+            <View style={styles.listRow}>
+              {(lists ?? []).map((l) => (
+                <Tap key={l.id} onPress={() => router.push({ pathname: '/friend-list', params: { friend: friend.id, list: l.id } })} accessibilityRole="button" style={styles.listCard}>
+                  <ListCover items={l.items} theme={theme} width={150} />
+                  <Text style={[styles.listName, { color: theme.text }]} numberOfLines={2}>
+                    {l.name}
+                  </Text>
+                  <Text style={[styles.meta, { color: theme.textMuted }]}>{l.items.length} titles</Text>
+                </Tap>
+              ))}
+            </View>
           )
         }
       />
@@ -345,7 +342,7 @@ const styles = StyleSheet.create({
   meta: { fontSize: font.footnote },
   spoiler: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   reviewText: { fontSize: font.body, lineHeight: 22 },
-  listRow: { gap: 16 },
+  listRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 16 },
   listCard: { width: 150, gap: 4 },
   listName: { fontSize: font.footnote, fontWeight: '700' },
 });

@@ -1,12 +1,14 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
-import { StyleSheet, View, useWindowDimensions } from 'react-native';
+import { useState } from 'react';
+import { ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
 
 import { Text } from '@/components/AppText';
-import { Poster } from '@/components/Film';
+import { Poster, Stars } from '@/components/Film';
 import { Rise, Tap } from '@/components/Motion';
 import { SectionLabel } from '@/components/SectionLabel';
-import { isoDate, monthKey, parseIso, today } from '@/lib/dates';
+import { friendlyDate, isoDate, monthKey, parseIso, today } from '@/lib/dates';
+import { easeNextLayout } from '@/lib/motion';
 import { computeStats } from '@/lib/stats';
 import { font, fonts } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
@@ -14,6 +16,7 @@ import type { Entry } from '@/store/types';
 
 const LETTERS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 const GAP = 6;
+const TRAY = 72;
 
 /** Monday to Sunday of the week holding this day. */
 function weekOf(day: string) {
@@ -32,6 +35,12 @@ export function WeekStrip({ entries, theme }: { entries: Entry[]; theme: Theme }
   const tile = (width - 32 - GAP * 6) / 7;
   const month = entries.filter((e) => !e.undated && monthKey(e.watchedOn) === monthKey(now));
   const hours = Math.round(computeStats(month).minutes / 60);
+  const [open, setOpen] = useState<string | null>(null);
+  const toggle = (day: string) => {
+    easeNextLayout();
+    setOpen(open === day ? null : day);
+  };
+  const tray = open ? entries.filter((e) => !e.undated && e.watchedOn === open) : [];
   return (
     <Rise style={styles.wrap}>
       <View style={styles.head}>
@@ -54,14 +63,22 @@ export function WeekStrip({ entries, theme }: { entries: Entry[]; theme: Theme }
             <Tap
               key={day}
               disabled={future || (!shown && !isToday)}
-              onPress={() => (shown ? router.push({ pathname: '/entry/[id]', params: { id: shown.id } }) : router.navigate('/search'))}
+              onPress={() => (that.length > 1 ? toggle(day) : shown ? router.push({ pathname: '/entry/[id]', params: { id: shown.id } }) : router.navigate('/search'))}
               scale={0.94}
               accessibilityRole="button"
-              accessibilityLabel={shown ? `${day}: ${shown.title}` : isToday ? 'Today: log what you watched' : day}
+              accessibilityLabel={that.length > 1 ? `${day}: ${that.length} titles` : shown ? `${day}: ${shown.title}` : isToday ? 'Today: log what you watched' : day}
+              accessibilityState={that.length > 1 ? { expanded: open === day } : undefined}
               style={{ width: tile }}
             >
               <Text style={[styles.letter, { color: isToday ? theme.accent : theme.textMuted }]}>{LETTERS[i]}</Text>
-              <View style={[styles.day, { width: tile, height: tile * 1.5, backgroundColor: theme.card, borderColor: isToday ? theme.accent : theme.border, opacity: future ? 0.45 : 1 }]}>
+              {/* A pile: the day's other posters peek out from behind the top one. */}
+              <View style={{ width: tile, height: tile * 1.5 }}>
+                {that.slice(1, 3).map((e, n) => (
+                  <View key={e.id} style={[StyleSheet.absoluteFill, styles.behind, { transform: [{ rotate: `${(n + 1) * 5}deg` }, { translateX: (n + 1) * 2 }] }]}>
+                    <Poster uri={e.posterUrl} title={e.title} width={tile} theme={theme} radius={5} />
+                  </View>
+                ))}
+              <View style={[styles.day, { width: tile, height: tile * 1.5, backgroundColor: theme.card, borderColor: open === day || isToday ? theme.accent : theme.border, opacity: future ? 0.45 : 1 }]}>
                 {shown ? (
                   <Poster uri={shown.posterUrl} title={shown.title} width={tile} theme={theme} radius={5} />
                 ) : isToday ? (
@@ -75,10 +92,34 @@ export function WeekStrip({ entries, theme }: { entries: Entry[]; theme: Theme }
                   </View>
                 )}
               </View>
+              </View>
             </Tap>
           );
         })}
       </View>
+      {open && tray.length > 1 && (
+        <View style={[styles.tray, { backgroundColor: theme.card, borderColor: theme.border }]}>
+          <View style={styles.trayHead}>
+            <Text style={[styles.trayDay, { color: theme.text }]}>{friendlyDate(open)}</Text>
+            <Tap onPress={() => toggle(open)} hitSlop={12} scale={0.9} accessibilityRole="button" accessibilityLabel="Close">
+              <Ionicons name="chevron-up" size={20} color={theme.textMuted} />
+            </Tap>
+          </View>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.trayRow}>
+            {tray.map((e, n) => (
+              <Rise key={e.id} order={n}>
+                <Tap onPress={() => router.push({ pathname: '/entry/[id]', params: { id: e.id } })} accessibilityRole="button" accessibilityLabel={e.title} style={styles.trayItem}>
+                  <Poster uri={e.posterUrl} title={e.title} width={TRAY} theme={theme} radius={6} />
+                  <Text style={[styles.trayTitle, { color: theme.text }]} numberOfLines={1}>
+                    {e.title}
+                  </Text>
+                  {e.rating ? <Stars rating={e.rating} size={11} color={theme.star} /> : null}
+                </Tap>
+              </Rise>
+            ))}
+          </ScrollView>
+        </View>
+      )}
       <Tap onPress={() => router.navigate('/search')} accessibilityRole="button" style={[styles.log, { backgroundColor: theme.accent }]}>
         <Ionicons name="add" size={22} color={theme.accentText} />
         <Text style={[styles.logText, { color: theme.accentText }]}>LOG WHAT YOU WATCHED</Text>
@@ -93,6 +134,13 @@ const styles = StyleSheet.create({
   month: { fontSize: font.footnote, fontWeight: '600' },
   week: { flexDirection: 'row', gap: GAP },
   letter: { fontFamily: fonts.monoBold, fontSize: font.caption, textAlign: 'center', marginBottom: 4 },
+  behind: { opacity: 0.75 },
+  tray: { borderWidth: 1, borderRadius: 12, padding: 12, gap: 10 },
+  trayHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  trayDay: { fontSize: font.footnote, fontWeight: '700' },
+  trayRow: { gap: 12, paddingRight: 4 },
+  trayItem: { width: TRAY, gap: 4 },
+  trayTitle: { fontSize: font.caption, fontWeight: '600' },
   day: { borderWidth: 1, borderRadius: 6, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' },
   date: { fontFamily: fonts.display, fontSize: 20 },
   more: { position: 'absolute', top: 2, right: 2, minWidth: 16, height: 16, borderRadius: 8, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 3 },
