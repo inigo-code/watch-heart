@@ -1,4 +1,5 @@
 import type { ShowInfo } from '@/api/episodes';
+import { isoDate } from '@/lib/dates';
 import type { Track, WatchItem } from '@/store/types';
 
 // The rules of the episode tracker. Pure, so they're easy to check.
@@ -87,7 +88,7 @@ const DAY = 24 * 60 * 60 * 1000;
 /** The day you last ticked an episode of it (or started tracking). */
 export function lastSeenDay(t: Track): string {
   const days = Object.values(t.seen).sort();
-  return days[days.length - 1] ?? new Date(t.startedAt).toISOString().slice(0, 10);
+  return days[days.length - 1] ?? isoDate(new Date(t.startedAt));
 }
 
 /**

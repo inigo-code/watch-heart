@@ -56,7 +56,7 @@ export function useNudges(fresh: { title: string; sourceId: string } | null) {
     const lookUp = (w: (typeof due)[number]) =>
       releaseDay(tmdbKey, w.sourceId, region)
         .then((releaseDate) => {
-          updateWatchItem(w.id, { releaseDate, releaseCheckedAt: Date.now() });
+          updateWatchItem(w.id, { releaseDate, releaseCheckedAt: Date.now() }, { quiet: true });
           return true;
         })
         .catch(() => false);

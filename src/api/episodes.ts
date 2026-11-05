@@ -1,3 +1,4 @@
+import { isoDate, today as todayIso } from '@/lib/dates';
 import type { Source } from '@/store/types';
 
 import { tmdbKey } from './tmdb';
@@ -83,7 +84,7 @@ export async function showInfo(userKey: string, source: Source, sourceId: string
     };
   }
   const [show, eps] = await Promise.all([mazeGet<{ status?: string }>(`/shows/${sourceId}`, signal), mazeEpisodes(sourceId, signal)]);
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayIso();
   const counts = new Map<number, number>();
   for (const e of eps) counts.set(e.season, Math.max(counts.get(e.season) ?? 0, e.number ?? 0));
   const aired = eps.filter((e) => e.airdate && e.airdate <= today);
@@ -175,11 +176,6 @@ async function mazeIdFor(userKey: string, source: Source, sourceId: string, sign
 
 const DAY = 24 * 60 * 60 * 1000;
 
-function localDay(iso: string) {
-  const d = new Date(iso);
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-}
-
 /**
  * The rest of the airing season, fresh. Exact times come from TVmaze: only when it really has one, and only
  * when its episode falls on about the same day, since the two sites can number a show differently.
@@ -199,6 +195,6 @@ export async function comingEpisodes(userKey: string, source: Source, sourceId: 
     const maze = timed.find((m) => m.season === e.season && m.number === e.number);
     const near = maze?.airdate && Math.abs(Date.parse(maze.airdate) - Date.parse(e.airDate)) <= DAY;
     const at = near && maze.airtime ? maze.airstamp : null;
-    return [at ? { season: e.season, number: e.number, date: localDay(at), at } : { season: e.season, number: e.number, date: e.airDate }];
+    return [at ? { season: e.season, number: e.number, date: isoDate(new Date(at)), at } : { season: e.season, number: e.number, date: e.airDate }];
   });
 }

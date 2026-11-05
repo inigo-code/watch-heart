@@ -1,6 +1,7 @@
 // What the app will tell you, and when: worked out from what it already knows, so nothing leaves the phone.
 // At most a few a week, and each says something true about your own viewing or what's new.
 
+import { isoDate, parseIso } from '@/lib/dates';
 import { seasonOn } from '@/lib/tracking';
 
 export type Nudge = { id: string; at: Date; title: string; body: string; url: string };
@@ -19,7 +20,7 @@ type Show = {
 
 export type NudgeInput = {
   now: Date;
-  entries: { watchedOn: string; undated?: boolean }[];
+  entries: { watchedOn: string; undated?: boolean; title: string; sourceId: string }[];
   watchlist: Show[];
   /** Something new from Home: this week's film from your country, or the top of trending. */
   fresh: { title: string; sourceId: string } | null;
@@ -39,10 +40,10 @@ const MORNING = 8;
 const LATE = 23;
 const RELEASE_HOUR = 10;
 
-const dayOf = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 const onDay = (iso: string, hour: number, minute = 0) => {
-  const [y, m, d] = iso.split('-').map(Number);
-  return new Date(y, m - 1, d, hour, minute);
+  const d = parseIso(iso);
+  d.setHours(hour, minute);
+  return d;
 };
 
 /** When to say so: the moment it airs if that's known, held to the morning if it's the middle of the night. */
@@ -58,7 +59,7 @@ function alertTime(e: Coming) {
 export function releaseDue(w: Show, now: Date) {
   if (w.track || w.source !== 'tmdb' || !w.sourceId) return false;
   if (w.year && w.year < now.getFullYear()) return false;
-  if (w.releaseCheckedAt && w.releaseDate && w.releaseDate <= dayOf(now)) return false;
+  if (w.releaseCheckedAt && w.releaseDate && w.releaseDate <= isoDate(now)) return false;
   return now.getTime() - (w.releaseCheckedAt ?? 0) > DAY;
 }
 
@@ -118,7 +119,7 @@ export function planNudges({ now, entries, watchlist, fresh, episodes, picks, re
   }
 
   if (picks) {
-    const queue = watchlist.filter((w) => !w.track && w.source === 'tmdb' && w.sourceId && !(w.releaseDate && w.releaseDate > dayOf(now)));
+    const queue = watchlist.filter((w) => !w.track && w.source === 'tmdb' && w.sourceId && !(w.releaseDate && w.releaseDate > isoDate(now)));
     if (queue.length) {
       const pick = ofTheWeek(queue, now);
       out.push({ id: 'nudge-weekend', at: nextWeekday(now, FRIDAY, 19), title: 'Weekend pick', body: `${pick.title} is waiting on your watchlist`, url: titlePage(pick.sourceId) });
@@ -133,7 +134,7 @@ export function planNudges({ now, entries, watchlist, fresh, episodes, picks, re
 
   if (recap) {
     const key = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-    const count = entries.filter((e) => !e.undated && e.watchedOn.startsWith(key)).length;
+    const count = new Set(entries.filter((e) => !e.undated && e.watchedOn.startsWith(key)).map((e) => e.sourceId || e.title)).size;
     if (count) {
       const month = now.toLocaleDateString('en-GB', { month: 'long' });
       out.push({

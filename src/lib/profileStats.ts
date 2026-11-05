@@ -1,7 +1,7 @@
 import { buddies } from '@/lib/companions';
 import type { Buddy } from '@/lib/companions';
 import { isoDate, parseIso } from '@/lib/dates';
-import { computeStats, episodesIn } from '@/lib/stats';
+import { computeStats, episodesOf } from '@/lib/stats';
 import type { Entry, MediaKind } from '@/store/types';
 
 // Everything the profile shows, worked out from the diary. Pure, so it's easy to check.
@@ -106,11 +106,11 @@ export function profileStats(all: Entry[], todayIso: string): ProfileStats {
   let episodes = 0;
   for (const e of dated) {
     perDay.set(e.watchedOn, (perDay.get(e.watchedOn) ?? 0) + 1);
-    const eps = e.kind === 'movie' ? 0 : episodesIn(e.progress);
+    const eps = e.kind === 'movie' ? 0 : episodesOf(e);
     episodes += eps;
     episodesPerDay.set(e.watchedOn, (episodesPerDay.get(e.watchedOn) ?? 0) + (eps || 1));
   }
-  for (const e of all) if (e.undated && e.kind !== 'movie') episodes += episodesIn(e.progress);
+  for (const e of all) if (e.undated && e.kind !== 'movie') episodes += episodesOf(e);
 
   // 53 weeks ending with this week, Monday first.
   const end = parseIso(todayIso);

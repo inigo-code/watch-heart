@@ -27,9 +27,12 @@ export function episodesIn(progress: string): number {
   return count ? Number(count[1]) : 1;
 }
 
+/** Episodes in a viewing: the ticked ones when it has them, otherwise what the progress note says. */
+export const episodesOf = (e: Pick<Entry, 'episodes' | 'progress'>) => e.episodes?.length || episodesIn(e.progress);
+
 export function runtimeOf(e: Entry): number {
   if (!e.runtime) return 0;
-  return e.kind === 'movie' ? e.runtime : e.runtime * episodesIn(e.progress);
+  return e.kind === 'movie' ? e.runtime : e.runtime * episodesOf(e);
 }
 
 export function computeStats(entries: Entry[]): Stats {

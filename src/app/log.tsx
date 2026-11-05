@@ -107,8 +107,13 @@ function LogForm() {
   const [leaving, setLeaving] = useState(false);
   const [askDiscard, setAskDiscard] = useState(false);
   const nextPage = useRef<Parameters<typeof router.push>[0] | null>(null);
+  const trashed = useRef(false);
   useEffect(() => {
     if (!leaving) return;
+    if (trashed.current) {
+      router.dismissTo('/');
+      return;
+    }
     closeForm();
     if (nextPage.current) router.push(nextPage.current);
   }, [leaving, closeForm]);
@@ -152,10 +157,12 @@ function LogForm() {
     if (editing || !params.title) return;
     const controller = new AbortController();
     const t = JSON.parse(params.title) as Title;
-    details(t, tmdbKey(settings.tmdbKey), controller.signal).then((full) => {
-      if (controller.signal.aborted) return;
-      setDraft((d) => ({ ...d, genres: full.genres.length ? full.genres : d.genres, runtime: full.runtime ?? d.runtime, credit: full.credit ?? d.credit }));
-    });
+    details(t, tmdbKey(settings.tmdbKey), controller.signal)
+      .then((full) => {
+        if (controller.signal.aborted) return;
+        setDraft((d) => ({ ...d, genres: full.genres.length ? full.genres : d.genres, runtime: full.runtime ?? d.runtime, credit: full.credit ?? d.credit }));
+      })
+      .catch(() => {});
     return () => controller.abort();
     // Only once, for the title this screen opened with.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -253,11 +260,14 @@ function LogForm() {
     if (!editing) return;
     deleteEntry(editing.id);
     toast(`Moved “${editing.title}” to Trash`, { label: 'Undo', onPress: () => restoreEntry(editing.id) });
-    router.dismissTo('/');
+    trashed.current = true;
+    setLeaving(true);
   };
 
   // Words and stars you haven't saved shouldn't vanish on a stray Back.
-  const unsaved = editing ? draft.review.trim() !== editing.review.trim() || draft.rating !== editing.rating : !!draft.review.trim() || draft.rating > 0;
+  const unsaved = editing
+    ? draft.review.trim() !== editing.review.trim() || draft.rating !== editing.rating || draft.liked !== editing.liked || draft.watchedOn !== editing.watchedOn
+    : !!draft.review.trim() || draft.rating > 0;
   usePreventRemove(unsaved && !stamped && !leaving, () => setAskDiscard(true));
 
   const detailCount = [

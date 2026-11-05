@@ -25,7 +25,7 @@ export type WidgetMode = 'dark' | 'light' | 'system';
 export type UpNextSnapshot = { items: UpNextItem[]; dark: Colours; light: Colours; mode: WidgetMode };
 
 export const WIDGET_KEY = 'watchheart/widget-up-next';
-export const MAX_ITEMS = 4;
+export const MAX_ITEMS = 8;
 
 const episode = (s: number, n: number) => `S${s} · E${n}`;
 // Widgets keep their pictures in memory; the smallest TMDB poster that still looks sharp.

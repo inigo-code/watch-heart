@@ -85,7 +85,7 @@ type DiaryStore = {
   /** On the watchlist and still to watch: a show you finished or dropped doesn't count. */
   queued: (t: TitleRef) => WatchItem | undefined;
   addToWatchlist: (t: Title, note?: string) => WatchItem;
-  updateWatchItem: (id: string, patch: Partial<WatchItem>) => void;
+  updateWatchItem: (id: string, patch: Partial<WatchItem> | ((w: WatchItem) => Partial<WatchItem>), opts?: { quiet?: boolean }) => void;
   /** Background changes to many records at once (posters found, details refreshed): one save, one redraw. */
   patchMany: (entries: { id: string; patch: Partial<Entry> }[], watchlist: { id: string; patch: Partial<WatchItem> }[]) => void;
   removeFromWatchlist: (id: string) => void;
@@ -284,8 +284,12 @@ export function DiaryStoreProvider({ children }: { children: ReactNode }) {
         addedAt: Date.now(),
         fetchedAt: t.source === 'tmdb' ? (t.fetchedAt ?? Date.now()) : null,
       };
-      // Saving a title that's already on the list replaces the old item.
-      const replaced = watchRef.current.filter((w) => sameTitle(w, item)).map((w) => w.id);
+      // Saving a title that's already on the list replaces the old item, keeping your note and your progress.
+      const earlier = watchRef.current.filter((w) => sameTitle(w, item));
+      const replaced = earlier.map((w) => w.id);
+      const kept = earlier.find((w) => w.track)?.track;
+      if (kept) item.track = { ...kept, status: 'watching' };
+      item.note = note || earlier[0]?.note || '';
       setWatchlist((list) => [item, ...list.filter((w) => !replaced.includes(w.id))]);
       write((d) => d.saveWatchlist([item]));
       if (replaced.length) write((d) => d.removeWatchlist(replaced));
@@ -296,16 +300,17 @@ export function DiaryStoreProvider({ children }: { children: ReactNode }) {
   );
 
   const updateWatchItem = useCallback(
-    (id: string, patch: Partial<WatchItem>) => {
+    (id: string, patch: Partial<WatchItem> | ((w: WatchItem) => Partial<WatchItem>), opts?: { quiet?: boolean }) => {
       setWatchlist((list) =>
         list.map((w) => {
           if (w.id !== id) return w;
-          const next = { ...w, ...patch, id };
+          const next = { ...w, ...(typeof patch === 'function' ? patch(w) : patch), id };
           write((d) => d.saveWatchlist([next]));
           return next;
         }),
       );
-      touch([], [id]);
+      // Quiet: the app's own bookkeeping (air dates), not your edit, so it can't beat a newer change from another phone.
+      if (!opts?.quiet) touch([], [id]);
     },
     [write, touch],
   );
@@ -492,12 +497,12 @@ export function DiaryStoreProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const resetForUser = useCallback((userId: string) => {
-    const now = Date.now();
     const next: SyncMeta = {
       userId,
       lastPulledAt: null,
-      entries: Object.fromEntries(allRef.current.map((e) => [e.id, now])),
-      watchlist: Object.fromEntries(watchRef.current.map((w) => [w.id, now])),
+      // Each with its real age, so signing back in can't put an old copy over newer work in the cloud.
+      entries: Object.fromEntries(allRef.current.map((e) => [e.id, e.updatedAt])),
+      watchlist: Object.fromEntries(watchRef.current.map((w) => [w.id, w.addedAt])),
     };
     metaRef.current = next;
     setMeta(next);

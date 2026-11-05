@@ -64,9 +64,9 @@ export function useTracker() {
     async (item: WatchItem, signal?: AbortSignal) => {
       const info = await showInfo(settings.tmdbKey, item.source, item.sourceId, signal);
       const upcoming = info.nextAir ? await comingEpisodes(settings.tmdbKey, item.source, item.sourceId, info.nextAir, signal).catch(() => undefined) : [];
-      const track = withInfo(item.track, { ...info, upcoming }, Date.now());
-      updateWatchItem(item.id, { track });
-      return { info, track };
+      const now = Date.now();
+      updateWatchItem(item.id, (w) => ({ track: withInfo(w.track, { ...info, upcoming }, now) }), { quiet: true });
+      return { info };
     },
     [settings.tmdbKey, updateWatchItem],
   );
@@ -75,6 +75,25 @@ export function useTracker() {
   const todays = useCallback(
     (item: WatchItem) => entries.find((e) => e.episodes && e.watchedOn === today() && e.source === item.source && e.sourceId === item.sourceId),
     [entries],
+  );
+
+  /** Takes episodes back out of the diary, wherever they were logged. An entry left with nothing of yours goes too. */
+  const unlog = useCallback(
+    (item: WatchItem, keys: string[]) => {
+      const gone = new Set(keys);
+      for (const e of entries) {
+        if (e.source !== item.source || e.sourceId !== item.sourceId || !e.episodes?.some((k) => gone.has(k))) continue;
+        const episodes = e.episodes.filter((k) => !gone.has(k));
+        const yours = !!e.rating || e.liked || !!e.review.trim();
+        if (!episodes.length && !yours) {
+          purgeEntry(e.id);
+          continue;
+        }
+        const episodeRatings = Object.fromEntries(Object.entries(e.episodeRatings ?? {}).filter(([k]) => !gone.has(k)));
+        updateEntry(e.id, { episodes, episodeRatings, progress: progressLabel(episodes), season: yours ? e.season : null });
+      }
+    },
+    [entries, updateEntry, purgeEntry],
   );
 
   /** A new diary entry for a viewing of this show, today. */
@@ -116,13 +135,9 @@ export function useTracker() {
         const episodeRatings = rating ? { ...e?.episodeRatings, [key]: rating } : e?.episodeRatings;
         if (e) updateEntry(e.id, { episodes, progress: progressLabel(episodes), episodeRatings, season: season ?? e.season });
         else logNew(item, { episodes, season, episodeRatings });
-      } else if (e) {
-        const episodes = (e.episodes ?? []).filter((k) => k !== key);
-        if (!episodes.length && !e.rating && !e.review.trim() && !e.liked) purgeEntry(e.id);
-        else updateEntry(e.id, { episodes, progress: episodes.length ? progressLabel(episodes) : e.progress });
-      }
+      } else unlog(item, [key]);
     },
-    [todays, logNew, updateEntry, purgeEntry],
+    [todays, logNew, updateEntry, unlog],
   );
 
   /** Ticks (or unticks) one episode and logs it in today's diary. */
@@ -132,10 +147,14 @@ export function useTracker() {
       const track = it.track!;
       const key = epKey(season, number);
       const seen = { ...track.seen };
+      const ratings = { ...track.ratings };
       const now = !seen[key];
       if (now) seen[key] = today();
-      else delete seen[key];
-      const next = { ...track, seen, status: track.status === 'paused' || track.status === 'dropped' ? 'watching' : track.status } as Track;
+      else {
+        delete seen[key];
+        delete ratings[key];
+      }
+      const next = { ...track, seen, ratings, status: track.status === 'paused' || track.status === 'dropped' ? 'watching' : track.status } as Track;
       save(it, next);
       logEpisode(it, key, now, next);
     },
@@ -147,13 +166,18 @@ export function useTracker() {
     (target: WatchItem | Title, keys: string[], seenNow: boolean, info?: ShowInfo) => {
       const it = tracked(target, info);
       const seen = { ...it.track!.seen };
+      const ratings = { ...it.track!.ratings };
       for (const k of keys) {
         if (seenNow) seen[k] = seen[k] ?? today();
-        else delete seen[k];
+        else {
+          delete seen[k];
+          delete ratings[k];
+        }
       }
-      save(it, { ...it.track!, seen });
+      save(it, { ...it.track!, seen, ratings });
+      if (!seenNow) unlog(it, keys);
     },
-    [tracked, save],
+    [tracked, save, unlog],
   );
 
   /** Marks a whole season seen, as one diary entry (or takes that back). What was already seen isn't logged twice. */
@@ -162,12 +186,16 @@ export function useTracker() {
       const it = tracked(target, info);
       const track = it.track!;
       const seen = { ...track.seen };
+      const ratings = { ...track.ratings };
       const fresh = keys.filter((k) => !seen[k]);
       for (const k of keys) {
         if (done) seen[k] = seen[k] ?? today();
-        else delete seen[k];
+        else {
+          delete seen[k];
+          delete ratings[k];
+        }
       }
-      save(it, { ...track, seen });
+      save(it, { ...track, seen, ratings });
       if (done) {
         if (!fresh.length) return;
         const e = todays(it);
@@ -176,12 +204,9 @@ export function useTracker() {
         else logNew(it, { episodes, season });
         return;
       }
-      const logged = entries.find((e) => e.season === season && e.episodes?.length && e.source === it.source && e.sourceId === it.sourceId);
-      if (!logged) return;
-      if (logged.rating || logged.liked || logged.review.trim()) updateEntry(logged.id, { episodes: [], season: null });
-      else purgeEntry(logged.id);
+      unlog(it, keys);
     },
-    [tracked, save, todays, entries, logNew, updateEntry, purgeEntry],
+    [tracked, save, todays, logNew, updateEntry, unlog],
   );
 
   /** Your stars for one episode (0 clears them). Rating one you haven't ticked logs it, since you've seen it. */

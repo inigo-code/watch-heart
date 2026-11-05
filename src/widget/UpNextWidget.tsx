@@ -6,6 +6,7 @@ import { FlexWidget, ImageWidget, TextWidget } from 'react-native-android-widget
 import type { ColorProp } from 'react-native-android-widget';
 
 import { WIDGET_LOGO } from './logo';
+import { MAX_ITEMS } from './upNext';
 import type { UpNextItem, UpNextSnapshot } from './upNext';
 
 type Colours = UpNextSnapshot['dark'];
@@ -85,4 +86,4 @@ function Row({ it, colours }: { it: UpNextItem; colours: Colours }) {
 }
 
 /** How many rows fit a widget this tall (in dp). */
-export const rowsFor = (heightDp: number) => Math.max(1, Math.min(4, Math.floor((heightDp - 60) / 69)));
+export const rowsFor = (heightDp: number) => Math.max(1, Math.min(MAX_ITEMS, Math.floor((heightDp - 60) / 69)));
