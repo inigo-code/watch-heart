@@ -75,19 +75,18 @@ const styles = StyleSheet.create({
   // On the card that stays dark in both looks.
   version: { fontFamily: fonts.mono, fontSize: font.caption, color: '#B8B2A7' },
   family: {
-    flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    justifyContent: 'center',
     marginTop: 6,
-    paddingLeft: 5,
-    paddingRight: 12,
+    paddingHorizontal: 14,
     height: 30,
     borderRadius: 15,
     borderWidth: 1,
     borderColor: '#F2B84B',
     backgroundColor: 'rgba(242, 184, 75, 0.14)',
   },
-  familyText: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 1.5, color: '#F2B84B' },
+  // The negative margin takes back the letter spacing after the last letter, so the words sit dead centre.
+  familyText: { fontFamily: fonts.monoBold, fontSize: font.caption, lineHeight: 16, letterSpacing: 1.5, marginRight: -1.5, includeFontPadding: false, color: '#F2B84B' },
   tmdb: { gap: 6, paddingHorizontal: 4, marginTop: -8 },
   // Smaller than Watch Heart's own title, as TMDB's terms ask.
   tmdbLogo: { width: 78, height: 10, opacity: 0.85 },
