@@ -32,6 +32,7 @@ const FLOATING = new Set(['entry/[id]', 'title/[id]', 'profile']);
 const PAGES: Record<string, ScreenOptions> = {
   'entry/[id]': { title: '' },
   'title/[id]': { title: '' },
+  'someone/[id]': { title: '' },
   'card/[id]': { title: 'STORY CARD' },
   settings: { title: 'SETTINGS' },
   account: { title: 'ACCOUNT & SYNC' },

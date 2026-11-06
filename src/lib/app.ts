@@ -44,8 +44,12 @@ export const DATA_SOURCES = {
  * An update that leaves it alone shows nothing.
  */
 export const WHATS_NEW = {
-  id: '1.5.0',
+  id: '1.5.1',
   items: [
+    'Friends is now a row of faces, with Add first and See all for the full list',
+    'Look at someone’s profile before you add them, if they choose to show it',
+    'Block anyone, and unfriending now stays that way',
+    'A badge and an alert when someone asks to be your friend',
     'With App lock on, the widget hides your titles. To keep them showing, turn on Show titles in the widget in Settings.',
     'This week shows dates, like 1st and 2nd, instead of repeated day letters',
     'Resize the widget and it shows more; its buttons respond right away',
@@ -58,3 +62,4 @@ export const WHATS_NEW = {
     'Added a title before it’s out? Get an alert the day it’s released, on or off in Settings',
   ],
 };
+export const SITE_URL = 'https://inigo-code.github.io/watch-heart-site/';

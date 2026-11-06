@@ -14,7 +14,9 @@ sync. They take about 10 minutes, once.
 **SQL Editor → New query**, paste all of [schema.sql](schema.sql), **Run**. It's safe to run again.
 
 A project set up before lists or friends existed only needs the new parts: run [lists.sql](lists.sql) and
-[friends.sql](friends.sql) the same way (each is safe to run again).
+[friends.sql](friends.sql) the same way (each is safe to run again). Then
+[people.sql](people.sql) for finding people by name, and
+[friends-safety.sql](friends-safety.sql) for blocking and profile previews, in that order.
 
 ## 3. Email codes (sign-up and forgot password)
 

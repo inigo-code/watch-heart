@@ -5,8 +5,10 @@ import { AppState } from 'react-native';
 import { comingEpisodes, showInfo } from '@/api/episodes';
 import { watchRegion } from '@/api/omdb';
 import { releaseDay } from '@/api/tmdb';
+import { friendNews } from '@/friends/friendAlerts';
+import { friendRequests, myFriends } from '@/friends/friendsApi';
 import { today } from '@/lib/dates';
-import { applyNudges } from '@/lib/nudgeSchedule';
+import { applyNudges, notifyNow } from '@/lib/nudgeSchedule';
 import { planNudges, releaseDue } from '@/lib/nudges';
 import { storage } from '@/lib/storage';
 import { withInfo } from '@/lib/tracking';
@@ -14,6 +16,7 @@ import { DEFAULT_SETTINGS, STORAGE_KEY } from '@/settings/SettingsProvider';
 import type { Settings } from '@/settings/SettingsProvider';
 import { openDiary } from '@/store/db';
 import type { WatchItem } from '@/store/types';
+import { supabase } from '@/sync/supabase';
 import { upNextSnapshot, widgetLocked } from '@/widget/upNext';
 import { updateWidgets } from '@/widget/widgets';
 
@@ -32,10 +35,20 @@ async function readSettings(): Promise<Settings> {
   return { ...DEFAULT_SETTINGS, ...saved, nudges: { ...DEFAULT_SETTINGS.nudges, ...saved.nudges } };
 }
 
+/** A new friend request, or someone saying yes. Servers can't reach a closed app here, so the phone asks. */
+async function friendAlerts(settings: Settings) {
+  if (!settings.nudges.friends || !supabase) return;
+  const { data } = await supabase.auth.getSession();
+  if (!data.session) return;
+  const [requests, friends] = await Promise.all([friendRequests(), myFriends()]);
+  for (const n of await friendNews(requests, friends)) await notifyNow(n.id, n.title, n.body, '/friends');
+}
+
 async function check() {
   // With the app open, it does this itself.
   if (AppState.currentState === 'active') return;
   const settings = await readSettings();
+  await friendAlerts(settings).catch(() => {});
   const db = await openDiary();
   const list = await db.loadWatchlist();
   const fresh = new Map<string, WatchItem>();

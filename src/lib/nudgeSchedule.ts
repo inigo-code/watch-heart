@@ -23,6 +23,13 @@ export async function askForNotifications() {
   return status === 'granted';
 }
 
+/** Says something right now, from the background check. Does nothing without permission. */
+export async function notifyNow(id: string, title: string, body: string, url: string) {
+  if (!(await notificationsAllowed())) return;
+  await channel();
+  await Notifications.scheduleNotificationAsync({ identifier: id, content: { title, body, data: { url } }, trigger: { channelId: CHANNEL } });
+}
+
 /**
  * Replaces what's scheduled with this plan, or only the kinds named. Does nothing without permission:
  * this never asks by itself.

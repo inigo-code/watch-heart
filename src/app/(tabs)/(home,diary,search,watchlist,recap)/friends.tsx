@@ -1,11 +1,13 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { router, useLocalSearchParams } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, RefreshControl, ScrollView, Share, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Text, TextInput } from '@/components/AppText';
 import { ActionSheet } from '@/components/ActionSheet';
+import { BlockedPeople } from '@/components/friends/BlockedPeople';
+import { FriendsStrip } from '@/components/friends/FriendsStrip';
 import { PeopleSearch } from '@/components/friends/PeopleSearch';
 import { Stars } from '@/components/Film';
 import { KeyboardSafe } from '@/components/KeyboardSafe';
@@ -15,33 +17,66 @@ import { useToast } from '@/components/Toast';
 import { formatCode, friendsFeed, myInviteCode, redeemInvite } from '@/friends/friendsApi';
 import type { FriendEntry } from '@/friends/friendsApi';
 import { useFriends } from '@/friends/FriendsProvider';
+import { SITE_URL } from '@/lib/app';
 import { friendlyDate } from '@/lib/dates';
+import { easeNextLayout } from '@/lib/motion';
 import { font, fonts, useTheme } from '@/lib/theme';
 import { viewingRating, watchedLabel } from '@/lib/watched';
 import type { Theme } from '@/lib/theme';
 
-/** Your invite code, adding a friend by theirs or by name, your friends, and what they've watched lately. */
+/** Your friends as a row of faces, requests, adding someone by code or name, and what friends watched lately. */
 export default function FriendsScreen() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const toast = useToast();
   const params = useLocalSearchParams<{ code?: string }>();
-  const { available, friends, photos, loading, error, refresh } = useFriends();
+  const { available, friends, loading, refresh } = useFriends();
   const [code, setCode] = useState<string | null>(null);
+  const [codeFailed, setCodeFailed] = useState(false);
   const [entry, setEntry] = useState(params.code ?? '');
   const [adding, setAdding] = useState(false);
   const [feed, setFeed] = useState<FriendEntry[] | null>(null);
   const [confirmReset, setConfirmReset] = useState(false);
+  // Add stays open for someone with no friends yet, until they close it.
+  const [addOpen, setAddOpen] = useState<boolean | null>(params.code ? true : null);
+  const showAdd = addOpen ?? (!loading && !friends.length);
+  const [round, setRound] = useState(0);
+
+  // A second invite link can arrive while this page is already open.
+  const [lastCode, setLastCode] = useState(params.code);
+  if (params.code !== lastCode) {
+    setLastCode(params.code);
+    if (params.code) {
+      setEntry(params.code);
+      setAddOpen(true);
+    }
+  }
+
+  const loadCode = useCallback(
+    () =>
+      myInviteCode()
+        .then((c) => {
+          setCode(c);
+          setCodeFailed(false);
+        })
+        .catch(() => setCodeFailed(true)),
+    [],
+  );
 
   useEffect(() => {
     if (!available) return;
-    myInviteCode()
-      .then(setCode)
-      .catch((e) => toast(e instanceof Error ? e.message : 'Couldn’t load your code'));
+    loadCode().catch(() => {});
     friendsFeed()
       .then(setFeed)
       .catch(() => setFeed([]));
-  }, [available, toast]);
+  }, [available, loadCode]);
+
+  // Requests and new friends can arrive at any time: look again whenever this page comes up.
+  useFocusEffect(
+    useCallback(() => {
+      if (available) refresh(true).catch(() => {});
+    }, [available, refresh]),
+  );
 
   if (!available) {
     return (
@@ -62,13 +97,15 @@ export default function FriendsScreen() {
     if (!entry.trim() || adding) return;
     setAdding(true);
     try {
-      await redeemInvite(entry);
+      const id = await redeemInvite(entry);
+      const already = friends.some((f) => f.id === id);
       setEntry('');
       await refresh();
       friendsFeed()
         .then(setFeed)
         .catch(() => {});
-      toast('You’re friends now');
+      toast(already ? 'You’re already friends' : 'You’re friends now');
+      if (!already) setAddOpen(false);
     } catch (e) {
       toast(e instanceof Error ? e.message : 'Couldn’t add that code');
     } finally {
@@ -79,12 +116,18 @@ export default function FriendsScreen() {
   const share = () =>
     code &&
     Share.share({
-      message: `Add me on Watch Heart, the film and series diary: my invite code is ${formatCode(code)}\nwatchheart://friends?code=${code}`,
+      message: `Add me on Watch Heart, the film and series diary: my invite code is ${formatCode(code)}\n${SITE_URL}invite.html?code=${code}`,
     }).catch(() => {});
 
   const reload = async () => {
-    await refresh();
+    setRound((r) => r + 1);
+    await Promise.all([refresh(), code ? null : loadCode()]);
     setFeed(await friendsFeed().catch(() => []));
+  };
+
+  const toggleAdd = () => {
+    easeNextLayout();
+    setAddOpen(!showAdd);
   };
 
   return (
@@ -94,81 +137,62 @@ export default function FriendsScreen() {
         keyboardShouldPersistTaps="handled"
         refreshControl={<RefreshControl refreshing={loading} onRefresh={reload} tintColor={theme.accent} colors={[theme.accent]} />}
       >
-        <View style={[styles.codeCard, { backgroundColor: theme.card, borderColor: theme.accent }]}>
-          <Text style={[styles.codeLabel, { color: theme.textMuted }]}>YOUR INVITE CODE</Text>
-          {code ? (
-            <Text style={[styles.code, { color: theme.text }]} selectable accessibilityLabel={`Your invite code: ${code.split('').join(' ')}`}>
-              {formatCode(code)}
-            </Text>
-          ) : (
-            <ActivityIndicator color={theme.accent} style={{ marginVertical: 14 }} />
-          )}
-          <Text style={[styles.hint, { color: theme.textMuted }]}>Share it only with people you know</Text>
-          <View style={styles.codeButtons}>
-            <Pressable onPress={share} disabled={!code} accessibilityRole="button" style={[styles.primary, styles.grow, { backgroundColor: theme.accent }]}>
-              <Ionicons name="share-social-outline" size={18} color={theme.accentText} />
-              <Text style={[styles.primaryText, { color: theme.accentText }]}>SHARE</Text>
-            </Pressable>
-            <Pressable onPress={() => setConfirmReset(true)} disabled={!code} accessibilityRole="button" style={[styles.secondary, { borderColor: theme.border }]}>
-              <Ionicons name="refresh" size={17} color={theme.text} />
-              <Text style={[styles.secondaryText, { color: theme.text }]}>NEW CODE</Text>
-            </Pressable>
-          </View>
-        </View>
+        <FriendsStrip theme={theme} adding={showAdd} onAdd={toggleAdd} />
 
-        <View style={styles.block}>
-          <SectionLabel theme={theme}>Add a friend</SectionLabel>
-          <View style={styles.addRow}>
-            <TextInput
-              value={entry}
-              onChangeText={setEntry}
-              placeholder="e.g. K7QF-29MZ"
-              placeholderTextColor={theme.textMuted}
-              autoCapitalize="characters"
-              autoCorrect={false}
-              maxLength={12}
-              returnKeyType="done"
-              onSubmitEditing={add}
-              style={[styles.input, { color: theme.text, backgroundColor: theme.card, borderColor: theme.border }]}
-            />
-            <Pressable
-              onPress={add}
-              disabled={!entry.trim() || adding}
-              accessibilityRole="button"
-              style={[styles.addBtn, { backgroundColor: theme.accent, opacity: !entry.trim() || adding ? 0.5 : 1 }]}
-            >
-              {adding ? <ActivityIndicator color={theme.accentText} /> : <Text style={[styles.primaryText, { color: theme.accentText }]}>ADD</Text>}
-            </Pressable>
+        {showAdd && (
+          <View style={styles.block}>
+            <View style={[styles.codeCard, { backgroundColor: theme.card, borderColor: theme.accent }]}>
+              <Text style={[styles.codeLabel, { color: theme.textMuted }]}>YOUR INVITE CODE</Text>
+              {code ? (
+                <Text style={[styles.code, { color: theme.text }]} selectable accessibilityLabel={`Your invite code: ${code.split('').join(' ')}`}>
+                  {formatCode(code)}
+                </Text>
+              ) : codeFailed ? (
+                <Pressable onPress={() => loadCode()} accessibilityRole="button" hitSlop={8} style={{ marginVertical: 14 }}>
+                  <Text style={[styles.hint, { color: theme.accent }]}>Couldn’t load your code. Tap to try again.</Text>
+                </Pressable>
+              ) : (
+                <ActivityIndicator color={theme.accent} style={{ marginVertical: 14 }} />
+              )}
+              <Text style={[styles.hint, { color: theme.textMuted }]}>Share it only with people you know</Text>
+              <View style={styles.codeButtons}>
+                <Pressable onPress={share} disabled={!code} accessibilityRole="button" style={[styles.primary, styles.grow, { backgroundColor: theme.accent }]}>
+                  <Ionicons name="share-social-outline" size={18} color={theme.accentText} />
+                  <Text style={[styles.primaryText, { color: theme.accentText }]}>SHARE</Text>
+                </Pressable>
+                <Pressable onPress={() => setConfirmReset(true)} disabled={!code} accessibilityRole="button" style={[styles.secondary, { borderColor: theme.border }]}>
+                  <Ionicons name="refresh" size={17} color={theme.text} />
+                  <Text style={[styles.secondaryText, { color: theme.text }]}>NEW CODE</Text>
+                </Pressable>
+              </View>
+            </View>
+            <SectionLabel theme={theme}>Add by their code</SectionLabel>
+            <View style={styles.addRow}>
+              <TextInput
+                value={entry}
+                onChangeText={setEntry}
+                placeholder="e.g. K7QF-29MZ"
+                placeholderTextColor={theme.textMuted}
+                autoCapitalize="characters"
+                autoCorrect={false}
+                maxLength={12}
+                returnKeyType="done"
+                onSubmitEditing={add}
+                style={[styles.input, { color: theme.text, backgroundColor: theme.card, borderColor: theme.border }]}
+              />
+              <Pressable
+                onPress={add}
+                disabled={!entry.trim() || adding}
+                accessibilityRole="button"
+                style={[styles.addBtn, { backgroundColor: theme.accent, opacity: !entry.trim() || adding ? 0.5 : 1 }]}
+              >
+                {adding ? <ActivityIndicator color={theme.accentText} /> : <Text style={[styles.primaryText, { color: theme.accentText }]}>ADD</Text>}
+              </Pressable>
+            </View>
           </View>
-        </View>
+        )}
 
         <PeopleSearch theme={theme} onFriendsChanged={reload} />
-
-        <View style={styles.block}>
-          <SectionLabel theme={theme}>Your friends{friends.length ? ` (${friends.length})` : ''}</SectionLabel>
-          {error && <Text style={[styles.hint, { color: theme.danger }]}>{error}</Text>}
-          {!friends.length && !loading && !error && (
-            <Text style={[styles.hint, { color: theme.textMuted }]}>No friends yet. Share your code, or enter a friend’s above.</Text>
-          )}
-          {friends.map((f) => (
-            <Pressable
-              key={f.id}
-              onPress={() => router.push({ pathname: '/friend/[id]', params: { id: f.id } })}
-              accessibilityRole="button"
-              style={({ pressed }) => [styles.friend, { backgroundColor: theme.card, borderColor: theme.border, opacity: pressed ? 0.8 : 1 }]}
-            >
-              <Face uri={photos[f.id] ?? null} name={f.name} theme={theme} size={46} round />
-              <View style={{ flex: 1 }}>
-                <Text style={[styles.friendName, { color: theme.text }]}>{f.name}</Text>
-                <Text style={[styles.hint, { color: theme.textMuted }]} numberOfLines={1}>
-                  {f.entries ? `${f.entries} in their diary` : 'Keeps their diary private'}
-                  {f.bio ? ` · ${f.bio}` : ''}
-                </Text>
-              </View>
-              <Ionicons name="chevron-forward" size={18} color={theme.textMuted} />
-            </Pressable>
-          ))}
-        </View>
 
         {friends.length > 0 && (
           <View style={styles.block}>
@@ -182,10 +206,12 @@ export default function FriendsScreen() {
             )}
           </View>
         )}
+
+        <BlockedPeople theme={theme} round={round} />
       </ScrollView>
       <ActionSheet
         visible={confirmReset}
-        title="Make a new code? Your current one stops working, so anyone you gave it to will need the new one. Friends you have stay friends."
+        title="Make a new code? Your current one stops working, so anyone you gave it to will need the new one, and anyone you unfriended can use the new one if they get it. Friends you have stay friends."
         actions={[
           {
             label: 'Make a new code',
@@ -231,7 +257,14 @@ function FeedRow({ e, theme }: { e: FriendEntry; theme: Theme }) {
       accessibilityRole="button"
       style={({ pressed }) => [styles.feedRow, { borderBottomColor: theme.border, opacity: pressed ? 0.75 : 1 }]}
     >
-      <Face uri={photos[e.userId] ?? null} name={who?.name ?? '?'} theme={theme} size={34} round />
+      <Pressable
+        onPress={() => router.push({ pathname: '/friend/[id]', params: { id: e.userId } })}
+        hitSlop={6}
+        accessibilityRole="button"
+        accessibilityLabel={`Open ${who?.name ?? 'your friend'}`}
+      >
+        <Face uri={photos[e.userId] ?? null} name={who?.name ?? '?'} theme={theme} size={34} round />
+      </Pressable>
       <View style={{ flex: 1, gap: 2 }}>
         <Text style={[styles.feedText, { color: theme.text }]} numberOfLines={2}>
           <Text style={{ fontWeight: '700' }}>{who?.name ?? 'A friend'}</Text>
@@ -270,8 +303,6 @@ const styles = StyleSheet.create({
   addRow: { flexDirection: 'row', gap: 10 },
   input: { flex: 1, minWidth: 0, height: 48, borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, fontFamily: fonts.monoBold, fontSize: font.body, letterSpacing: 2 },
   addBtn: { width: 76, height: 48, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-  friend: { flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, borderRadius: 14, padding: 12 },
-  friendName: { fontSize: font.body, fontWeight: '700' },
   feedRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10, borderBottomWidth: StyleSheet.hairlineWidth },
   feedText: { fontSize: font.footnote, lineHeight: 19 },
   feedMeta: { flexDirection: 'row', alignItems: 'center', gap: 8 },

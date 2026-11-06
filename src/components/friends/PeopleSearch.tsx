@@ -1,65 +1,72 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Switch, View } from 'react-native';
 
 import { Text, TextInput } from '@/components/AppText';
 import { SectionLabel } from '@/components/SectionLabel';
 import { Face } from '@/components/title/Rows';
 import { useToast } from '@/components/Toast';
-import { answerFriendRequest, cancelFriendRequest, friendRequests, notSetUp, searchPeople, sendFriendRequest } from '@/friends/friendsApi';
+import { answerFriendRequest, cancelFriendRequest, photoUrl, searchPeople, sendFriendRequest } from '@/friends/friendsApi';
 import type { FriendRequest, Person } from '@/friends/friendsApi';
+import { useFriends } from '@/friends/FriendsProvider';
 import { font, fonts } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
 import { useSettings } from '@/settings/SettingsProvider';
 
 const message = (e: unknown) => (e instanceof Error ? e.message : 'No connection. Try again in a moment.');
+const someone = (id: string) => router.push({ pathname: '/someone/[id]', params: { id } });
 
 /**
  * Friends by name: requests waiting for you, a search of people who chose to be findable, and your own
- * switch for being found. Hidden quietly when the server hasn't been set up for it (supabase/people.sql).
+ * switches for being found. Hidden quietly when the server hasn't been set up for it (supabase/people.sql).
  */
 export function PeopleSearch({ theme, onFriendsChanged }: { theme: Theme; onFriendsChanged: () => void }) {
   const toast = useToast();
   const { settings, update } = useSettings();
+  const { requests, peopleReady, photos, forgetRequest } = useFriends();
   const findable = !!settings.sharing.findable;
-  const [requests, setRequests] = useState<FriendRequest[]>([]);
-  const [missing, setMissing] = useState(false);
+  const preview = !!settings.sharing.preview;
   const [query, setQuery] = useState('');
   const [found, setFound] = useState<{ q: string; people: Person[] } | null>(null);
+  const [failedFor, setFailedFor] = useState<string | null>(null);
+  const [faces, setFaces] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState<string | null>(null);
   const q = query.trim();
 
-  const loadRequests = useCallback(() => {
-    friendRequests()
-      .then(setRequests)
-      .catch((e) => notSetUp(e) && setMissing(true));
-  }, []);
-  useEffect(loadRequests, [loadRequests]);
-
   useEffect(() => {
-    if (q.length < 3 || missing) return;
+    if (q.length < 3 || !peopleReady) return;
     let live = true;
     const timer = setTimeout(() => {
       searchPeople(q)
-        .then((people) => live && setFound({ q, people }))
+        .then(async (people) => {
+          if (!live) return;
+          setFailedFor(null);
+          setFound({ q, people });
+          const links = await Promise.all(people.map(async (p) => [p.id, p.photoPath ? await photoUrl(p.photoPath) : null] as const));
+          const fresh: Record<string, string> = {};
+          for (const [id, url] of links) if (url) fresh[id] = url;
+          if (live) setFaces((f) => ({ ...f, ...fresh }));
+        })
         .catch((e) => {
           if (!live) return;
-          if (notSetUp(e)) setMissing(true);
-          else toast(message(e));
+          setFailedFor(q);
+          toast(message(e));
         });
     }, 400);
     return () => {
       live = false;
       clearTimeout(timer);
     };
-  }, [q, missing, toast]);
+  }, [q, peopleReady, toast]);
 
-  if (missing) return null;
+  if (!peopleReady) return null;
 
   const people = q.length >= 3 && found?.q === q ? found.people : null;
+  const searching = q.length >= 3 && !people && failedFor !== q;
   const setStatus = (id: string, status: Person['status']) =>
     setFound((f) => (f ? { ...f, people: f.people.map((p) => (p.id === id ? { ...p, status } : p)) } : f));
+  const dropFound = (id: string) => setFound((f) => (f ? { ...f, people: f.people.filter((x) => x.id !== id) } : f));
 
   const ask = async (p: Person) => {
     setBusy(p.id);
@@ -70,8 +77,8 @@ export function PeopleSearch({ theme, onFriendsChanged }: { theme: Theme; onFrie
       } else {
         const r = await sendFriendRequest(p.id);
         if (r === 'friends') {
-          setFound((f) => (f ? { ...f, people: f.people.filter((x) => x.id !== p.id) } : f));
-          loadRequests();
+          dropFound(p.id);
+          forgetRequest(p.id);
           onFriendsChanged();
           toast(`You and ${p.name} are friends now`);
         } else {
@@ -90,10 +97,13 @@ export function PeopleSearch({ theme, onFriendsChanged }: { theme: Theme; onFrie
     setBusy(r.id);
     try {
       await answerFriendRequest(r.id, accept);
-      setRequests((list) => list.filter((x) => x.id !== r.id));
+      forgetRequest(r.id);
       if (accept) {
+        dropFound(r.id);
         onFriendsChanged();
         toast(`You and ${r.name} are friends now`);
+      } else {
+        setStatus(r.id, 'none');
       }
     } catch (e) {
       toast(message(e));
@@ -106,20 +116,20 @@ export function PeopleSearch({ theme, onFriendsChanged }: { theme: Theme; onFrie
     <>
       {requests.length > 0 && (
         <View style={styles.block}>
-          <SectionLabel theme={theme}>Friend requests</SectionLabel>
+          <SectionLabel theme={theme}>Friend requests ({requests.length})</SectionLabel>
           {requests.map((r) => (
             <View key={r.id} style={[styles.person, { backgroundColor: theme.card, borderColor: theme.accent }]}>
-              <Face uri={null} name={r.name} theme={theme} size={40} round />
-              <View style={{ flex: 1 }}>
-                <Text style={[styles.name, { color: theme.text }]} numberOfLines={1}>
-                  {r.name}
-                </Text>
-                {!!r.bio && (
-                  <Text style={[styles.bio, { color: theme.textMuted }]} numberOfLines={1}>
-                    {r.bio}
+              <Pressable onPress={() => someone(r.id)} accessibilityRole="button" accessibilityLabel={`See ${r.name}’s profile`} style={styles.who}>
+                <Face uri={photos[r.id] ?? null} name={r.name} theme={theme} size={40} round />
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.name, { color: theme.text }]} numberOfLines={1}>
+                    {r.name}
                   </Text>
-                )}
-              </View>
+                  <Text style={[styles.bio, { color: theme.textMuted }]} numberOfLines={1}>
+                    {r.bio || 'Tap to see their profile'}
+                  </Text>
+                </View>
+              </Pressable>
               {busy === r.id ? (
                 <ActivityIndicator color={theme.accent} />
               ) : (
@@ -127,7 +137,7 @@ export function PeopleSearch({ theme, onFriendsChanged }: { theme: Theme; onFrie
                   <Pressable onPress={() => answer(r, false)} accessibilityRole="button" accessibilityLabel={`Decline ${r.name}`} hitSlop={6} style={[styles.icon, { borderColor: theme.border }]}>
                     <Ionicons name="close" size={18} color={theme.text} />
                   </Pressable>
-                  <Pressable onPress={() => answer(r, true)} accessibilityRole="button" style={[styles.btn, { backgroundColor: theme.accent }]}>
+                  <Pressable onPress={() => answer(r, true)} accessibilityRole="button" accessibilityLabel={`Accept ${r.name}`} style={[styles.btn, { backgroundColor: theme.accent }]}>
                     <Text style={[styles.btnText, { color: theme.accentText }]}>ACCEPT</Text>
                   </Pressable>
                 </>
@@ -150,20 +160,29 @@ export function PeopleSearch({ theme, onFriendsChanged }: { theme: Theme; onFrie
             returnKeyType="search"
             style={[styles.input, { color: theme.text }]}
           />
+          {searching && <ActivityIndicator size="small" color={theme.accent} />}
         </View>
         {people?.map((p) => (
           <View key={p.id} style={[styles.person, { backgroundColor: theme.card, borderColor: theme.border }]}>
-            <Face uri={null} name={p.name} theme={theme} size={40} round />
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.name, { color: theme.text }]} numberOfLines={1}>
-                {p.name}
-              </Text>
-              {!!p.bio && (
-                <Text style={[styles.bio, { color: theme.textMuted }]} numberOfLines={1}>
-                  {p.bio}
+            <Pressable
+              onPress={p.previewable ? () => someone(p.id) : undefined}
+              disabled={!p.previewable}
+              accessibilityRole={p.previewable ? 'button' : undefined}
+              accessibilityLabel={p.previewable ? `See ${p.name}’s profile` : undefined}
+              style={styles.who}
+            >
+              <Face uri={faces[p.id] ?? null} name={p.name} theme={theme} size={40} round />
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.name, { color: theme.text }]} numberOfLines={1}>
+                  {p.name}
                 </Text>
-              )}
-            </View>
+                {!!p.bio && (
+                  <Text style={[styles.bio, { color: theme.textMuted }]} numberOfLines={1}>
+                    {p.bio}
+                  </Text>
+                )}
+              </View>
+            </Pressable>
             {busy === p.id ? (
               <ActivityIndicator color={theme.accent} />
             ) : (
@@ -185,7 +204,7 @@ export function PeopleSearch({ theme, onFriendsChanged }: { theme: Theme; onFrie
           <View style={{ flex: 1 }}>
             <Text style={[styles.name, { color: theme.text }]}>Let people find me by name</Text>
             <Text style={[styles.bio, { color: theme.textMuted }]}>
-              {settings.name.trim() ? 'They see only your name and bio' : 'Add your name on your profile first.'}
+              {!settings.name.trim() ? 'Add your name on your profile first.' : findable && preview ? 'They see your name and profile' : 'They see only your name and bio'}
             </Text>
           </View>
           <Switch
@@ -201,6 +220,20 @@ export function PeopleSearch({ theme, onFriendsChanged }: { theme: Theme; onFrie
             accessibilityLabel="Let people find me by name"
           />
         </View>
+        {findable && (
+          <View style={[styles.switchRow, { borderColor: theme.border }]}>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.name, { color: theme.text }]}>Show my profile in search</Text>
+              <Text style={[styles.bio, { color: theme.textMuted }]}>Photo, bio, favourite four and titles logged. Never your diary.</Text>
+            </View>
+            <Switch
+              value={preview}
+              onValueChange={(on) => update({ sharing: { ...settings.sharing, preview: on } })}
+              trackColor={{ true: theme.accent, false: theme.border }}
+              accessibilityLabel="Show my profile in search"
+            />
+          </View>
+        )}
       </View>
     </>
   );
@@ -211,6 +244,7 @@ const styles = StyleSheet.create({
   search: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderRadius: 12, paddingHorizontal: 12, height: 48 },
   input: { flex: 1, fontSize: font.body },
   person: { flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, borderRadius: 12, padding: 10 },
+  who: { flex: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: 12 },
   name: { fontSize: font.body, fontWeight: '700' },
   bio: { fontFamily: fonts.mono, fontSize: font.caption, marginTop: 2 },
   btn: { height: 34, paddingHorizontal: 14, borderRadius: 17, alignItems: 'center', justifyContent: 'center' },

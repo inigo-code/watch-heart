@@ -15,6 +15,7 @@ export type Friend = {
   since: string;
   /** Entries they share (0 when they keep their diary to themselves). */
   entries: number;
+  sharesDiary: boolean;
 };
 
 /** A friend's entry, as they share it (no "watched with" names or tags; no review unless shared). */
@@ -55,7 +56,7 @@ export async function removeFriend(id: string): Promise<void> {
   if (error) fail(error);
 }
 
-type FriendRow = { user_id: string; name: string; bio: string; photo_path: string | null; favourites: Favourite[] | null; since: string; entries: number };
+type FriendRow = { shares_diary?: boolean; user_id: string; name: string; bio: string; photo_path: string | null; favourites: Favourite[] | null; since: string; entries: number };
 
 export async function myFriends(): Promise<Friend[]> {
   const { data, error } = await client().rpc('my_friends');
@@ -68,6 +69,8 @@ export async function myFriends(): Promise<Friend[]> {
     favourites: Array.isArray(r.favourites) ? r.favourites.slice(0, 4) : [],
     since: r.since,
     entries: Number(r.entries) || 0,
+    // Before friends-safety.sql runs, entries is the only clue.
+    sharesDiary: r.shares_diary ?? Number(r.entries) > 0,
   }));
 }
 
@@ -118,8 +121,11 @@ export async function photoUrl(path: string): Promise<string | null> {
 // --- Finding people by name (supabase/people.sql) ----------------------------------------------------
 
 /** Someone found by name: who they are, and where a request between you stands. */
-export type Person = { id: string; name: string; bio: string; status: 'none' | 'sent' | 'received' };
-export type FriendRequest = { id: string; name: string; bio: string; sentAt: string };
+export type Person = { id: string; name: string; bio: string; status: 'none' | 'sent' | 'received'; photoPath: string | null; previewable: boolean };
+export type FriendRequest = { id: string; name: string; bio: string; sentAt: string; photoPath: string | null };
+/** A look at someone before you're friends. Never their diary, reviews or lists. */
+export type PersonPreview = { id: string; name: string; bio: string; photoPath: string | null; favourites: Favourite[]; titles: number; status: Person['status'] | 'friends' };
+export type Blocked = { id: string; name: string };
 
 /** True when the server hasn't had supabase/people.sql run yet (name search then stays hidden). */
 export const notSetUp = (e: unknown) => e instanceof Error && /people\.sql/.test(e.message);
@@ -133,7 +139,8 @@ function failPeople(e: { message?: string } | null): never {
 export async function searchPeople(q: string): Promise<Person[]> {
   const { data, error } = await client().rpc('search_people', { q });
   if (error) failPeople(error);
-  return ((data ?? []) as { user_id: string; name: string; bio: string; status: Person['status'] }[]).map((r) => ({ id: r.user_id, name: r.name, bio: r.bio, status: r.status }));
+  type Row = { user_id: string; name: string; bio: string; status: Person['status']; photo_path?: string | null; previewable?: boolean };
+  return ((data ?? []) as Row[]).map((r) => ({ id: r.user_id, name: r.name, bio: r.bio, status: r.status, photoPath: r.photo_path ?? null, previewable: !!r.previewable }));
 }
 
 /** Resolves to 'sent', or 'friends' when they had already asked you. */
@@ -146,7 +153,8 @@ export async function sendFriendRequest(id: string): Promise<'sent' | 'friends'>
 export async function friendRequests(): Promise<FriendRequest[]> {
   const { data, error } = await client().rpc('my_friend_requests');
   if (error) failPeople(error);
-  return ((data ?? []) as { user_id: string; name: string; bio: string; sent_at: string }[]).map((r) => ({ id: r.user_id, name: r.name || 'Someone', bio: r.bio, sentAt: r.sent_at }));
+  type Row = { user_id: string; name: string; bio: string; sent_at: string; photo_path?: string | null };
+  return ((data ?? []) as Row[]).map((r) => ({ id: r.user_id, name: r.name || 'Someone', bio: r.bio, sentAt: r.sent_at, photoPath: r.photo_path ?? null }));
 }
 
 export async function answerFriendRequest(id: string, accept: boolean): Promise<void> {
@@ -157,4 +165,38 @@ export async function answerFriendRequest(id: string, accept: boolean): Promise<
 export async function cancelFriendRequest(id: string): Promise<void> {
   const { error } = await client().rpc('cancel_friend_request', { target: id });
   if (error) failPeople(error);
+}
+
+// --- Blocking and previews (supabase/friends-safety.sql) -----------------------------------------------
+
+function failSafety(e: { message?: string } | null): never {
+  const m = e?.message ?? '';
+  if (/function .* does not exist|Could not find the function/i.test(m)) throw new Error('This needs a server update first (supabase/friends-safety.sql).');
+  fail(e);
+}
+
+/** Who someone is, or null when they don't show it to you. */
+export async function personPreview(id: string): Promise<PersonPreview | null> {
+  const { data, error } = await client().rpc('person_preview', { target: id });
+  if (error) failSafety(error);
+  type Row = { user_id: string; name: string; bio: string; photo_path: string | null; favourites: Favourite[] | null; titles: number; status: PersonPreview['status'] };
+  const r = ((data ?? []) as Row[])[0];
+  if (!r) return null;
+  return { id: r.user_id, name: r.name || 'Someone', bio: r.bio, photoPath: r.photo_path, favourites: Array.isArray(r.favourites) ? r.favourites.slice(0, 4) : [], titles: Number(r.titles) || 0, status: r.status };
+}
+
+export async function blockPerson(id: string): Promise<void> {
+  const { error } = await client().rpc('block_person', { target: id });
+  if (error) failSafety(error);
+}
+
+export async function unblockPerson(id: string): Promise<void> {
+  const { error } = await client().rpc('unblock_person', { target: id });
+  if (error) failSafety(error);
+}
+
+export async function myBlocks(): Promise<Blocked[]> {
+  const { data, error } = await client().rpc('my_blocks');
+  if (error) failSafety(error);
+  return ((data ?? []) as { user_id: string; name: string }[]).map((r) => ({ id: r.user_id, name: r.name || 'Someone' }));
 }

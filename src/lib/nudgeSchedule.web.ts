@@ -8,6 +8,9 @@ export async function notificationsAllowed() {
 export async function askForNotifications() {
   return false;
 }
+export async function notifyNow(id: string, title: string, body: string, url: string) {
+  void [id, title, body, url];
+}
 export async function applyNudges(plan: Nudge[]) {
   void plan;
 }

@@ -16,7 +16,7 @@ import { SectionLabel } from '@/components/SectionLabel';
 import { Segments } from '@/components/Segments';
 import { Face, TitleRow, openTitle } from '@/components/title/Rows';
 import { useToast } from '@/components/Toast';
-import { friendDiary, friendListCache, friendLists, removeFriend } from '@/friends/friendsApi';
+import { blockPerson, friendDiary, friendListCache, friendLists, removeFriend } from '@/friends/friendsApi';
 import type { FriendEntry } from '@/friends/friendsApi';
 import { useFriends } from '@/friends/FriendsProvider';
 import { friendlyDate } from '@/lib/dates';
@@ -69,7 +69,7 @@ export default function FriendScreen() {
   const toast = useToast();
   const { width } = useWindowDimensions();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { byId, photos, refresh } = useFriends();
+  const { byId, photos, refresh, loading } = useFriends();
   const friend = byId(id);
   const [diary, setDiary] = useState<FriendEntry[] | null>(null);
   const [more, setMore] = useState(false);
@@ -123,7 +123,7 @@ export default function FriendScreen() {
   if (!friend) {
     return (
       <View style={styles.center}>
-        <Text style={[styles.empty, { color: theme.textMuted }]}>You’re not friends with this account any more</Text>
+        {loading ? <ActivityIndicator color={theme.accent} /> : <Text style={[styles.empty, { color: theme.textMuted }]}>You’re not friends with this account any more</Text>}
       </View>
     );
   }
@@ -131,11 +131,22 @@ export default function FriendScreen() {
   const unfriend = async () => {
     try {
       await removeFriend(friend.id);
-      await refresh();
       toast(`Unfriended ${friend.name}`);
       router.back();
+      await refresh(true);
     } catch (e) {
       toast(e instanceof Error ? e.message : 'Couldn’t unfriend');
+    }
+  };
+
+  const block = async () => {
+    try {
+      await blockPerson(friend.id);
+      toast(`Blocked ${friend.name}`);
+      router.back();
+      await refresh(true);
+    } catch (e) {
+      toast(e instanceof Error ? e.message : 'Couldn’t block');
     }
   };
 
@@ -178,7 +189,7 @@ export default function FriendScreen() {
           {loadingMore ? <ActivityIndicator color={theme.accent} /> : <Text style={[styles.moreText, { color: theme.text }]}>LOAD MORE</Text>}
         </Tap>
       )}
-      <DangerButton theme={theme} label={`Unfriend ${friend.name}`} onPress={() => setConfirm(true)} />
+      <DangerButton theme={theme} icon="person-remove-outline" label={`Unfriend ${friend.name}`} onPress={() => setConfirm(true)} />
     </View>
   );
 
@@ -202,7 +213,7 @@ export default function FriendScreen() {
           ) : tab === 'diary' ? (
             nothing('Nothing to show yet')
           ) : tab === 'reviews' ? (
-            nothing('No reviews yet')
+            nothing(more ? 'None so far. Load more to look further back.' : 'No reviews yet')
           ) : (
             nothing('No lists shared')
           )
@@ -229,8 +240,11 @@ export default function FriendScreen() {
       />
       <ActionSheet
         visible={confirm}
-        title={`Unfriend ${friend.name}?`}
-        actions={[{ label: `Unfriend ${friend.name}`, icon: 'person-remove-outline', destructive: true, onPress: unfriend }]}
+        title={`Unfriend ${friend.name}? They won’t be able to come back with your old code. To stop them finding or asking you too, block them.`}
+        actions={[
+          { label: `Unfriend ${friend.name}`, icon: 'person-remove-outline', destructive: true, onPress: unfriend },
+          { label: `Block ${friend.name}`, icon: 'ban-outline', destructive: true, onPress: block },
+        ]}
         onClose={() => setConfirm(false)}
       />
     </View>

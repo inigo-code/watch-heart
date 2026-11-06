@@ -6,7 +6,8 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { Text } from '@/components/AppText';
 import { Avatar } from '@/components/Avatar';
 import { BrandTitle } from '@/components/BrandTitle';
-import { font } from '@/lib/theme';
+import { useFriends } from '@/friends/FriendsProvider';
+import { font, fonts } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
 import { useSettings } from '@/settings/SettingsProvider';
 import { useSync } from '@/sync/SyncProvider';
@@ -17,6 +18,7 @@ type MciName = keyof typeof MaterialCommunityIcons.glyphMap;
 export function AppHeader({ theme, line, icon }: { theme: Theme; line: string; icon?: MciName }) {
   const { settings } = useSettings();
   const sync = useSync();
+  const { requests } = useFriends();
   return (
     <View style={styles.wrap}>
       <BrandTitle theme={theme} size={font.marquee} />
@@ -51,10 +53,17 @@ export function AppHeader({ theme, line, icon }: { theme: Theme; line: string; i
             onPress={() => router.push('/friends')}
             hitSlop={6}
             accessibilityRole="button"
-            accessibilityLabel="Friends"
+            accessibilityLabel={requests.length ? `Friends, ${requests.length} waiting` : 'Friends'}
             style={({ pressed }) => [styles.iconBtn, { backgroundColor: pressed ? theme.chip : 'transparent' }]}
           >
             <Ionicons name="people-outline" size={24} color={theme.text} />
+            {requests.length > 0 && (
+              <View style={[styles.count, { backgroundColor: theme.accent }]}>
+                <Text maxFontSizeMultiplier={1} style={[styles.countText, { color: theme.accentText }]}>
+                  {requests.length > 9 ? '9+' : requests.length}
+                </Text>
+              </View>
+            )}
           </Pressable>
           <Pressable
             onPress={() => router.push('/settings')}
@@ -88,6 +97,8 @@ export function greetingLine(hour: number) {
 }
 
 const styles = StyleSheet.create({
+  count: { position: 'absolute', top: 2, right: 2, minWidth: 16, height: 16, borderRadius: 8, paddingHorizontal: 3, alignItems: 'center', justifyContent: 'center' },
+  countText: { fontFamily: fonts.monoBold, fontSize: 12, lineHeight: 15 },
   wrap: { gap: 4 },
   titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   icons: { flexDirection: 'row', alignItems: 'center', gap: 4 },

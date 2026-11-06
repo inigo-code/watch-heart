@@ -68,7 +68,7 @@ export type Settings = {
   /** The first-run welcome was seen, skipped, or wasn't needed. */
   onboarded: boolean;
   /** Which notifications you want. */
-  nudges: { episodes: boolean; picks: boolean; recap: boolean; releases: boolean };
+  nudges: { episodes: boolean; picks: boolean; recap: boolean; releases: boolean; friends: boolean };
   /** You were asked once about Android's Alarms & reminders switch. */
   askedAlarms: boolean;
   /** The update whose "What's new" card was already shown. */
@@ -88,7 +88,7 @@ export type Settings = {
 export const PROFILE_KEYS = ['name', 'bio', 'photo', 'favourites', 'yearGoal', 'sharing'] as const;
 
 /** What friends can see, and whether people can find you by name (off unless you turn it on). */
-export type Sharing = { diary: boolean; reviews: boolean; lists: boolean; findable: boolean };
+export type Sharing = { diary: boolean; reviews: boolean; lists: boolean; findable: boolean; preview?: boolean };
 
 export const DEFAULT_SETTINGS: Settings = {
   themeMode: 'dark',
@@ -107,13 +107,13 @@ export const DEFAULT_SETTINGS: Settings = {
   photo: null,
   favourites: [],
   yearGoal: 0,
-  sharing: { diary: true, reviews: true, lists: true, findable: false },
+  sharing: { diary: true, reviews: true, lists: true, findable: false, preview: false },
   omdbKey: '',
   watchRegion: '',
   homeLanguage: '',
   onboarded: false,
   askedAlarms: false,
-  nudges: { episodes: true, picks: true, recap: true, releases: true },
+  nudges: { episodes: true, picks: true, recap: true, releases: true, friends: true },
   seenUpdate: null,
   movieNights: [],
   profileUpdatedAt: 0,
