@@ -16,6 +16,8 @@ import { Poster } from '@/components/Film';
 import { openTitle, warmTitle } from '@/components/title/Rows';
 import { useToast } from '@/components/Toast';
 import { DATA_SOURCES } from '@/lib/app';
+import { today } from '@/lib/dates';
+import { searchHint } from '@/lib/searchHint';
 import { KIND_COLORS, font, fonts, useTheme } from '@/lib/theme';
 import { useSettings } from '@/settings/SettingsProvider';
 import { useDiary } from '@/store/DiaryStore';
@@ -27,17 +29,11 @@ const KINDS: { kind: MediaKind; label: string }[] = [
   { kind: 'anime', label: 'ANIME' },
 ];
 
-const PLACEHOLDER: Record<MediaKind, string> = {
-  movie: 'Try “Past Lives” or “Dune”',
-  tv: 'Try “Severance” or “The Bear”',
-  anime: 'Try “Frieren” or “Cowboy Bebop”',
-};
-
 export default function SearchScreen() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const { settings, update } = useSettings();
-  const { viewingsOf, queued, addToWatchlist, removeFromWatchlist } = useDiary();
+  const { viewingsOf, queued, watchlist, addToWatchlist, removeFromWatchlist } = useDiary();
   const toast = useToast();
   const kind = settings.searchKind;
   const key = tmdbKey(settings.tmdbKey);
@@ -106,6 +102,13 @@ export default function SearchScreen() {
     openTitle(t);
   };
 
+  const hint = searchHint(
+    kind,
+    watchlist,
+    results.map((t) => ({ title: t.title, seen: viewingsOf(t.source, t.sourceId).length > 0 })),
+    Math.floor(Date.parse(today()) / (24 * 60 * 60 * 1000)),
+  );
+
   const credit = useMemo(
     () => (source ? (source === 'tmdb' ? DATA_SOURCES.tmdb.label : source === 'anilist' ? DATA_SOURCES.anilist.label : DATA_SOURCES.tvmaze.label) : null),
     [source],
@@ -122,7 +125,7 @@ export default function SearchScreen() {
           <TextInput
             value={query}
             onChangeText={setQuery}
-            placeholder={PLACEHOLDER[kind]}
+            placeholder={hint}
             placeholderTextColor={theme.textMuted}
             style={[styles.searchInput, { color: theme.text }]}
             returnKeyType="search"

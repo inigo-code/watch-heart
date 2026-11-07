@@ -44,8 +44,9 @@ export const DATA_SOURCES = {
  * An update that leaves it alone shows nothing.
  */
 export const WHATS_NEW = {
-  id: '1.5.2',
+  id: '1.5.3',
   items: [
+    'The search box on Find now suggests titles from your own watchlist',
     'The A Heart App label in About sits properly in the middle',
     'Friends is now a row of faces, with Add first and See all for the full list',
     'Look at someone’s profile before you add them, if they choose to show it',
