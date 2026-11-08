@@ -47,7 +47,7 @@ The README has the feature list, the code map and the build commands.
 
 - **Native build 1.5.0** (from `520653d`, runtime `96488ef6`): APK versionCode 12 on GitHub release v1.5.0 and F-Droid; AAB versionCode 13 built. Confirmed working on Inigo's phone.
 - **Google Play**: closed test (a personal account needs 12 testers for 14 days before production). The 1.3.3 bundle is in the closed test; uploading the 1.5.0 AAB was left for Inigo, so check the Play Console.
-- **OTAs**: 1.5.1 (Friends rebuild) is confirmed on both channels, with copies 1.4.7 and 1.3.13. Master also has 1.5.2 and 1.5.3, and the branches have later copies (`ota-1.4` at 1.4.9, `ota-1.3` at 1.3.15). Whether 1.5.2/1.5.3 and the newer copies were published is not recorded: check with `npx eas-cli@latest update:list`.
+- **OTAs**: everything is published to both `preview` and `production` (checked 2026-11-08 with `update:list`). Latest: 1.5.3 on runtime `96488ef6` (master), 1.4.9 on `688c28f0` (`ota-1.4`), 1.3.15 on `5e1fd486` (`ota-1.3`).
 - **Git**: master is level with origin. The `ota-*` branches are local only.
 - **Site**: privacy update and `invite.html` are live.
 
@@ -97,6 +97,7 @@ The full list is `git log`; every user-facing commit names its What's new versio
 
 ## Switching accounts
 
+- **Terminal**: Windows PowerShell blocks `npx` (`npx.ps1 cannot be loaded`). Use `npx.cmd eas-cli@latest …` there, or run it from Claude.
 - **Claude account**: everything above, the memory notes and `heart-apps.md` are local files, so any account on this PC sees them. Chats from another account don't carry over; this file does.
 - **Expo account**: builds, updates and env variables belong to `inigojo`. Check with `npx eas-cli@latest whoami`; switch with `npx eas-cli@latest login`.
 - **GitHub**: `gh auth status`. Pushes go to `inigo-code`.
