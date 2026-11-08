@@ -48,7 +48,10 @@ The README has the feature list, the code map and the build commands.
 - **Native build 1.5.0** (from `520653d`, runtime `96488ef6`): APK versionCode 12 on GitHub release v1.5.0 and F-Droid; AAB versionCode 13 built. Confirmed working on Inigo's phone.
 - **Google Play**: closed test (a personal account needs 12 testers for 14 days before production). The 1.3.3 bundle is in the closed test; uploading the 1.5.0 AAB was left for Inigo, so check the Play Console.
 - **OTAs**: everything is published to both `preview` and `production` (checked 2026-11-08 with `update:list`). Latest: 1.5.3 on runtime `96488ef6` (master), 1.4.9 on `688c28f0` (`ota-1.4`), 1.3.15 on `5e1fd486` (`ota-1.3`).
-- **Git**: master is level with origin. The `ota-*` branches are local only.
+- **Waiting to ship (2026-11-08)**: What's new 1.5.4 on master (`e60ab41`), with copies 1.4.10 on `ota-1.4` (`13c8964`) and 1.3.16 on `ota-1.3` (`ec3929c`): memory stories, people you might know, rule-safe streaming links, phone fixes. Not published. Inigo runs `supabase/suggestions.sql` (suggestions stay hidden until then); the site's privacy update (`c069724`) needs uploading.
+- **Git**: the `ota-*` branches are local only.
+- **What's new** is now a list of notes per update in `src/lib/app.ts` (`NOTES`); add a new note at the top for each update. A phone shows only notes newer than the last one it saw.
+- **Line endings**: the repo is LF. Python on Windows writes CRLF unless told `newline=''`/`'\n'`; check with `git ls-files --eol` before committing.
 - **Site**: privacy update and `invite.html` are live.
 
 ---
