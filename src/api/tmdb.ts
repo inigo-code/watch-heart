@@ -563,6 +563,11 @@ export type BrowseQuery = {
   notGenres?: string[];
   /** TMDB keyword ids, any of which matches (christmas, new year's eve…). */
   keywords?: number[];
+  /**
+   * A fixed list of TMDB film ids, in this order (award winners: src/lib/awards.ts). Everything else in the
+   * query is ignored.
+   */
+  ids?: number[];
   /** TMDB company ids, any of which matches (A24, Studio Ghibli…). */
   companies?: number[];
   /** Released from this year to this year, inclusive. */
@@ -606,6 +611,7 @@ async function loadDiscover(key: string, q: BrowseQuery, page: number, signal?: 
     const [first, all] = await Promise.all([loadDiscover(key, { ...rest, lang: preferLang }, 1, signal), loadDiscover(key, rest, 1, signal)]);
     return { results: [...first.results, ...all.results.filter((t) => !first.results.some((f) => f.sourceId === t.sourceId))], pages: all.pages };
   }
+  if (q.ids) return loadIds(key, q.ids, page, signal);
   const type = q.kind === 'movie' ? 'movie' : 'tv';
   const dateField = type === 'movie' ? 'primary_release_date' : 'first_air_date';
   const ids = (q.genres ?? []).map((g) => genreId(g, q.kind));
@@ -659,6 +665,16 @@ async function loadDiscover(key: string, q: BrowseQuery, page: number, signal?: 
   }
   const d = await get<{ results: Result[]; total_pages: number }>(key, `/discover/${type}`, p, signal);
   return { results: d.results.map((r) => toTitle(r, type)), pages: Math.min(d.total_pages, 500) };
+}
+
+const IDS_PAGE = 18;
+
+/** One page of a fixed list of films, in the list's order; a film TMDB no longer has is left out. */
+async function loadIds(key: string, ids: number[], page: number, signal?: AbortSignal): Promise<{ results: Title[]; pages: number }> {
+  const slice = ids.slice((page - 1) * IDS_PAGE, page * IDS_PAGE);
+  const found = await Promise.allSettled(slice.map((id) => get<Result>(key, `/movie/${id}`, {}, signal)));
+  const results = found.flatMap((r) => (r.status === 'fulfilled' ? [toTitle(r.value, 'movie')] : []));
+  return { results, pages: Math.ceil(ids.length / IDS_PAGE) };
 }
 
 /** This week's trending films and series together (anime included), most talked about first. Kept for an hour. */

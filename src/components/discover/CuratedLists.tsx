@@ -6,6 +6,7 @@ import { Text } from '@/components/AppText';
 import { discoverTmdb } from '@/api/tmdb';
 import { browse } from '@/components/discover/browse';
 import { SectionLabel } from '@/components/SectionLabel';
+import { AWARD_LISTS } from '@/lib/awards';
 import { INDIAN_GEMS, LISTS } from '@/lib/discover';
 import type { Shelf } from '@/lib/discover';
 import { font, fonts } from '@/lib/theme';
@@ -14,9 +15,21 @@ import type { Theme } from '@/lib/theme';
 /** Discover's lists, Letterboxd-style: a card per theme with its top three posters fanned out; in India, hidden gems first. */
 export function CuratedLists({ theme, tmdb, region }: { theme: Theme; tmdb: string; region: string }) {
   const lists = region === 'IN' ? [INDIAN_GEMS, ...LISTS] : LISTS;
+  // India's own award first in India.
+  const national = AWARD_LISTS.filter((l) => l.id === 'national');
+  const awards = region === 'IN' ? [...national, ...AWARD_LISTS.filter((l) => l.id !== 'national')] : AWARD_LISTS;
+  return (
+    <>
+      <Row title="Lists" lists={lists} theme={theme} tmdb={tmdb} />
+      <Row title="Award winners" lists={awards} theme={theme} tmdb={tmdb} />
+    </>
+  );
+}
+
+function Row({ title, lists, theme, tmdb }: { title: string; lists: Shelf[]; theme: Theme; tmdb: string }) {
   return (
     <View style={styles.section}>
-      <SectionLabel theme={theme}>Lists</SectionLabel>
+      <SectionLabel theme={theme}>{title}</SectionLabel>
       <FlatList
         data={lists}
         horizontal
@@ -36,7 +49,8 @@ function ListCard({ list, theme, tmdb }: { list: Shelf; theme: Theme; tmdb: stri
   useEffect(() => {
     if (!tmdb) return;
     let live = true;
-    discoverTmdb(tmdb, list.q, 1)
+    // A fixed list only needs its first three films for the fan.
+    discoverTmdb(tmdb, list.q.ids ? { ...list.q, ids: list.q.ids.slice(0, 3) } : list.q, 1)
       .then((r) => live && setPosters(r.results.flatMap((t) => (t.posterUrl ? [t.posterUrl] : [])).slice(0, 3)))
       .catch(() => live && setPosters([]));
     return () => {

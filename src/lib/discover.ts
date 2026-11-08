@@ -27,6 +27,7 @@ export const SHELVES: Shelf[] = [
 
 /** Which kinds a query makes sense for: series-only filters rule out films, a film length rules out series. */
 export function kindsFor(q: BrowseQuery): MediaKind[] {
+  if (q.ids) return ['movie'];
   if (q.status !== undefined || q.tvType !== undefined || q.airing) return ['tv', 'anime'];
   // An occasion's titles (Christmas, Diwali at home) are films or series; anime would match almost none.
   if (q.keywords?.length || q.country === 'IN') return ['movie', 'tv'];

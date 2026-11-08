@@ -46,6 +46,12 @@ export const DATA_SOURCES = {
  */
 const NOTES: { id: string; items: string[] }[] = [
   {
+    id: '1.5.7',
+    items: [
+      'Award winners in Discover: Best Picture, Palme d’Or, Golden Lion, Golden Bear, Best International Feature, Best Animated Feature and India’s National Film Award, newest first',
+    ],
+  },
+  {
     id: '1.5.6',
     items: [
       'Text size in Settings, under Look: Small, Default, Large or Larger. Stories stay the same.',

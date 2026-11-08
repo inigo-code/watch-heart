@@ -110,6 +110,10 @@ export default function BrowseScreen() {
         onEndReached={more}
         onEndReachedThreshold={0.6}
         ListHeaderComponent={
+          query.ids ? (
+            // A fixed list (award winners): its own order, nothing to sort or filter.
+            <Text style={[styles.listNote, { color: theme.textMuted }]}>{query.ids.length} films, newest first · winners from Wikidata</Text>
+          ) : (
           <View style={{ gap: 10 }}>
             {kinds.length > 1 && (
               <View style={[styles.kinds, { borderColor: theme.border }]}>
@@ -145,6 +149,7 @@ export default function BrowseScreen() {
               </Pressable>
             </View>
           </View>
+          )
         }
         ListEmptyComponent={
           loading ? undefined : (
@@ -383,6 +388,7 @@ function Group({ theme, title, children }: { theme: Theme; title: string; childr
 }
 
 const styles = StyleSheet.create({
+  listNote: { fontFamily: fonts.mono, fontSize: font.footnote },
   bar: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 },
   kinds: { flexDirection: 'row', borderWidth: 1, borderRadius: 10, padding: 3, gap: 3 },
   kind: { flex: 1, height: 34, borderRadius: 7, alignItems: 'center', justifyContent: 'center' },
