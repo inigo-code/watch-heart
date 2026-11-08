@@ -46,6 +46,15 @@ export const DATA_SOURCES = {
  */
 const NOTES: { id: string; items: string[] }[] = [
   {
+    id: '1.5.6',
+    items: [
+      'Text size in Settings, under Look: Small, Default, Large or Larger. Stories stay the same.',
+      'Memory stories have filters for your photo: Warm, Cool, Faded, Vintage, Dusk and Spotlight',
+      'One Story card button on an entry: choose Review or Memory inside it',
+      'More lists in Discover: A24, Studio Ghibli, Pixar, Korean cinema, Malayalam favourites, neo-noir, cyberpunk, whodunits and more',
+    ],
+  },
+  {
     id: '1.5.5',
     items: [
       'Memory stories: write your own top line and a line under the title',

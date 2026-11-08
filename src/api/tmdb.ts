@@ -563,6 +563,8 @@ export type BrowseQuery = {
   notGenres?: string[];
   /** TMDB keyword ids, any of which matches (christmas, new year's eve…). */
   keywords?: number[];
+  /** TMDB company ids, any of which matches (A24, Studio Ghibli…). */
+  companies?: number[];
   /** Released from this year to this year, inclusive. */
   from?: number;
   to?: number;
@@ -580,6 +582,8 @@ export type BrowseQuery = {
   minVotes?: number;
   maxVotes?: number;
   maxRuntime?: number;
+  /** Leaves out shorts (music videos, studio shorts) from lists of features. */
+  minRuntime?: number;
   /** Series: 3 ended, 0 still running. */
   status?: number;
   /** Series: 2 miniseries. */
@@ -611,6 +615,7 @@ async function loadDiscover(key: string, q: BrowseQuery, page: number, signal?: 
   const p: Record<string, string> = { include_adult: 'false', page: String(page) };
   if (genres.length) p.with_genres = genres.join(',');
   if (q.keywords?.length) p.with_keywords = q.keywords.join('|');
+  if (q.companies?.length) p.with_companies = q.companies.join('|');
   const without = (q.notGenres ?? []).map((g) => genreId(g, q.kind)).filter((id): id is number => id !== undefined);
   if (without.length) p.without_genres = without.join(',');
   if (q.kind === 'anime') p.with_original_language = 'ja';
@@ -642,6 +647,7 @@ async function loadDiscover(key: string, q: BrowseQuery, page: number, signal?: 
   if (minVotes) p['vote_count.gte'] = String(minVotes);
   if (q.maxVotes) p['vote_count.lte'] = String(q.maxVotes);
   if (q.maxRuntime) p['with_runtime.lte'] = String(q.maxRuntime);
+  if (q.minRuntime) p['with_runtime.gte'] = String(q.minRuntime);
   if (type === 'tv' && q.status !== undefined) p.with_status = String(q.status);
   if (type === 'tv' && q.tvType !== undefined) p.with_type = String(q.tvType);
   p.sort_by = q.sort === 'rating' ? 'vote_average.desc' : q.sort === 'newest' ? `${dateField}.desc` : 'popularity.desc';

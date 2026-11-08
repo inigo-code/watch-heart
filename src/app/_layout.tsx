@@ -8,8 +8,10 @@ import { ShareIntentProvider, useShareIntentContext } from 'expo-share-intent';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
+import type { ReactNode } from 'react';
 import { Platform } from 'react-native';
 
+import { TextSizeProvider } from '@/components/AppText';
 import { ToastProvider } from '@/components/Toast';
 import { BackDisc } from '@/components/BackDisc';
 import { SplashOverlay } from '@/components/SplashOverlay';
@@ -51,7 +53,9 @@ export default function RootLayout() {
         <FriendsProvider>
           <ToastProvider>
             <AppLockProvider>
-              <Navigator />
+              <SizedText>
+                <Navigator />
+              </SizedText>
               <WidgetSync />
             </AppLockProvider>
           </ToastProvider>
@@ -126,4 +130,10 @@ function Navigator() {
       <SplashOverlay ready={ready && settingsReady} />
     </>
   );
+}
+
+/** Settings → Look → Text size, for every screen. */
+function SizedText({ children }: { children: ReactNode }) {
+  const { settings } = useSettings();
+  return <TextSizeProvider size={settings.textSize ?? 1}>{children}</TextSizeProvider>;
 }

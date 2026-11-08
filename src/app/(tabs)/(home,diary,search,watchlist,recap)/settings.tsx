@@ -219,6 +219,19 @@ export default function SettingsScreen() {
               ]}
             />
           </ControlRow>
+          <ControlRow theme={theme} label="Text size">
+            <Segmented
+              theme={theme}
+              value={settings.textSize ?? 1}
+              onChange={(textSize) => update({ textSize })}
+              options={[
+                { value: 0.9, label: 'Small' },
+                { value: 1, label: 'Default' },
+                { value: 1.1, label: 'Large' },
+                { value: 1.2, label: 'Larger' },
+              ]}
+            />
+          </ControlRow>
           <ControlRow theme={theme} label="Accent" value={`${ACCENTS[settings.accent].label} · ${ACCENTS[settings.accent].note}`} last>
             <View style={styles.swatches}>
               {(Object.keys(ACCENTS) as AccentKey[]).map((key) => {

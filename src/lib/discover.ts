@@ -30,7 +30,7 @@ export function kindsFor(q: BrowseQuery): MediaKind[] {
   if (q.status !== undefined || q.tvType !== undefined || q.airing) return ['tv', 'anime'];
   // An occasion's titles (Christmas, Diwali at home) are films or series; anime would match almost none.
   if (q.keywords?.length || q.country === 'IN') return ['movie', 'tv'];
-  if (q.maxRuntime) return ['movie'];
+  if (q.maxRuntime || q.minRuntime || q.companies?.length) return ['movie'];
   return ['movie', 'tv', 'anime'];
 }
 
@@ -58,6 +58,14 @@ const list = (id: string, name: string, note: string, keywords: number[], extra:
   note,
   q: { kind: 'movie', keywords, sort: 'rating', minVotes: 300, notGenres: ['Documentary'], ...extra },
 });
+
+/** A studio's films (TMDB company ids), best rated first. */
+const studio = (id: string, name: string, note: string, companies: number[], extra: Partial<BrowseQuery> = {}): Shelf => ({
+  id,
+  name,
+  note,
+  q: { kind: 'movie', companies, sort: 'rating', minVotes: 300, notGenres: ['Documentary'], ...extra },
+});
 export const LISTS: Shelf[] = [
   list('cold', 'Warm films for a cold day', 'Feel-good, kind, a blanket and tea', [383896, 319357, 194088, 335803, 6054, 248927], {
     minScore: 7.2,
@@ -80,6 +88,30 @@ export const LISTS: Shelf[] = [
   list('underdog', 'Underdogs', 'Root for them', [240, 367589, 371436]),
   list('smalltown', 'Small towns', 'Everyone knows everyone', [1415]),
   list('found', 'Found family', 'Strangers who become home', [248927, 267488], { minVotes: 100 }),
+  list('noir', 'Neo-noir', 'Rain, neon and bad decisions', [207268]),
+  list('cyber', 'Cyberpunk', 'High tech, low life', [12190]),
+  list('whodunit', 'Whodunits', 'Everyone’s a suspect', [12570, 381354]),
+  list('night', 'One wild night', 'Sundown to sunrise', [162914, 377494], { minVotes: 150 }),
+  list('satire', 'Satire', 'Laughing at the powerful', [8201]),
+  list('zombie', 'Zombies', 'The dead walk', [12377, 186565], { notGenres: ['Documentary', 'Music'], minRuntime: 60 }),
+  list('anthology', 'Anthologies', 'Many stories, one film', [9706], { minVotes: 100 }),
+  list('musical', 'Musicals', 'Everybody sing', [4344], { minRuntime: 60 }),
+  list('slow', 'Slow cinema', 'Long takes, patient films', [228988], { minVotes: 100 }),
+  studio('a24', 'A24', 'The indie studio everyone follows', [41077]),
+  studio('ghibli', 'Studio Ghibli', 'Miyazaki, Takahata and friends', [10342], { minVotes: 100 }),
+  studio('pixar', 'Pixar', 'Features from the lamp', [3], { minRuntime: 60 }),
+  {
+    id: 'korea',
+    name: 'Korean cinema',
+    note: 'From Parasite to Oldboy and beyond',
+    q: { kind: 'movie', country: 'KR', sort: 'rating', minVotes: 300, notGenres: ['Documentary', 'Music'], minRuntime: 60 },
+  },
+  {
+    id: 'malayalam',
+    name: 'Malayalam favourites',
+    note: 'Kerala’s best loved films',
+    q: { kind: 'movie', lang: 'ml', sort: 'rating', minVotes: 60, notGenres: ['Documentary', 'Music'], minRuntime: 60 },
+  },
 ];
 
 /** Discover's extra shelf in India: highly rated Indian films few have seen. */

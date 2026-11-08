@@ -38,6 +38,8 @@ export type Settings = {
   /** The kind the Search tab opens on. */
   searchKind: MediaKind;
   haptics: boolean;
+  /** The app's text size on top of the phone's: 0.9 (smaller) to 1.2 (largest). Stories aren't affected. */
+  textSize: number;
   /**
    * Your own free TMDB key (v3 API key or v4 read access token). Overrides the one built into the app,
    * if any. Without either, TV search falls back to TVmaze and movie search is off.
@@ -105,6 +107,7 @@ export const DEFAULT_SETTINGS: Settings = {
   diaryLayout: 'list',
   searchKind: 'movie',
   haptics: true,
+  textSize: 1,
   tmdbKey: '',
   story: { layout: 'strip', palette: 'marquee', ratings: true, stats: true, ranked: false },
   dismissedTips: [],

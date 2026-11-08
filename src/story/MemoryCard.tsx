@@ -18,6 +18,61 @@ import type { PaletteKey } from './palettes';
 import { STORY_H, STORY_W } from './StoryCanvas';
 import type { StoryHandle } from './StoryCanvas';
 
+/**
+ * Looks for the photo. They're layers of colour drawn over it rather than changes to its pixels, so they show
+ * the same in the preview and in the saved story, and need nothing new in the app.
+ */
+export const PHOTO_FILTERS = {
+  none: { label: 'Original' },
+  warm: { label: 'Warm' },
+  cool: { label: 'Cool' },
+  faded: { label: 'Faded' },
+  vintage: { label: 'Vintage' },
+  dusk: { label: 'Dusk' },
+  spotlight: { label: 'Spotlight' },
+} as const;
+export type PhotoFilter = keyof typeof PHOTO_FILTERS;
+
+const EDGE = 'rgba(0,0,0,0.55)';
+
+/** The layers for a filter, over the photo and under the poster. */
+function FilterLayers({ filter }: { filter: PhotoFilter }) {
+  const fill = (color: string) => <View style={[StyleSheet.absoluteFill, { backgroundColor: color }]} />;
+  const edges = (
+    <>
+      <LinearGradient colors={[EDGE, 'transparent', 'transparent', EDGE]} locations={[0, 0.3, 0.7, 1]} style={StyleSheet.absoluteFill} />
+      <LinearGradient colors={[EDGE, 'transparent', 'transparent', EDGE]} locations={[0, 0.25, 0.75, 1]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={StyleSheet.absoluteFill} />
+    </>
+  );
+  switch (filter) {
+    case 'warm':
+      return fill('rgba(255,140,40,0.2)');
+    case 'cool':
+      return fill('rgba(40,120,255,0.18)');
+    case 'faded':
+      return (
+        <>
+          {fill('rgba(255,250,240,0.22)')}
+          {fill('rgba(60,50,40,0.08)')}
+        </>
+      );
+    case 'vintage':
+      return (
+        <>
+          {fill('rgba(205,150,80,0.26)')}
+          {fill('rgba(255,245,225,0.1)')}
+          {edges}
+        </>
+      );
+    case 'dusk':
+      return <LinearGradient colors={['rgba(110,50,200,0.32)', 'rgba(255,110,60,0.26)']} style={StyleSheet.absoluteFill} />;
+    case 'spotlight':
+      return edges;
+    default:
+      return null;
+  }
+}
+
 /** Where the little poster sits on the photo, or off, so it never has to cover a face. */
 export type PosterSpot = 'br' | 'bl' | 'tr' | 'tl' | 'off';
 
@@ -30,6 +85,7 @@ type Props = {
   /** A line of your own under the title. */
   caption?: string;
   poster?: PosterSpot;
+  filter?: PhotoFilter;
   onReady?: (ready: boolean) => void;
 };
 
@@ -64,7 +120,7 @@ function Sprockets({ color }: { color: string }) {
  * A memory: your own photo from the night (the cinema, the people you went with) in a film frame, with the
  * title, who was there, the date and your stars on a ticket stub. The photo only lives in the story.
  */
-export const MemoryCard = forwardRef<StoryHandle, Props>(function MemoryCard({ entry, photo, palette, kicker: own, caption, poster = 'br', onReady }, ref) {
+export const MemoryCard = forwardRef<StoryHandle, Props>(function MemoryCard({ entry, photo, palette, kicker: own, caption, poster = 'br', filter = 'none', onReady }, ref) {
   const p = PALETTES[palette];
   // The photo that has finished drawing; a new pick isn't ready until it has too.
   const [drawn, setDrawn] = useState<string | null>(null);
@@ -94,7 +150,10 @@ export const MemoryCard = forwardRef<StoryHandle, Props>(function MemoryCard({ e
           <Sprockets color={p.bg[0]} />
           <View style={[styles.photo, { backgroundColor: p.card }]}>
             {photo ? (
-              <Image source={{ uri: photo }} style={StyleSheet.absoluteFill} resizeMode="cover" onLoadEnd={() => setDrawn(photo)} onError={() => setDrawn(photo)} />
+              <>
+                <Image source={{ uri: photo }} style={StyleSheet.absoluteFill} resizeMode="cover" onLoadEnd={() => setDrawn(photo)} onError={() => setDrawn(photo)} />
+                <FilterLayers filter={filter} />
+              </>
             ) : (
               <View style={styles.empty}>
                 <Ionicons name="image-outline" size={40} color={p.muted} />

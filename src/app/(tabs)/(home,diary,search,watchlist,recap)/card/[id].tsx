@@ -12,8 +12,8 @@ import { pickMemoryPhoto } from '@/lib/memoryPhoto';
 import { font, fonts, useTheme } from '@/lib/theme';
 import { useSettings } from '@/settings/SettingsProvider';
 import { useDiary } from '@/store/DiaryStore';
-import { MemoryCard, memoryKicker } from '@/story/MemoryCard';
-import type { PosterSpot } from '@/story/MemoryCard';
+import { MemoryCard, PHOTO_FILTERS, memoryKicker } from '@/story/MemoryCard';
+import type { PhotoFilter, PosterSpot } from '@/story/MemoryCard';
 import { ReviewCard } from '@/story/ReviewCard';
 import type { StoryHandle } from '@/story/StoryCanvas';
 import { PalettePicker, ShareButtons, StoryPreview } from '@/story/Studio';
@@ -30,6 +30,7 @@ export default function CardScreen() {
   const [kicker, setKicker] = useState('');
   const [caption, setCaption] = useState('');
   const [poster, setPoster] = useState<PosterSpot>('br');
+  const [filter, setFilter] = useState<PhotoFilter>('none');
   const { ready: loaded, getEntry } = useDiary();
   const entry = getEntry(id);
   const { settings, update } = useSettings();
@@ -63,7 +64,7 @@ export default function CardScreen() {
       </View>
       <StoryPreview width={Math.min(width - 32, 300)} theme={theme} target={ref}>
         {memory ? (
-          <MemoryCard key="memory" entry={entry} photo={photo} palette={settings.story.palette} kicker={kicker} caption={caption} poster={poster} onReady={onReady} />
+          <MemoryCard key="memory" entry={entry} photo={photo} palette={settings.story.palette} kicker={kicker} caption={caption} poster={poster} filter={filter} onReady={onReady} />
         ) : (
           <ReviewCard key="review" entry={entry} palette={settings.story.palette} showReview={showReview} onReady={onReady} />
         )}
@@ -78,6 +79,16 @@ export default function CardScreen() {
       {memory && <Text style={[styles.note, { color: theme.textMuted }]}>The photo goes only into this story. Watch Heart doesn’t keep or upload it.</Text>}
       {memory && (
         <>
+          {!!photo && (
+            <>
+              <SectionLabel theme={theme}>FILTER</SectionLabel>
+              <View style={styles.wrap}>
+                {(Object.keys(PHOTO_FILTERS) as PhotoFilter[]).map((key) => (
+                  <Chip key={key} theme={theme} label={PHOTO_FILTERS[key].label} active={filter === key} onPress={() => setFilter(key)} />
+                ))}
+              </View>
+            </>
+          )}
           <SectionLabel theme={theme}>YOUR WORDS</SectionLabel>
           <TextInput
             value={kicker}
