@@ -88,7 +88,15 @@ export type Settings = {
 export const PROFILE_KEYS = ['name', 'bio', 'photo', 'favourites', 'yearGoal', 'sharing'] as const;
 
 /** What friends can see, and whether people can find you by name (off unless you turn it on). */
-export type Sharing = { diary: boolean; reviews: boolean; lists: boolean; findable: boolean; preview?: boolean };
+export type Sharing = {
+  diary: boolean;
+  reviews: boolean;
+  lists: boolean;
+  findable: boolean;
+  preview?: boolean;
+  /** Suggest me to people with the same titles, and them to me (supabase/suggestions.sql). Off by default. */
+  taste?: boolean;
+};
 
 export const DEFAULT_SETTINGS: Settings = {
   themeMode: 'dark',
@@ -107,7 +115,7 @@ export const DEFAULT_SETTINGS: Settings = {
   photo: null,
   favourites: [],
   yearGoal: 0,
-  sharing: { diary: true, reviews: true, lists: true, findable: false, preview: false },
+  sharing: { diary: true, reviews: true, lists: true, findable: false, preview: false, taste: false },
   omdbKey: '',
   watchRegion: '',
   homeLanguage: '',

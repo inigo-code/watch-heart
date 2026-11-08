@@ -2,10 +2,12 @@ import * as Linking from 'expo-linking';
 
 import { AppLauncher } from '../../modules/app-launcher';
 
-// TMDB says which services carry a title, but gives no link into them (only its own page). So a tap opens
-// the service's search for the title: Android hands these to the service's app when it's installed and the
-// app claims the link, otherwise they open on its site. Each address here was checked by hand.
+// TMDB says which services carry a title, but gives no link into them (only its own where-to-watch page).
+// So a tap opens the service's search for the title: Android hands these to the service's app when it's
+// installed and the app claims the link, otherwise they open on its site. Each address here was checked by
+// hand. Netflix's search needs signing in on the web, but its app takes the link.
 const SEARCHES: [RegExp, (title: string) => string][] = [
+  [/netflix/i, (t) => `https://www.netflix.com/search?q=${t}`],
   [/prime video|amazon video/i, (t) => `https://www.primevideo.com/search?phrase=${t}`],
   [/hotstar|disney/i, (t) => `https://www.hotstar.com/in/explore?search_query=${t}`],
   [/zee ?5/i, (t) => `https://www.zee5.com/search?q=${t}`],
@@ -47,33 +49,18 @@ const APPS: [RegExp, string][] = [
   [/mx ?player/i, 'com.mxtech.videoplayer.ad'],
 ];
 
-/** Netflix's page for a title, from Google's first answer for it on Netflix. */
-async function netflixPage(title: string) {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 4000);
-  try {
-    const q = encodeURIComponent(`site:netflix.com/title ${title}`);
-    const res = await fetch(`https://www.google.com/search?q=${q}&btnI=1`, { signal: controller.signal, headers: { 'User-Agent': 'Mozilla/5.0 (Linux; Android 14) Mobile' } });
-    const id = `${res.url} ${await res.text()}`.match(/netflix\.com(?:\/[a-z-]+)?\/title\/(\d+)/)?.[1];
-    return id ? `https://www.netflix.com/title/${id}` : null;
-  } catch {
-    return null;
-  } finally {
-    clearTimeout(timer);
-  }
-}
-
 /**
- * Opens a service for a title: in its app when it's installed, at the title or its search if the app takes
- * that link, otherwise on the app's home screen. Without the app, the website or a web search.
+ * Opens a service for a title, keeping to every service's terms (no scraping, no unofficial APIs):
+ * 1. The service's own search for the title, inside its app when the app takes that link.
+ * 2. Otherwise TMDB's where-to-watch page for the title (the link TMDB's API gives for this), whose
+ *    JustWatch buttons open the exact title in each service's app.
+ * 3. Without either, the service's website search, or a web search for the two together.
  */
-export async function openOnService(service: string, title: string) {
-  const netflix = /netflix/i.test(service);
-  const link = netflix ? await netflixPage(title) : watchLink(service, title);
+export async function openOnService(service: string, title: string, watchPage?: string | null) {
+  const search = SEARCHES.find(([name]) => name.test(service));
+  const link = search?.[1](encodeURIComponent(title));
   const app = APPS.find(([name]) => name.test(service))?.[1];
-  if (app && AppLauncher?.isInstalled(app)) {
-    if (link && AppLauncher.openLink(link, app)) return;
-    if (AppLauncher.openApp(app)) return;
-  }
+  if (link && app && AppLauncher?.isInstalled(app) && AppLauncher.openLink(link, app)) return;
+  if (watchPage) return Linking.openURL(watchPage);
   await Linking.openURL(link ?? watchLink(service, title));
 }

@@ -182,9 +182,11 @@ export default function FriendScreen() {
     </View>
   );
 
+  // A full last page also says "more", so stop once everything they've logged is here.
+  const hasMore = more && (diary?.length ?? 0) < friend.entries;
   const footer = (
     <View style={styles.footer}>
-      {tab !== 'lists' && more && (
+      {tab !== 'lists' && hasMore && (
         <Tap onPress={loadMore} disabled={loadingMore} accessibilityRole="button" style={[styles.more, { borderColor: theme.accent }]}>
           {loadingMore ? <ActivityIndicator color={theme.accent} /> : <Text style={[styles.moreText, { color: theme.text }]}>LOAD MORE</Text>}
         </Tap>
@@ -213,7 +215,7 @@ export default function FriendScreen() {
           ) : tab === 'diary' ? (
             nothing('Nothing to show yet')
           ) : tab === 'reviews' ? (
-            nothing(more ? 'None so far. Load more to look further back.' : 'No reviews yet')
+            nothing(hasMore ? 'None so far. Load more to look further back.' : 'No reviews yet')
           ) : (
             nothing('No lists shared')
           )

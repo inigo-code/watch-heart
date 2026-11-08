@@ -433,7 +433,7 @@ export default function SettingsScreen() {
               })
             }
           />
-          <Row theme={theme} icon="enter-outline" label="Import from other apps" value="Letterboxd, IMDb…" onPress={() => router.push('/import')} />
+          <Row theme={theme} icon="enter-outline" label="Import from other apps" onPress={() => router.push('/import')} />
           <Row
             theme={theme}
             icon="images-outline"

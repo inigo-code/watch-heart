@@ -143,6 +143,29 @@ export async function searchPeople(q: string): Promise<Person[]> {
   return ((data ?? []) as Row[]).map((r) => ({ id: r.user_id, name: r.name, bio: r.bio, status: r.status, photoPath: r.photo_path ?? null, previewable: !!r.previewable }));
 }
 
+/** Someone you might know: how many friends you share, and how many titles in common (never which). */
+export type Suggestion = Person & { mutual: number; common: number };
+
+/** People you might know (supabase/suggestions.sql). Empty, not an error, before that has been run. */
+export async function suggestPeople(): Promise<Suggestion[]> {
+  const { data, error } = await client().rpc('suggest_people');
+  if (error) {
+    if (/function .* does not exist|Could not find the function/i.test(error.message ?? '')) return [];
+    fail(error);
+  }
+  type Row = { user_id: string; name: string; bio: string; status: Person['status']; photo_path?: string | null; previewable?: boolean; mutual: number; common: number };
+  return ((data ?? []) as Row[]).map((r) => ({
+    id: r.user_id,
+    name: r.name,
+    bio: r.bio,
+    status: r.status,
+    photoPath: r.photo_path ?? null,
+    previewable: !!r.previewable,
+    mutual: Number(r.mutual) || 0,
+    common: Number(r.common) || 0,
+  }));
+}
+
 /** Resolves to 'sent', or 'friends' when they had already asked you. */
 export async function sendFriendRequest(id: string): Promise<'sent' | 'friends'> {
   const { data, error } = await client().rpc('send_friend_request', { target: id });

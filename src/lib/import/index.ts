@@ -13,7 +13,7 @@ import { letterboxdFile, fromLetterboxd } from './letterboxd';
 import type { LetterboxdFile } from './letterboxd';
 import { fromMal, isMalXml } from './mal';
 import { fromNetflix, isNetflix } from './netflix';
-import { fromTrakt, traktKind } from './trakt';
+import { fromTrakt, isTraktShaped, traktKind } from './trakt';
 import type { TraktFile } from './trakt';
 
 // One importer for every app: pick whatever the other app exported (a .zip as it comes, CSVs, JSON,
@@ -96,10 +96,15 @@ export function readImport(picked: Picked[]): ImportBundle {
         continue;
       }
       const tk = traktKind(json);
-      if (tk) {
+      // Custom lists and favourites look just like the watchlist (titles with a listed date): only the
+      // watchlist file goes to the Watchlist.
+      if (tk && (tk !== 'watchlist' || /watchlist/i.test(lower))) {
         trakt[tk] = [...(trakt[tk] ?? []), ...(json as unknown[])];
         continue;
       }
+      // Trakt's other files (collection, lists, favourites, hidden, recommendations) aren't things you
+      // watched: leave them out rather than read them as diary entries.
+      if (isTraktShaped(json)) continue;
       // Our own backup, picked here by mistake: say so rather than half-import it.
       if ((json as { format?: string })?.format === 'watchheart-backup') {
         bundle.unreadable.push(`${base} (a Watch Heart backup: use Import backup)`);

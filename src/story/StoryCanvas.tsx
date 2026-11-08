@@ -7,7 +7,7 @@ import type { ComponentRef, ReactNode } from 'react';
 import { Image, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/AppText';
-import { CardMark } from '@/components/BrandTitle';
+import { CardBrand } from '@/components/BrandTitle';
 import { dayParts } from '@/lib/dates';
 import { plainText } from '@/lib/richText';
 import { computeStats, kindSummary } from '@/lib/stats';
@@ -91,10 +91,7 @@ export const StoryCanvas = forwardRef<StoryHandle, Props>(function StoryCanvas({
           )}
         </View>
         {options.stats && <StatsBar p={p} stats={stats} />}
-        <View style={styles.brand}>
-          <CardMark size={16} />
-          <Text allowFontScaling={false} style={[styles.brandText, { color: p.muted }]}>WATCH HEART</Text>
-        </View>
+        <CardBrand color={p.muted} />
       </View>
     </View>
   );
@@ -385,6 +382,4 @@ const styles = StyleSheet.create({
   statValue: { fontFamily: fonts.display, fontSize: 24, lineHeight: 26, includeFontPadding: false },
   statLabel: { fontFamily: fonts.monoBold, fontSize: 7, letterSpacing: 1.5 },
   kinds: { fontFamily: fonts.monoBold, fontSize: 8, letterSpacing: 1.5, textAlign: 'center' },
-  brand: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5 },
-  brandText: { fontFamily: fonts.display, fontSize: 13, letterSpacing: 2 },
 });

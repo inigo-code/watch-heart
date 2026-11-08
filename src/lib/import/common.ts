@@ -49,10 +49,16 @@ export function records(text: string): { headers: string[]; rows: Row[] } {
 /** A column name reduced to letters and digits, for matching "Watched Date", "watched_date", "watchedDate". */
 export const squash = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
 
-/** The first column whose squashed name is one of `names`, or null. */
+/**
+ * The column for the first of `names` the file has, or null. `names` go from best to last resort, so a file
+ * with both "Created At" and "Watched At" uses Watched At, wherever the columns sit.
+ */
 export function column(headers: string[], names: string[]): string | null {
-  const wanted = new Set(names);
-  return headers.find((h) => wanted.has(squash(h))) ?? null;
+  for (const name of names) {
+    const found = headers.find((h) => squash(h) === name);
+    if (found) return found;
+  }
+  return null;
 }
 
 /** A short stable id from text (FNV-1a), so importing the same export twice adds nothing new. */

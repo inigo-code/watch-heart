@@ -108,10 +108,17 @@ export function TitleExtras({ source, sourceId, imdbId, title, year, series, the
       <SectionLabel theme={theme}>WHERE TO WATCH · {region}</SectionLabel>
       {w && (w.stream.length || w.free.length || w.rent.length || w.buy.length) ? (
         <View style={{ gap: 10 }}>
-          <Providers theme={theme} kind="Stream" list={w.stream} title={title ?? ''} />
-          <Providers theme={theme} kind="Free" list={w.free} title={title ?? ''} />
-          <Providers theme={theme} kind="Rent" list={w.rent} title={title ?? ''} />
-          <Providers theme={theme} kind="Buy" list={w.buy} title={title ?? ''} />
+          <Providers theme={theme} kind="Stream" list={w.stream} title={title ?? ''} page={w.link} />
+          <Providers theme={theme} kind="Free" list={w.free} title={title ?? ''} page={w.link} />
+          <Providers theme={theme} kind="Rent" list={w.rent} title={title ?? ''} page={w.link} />
+          <Providers theme={theme} kind="Buy" list={w.buy} title={title ?? ''} page={w.link} />
+          {!!w.link && (
+            // TMDB's page for the title links each service straight to it (through JustWatch).
+            <Pressable onPress={() => Linking.openURL(w.link!)} accessibilityRole="link" style={styles.exact}>
+              <Ionicons name="open-outline" size={14} color={theme.accent} />
+              <Text style={[styles.exactText, { color: theme.accent }]}>Exact page on each service</Text>
+            </Pressable>
+          )}
         </View>
       ) : (
         <Text style={[styles.note, { color: theme.textMuted }]}>Not streaming, to rent or to buy in this country right now.</Text>
@@ -147,7 +154,7 @@ function Score({
   );
 }
 
-function Providers({ theme, kind, list, title }: { theme: Theme; kind: string; list: Provider[]; title: string }) {
+function Providers({ theme, kind, list, title, page }: { theme: Theme; kind: string; list: Provider[]; title: string; page: string | null }) {
   if (!list.length) return null;
   return (
     <View style={styles.providerRow}>
@@ -156,7 +163,7 @@ function Providers({ theme, kind, list, title }: { theme: Theme; kind: string; l
       </Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.logos}>
         {list.map((p) => (
-          <Tap key={p.id} onPress={() => openOnService(p.name, title).catch(() => {})} scale={0.92} accessibilityRole="link" accessibilityLabel={`Find ${title} on ${p.name}`}>
+          <Tap key={p.id} onPress={() => openOnService(p.name, title, page).catch(() => {})} scale={0.92} accessibilityRole="link" accessibilityLabel={`Find ${title} on ${p.name}`}>
             {p.logo ? <Image source={p.logo} style={styles.logo} /> : <Text style={[styles.note, { color: theme.text }]}>{p.name}</Text>}
           </Tap>
         ))}
@@ -192,4 +199,6 @@ const styles = StyleSheet.create({
   logos: { gap: 8 },
   logo: { width: 40, height: 40, borderRadius: 10 },
   credit: { fontFamily: fonts.mono, fontSize: 12 },
+  exact: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', paddingVertical: 6 },
+  exactText: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 0.5 },
 });

@@ -25,6 +25,14 @@ type Item = {
 
 export type TraktFile = 'history' | 'ratings' | 'watchlist' | 'watched';
 
+/** True for any file in Trakt's API shape (titles carrying Trakt ids), whether or not it's watch data. */
+export function isTraktShaped(json: unknown): boolean {
+  if (!Array.isArray(json) || !json.length) return false;
+  const first = json[0] as Item & { season?: Media };
+  const media = first?.movie ?? first?.show ?? first?.episode ?? first?.season;
+  return !!(media as Media | undefined)?.ids?.trakt;
+}
+
 /** What kind of Trakt export a JSON value is, or null when it isn't one. */
 export function traktKind(json: unknown): TraktFile | null {
   if (!Array.isArray(json) || !json.length) return null;

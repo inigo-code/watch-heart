@@ -2,7 +2,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Updates from 'expo-updates';
 import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
-import { ActivityIndicator, AppState, Modal, Pressable, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, AppState, Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/AppText';
 import { HeartMark } from '@/components/BrandTitle';
@@ -60,14 +60,15 @@ function UpdatePromptInner() {
       <Ticket theme={theme} onClose={() => update({ seenUpdate: WHATS_NEW.id })}>
         <Text style={[styles.kicker, { color: theme.accent }]}>NOW SHOWING</Text>
         <Text style={[styles.title, { color: theme.text }]}>What’s new in this cut</Text>
-        <View style={styles.list}>
-          {WHATS_NEW.items.map((item) => (
+        {/* Scrolls on its own, so a long list or a large font never pushes the button off the screen. */}
+        <ScrollView style={styles.scroll} contentContainerStyle={styles.list}>
+          {WHATS_NEW.since(settings.seenUpdate).map((item) => (
             <View key={item} style={styles.item}>
               <Ionicons name="sparkles" size={14} color={theme.accent} style={{ marginTop: 3 }} />
               <Text style={[styles.itemText, { color: theme.text }]}>{item}</Text>
             </View>
           ))}
-        </View>
+        </ScrollView>
         <Primary theme={theme} label="Let’s go" onPress={() => update({ seenUpdate: WHATS_NEW.id })} />
       </Ticket>
     );
@@ -118,15 +119,16 @@ function Primary({ theme, label, onPress, busy }: { theme: Theme; label: string;
 }
 
 const styles = StyleSheet.create({
-  backdrop: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 28 },
-  card: { width: '100%', maxWidth: 380, borderRadius: 20, borderWidth: 1, padding: 24, alignItems: 'center', gap: 10, overflow: 'hidden' },
+  backdrop: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 28, paddingVertical: 56 },
+  card: { width: '100%', maxWidth: 380, maxHeight: '100%', borderRadius: 20, borderWidth: 1, padding: 24, alignItems: 'center', gap: 10, overflow: 'hidden' },
   punch: { position: 'absolute', top: '58%', width: 22, height: 22, borderRadius: 11 },
   punchLeft: { left: -11 },
   punchRight: { right: -11 },
   kicker: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 2 },
   title: { fontSize: font.largeTitle, fontFamily: fonts.display, letterSpacing: 1, textAlign: 'center', marginTop: 4 },
   body: { fontSize: font.body, lineHeight: 20, textAlign: 'center' },
-  list: { alignSelf: 'stretch', gap: 10, marginTop: 6 },
+  scroll: { alignSelf: 'stretch', flexGrow: 0, flexShrink: 1, marginTop: 6 },
+  list: { gap: 10 },
   item: { flexDirection: 'row', gap: 10 },
   itemText: { flex: 1, fontSize: font.body, lineHeight: 20 },
   primary: { alignSelf: 'stretch', height: 50, borderRadius: 25, alignItems: 'center', justifyContent: 'center', marginTop: 8 },

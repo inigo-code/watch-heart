@@ -5,7 +5,7 @@ import { forwardRef, useEffect, useState } from 'react';
 import { Image, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/AppText';
-import { CardMark } from '@/components/BrandTitle';
+import { CardBrand } from '@/components/BrandTitle';
 import { admit, namesLine } from '@/lib/companions';
 import { friendlyDate } from '@/lib/dates';
 import { plainText } from '@/lib/richText';
@@ -95,16 +95,13 @@ export const ReviewCard = forwardRef<StoryHandle, Props>(function ReviewCard({ e
           </Text>
         )}
 
-        <View style={{ flex: 1 }} />
+        <View style={styles.spacer} />
         <View style={[styles.stub, { borderColor: p.muted + '66' }]}>
           <Text allowFontScaling={false} style={[styles.stubText, { color: p.muted }]}>{admit(entry.companions?.length ?? 0)}</Text>
           <View style={[styles.stubTear, { borderColor: p.muted + '66' }]} />
           <Text allowFontScaling={false} style={[styles.stubText, { color: p.text }]}>{friendlyDate(entry.watchedOn).toUpperCase()}</Text>
         </View>
-        <View style={styles.brand}>
-          <CardMark size={16} />
-          <Text allowFontScaling={false} style={[styles.brandText, { color: p.muted }]}>WATCH HEART</Text>
-        </View>
+        <CardBrand color={p.muted} style={styles.brand} />
       </View>
     </View>
   );
@@ -113,18 +110,20 @@ export const ReviewCard = forwardRef<StoryHandle, Props>(function ReviewCard({ e
 const styles = StyleSheet.create({
   canvas: { width: STORY_W, height: STORY_H, overflow: 'hidden' },
   backdrop: { position: 'absolute', left: 0, right: 0, top: 0, height: STORY_H * 0.55 },
-  inner: { flex: 1, paddingTop: 70, paddingBottom: 40, paddingHorizontal: 28, alignItems: 'center', gap: 6 },
+  inner: { flex: 1, paddingTop: 56, paddingBottom: 32, paddingHorizontal: 28, alignItems: 'center', gap: 6 },
   kicker: { fontFamily: fonts.monoBold, fontSize: 11, letterSpacing: 4, marginBottom: 6 },
-  posterWrap: { boxShadow: '0 14px 36px rgba(0,0,0,0.65)', borderRadius: 8, marginBottom: 10 },
-  poster: { width: 168, height: 252, borderRadius: 8, overflow: 'hidden' },
+  // The poster gives up height first, so a long title, credits and review never push the stub and the
+  // Watch Heart mark off the bottom of the card.
+  posterWrap: { flexBasis: 252, flexShrink: 1, minHeight: 120, aspectRatio: 2 / 3, boxShadow: '0 14px 36px rgba(0,0,0,0.65)', borderRadius: 8, marginBottom: 10 },
+  poster: { width: '100%', height: '100%', borderRadius: 8, overflow: 'hidden' },
   noPoster: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   title: { fontFamily: fonts.display, fontSize: 38, lineHeight: 38, textAlign: 'center', letterSpacing: 1, includeFontPadding: false },
   meta: { fontFamily: fonts.monoBold, fontSize: 9, letterSpacing: 1.5, textAlign: 'center' },
   rating: { flexDirection: 'row', alignItems: 'center', marginTop: 8 },
   review: { fontFamily: fonts.mono, fontSize: 11.5, lineHeight: 17, textAlign: 'center', fontStyle: 'italic', marginTop: 10 },
+  spacer: { flexGrow: 1 },
   stub: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderStyle: 'dashed', borderRadius: 6, paddingHorizontal: 12, height: 30, gap: 10 },
   stubText: { fontFamily: fonts.monoBold, fontSize: 9, letterSpacing: 2 },
   stubTear: { alignSelf: 'stretch', borderLeftWidth: 1, borderStyle: 'dashed' },
-  brand: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 10 },
-  brandText: { fontFamily: fonts.display, fontSize: 13, letterSpacing: 2 },
+  brand: { marginTop: 10 },
 });

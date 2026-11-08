@@ -53,7 +53,7 @@ export function Row({ theme, icon, leading, label, value, onPress, busy, destruc
           <Ionicons name={icon ?? 'ellipse-outline'} size={17} color={destructive ? theme.danger : theme.text} />
         </View>
       )}
-      <Text style={[styles.label, { color }]} numberOfLines={1}>
+      <Text style={[styles.label, { color }]} numberOfLines={2}>
         {label}
       </Text>
       {value !== undefined && (
@@ -134,8 +134,9 @@ const styles = StyleSheet.create({
   footer: { fontSize: font.caption, fontFamily: fonts.mono, paddingHorizontal: 6, lineHeight: 17 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, minHeight: 52, paddingVertical: 8 },
   iconWrap: { width: 30, height: 30, borderRadius: 9, alignItems: 'center', justifyContent: 'center' },
-  label: { flex: 1, fontSize: font.body, fontWeight: '600' },
-  value: { fontSize: font.body, maxWidth: '45%' },
+  // The label keeps its words (wrapping to a second line if it must); the value gives way first.
+  label: { flex: 1, minWidth: '50%', fontSize: font.body, fontWeight: '600' },
+  value: { flexShrink: 1, fontSize: font.body, textAlign: 'right' },
   control: { paddingHorizontal: 16, paddingVertical: 12, gap: 10 },
   controlHead: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', gap: 12 },
   controlLabel: { fontSize: font.body, fontWeight: '600' },

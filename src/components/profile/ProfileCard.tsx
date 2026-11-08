@@ -4,7 +4,7 @@ import { forwardRef } from 'react';
 import { Image, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/AppText';
-import { CardMark } from '@/components/BrandTitle';
+import { CardBrand } from '@/components/BrandTitle';
 import type { ProfileStats } from '@/lib/profileStats';
 import { fonts } from '@/lib/theme';
 import type { Favourite } from '@/settings/SettingsProvider';
@@ -74,10 +74,7 @@ export const ProfileCard = forwardRef<StoryHandle, Props>(function ProfileCard({
         {stats.thisYear} IN {year} · {stats.longestStreak}-DAY BEST STREAK{stats.avgStars ? ` · ${stats.avgStars}★ AVG` : ''}
       </Text>
       <View style={{ flex: 1 }} />
-      <View style={styles.brand}>
-        <CardMark size={16} />
-        <Text allowFontScaling={false} style={[styles.brandText, { color: p.muted }]}>WATCH HEART</Text>
-      </View>
+      <CardBrand color={p.muted} style={styles.brand} />
     </View>
   );
 });
@@ -104,6 +101,5 @@ const styles = StyleSheet.create({
   value: { fontFamily: fonts.display, fontSize: 36 },
   label: { fontFamily: fonts.monoBold, fontSize: 9, letterSpacing: 1.5 },
   line: { fontFamily: fonts.monoBold, fontSize: 9, letterSpacing: 1, marginTop: 12, textAlign: 'center' },
-  brand: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 10 },
-  brandText: { fontFamily: fonts.display, fontSize: 13, letterSpacing: 2 },
+  brand: { marginTop: 10 },
 });
