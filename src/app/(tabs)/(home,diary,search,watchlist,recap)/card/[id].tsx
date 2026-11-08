@@ -4,7 +4,7 @@ import { useCallback, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Text } from '@/components/AppText';
+import { Text, TextInput } from '@/components/AppText';
 import { Chip } from '@/components/Film';
 import { SectionLabel } from '@/components/SectionLabel';
 import { useToast } from '@/components/Toast';
@@ -12,7 +12,8 @@ import { pickMemoryPhoto } from '@/lib/memoryPhoto';
 import { font, fonts, useTheme } from '@/lib/theme';
 import { useSettings } from '@/settings/SettingsProvider';
 import { useDiary } from '@/store/DiaryStore';
-import { MemoryCard } from '@/story/MemoryCard';
+import { MemoryCard, memoryKicker } from '@/story/MemoryCard';
+import type { PosterSpot } from '@/story/MemoryCard';
 import { ReviewCard } from '@/story/ReviewCard';
 import type { StoryHandle } from '@/story/StoryCanvas';
 import { PalettePicker, ShareButtons, StoryPreview } from '@/story/Studio';
@@ -26,6 +27,9 @@ export default function CardScreen() {
   const toast = useToast();
   const [memory, setMemory] = useState(style === 'memory');
   const [photo, setPhoto] = useState<string | null>(null);
+  const [kicker, setKicker] = useState('');
+  const [caption, setCaption] = useState('');
+  const [poster, setPoster] = useState<PosterSpot>('br');
   const { ready: loaded, getEntry } = useDiary();
   const entry = getEntry(id);
   const { settings, update } = useSettings();
@@ -52,14 +56,14 @@ export default function CardScreen() {
   }
 
   return (
-    <ScrollView contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 32 }]}>
+    <ScrollView contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 32 }]} keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets>
       <View style={styles.row}>
         <Chip theme={theme} icon="ticket-outline" label="Review" active={!memory} onPress={() => setMemory(false)} />
         <Chip theme={theme} icon="images-outline" label="Memory" active={memory} onPress={() => setMemory(true)} />
       </View>
       <StoryPreview width={Math.min(width - 32, 300)} theme={theme} target={ref}>
         {memory ? (
-          <MemoryCard key="memory" entry={entry} photo={photo} palette={settings.story.palette} onReady={onReady} />
+          <MemoryCard key="memory" entry={entry} photo={photo} palette={settings.story.palette} kicker={kicker} caption={caption} poster={poster} onReady={onReady} />
         ) : (
           <ReviewCard key="review" entry={entry} palette={settings.story.palette} showReview={showReview} onReady={onReady} />
         )}
@@ -72,6 +76,47 @@ export default function CardScreen() {
       )}
       <ShareButtons target={ref} ready={ready} theme={theme} />
       {memory && <Text style={[styles.note, { color: theme.textMuted }]}>The photo goes only into this story. Watch Heart doesn’t keep or upload it.</Text>}
+      {memory && (
+        <>
+          <SectionLabel theme={theme}>YOUR WORDS</SectionLabel>
+          <TextInput
+            value={kicker}
+            onChangeText={setKicker}
+            placeholder={`Top line: ${memoryKicker(entry)}`}
+            placeholderTextColor={theme.textMuted}
+            maxLength={32}
+            autoCapitalize="characters"
+            style={[styles.input, { color: theme.text, backgroundColor: theme.card, borderColor: theme.border }]}
+          />
+          <TextInput
+            value={caption}
+            onChangeText={setCaption}
+            placeholder="A line of your own, like “Sunday morning show with the gang”"
+            placeholderTextColor={theme.textMuted}
+            maxLength={120}
+            multiline
+            style={[styles.input, styles.inputTall, { color: theme.text, backgroundColor: theme.card, borderColor: theme.border }]}
+          />
+          {!!entry.posterUrl && (
+            <>
+              <SectionLabel theme={theme}>POSTER</SectionLabel>
+              <View style={styles.wrap}>
+                {(
+                  [
+                    ['br', 'Bottom right'],
+                    ['bl', 'Bottom left'],
+                    ['tr', 'Top right'],
+                    ['tl', 'Top left'],
+                    ['off', 'Hide'],
+                  ] as const
+                ).map(([key, label]) => (
+                  <Chip key={key} theme={theme} label={label} active={poster === key} onPress={() => setPoster(key)} />
+                ))}
+              </View>
+            </>
+          )}
+        </>
+      )}
       <SectionLabel theme={theme}>PALETTE</SectionLabel>
       <PalettePicker value={settings.story.palette} onChange={(palette) => update({ story: { ...settings.story, palette } })} theme={theme} />
       {!memory && !!entry.review && (
@@ -91,6 +136,9 @@ const styles = StyleSheet.create({
   content: { padding: 16, gap: 14 },
   missing: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   row: { flexDirection: 'row', gap: 8 },
+  wrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  input: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: font.body },
+  inputTall: { minHeight: 72, textAlignVertical: 'top' },
   note: { fontFamily: fonts.mono, fontSize: font.footnote },
   pick: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: 48, borderRadius: 24, borderWidth: 1.5 },
   pickText: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 1 },

@@ -103,13 +103,24 @@ export default function FriendScreen() {
   }, [first]);
   const pull = usePullRefresh(theme, first);
 
+  // Reviews come from the diary, and a page of it may hold none. So on Reviews, keep reading (in bigger
+  // pages) until another review turns up or the diary ends; then the button gives way to "all loaded".
   const loadMore = async () => {
     if (!diary || loadingMore) return;
     setLoadingMore(true);
     try {
-      const rows = await friendDiary(id, diary.length, PAGE);
-      setDiary([...diary, ...rows]);
-      setMore(rows.length === PAGE);
+      const total = friend?.entries ?? Infinity;
+      const reviewsBefore = diary.filter((e) => e.review).length;
+      let all = diary;
+      let left = true;
+      do {
+        const count = tab === 'reviews' ? 120 : PAGE;
+        const rows = await friendDiary(id, all.length, count);
+        all = [...all, ...rows];
+        left = rows.length === count && all.length < total;
+      } while (tab === 'reviews' && left && all.filter((e) => e.review).length === reviewsBefore);
+      setDiary(all);
+      setMore(left);
     } catch {
       toast('Couldn’t load more. Try again.');
     }
@@ -188,8 +199,16 @@ export default function FriendScreen() {
     <View style={styles.footer}>
       {tab !== 'lists' && hasMore && (
         <Tap onPress={loadMore} disabled={loadingMore} accessibilityRole="button" style={[styles.more, { borderColor: theme.accent }]}>
-          {loadingMore ? <ActivityIndicator color={theme.accent} /> : <Text style={[styles.moreText, { color: theme.text }]}>LOAD MORE</Text>}
+          {loadingMore ? <ActivityIndicator color={theme.accent} /> : <Text style={[styles.moreText, { color: theme.text }]}>{tab === 'reviews' ? 'LOAD MORE REVIEWS' : 'LOAD MORE'}</Text>}
         </Tap>
+      )}
+      {tab !== 'lists' && !hasMore && !!diary?.length && (tab === 'diary' || reviews.length > 0) && (
+        <View style={styles.done}>
+          <Ionicons name="checkmark-circle-outline" size={16} color={theme.textMuted} />
+          <Text style={[styles.doneText, { color: theme.textMuted }]}>
+            {tab === 'reviews' ? `ALL ${reviews.length} ${reviews.length === 1 ? 'REVIEW' : 'REVIEWS'} LOADED` : 'THAT’S THEIR WHOLE DIARY'}
+          </Text>
+        </View>
       )}
       <DangerButton theme={theme} icon="person-remove-outline" label={`Unfriend ${friend.name}`} onPress={() => setConfirm(true)} />
     </View>
@@ -215,7 +234,7 @@ export default function FriendScreen() {
           ) : tab === 'diary' ? (
             nothing('Nothing to show yet')
           ) : tab === 'reviews' ? (
-            nothing(hasMore ? 'None so far. Load more to look further back.' : 'No reviews yet')
+            nothing(hasMore ? 'None so far. Load more reviews to look further back.' : 'No reviews yet')
           ) : (
             nothing('No lists shared')
           )
@@ -351,6 +370,8 @@ const styles = StyleSheet.create({
   footer: { gap: 16, marginTop: 8 },
   more: { height: 48, borderWidth: 1.5, borderRadius: 24, alignItems: 'center', justifyContent: 'center' },
   moreText: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 1 },
+  done: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, height: 40, opacity: 0.8 },
+  doneText: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 1 },
   review: { gap: 12, borderWidth: 1, borderRadius: 12, padding: 12 },
   reviewHead: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   reviewTitle: { flex: 1, gap: 2 },

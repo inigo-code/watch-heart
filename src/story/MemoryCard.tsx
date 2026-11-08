@@ -18,7 +18,34 @@ import type { PaletteKey } from './palettes';
 import { STORY_H, STORY_W } from './StoryCanvas';
 import type { StoryHandle } from './StoryCanvas';
 
-type Props = { entry: Entry; photo: string | null; palette: PaletteKey; onReady?: (ready: boolean) => void };
+/** Where the little poster sits on the photo, or off, so it never has to cover a face. */
+export type PosterSpot = 'br' | 'bl' | 'tr' | 'tl' | 'off';
+
+type Props = {
+  entry: Entry;
+  photo: string | null;
+  palette: PaletteKey;
+  /** Your own top line; empty uses the default (see memoryKicker). */
+  kicker?: string;
+  /** A line of your own under the title. */
+  caption?: string;
+  poster?: PosterSpot;
+  onReady?: (ready: boolean) => void;
+};
+
+/** The top line unless you write your own: where you watched it, never a time of day it might not have been. */
+export function memoryKicker(entry: Entry) {
+  if (entry.device === 'cinema') return 'AT THE CINEMA';
+  const where = DEVICES.find((d) => d.key === entry.device)?.phrase;
+  return where ? where.toUpperCase() : 'A MEMORY';
+}
+
+const SPOTS = {
+  br: { right: 10, bottom: 10, transform: [{ rotate: '4deg' }] },
+  bl: { left: 10, bottom: 10, transform: [{ rotate: '-4deg' }] },
+  tr: { right: 10, top: 10, transform: [{ rotate: '-4deg' }] },
+  tl: { left: 10, top: 10, transform: [{ rotate: '4deg' }] },
+} as const;
 
 const HOLES = 11;
 
@@ -37,16 +64,18 @@ function Sprockets({ color }: { color: string }) {
  * A memory: your own photo from the night (the cinema, the people you went with) in a film frame, with the
  * title, who was there, the date and your stars on a ticket stub. The photo only lives in the story.
  */
-export const MemoryCard = forwardRef<StoryHandle, Props>(function MemoryCard({ entry, photo, palette, onReady }, ref) {
+export const MemoryCard = forwardRef<StoryHandle, Props>(function MemoryCard({ entry, photo, palette, kicker: own, caption, poster = 'br', onReady }, ref) {
   const p = PALETTES[palette];
   // The photo that has finished drawing; a new pick isn't ready until it has too.
   const [drawn, setDrawn] = useState<string | null>(null);
   const photoLoaded = !!photo && drawn === photo;
-  const [posterLoaded, setPosterLoaded] = useState(!entry.posterUrl);
-  useEffect(() => onReady?.(photoLoaded && posterLoaded), [photoLoaded, posterLoaded, onReady]);
+  const spot = entry.posterUrl && poster !== 'off' ? poster : null;
+  const [posterLoaded, setPosterLoaded] = useState(false);
+  const posterReady = !spot || posterLoaded;
+  useEffect(() => onReady?.(photoLoaded && posterReady), [photoLoaded, posterReady, onReady]);
 
-  const where = DEVICES.find((d) => d.key === entry.device)?.phrase;
-  const kicker = (entry.device === 'cinema' ? 'A NIGHT AT THE MOVIES' : where ? where.toUpperCase() : 'A MEMORY').replace(/\s+/g, ' ');
+  const kicker = (own?.trim() || memoryKicker(entry)).toUpperCase().replace(/\s+/g, ' ');
+  const line = caption?.trim().replace(/\s+/g, ' ') ?? '';
   const stars = [];
   for (let i = 1; i <= 5; i++) {
     if (entry.rating >= i * 2) stars.push(<Ionicons key={i} name="star" size={16} color={p.star} />);
@@ -74,8 +103,8 @@ export const MemoryCard = forwardRef<StoryHandle, Props>(function MemoryCard({ e
                 </Text>
               </View>
             )}
-            {entry.posterUrl && (
-              <View style={[styles.poster, { borderColor: p.strip }]}>
+            {spot && entry.posterUrl && (
+              <View style={[styles.poster, SPOTS[spot], { borderColor: p.strip }]}>
                 <Image
                   source={{ uri: sharp(entry.posterUrl, 56) }}
                   style={StyleSheet.absoluteFill}
@@ -93,6 +122,11 @@ export const MemoryCard = forwardRef<StoryHandle, Props>(function MemoryCard({ e
         <Text allowFontScaling={false} style={[styles.title, { color: p.text }]} numberOfLines={2}>
           {entry.title.toUpperCase()}
         </Text>
+        {!!line && (
+          <Text allowFontScaling={false} style={[styles.caption, { color: p.text }]} numberOfLines={3}>
+            “{line}”
+          </Text>
+        )}
         {!!entry.companions?.length && (
           <Text allowFontScaling={false} style={[styles.meta, { color: p.muted }]} numberOfLines={2}>
             WITH <Text allowFontScaling={false} style={{ color: p.text }}>{namesLine(entry.companions).toUpperCase()}</Text>
@@ -128,7 +162,8 @@ const styles = StyleSheet.create({
   photo: { flexBasis: 360, flexShrink: 1, minHeight: 200, borderRadius: 3, overflow: 'hidden' },
   empty: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 8 },
   emptyText: { fontFamily: fonts.monoBold, fontSize: 10, letterSpacing: 2 },
-  poster: { position: 'absolute', right: 10, bottom: 10, width: 56, height: 84, borderRadius: 4, borderWidth: 2, overflow: 'hidden', transform: [{ rotate: '4deg' }] },
+  poster: { position: 'absolute', width: 56, height: 84, borderRadius: 4, borderWidth: 2, overflow: 'hidden' },
+  caption: { fontFamily: fonts.mono, fontSize: 11.5, lineHeight: 16, textAlign: 'center', fontStyle: 'italic' },
   title: { fontFamily: fonts.display, fontSize: 32, lineHeight: 33, textAlign: 'center', letterSpacing: 1, includeFontPadding: false, marginTop: 10 },
   meta: { fontFamily: fonts.monoBold, fontSize: 9, letterSpacing: 1.5, textAlign: 'center' },
   rating: { flexDirection: 'row', alignItems: 'center', gap: 1 },

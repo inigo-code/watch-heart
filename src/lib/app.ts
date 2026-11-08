@@ -46,6 +46,15 @@ export const DATA_SOURCES = {
  */
 const NOTES: { id: string; items: string[] }[] = [
   {
+    id: '1.5.5',
+    items: [
+      'Memory stories: write your own top line and a line under the title',
+      'Move the little poster to any corner of your photo, or hide it, so it never covers a face',
+      'A memory from the cinema says At the cinema, whatever time you went',
+      'A friend’s Reviews keeps looking until it finds more, then says when they’re all loaded',
+    ],
+  },
+  {
     id: '1.5.4',
     items: [
       'Memory stories: put your own photo from the night in a film frame, with who you went with, and share it',
