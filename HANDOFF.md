@@ -45,6 +45,7 @@ The README has the feature list, the code map and the build commands.
 
 ## Release state (2026-11-13)
 
+- **1.6.0 released 2026-11-13** on GitHub (v1.6.0, `watch-heart.apk`) and F-Droid, from master `a08e5bb`. Both its APK and its AAB were built locally because the EAS builds are used up until 1 December. Both are versionCode 14 and have runtime `6d6c2184be97d5aef99302cda46e517dbd46a87f`. The AAB is `play-build/watch-heart-1.6.0.aab`, for Inigo to upload to the Play closed test. The EAS remote versionCode is 14. **From now on every OTA also goes to runtime `6d6c2184`**: set `runtimeVersion` in `app.json` to it for one `eas update` per channel, then `git checkout app.json`. Keep publishing to `96488ef6` too, for phones still on 1.5.0.
 - **What's new 1.5.8, published 2026-11-13 to preview and production** (master `b753d2a`, groups `4bfe437a` and `e4f8048d`; pushed) (JavaScript only, runtime `96488ef6`): a failed diary load shows "Couldn't open your diary" with Try again, and nothing saves or syncs over it; lists and settings likewise (retried, then a quiet note, and failed settings mean locked); the lock screen shows only with App lock on; untick times on tracked shows (`Track.changed`), so an untick survives a merge with another phone; Watchlist sort Shortest first; Diary search reads reviews without their formatting marks, and the year; Home's offline line. First tests in `tests/`.
 - 1.5.4 to 1.5.7 are published to both channels (see History).
 
