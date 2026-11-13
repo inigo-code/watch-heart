@@ -45,7 +45,7 @@ The README has the feature list, the code map and the build commands.
 
 ## Release state (2026-11-13)
 
-- **What's new 1.5.8, published 2026-11-13 to preview and production** (master `b753d2a`, groups `4bfe437a` and `e4f8048d`; master not pushed yet) (JavaScript only, runtime `96488ef6`): a failed diary load shows "Couldn't open your diary" with Try again, and nothing saves or syncs over it; lists and settings likewise (retried, then a quiet note, and failed settings mean locked); the lock screen shows only with App lock on; untick times on tracked shows (`Track.changed`), so an untick survives a merge with another phone; Watchlist sort Shortest first; Diary search reads reviews without their formatting marks, and the year; Home's offline line. First tests in `tests/`.
+- **What's new 1.5.8, published 2026-11-13 to preview and production** (master `b753d2a`, groups `4bfe437a` and `e4f8048d`; pushed) (JavaScript only, runtime `96488ef6`): a failed diary load shows "Couldn't open your diary" with Try again, and nothing saves or syncs over it; lists and settings likewise (retried, then a quiet note, and failed settings mean locked); the lock screen shows only with App lock on; untick times on tracked shows (`Track.changed`), so an untick survives a merge with another phone; Watchlist sort Shortest first; Diary search reads reviews without their formatting marks, and the year; Home's offline line. First tests in `tests/`.
 - 1.5.4 to 1.5.7 are published to both channels (see History).
 
 - **Native build 1.5.0** (from `520653d`, runtime `96488ef6`): APK versionCode 12 on GitHub release v1.5.0 and F-Droid; AAB versionCode 13 built. Confirmed working on Inigo's phone.
