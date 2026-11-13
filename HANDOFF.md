@@ -1,6 +1,6 @@
 # Watch Heart: development handoff
 
-Read this first when picking the project up in a new session or from another account. It sums up the work so far, where things stand, and the rules to keep. Last written 2026-11-13, at master `9e14c92` (What's new 1.5.7) with 1.5.8 uncommitted on top.
+Read this first when picking the project up in a new session or from another account. It sums up the work so far, where things stand, and the rules to keep. Last written 2026-11-13, at master `b753d2a` (What's new 1.5.8, published).
 
 **App:** Watch Heart, a diary for films, series and anime. Free Android app, one of the Heart Apps by Inigo. Expo SDK 58, React Native 0.88, Expo Router, SQLite on the phone, Supabase for accounts, sync and friends, and TMDB, TVmaze and OMDb for data.
 
@@ -45,7 +45,7 @@ The README has the feature list, the code map and the build commands.
 
 ## Release state (2026-11-13)
 
-- **What's new 1.5.8, not published, uncommitted pending review** (JavaScript only, runtime `96488ef6`): a failed diary load shows "Couldn't open your diary" with Try again, and nothing saves or syncs over it; lists and settings likewise (retried, then a quiet note, and failed settings mean locked); the lock screen shows only with App lock on; untick times on tracked shows (`Track.changed`), so an untick survives a merge with another phone; Watchlist sort Shortest first; Diary search reads reviews without their formatting marks, and the year; Home's offline line. First tests in `tests/`.
+- **What's new 1.5.8, published 2026-11-13 to preview and production** (master `b753d2a`, groups `4bfe437a` and `e4f8048d`; master not pushed yet) (JavaScript only, runtime `96488ef6`): a failed diary load shows "Couldn't open your diary" with Try again, and nothing saves or syncs over it; lists and settings likewise (retried, then a quiet note, and failed settings mean locked); the lock screen shows only with App lock on; untick times on tracked shows (`Track.changed`), so an untick survives a merge with another phone; Watchlist sort Shortest first; Diary search reads reviews without their formatting marks, and the year; Home's offline line. First tests in `tests/`.
 - 1.5.4 to 1.5.7 are published to both channels (see History).
 
 - **Native build 1.5.0** (from `520653d`, runtime `96488ef6`): APK versionCode 12 on GitHub release v1.5.0 and F-Droid; AAB versionCode 13 built. Confirmed working on Inigo's phone.
@@ -79,7 +79,7 @@ Where to watch opens the installed streaming app first (`modules/app-launcher`, 
 ### 1.5.x (5–7 Nov)
 Widget resize and taps patched; a 12-hourly background air-date check (expo-background-task); two-phone merge of shows; App lock hides widget titles (with a switch). 1.5.1: Friends rebuilt with a row of faces, previews, blocking, a final unfriend, 30-day decline, request badge and alerts (needs `supabase/friends-safety.sql`, already run). 1.5.2: A Heart App chip centred. 1.5.3: Find suggests from your own watchlist. 1.5.4: memory stories, people you might know, rule-safe streaming links. 1.5.5: memory stories take your own words and a movable poster. 1.5.6: text size, photo filters, more Discover lists. 1.5.7: award winners in Discover (from Wikidata, `scripts/make-awards.mjs`).
 
-### 1.5.8 (13 Nov, not published)
+### 1.5.8 (13 Nov)
 From a review of the store, sync and load paths: a failed diary load is caught instead of showing an empty diary (sync could have sent deletes); the lock screen no longer flashes with App lock off; untick times so the newer of a tick and an untick wins across phones; Watchlist Shortest first; Diary search in reviews and years; Home's offline line.
 Second round: lists and settings get the same guard (a failed read is retried, then nothing saves or syncs until a read works; `src/lib/retry.ts`), and failed settings keep App lock on and hold back the welcome and What's new; Home leaves out rows that can't load instead of grey shapes; the episode sheet reads its episode from the live list.
 
