@@ -8,6 +8,7 @@ import { Text, TextInput } from '@/components/AppText';
 import { KeyboardSafe } from '@/components/KeyboardSafe';
 import { ListCover } from '@/components/lists/ListCover';
 import { SectionLabel } from '@/components/SectionLabel';
+import { UnreadNote } from '@/components/UnreadNote';
 import { font, fonts, useTheme } from '@/lib/theme';
 import { useLists } from '@/lists/ListsProvider';
 
@@ -15,7 +16,7 @@ import { useLists } from '@/lists/ListsProvider';
 export default function ListsScreen() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
-  const { lists, createList } = useLists();
+  const { ready, loadFailed, lists, createList } = useLists();
   const [name, setName] = useState('');
 
   const create = () => {
@@ -37,33 +38,39 @@ export default function ListsScreen() {
             <Text style={[styles.lede, { color: theme.textMuted }]}>
               Best of the year, a director ranked, what to show a friend
             </Text>
-            <View style={[styles.newRow, { backgroundColor: theme.card, borderColor: theme.border }]}>
-              <Ionicons name="add-circle-outline" size={22} color={theme.accent} />
-              <TextInput
-                value={name}
-                onChangeText={setName}
-                onSubmitEditing={create}
-                returnKeyType="done"
-                placeholder="Name a new list, e.g. Best of 2026"
-                placeholderTextColor={theme.textMuted}
-                style={[styles.input, { color: theme.text }]}
-                maxLength={60}
-              />
-              {!!name.trim() && (
-                <Pressable onPress={create} accessibilityRole="button" style={[styles.create, { backgroundColor: theme.accent }]}>
-                  <Text style={[styles.createText, { color: theme.accentText }]}>CREATE</Text>
-                </Pressable>
-              )}
-            </View>
+            {loadFailed && <UnreadNote theme={theme} what="lists" />}
+            {/* A list made before yours are read would be lost when they are. */}
+            {ready && (
+              <View style={[styles.newRow, { backgroundColor: theme.card, borderColor: theme.border }]}>
+                <Ionicons name="add-circle-outline" size={22} color={theme.accent} />
+                <TextInput
+                  value={name}
+                  onChangeText={setName}
+                  onSubmitEditing={create}
+                  returnKeyType="done"
+                  placeholder="Name a new list, e.g. Best of 2026"
+                  placeholderTextColor={theme.textMuted}
+                  style={[styles.input, { color: theme.text }]}
+                  maxLength={60}
+                />
+                {!!name.trim() && (
+                  <Pressable onPress={create} accessibilityRole="button" style={[styles.create, { backgroundColor: theme.accent }]}>
+                    <Text style={[styles.createText, { color: theme.accentText }]}>CREATE</Text>
+                  </Pressable>
+                )}
+              </View>
+            )}
             {lists.length > 0 && <SectionLabel theme={theme}>{`${lists.length} ${lists.length === 1 ? 'list' : 'lists'}`}</SectionLabel>}
           </View>
         }
         ListEmptyComponent={
-          <View style={styles.empty}>
-            <Ionicons name="albums-outline" size={44} color={theme.accent} />
-            <Text style={[styles.emptyTitle, { color: theme.text }]}>NO LISTS YET</Text>
-            <Text style={[styles.lede, { color: theme.textMuted, textAlign: 'center' }]}>Name one above, or open any entry and tap Add to list.</Text>
-          </View>
+          !ready ? undefined : (
+            <View style={styles.empty}>
+              <Ionicons name="albums-outline" size={44} color={theme.accent} />
+              <Text style={[styles.emptyTitle, { color: theme.text }]}>NO LISTS YET</Text>
+              <Text style={[styles.lede, { color: theme.textMuted, textAlign: 'center' }]}>Name one above, or open any entry and tap Add to list.</Text>
+            </View>
+          )
         }
         renderItem={({ item: l }) => (
           <Pressable

@@ -75,10 +75,72 @@ export function seasonOn(seen: Track['seen']) {
   return Math.max(0, ...Object.keys(seen).map((k) => parseKey(k)?.season ?? 0));
 }
 
-/** Two phones changed the same show: every tick and rating from both stays, and the newer details win. */
+/** How many tick and untick times a show keeps, newest first, and for how long. Older ones merge as before. */
+export const MOST_CHANGES = 200;
+export const CHANGES_KEPT_MS = 60 * 24 * 60 * 60 * 1000;
+
+/** The newest `MOST_CHANGES` times, none older than `CHANGES_KEPT_MS` when `now` is given; undefined when none are left. */
+function pruned(changed: Record<string, number>, now?: number): Record<string, number> | undefined {
+  const kept = Object.entries(changed)
+    .filter(([, at]) => now === undefined || now - at <= CHANGES_KEPT_MS)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, MOST_CHANGES);
+  return kept.length ? Object.fromEntries(kept) : undefined;
+}
+
+/** `next`, with the time of every episode ticked or unticked since `before`, for merging with another phone. */
+export function stamped(before: Pick<Track, 'seen'> | undefined, next: Track, now: number): Track {
+  const was = before?.seen ?? {};
+  const changed = { ...next.changed };
+  let any = false;
+  for (const k of new Set([...Object.keys(was), ...Object.keys(next.seen)])) {
+    if (!was[k] === !next.seen[k]) continue;
+    changed[k] = now;
+    any = true;
+  }
+  if (!any) return next;
+  const out: Track = { ...next, changed: pruned(changed, now) };
+  if (!out.changed) delete out.changed;
+  return out;
+}
+
+/**
+ * Two phones changed the same show: the newer details win, and every tick and rating from both stays,
+ * except where one phone unticked an episode after the other ticked it. That's known from `changed`;
+ * an episode neither phone has a time for (an older app version's change) keeps its tick, as before.
+ */
 export function mergeTrack(mine: Track, theirs: Track): Track {
   const fresher = theirs.checkedAt > mine.checkedAt ? theirs : mine;
-  return settle({ ...mine, ...(fresher === theirs ? { seasons: theirs.seasons, lastAired: theirs.lastAired, nextAir: theirs.nextAir, upcoming: theirs.upcoming, ended: theirs.ended, checkedAt: theirs.checkedAt } : {}), seen: { ...theirs.seen, ...mine.seen }, ratings: { ...theirs.ratings, ...mine.ratings } });
+  const seen = { ...theirs.seen, ...mine.seen };
+  const ratings = { ...theirs.ratings, ...mine.ratings };
+  const changed: Record<string, number> = { ...theirs.changed };
+  for (const [k, at] of Object.entries(mine.changed ?? {})) if (!(changed[k] > at)) changed[k] = at;
+
+  for (const k of Object.keys(changed)) {
+    const m = mine.changed?.[k];
+    const t = theirs.changed?.[k];
+    // The phone that changed this episode last. A tie keeps the tick, as before.
+    const last = t === undefined || (m !== undefined && m > t) ? mine : m === undefined || t > m ? theirs : null;
+    if (!last) continue;
+    if (last.seen[k]) {
+      seen[k] = last.seen[k];
+      continue;
+    }
+    const other = last === mine ? theirs : mine;
+    // The other phone has no time for it (an older version ticked it): its tick wins only from a later day.
+    if (other.changed?.[k] === undefined && other.seen[k] && other.seen[k] > isoDate(new Date(changed[k]))) {
+      delete changed[k];
+      continue;
+    }
+    delete seen[k];
+    delete ratings[k];
+  }
+
+  const merged: Track = { ...mine, ...(fresher === theirs ? { seasons: theirs.seasons, lastAired: theirs.lastAired, nextAir: theirs.nextAir, upcoming: theirs.upcoming, ended: theirs.ended, checkedAt: theirs.checkedAt } : {}), seen, ratings };
+  const times = pruned(changed);
+  if (times) merged.changed = times;
+  else delete merged.changed;
+  return settle(merged);
 }
 
 /** Completed once an ended show is all seen; back to watching if new episodes appear. */

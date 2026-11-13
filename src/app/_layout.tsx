@@ -14,6 +14,7 @@ import { Platform } from 'react-native';
 import { TextSizeProvider } from '@/components/AppText';
 import { ToastProvider } from '@/components/Toast';
 import { BackDisc } from '@/components/BackDisc';
+import { DiaryLoadFailed } from '@/components/DiaryLoadFailed';
 import { SplashOverlay } from '@/components/SplashOverlay';
 import { UpdatePrompt } from '@/components/UpdatePrompt';
 import { tmdbKey } from '@/api';
@@ -75,14 +76,15 @@ function Navigator() {
   const theme = useTheme();
   const pathname = usePathname();
   const { hasShareIntent } = useShareIntentContext();
-  const { ready, entries, watchlist } = useDiary();
-  const { ready: settingsReady, settings, update } = useSettings();
+  const { ready, loadFailed, entries, watchlist } = useDiary();
+  const { ready: settingsReady, loadFailed: settingsFailed, settings, update } = useSettings();
   // Scores warmed from a poster touch use your keys and country from the start.
   useEffect(() => setScoreDefaults(tmdbKey(settings.tmdbKey), omdbKeyFor(settings.omdbKey), watchRegion(settings.watchRegion)), [settings.tmdbKey, settings.omdbKey, settings.watchRegion]);
   useTmdbFreshness();
   useMovieNightTaps();
 
   // The first run: a fresh install meets the welcome. Anyone who already has a diary, or a name, never does.
+  // (Settings that couldn't be read leave `settingsReady` false, so their default "not onboarded" never counts.)
   useEffect(() => {
     if (!ready || !settingsReady || settings.onboarded) return;
     if (entries.length || watchlist.length || settings.name) update({ onboarded: true });
@@ -127,7 +129,8 @@ function Navigator() {
         <Stack.Screen name="share" options={{ title: '', ...PAGE_HEADER }} />
         <Stack.Screen name="welcome" options={{ headerShown: false, gestureEnabled: false, animation: 'fade' }} />
       </Stack>
-      <SplashOverlay ready={ready && settingsReady} />
+      <DiaryLoadFailed />
+      <SplashOverlay ready={(ready || loadFailed) && (settingsReady || settingsFailed)} />
     </>
   );
 }

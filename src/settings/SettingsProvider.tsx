@@ -1,6 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
+import { AppState } from 'react-native';
 
+import { withRetries } from '@/lib/retry';
 import { storage } from '@/lib/storage';
 import type { MediaKind } from '@/store/types';
 import type { PaletteKey, StoryLayout } from '@/story/palettes';
@@ -134,8 +136,13 @@ export const DEFAULT_SETTINGS: Settings = {
 
 type SettingsContext = {
   settings: Settings;
-  /** False until saved settings are loaded (so the app lock never flashes the app open first). */
+  /**
+   * False until saved settings are loaded (so the app lock never flashes the app open first). Stays false
+   * after a failed read: the defaults in `settings` are then never saved, synced or acted on as yours.
+   */
   ready: boolean;
+  /** The settings couldn't be read (after a few tries). App lock then stays on; they're tried again on each return. */
+  loadFailed: boolean;
   update: (patch: Partial<Settings>) => void;
   reset: () => void;
 };
@@ -146,21 +153,42 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const loaded = useRef(false);
   const [ready, setReady] = useState(false);
+  const [loadFailed, setLoadFailed] = useState(false);
 
-  useEffect(() => {
-    storage.getItem(STORAGE_KEY)
+  // A read that fails leaves `ready` false, so the defaults never replace your settings: App lock, the
+  // welcome, What's new and your profile all wait for a read that works. Damaged settings start from the defaults, as before.
+  const reading = useRef(false);
+  const load = useCallback(() => {
+    if (loaded.current || reading.current) return;
+    reading.current = true;
+    withRetries(() => storage.getItem(STORAGE_KEY))
       .then((raw) => {
-        if (!raw) return;
-        const saved = JSON.parse(raw) as Partial<Settings>;
-        // Merge the story style too, so options added in later versions get their default.
-        setSettings({ ...DEFAULT_SETTINGS, ...saved, story: { ...DEFAULT_SETTINGS.story, ...saved.story }, nudges: { ...DEFAULT_SETTINGS.nudges, ...saved.nudges } });
-      })
-      .catch(() => {})
-      .finally(() => {
+        try {
+          if (raw) {
+            const saved = JSON.parse(raw) as Partial<Settings>;
+            // Merge the story style too, so options added in later versions get their default.
+            setSettings({ ...DEFAULT_SETTINGS, ...saved, story: { ...DEFAULT_SETTINGS.story, ...saved.story }, nudges: { ...DEFAULT_SETTINGS.nudges, ...saved.nudges } });
+          }
+        } catch (e) {
+          console.warn('Could not read the saved settings', e);
+        }
         loaded.current = true;
+        setLoadFailed(false);
         setReady(true);
+      })
+      .catch((e) => {
+        console.warn('Could not load the settings', e);
+        setLoadFailed(true);
+      })
+      .finally(() => {
+        reading.current = false;
       });
   }, []);
+  useEffect(() => {
+    load();
+    const sub = AppState.addEventListener('change', (s) => s === 'active' && load());
+    return () => sub.remove();
+  }, [load]);
 
   useEffect(() => {
     if (loaded.current) storage.setItem(STORAGE_KEY, JSON.stringify(settings)).catch(() => {});
@@ -200,7 +228,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     [],
   );
 
-  const value = useMemo(() => ({ settings, ready, update, reset }), [settings, ready, update, reset]);
+  const value = useMemo(() => ({ settings, ready, loadFailed, update, reset }), [settings, ready, loadFailed, update, reset]);
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 

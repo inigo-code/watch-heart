@@ -47,7 +47,8 @@ export default function TrackScreen() {
   // Opened from a season's poster: that season first.
   const [season, setSeason] = useState<number | null>(() => Number(params.season) || null);
   const [episodes, setEpisodes] = useState<{ season: number; list: Episode[] } | null>(null);
-  const [opened, setOpened] = useState<Episode | null>(null);
+  // The episode in the sheet, by its number: the sheet shows it from the live list, so a refresh's new date shows there too.
+  const [openedKey, setOpenedKey] = useState<{ season: number; number: number } | null>(null);
 
   // The show's seasons and air dates, fresh each time it's opened.
   const source = show?.source;
@@ -104,6 +105,7 @@ export default function TrackScreen() {
   const isSeen = (e: Episode) => !!track?.seen[epKey(e.season, e.number)];
   const seasonKeys = (list ?? []).filter(aired).map((e) => epKey(e.season, e.number));
   const seasonDone = seasonKeys.length > 0 && seasonKeys.every((k) => track?.seen[k]);
+  const opened = openedKey ? (list?.find((e) => e.season === openedKey.season && e.number === openedKey.number) ?? null) : null;
 
   const tick = (e: Episode) => {
     const was = isSeen(e);
@@ -231,7 +233,7 @@ export default function TrackScreen() {
                 return (
                   <Pressable
                     key={e.number}
-                    onPress={() => setOpened(e)}
+                    onPress={() => setOpenedKey({ season: e.season, number: e.number })}
                     onLongPress={() => out && upToHere(e)}
                     accessibilityRole="button"
                     accessibilityLabel={`Episode ${e.number}, ${e.name}`}
@@ -280,9 +282,9 @@ export default function TrackScreen() {
         onRate={(r) => opened && tracker.rateEpisode(item ?? show, epKey(opened.season, opened.number), r, info ?? undefined)}
         onTick={() => {
           if (opened) tick(opened);
-          setOpened(null);
+          setOpenedKey(null);
         }}
-        onClose={() => setOpened(null)}
+        onClose={() => setOpenedKey(null)}
       />
     </ScrollView>
   );

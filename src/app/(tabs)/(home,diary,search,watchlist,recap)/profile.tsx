@@ -20,6 +20,7 @@ import { Achievements } from '@/components/profile/Achievements';
 import { ActivityGraph, ActivityKey } from '@/components/profile/ActivityGraph';
 import { FavouritePicker } from '@/components/profile/FavouritePicker';
 import { useToast } from '@/components/Toast';
+import { UnreadNote } from '@/components/UnreadNote';
 import { MONTHS, friendlyDate, today } from '@/lib/dates';
 import { needsShrinking, pickProfilePhoto, removePhotoFile, squareJpeg } from '@/lib/profilePhoto';
 import { profileStats } from '@/lib/profileStats';
@@ -39,8 +40,12 @@ const GOALS = [25, 52, 100, 150, 365];
 /** You: photo, name and a line, your favourite four, and everything your diary adds up to. */
 /** Waits for saved settings, so the name and bio drafts start from them, not from empty defaults. */
 export default function ProfileScreen() {
-  const { ready } = useSettings();
-  if (!ready) return <View style={{ flex: 1 }} />;
+  const theme = useTheme();
+  const { ready, loadFailed } = useSettings();
+  if (!ready) {
+    // Never the empty defaults in place of a profile that couldn't be read: leaving the page would save them.
+    return <View style={{ flex: 1, padding: 16 }}>{loadFailed && <UnreadNote theme={theme} what="profile" />}</View>;
+  }
   return <ProfileBody />;
 }
 

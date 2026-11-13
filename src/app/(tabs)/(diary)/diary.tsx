@@ -15,6 +15,7 @@ import { Chip } from '@/components/Film';
 import { TipCard } from '@/components/TipCard';
 import { useToast } from '@/components/Toast';
 import { monthKey, today } from '@/lib/dates';
+import { plainText } from '@/lib/richText';
 import { computeStats } from '@/lib/stats';
 import { KIND_COLORS, font, fonts, shadow, useTheme } from '@/lib/theme';
 import { useSettings } from '@/settings/SettingsProvider';
@@ -47,9 +48,21 @@ function matches(e: Entry, filter: Filter, q: string) {
   else if (filter === 'reviewed' && !e.review.trim()) return false;
   else if (filter === 'rewatch' && !e.rewatch) return false;
   if (!q) return true;
-  const hay =
-    `${e.title} ${e.originalTitle ?? ''} ${e.review} ${e.tags.join(' ')} ${e.credit ?? ''} ${e.progress} ${(e.companions ?? []).join(' ')}`.toLowerCase();
-  return hay.includes(q);
+  return searchText(e).includes(q.replace(/\s+/g, ' '));
+}
+
+// What search reads, made once per version of an entry (an edit makes a new object), so typing stays quick
+// with thousands of entries: the review without its formatting marks, and the release year.
+const searched = new WeakMap<Entry, string>();
+function searchText(e: Entry) {
+  let hay = searched.get(e);
+  if (hay === undefined) {
+    hay = `${e.title} ${e.originalTitle ?? ''} ${e.year ?? ''} ${plainText(e.review)} ${e.tags.join(' ')} ${e.credit ?? ''} ${e.progress} ${(e.companions ?? []).join(' ')}`
+      .replace(/\s+/g, ' ')
+      .toLowerCase();
+    searched.set(e, hay);
+  }
+  return hay;
 }
 
 export default function DiaryScreen() {

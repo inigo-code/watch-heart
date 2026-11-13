@@ -31,8 +31,10 @@ const AUTH_SETTLE_MS = 1500;
  * underneath (sync, shared text waiting to be saved), so unlocking picks up exactly where you were.
  */
 export function AppLockProvider({ children }: { children: ReactNode }) {
-  const { settings, ready } = useSettings();
-  const enabled = ready && settings.appLock;
+  const { settings, ready, loadFailed } = useSettings();
+  // Settings that couldn't be read might have App lock on, so the app stays locked: unlocking with the
+  // phone's own lock (or with no screen lock on the phone) opens it as usual.
+  const enabled = (ready && settings.appLock) || (!ready && loadFailed);
   const [unlocked, setUnlocked] = useState(false);
   const backgroundedAt = useRef<number | null>(null);
   const authenticating = useRef(false);
@@ -72,13 +74,15 @@ export function AppLockProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo(() => ({ confirm, markUnlocked }), [confirm, markUnlocked]);
   // Until settings are loaded we don't know whether to lock, so cover the app rather than flash it open.
-  const showLock = !ready || (enabled && !unlocked);
+  const showLock = (!ready && !loadFailed) || (enabled && !unlocked);
 
   return (
     <Ctx.Provider value={value}>
       {children}
       <Modal visible={showLock} animationType="fade" statusBarTranslucent onRequestClose={() => {}}>
-        {ready ? <LockScreen confirm={confirm} onUnlocked={markUnlocked} /> : <Cover />}
+        {/* The lock screen only with App lock on: the cover also fades out after settings load, and showed
+            "locked" on the way out when the lock was off. (Kept through the fade after unlocking, so it doesn't blink.) */}
+        {enabled ? <LockScreen confirm={confirm} onUnlocked={markUnlocked} unread={!ready} /> : <Cover />}
       </Modal>
     </Ctx.Provider>
   );
@@ -95,7 +99,8 @@ function Cover() {
   return <View style={[styles.screen, { backgroundColor: theme.bg }]} />;
 }
 
-function LockScreen({ confirm, onUnlocked }: { confirm: (reason: string) => Promise<AuthResult>; onUnlocked: () => void }) {
+/** `unread`: locked because the settings couldn't be read, not because App lock is known to be on. */
+function LockScreen({ confirm, onUnlocked, unread }: { confirm: (reason: string) => Promise<AuthResult>; onUnlocked: () => void; unread: boolean }) {
   const theme = useTheme();
   const [message, setMessage] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -132,6 +137,9 @@ function LockScreen({ confirm, onUnlocked }: { confirm: (reason: string) => Prom
       <View style={styles.texts}>
         <Text style={[styles.title, { color: theme.text }]}>Watch Heart is locked</Text>
         <Text style={[styles.body, { color: theme.textMuted }]}>Unlock with your fingerprint, face or screen lock.</Text>
+        {unread && (
+          <Text style={[styles.body, { color: theme.textMuted }]}>Your settings couldn’t be read just now, so Watch Heart stays locked to be safe.</Text>
+        )}
       </View>
       <Pressable
         onPress={() => void unlock()}

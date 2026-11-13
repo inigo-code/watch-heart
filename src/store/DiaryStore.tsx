@@ -2,8 +2,9 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import type { ReactNode } from 'react';
 
 import { newId } from '@/lib/id';
-import { mergeTrack, settle } from '@/lib/tracking';
+import { mergeTrack, settle, stamped } from '@/lib/tracking';
 import { plainText } from '@/lib/richText';
+import { withRetries } from '@/lib/retry';
 import { storage } from '@/lib/storage';
 
 import { openDiary } from './db';
@@ -63,7 +64,15 @@ export type SyncStoreApi = {
 };
 
 type DiaryStore = {
+  /** The diary and watchlist have been read from the phone. Stays false after a failed read. */
   ready: boolean;
+  /**
+   * The diary couldn't be read. Nothing is saved or synced over it (the empty lists would look like
+   * everything was deleted) until `retryLoad` succeeds.
+   */
+  loadFailed: boolean;
+  /** Tries reading the diary again; resolves to whether it worked. */
+  retryLoad: () => Promise<boolean>;
   /** Live entries, newest viewing first. */
   entries: Entry[];
   /** Deleted entries, most recently deleted first. */
@@ -108,6 +117,7 @@ export function DiaryStoreProvider({ children }: { children: ReactNode }) {
   const [meta, setMeta] = useState<SyncMeta>(emptyMeta);
   const [localRevision, setLocalRevision] = useState(0);
   const [ready, setReady] = useState(false);
+  const [loadFailed, setLoadFailed] = useState(false);
 
   // The latest state, for work that runs later (sync, an Undo tapped after the list changed).
   const allRef = useRef(all);
@@ -129,11 +139,16 @@ export function DiaryStoreProvider({ children }: { children: ReactNode }) {
     queue.current = queue.current.then(() => opened.then(fn)).catch((e) => console.warn('Diary write failed', e));
   }, []);
 
-  useEffect(() => {
+  // A failed read leaves `ready` false, so nothing that saves or syncs starts on the empty lists:
+  // sync would send every unsent change as a delete, and background jobs would save over the diary.
+  const load = useCallback(() => {
     db.current ??= openDiary();
-    Promise.all([
-      db.current.then((d) => Promise.all([d.load(), d.loadWatchlist()])),
-      storage.getItem(SYNC_META_KEY).catch(() => null),
+    const opening = db.current;
+    return Promise.all([
+      opening.then((d) => Promise.all([d.load(), d.loadWatchlist()])),
+      // A failed read here counts as a failed load: saving an empty record over the real one would lose
+      // unsent deletes, and a purged item could come back from the cloud.
+      withRetries(() => storage.getItem(SYNC_META_KEY)),
     ])
       .then(([[list, queued], rawMeta]) => {
         // Trash older than TRASH_DAYS is cleared on launch. (Every device does this for itself.)
@@ -142,11 +157,30 @@ export function DiaryStoreProvider({ children }: { children: ReactNode }) {
         if (expired.length) write((d) => d.remove(expired));
         setAll(list.filter((e) => !expired.includes(e.id)));
         setWatchlist(queued.sort(byAdded));
-        if (rawMeta) setMeta({ ...emptyMeta(), ...(JSON.parse(rawMeta) as Partial<SyncMeta>) });
+        // A damaged sync record isn't a failed diary: start it afresh, and the next sync sends everything.
+        if (rawMeta) {
+          try {
+            setMeta({ ...emptyMeta(), ...(JSON.parse(rawMeta) as Partial<SyncMeta>) });
+          } catch (e) {
+            console.warn('Could not read the sync record', e);
+          }
+        }
+        setLoadFailed(false);
+        setReady(true);
+        return true;
       })
-      .catch((e) => console.warn('Could not load the diary', e))
-      .finally(() => setReady(true));
+      .catch((e) => {
+        console.warn('Could not load the diary', e);
+        // Open the database afresh on the next try.
+        if (db.current === opening) db.current = null;
+        setLoadFailed(true);
+        return false;
+      });
   }, [write]);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
 
   useEffect(() => {
     if (ready) storage.setItem(SYNC_META_KEY, JSON.stringify(meta)).catch(() => {});
@@ -339,7 +373,7 @@ export function DiaryStoreProvider({ children }: { children: ReactNode }) {
         delete seen[k];
         delete ratings[k];
       }
-      updateWatchItem(item.id, { track: settle({ ...item.track, seen, ratings }) });
+      updateWatchItem(item.id, { track: settle(stamped(item.track, { ...item.track, seen, ratings }, Date.now())) });
     },
     [deleteEntry, updateEntry, updateWatchItem],
   );
@@ -359,7 +393,7 @@ export function DiaryStoreProvider({ children }: { children: ReactNode }) {
         seen[k] = seen[k] ?? e.watchedOn;
         if (e.episodeRatings?.[k]) ratings[k] = e.episodeRatings[k];
       }
-      updateWatchItem(item.id, { track: settle({ ...item.track, seen, ratings }) });
+      updateWatchItem(item.id, { track: settle(stamped(item.track, { ...item.track, seen, ratings }, Date.now())) });
     },
     [restoreEntry, updateEntry, updateWatchItem],
   );
@@ -551,6 +585,8 @@ export function DiaryStoreProvider({ children }: { children: ReactNode }) {
     const trash = all.filter((e) => e.deletedAt !== null).sort((a, b) => (b.deletedAt ?? 0) - (a.deletedAt ?? 0));
     return {
       ready,
+      loadFailed,
+      retryLoad: load,
       entries,
       trash,
       getEntry: (id) => all.find((e) => e.id === id),
@@ -573,7 +609,7 @@ export function DiaryStoreProvider({ children }: { children: ReactNode }) {
       importWatchlist,
       sync,
     };
-  }, [all, ready, addEntry, updateEntry, trashEntry, bringBack, purgeEntry, emptyTrash, importEntries, watchlist, addToWatchlist, updateWatchItem, patchMany, removeFromWatchlist, importWatchlist, sync]);
+  }, [all, ready, loadFailed, load, addEntry, updateEntry, trashEntry, bringBack, purgeEntry, emptyTrash, importEntries, watchlist, addToWatchlist, updateWatchItem, patchMany, removeFromWatchlist, importWatchlist, sync]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

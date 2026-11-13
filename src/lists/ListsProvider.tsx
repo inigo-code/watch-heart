@@ -1,7 +1,9 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
+import { AppState } from 'react-native';
 
 import { newId } from '@/lib/id';
+import { withRetries } from '@/lib/retry';
 import { storage } from '@/lib/storage';
 import { sameTitle } from '@/store/DiaryStore';
 import type { MediaKind, Source, Title } from '@/store/types';
@@ -34,7 +36,10 @@ const META_KEY = 'watchheart/lists-sync';
 export type ListsMeta = { userId: string | null };
 
 type ListsContext = {
+  /** The lists have been read from the phone. Stays false after a failed read, so nothing saves or syncs. */
   ready: boolean;
+  /** The lists couldn't be read (after a few tries). They're tried again each time the app comes back. */
+  loadFailed: boolean;
   /** Your lists, most recently changed first (deleted ones left out). */
   lists: UserList[];
   getList: (id: string) => UserList | undefined;
@@ -67,28 +72,52 @@ export function ListsProvider({ children }: { children: ReactNode }) {
   const [records, setRecords] = useState<UserList[]>([]);
   const [meta, setMetaState] = useState<ListsMeta>({ userId: null });
   const [ready, setReady] = useState(false);
+  const [loadFailed, setLoadFailed] = useState(false);
   const [revision, setRevision] = useState(0);
   const ref = useRef(records);
   useEffect(() => {
     ref.current = records;
   }, [records]);
+  const readyRef = useRef(false);
 
-  useEffect(() => {
-    Promise.all([storage.getItem(KEY), storage.getItem(META_KEY)])
+  // A read that fails leaves `ready` false: saving the empty starting list would replace your lists, and
+  // a sync would then treat this phone as having none. A damaged value isn't a failed read: it starts empty, as before.
+  const reading = useRef(false);
+  const load = useCallback(() => {
+    if (readyRef.current || reading.current) return;
+    reading.current = true;
+    withRetries(() => Promise.all([storage.getItem(KEY), storage.getItem(META_KEY)]))
       .then(([raw, rawMeta]) => {
-        if (raw) setRecords(JSON.parse(raw) as UserList[]);
-        if (rawMeta) setMetaState(JSON.parse(rawMeta) as ListsMeta);
+        try {
+          if (raw) setRecords(JSON.parse(raw) as UserList[]);
+          if (rawMeta) setMetaState(JSON.parse(rawMeta) as ListsMeta);
+        } catch (e) {
+          console.warn('Could not read the saved lists', e);
+        }
+        readyRef.current = true;
+        setLoadFailed(false);
+        setReady(true);
       })
-      .catch(() => {})
-      .finally(() => setReady(true));
+      .catch((e) => {
+        console.warn('Could not load the lists', e);
+        setLoadFailed(true);
+      })
+      .finally(() => {
+        reading.current = false;
+      });
   }, []);
+  useEffect(() => {
+    load();
+    const sub = AppState.addEventListener('change', (s) => s === 'active' && load());
+    return () => sub.remove();
+  }, [load]);
   useEffect(() => {
     if (ready) storage.setItem(KEY, JSON.stringify(records)).catch(() => {});
   }, [records, ready]);
 
   const setMeta = useCallback((m: ListsMeta) => {
     setMetaState(m);
-    storage.setItem(META_KEY, JSON.stringify(m)).catch(() => {});
+    if (readyRef.current) storage.setItem(META_KEY, JSON.stringify(m)).catch(() => {});
   }, []);
 
   /** Changes one list (stamped now) and tells sync. */
@@ -148,6 +177,7 @@ export function ListsProvider({ children }: { children: ReactNode }) {
   const value = useMemo<ListsContext>(
     () => ({
       ready,
+      loadFailed,
       lists,
       getList: (id) => lists.find((l) => l.id === id),
       createList,
@@ -167,7 +197,7 @@ export function ListsProvider({ children }: { children: ReactNode }) {
         setMeta({ userId: null });
       },
     }),
-    [ready, lists, createList, updateList, deleteList, addItem, removeItem, moveItem, meta, setMeta, applySync, revision],
+    [ready, loadFailed, lists, createList, updateList, deleteList, addItem, removeItem, moveItem, meta, setMeta, applySync, revision],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

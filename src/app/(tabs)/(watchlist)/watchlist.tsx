@@ -18,6 +18,7 @@ import { Pop, Rise, Tap, useReducedMotion } from '@/components/Motion';
 import { usePullRefresh } from '@/components/PullRefresh';
 import { Segments } from '@/components/Segments';
 import { useToast } from '@/components/Toast';
+import { formatRuntime } from '@/lib/dates';
 import { KIND_COLORS, font, fonts, shadow, useTheme } from '@/lib/theme';
 import { useLists } from '@/lists/ListsProvider';
 import { useSettings } from '@/settings/SettingsProvider';
@@ -27,14 +28,18 @@ import { useSync } from '@/sync/SyncProvider';
 import type { MediaKind, WatchItem } from '@/store/types';
 
 type Filter = 'all' | MediaKind;
-type Sort = 'added' | 'title' | 'year';
+type Sort = 'added' | 'title' | 'year' | 'runtime';
 type Side = 'next' | 'watching';
 
 const SORTS: Record<Sort, { label: string; next: Sort }> = {
   added: { label: 'Recently added', next: 'title' },
   title: { label: 'A–Z', next: 'year' },
-  year: { label: 'Newest release', next: 'added' },
+  year: { label: 'Newest release', next: 'runtime' },
+  runtime: { label: 'Shortest first', next: 'added' },
 };
+
+/** A film's running time, or a series' or anime's per episode (that's what TMDB, TVmaze and AniList give). */
+const runtimeLabel = (w: WatchItem) => (w.runtime ? `${formatRuntime(w.runtime)}${w.kind === 'movie' ? '' : ' per ep'}` : null);
 
 const COLS = 3;
 const GAP = 12;
@@ -80,6 +85,8 @@ export default function WatchlistScreen() {
     const list = queue.filter((w) => filter === 'all' || w.kind === filter);
     if (sort === 'title') return [...list].sort((a, b) => a.title.localeCompare(b.title));
     if (sort === 'year') return [...list].sort((a, b) => (b.year ?? 0) - (a.year ?? 0));
+    // For something that fits the evening; titles without a running time go last.
+    if (sort === 'runtime') return [...list].sort((a, b) => (a.runtime || Number.MAX_SAFE_INTEGER) - (b.runtime || Number.MAX_SAFE_INTEGER));
     return list;
   }, [queue, filter, sort]);
 
@@ -192,7 +199,7 @@ export default function WatchlistScreen() {
             onLongPress={() => setMenu(item)}
             accessibilityRole="button"
             accessibilityHint="Long press for more"
-            accessibilityLabel={`${item.title}${item.year ? `, ${item.year}` : ''}`}
+            accessibilityLabel={`${item.title}${item.year ? `, ${item.year}` : ''}${sort === 'runtime' ? `, ${runtimeLabel(item) ?? 'running time not known'}` : ''}`}
           >
             <Poster uri={item.posterUrl} title={item.title} width={tile} theme={theme} radius={6} />
             <Text style={[styles.tileTitle, { color: theme.text }]} numberOfLines={2}>
@@ -200,7 +207,7 @@ export default function WatchlistScreen() {
             </Text>
             <Text style={[styles.tileMeta, { color: theme.textMuted }]} numberOfLines={1}>
               <Text style={{ color: KIND_COLORS[item.kind] }}>● </Text>
-              {item.year ?? '—'}
+              {(sort === 'runtime' ? runtimeLabel(item) : item.year) ?? '—'}
             </Text>
             {(() => {
               const night = forTitle(item.sourceId);

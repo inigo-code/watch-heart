@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text, TextInput } from '@/components/AppText';
 import { BottomSheet } from '@/components/BottomSheet';
 import { useToast } from '@/components/Toast';
+import { UnreadNote } from '@/components/UnreadNote';
 import { font, fonts } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
 import { useLists } from '@/lists/ListsProvider';
@@ -27,7 +28,7 @@ export function AddToList({ item, theme, onClose }: { item: ListItem | null; the
 function Sheet({ item, theme, onClose }: { item: ListItem; theme: Theme; onClose: () => void }) {
   const insets = useSafeAreaInsets();
   const toast = useToast();
-  const { lists, createList, addItem, removeItem } = useLists();
+  const { ready, loadFailed, lists, createList, addItem, removeItem } = useLists();
   const [name, setName] = useState('');
 
   const toggle = (id: string) => {
@@ -57,7 +58,8 @@ function Sheet({ item, theme, onClose }: { item: ListItem; theme: Theme; onClose
         ADD “{item.title.toUpperCase()}” TO…
       </Text>
       <ScrollView style={{ maxHeight: 320 }} contentContainerStyle={{ gap: 4 }}>
-        {lists.length === 0 && <Text style={[styles.note, { color: theme.textMuted }]}>No lists yet. Name your first one below.</Text>}
+        {loadFailed && <UnreadNote theme={theme} what="lists" />}
+        {ready && lists.length === 0 && <Text style={[styles.note, { color: theme.textMuted }]}>No lists yet. Name your first one below.</Text>}
         {lists.map((l) => {
           const on = l.items.some((x) => sameTitle(x, item));
           return (
@@ -77,24 +79,27 @@ function Sheet({ item, theme, onClose }: { item: ListItem; theme: Theme; onClose
           );
         })}
       </ScrollView>
-      <View style={[styles.newRow, { borderColor: theme.border, backgroundColor: theme.bg }]}>
-        <Ionicons name="add" size={20} color={theme.accent} />
-        <TextInput
-          value={name}
-          onChangeText={setName}
-          onSubmitEditing={create}
-          returnKeyType="done"
-          placeholder="New list, e.g. Comfort rewatches"
-          placeholderTextColor={theme.textMuted}
-          style={[styles.input, { color: theme.text }]}
-          maxLength={60}
-        />
-        {!!name.trim() && (
-          <Pressable onPress={create} accessibilityRole="button" style={[styles.create, { backgroundColor: theme.accent }]}>
-            <Text style={[styles.createText, { color: theme.accentText }]}>CREATE</Text>
-          </Pressable>
-        )}
-      </View>
+      {/* A list made before yours are read would be lost when they are. */}
+      {ready && (
+        <View style={[styles.newRow, { borderColor: theme.border, backgroundColor: theme.bg }]}>
+          <Ionicons name="add" size={20} color={theme.accent} />
+          <TextInput
+            value={name}
+            onChangeText={setName}
+            onSubmitEditing={create}
+            returnKeyType="done"
+            placeholder="New list, e.g. Comfort rewatches"
+            placeholderTextColor={theme.textMuted}
+            style={[styles.input, { color: theme.text }]}
+            maxLength={60}
+          />
+          {!!name.trim() && (
+            <Pressable onPress={create} accessibilityRole="button" style={[styles.create, { backgroundColor: theme.accent }]}>
+              <Text style={[styles.createText, { color: theme.accentText }]}>CREATE</Text>
+            </Pressable>
+          )}
+        </View>
+      )}
       <Pressable onPress={onClose} accessibilityRole="button" style={[styles.done, { backgroundColor: theme.chip }]}>
         <Text style={[styles.doneText, { color: theme.text }]}>DONE</Text>
       </Pressable>

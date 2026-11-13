@@ -3,7 +3,7 @@ import { useCallback } from 'react';
 import { comingEpisodes, showInfo } from '@/api/episodes';
 import type { ShowInfo } from '@/api/episodes';
 import { today } from '@/lib/dates';
-import { epKey, newTrack, parseKey, progressLabel, settle, withInfo } from '@/lib/tracking';
+import { epKey, newTrack, parseKey, progressLabel, settle, stamped, withInfo } from '@/lib/tracking';
 import { useSettings } from '@/settings/SettingsProvider';
 import { titleOf, useDiary } from '@/store/DiaryStore';
 import type { Title, Track, TrackStatus, WatchItem } from '@/store/types';
@@ -47,7 +47,8 @@ export function useTracker() {
     [onWatchlist, addToWatchlist, updateWatchItem],
   );
 
-  const save = useCallback((item: WatchItem, track: Track) => updateWatchItem(item.id, { track: settle(track) }), [updateWatchItem]);
+  // Every tick and untick goes through here, so each one is timed for merging with another phone.
+  const save = useCallback((item: WatchItem, track: Track) => updateWatchItem(item.id, { track: settle(stamped(item.track, track, Date.now())) }), [updateWatchItem]);
 
   /** The tracked item for a show (tracking it now if needed), with season details when they're known. */
   const tracked = useCallback(

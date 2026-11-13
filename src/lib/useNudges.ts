@@ -18,8 +18,10 @@ const SHOW_STALE_MS = 12 * 60 * 60 * 1000;
 
 /** Keeps the phone's scheduled notifications in step with your diary, each time the app opens or anything changes. */
 export function useNudges(fresh: { title: string; sourceId: string } | null) {
-  const { settings } = useSettings();
-  const { entries, watchlist, ready, updateWatchItem } = useDiary();
+  const { settings, ready: settingsReady } = useSettings();
+  const { entries, watchlist, ready: diaryReady, updateWatchItem } = useDiary();
+  // Not on default settings that stand in for ones that couldn't be read: they'd bring back alerts you turned off.
+  const ready = diaryReady && settingsReady;
   const [opened, setOpened] = useState(0);
   useEffect(() => {
     const sub = AppState.addEventListener('change', (s) => s === 'active' && setOpened((n) => n + 1));

@@ -226,7 +226,8 @@ export function SyncProvider({ children }: { children: ReactNode }) {
   }, [userId]);
 
   const runSync = useCallback(async () => {
-    if (!supabase || !userId) return;
+    // Never with a diary that hasn't loaded (or failed to): its empty lists would read as deletes.
+    if (!supabase || !userId || !ready) return;
     if (running.current) {
       again.current = true;
       return;
@@ -250,7 +251,7 @@ export function SyncProvider({ children }: { children: ReactNode }) {
       running.current = false;
       autoSync.finished();
     }
-  }, [userId, autoSync, syncProfile, syncAllLists]);
+  }, [userId, ready, autoSync, syncProfile, syncAllLists]);
 
   // List edits go out shortly after you stop changing them.
   useEffect(() => {

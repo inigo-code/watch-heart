@@ -46,6 +46,17 @@ export const DATA_SOURCES = {
  */
 const NOTES: { id: string; items: string[] }[] = [
   {
+    id: '1.5.8',
+    items: [
+      'Watchlist has a new sort, Shortest first, with each title’s running time (per episode for series and anime)',
+      'Diary search also finds words in your reviews and a title’s year',
+      'Home says when you seem to be offline, and leaves out rows that can’t load instead of showing grey shapes. Your diary and watchlist still work.',
+      'An episode you untick stays unticked when your other phone syncs',
+      'If your diary ever can’t be opened, Watch Heart says so and lets you try again, instead of showing it empty. Your lists and settings are kept safe the same way.',
+      'With App lock off, the lock screen no longer flashes as the app opens',
+    ],
+  },
+  {
     id: '1.5.7',
     items: [
       'Award winners in Discover: Best Picture, Palme d’Or, Golden Lion, Golden Bear, Best International Feature, Best Animated Feature and India’s National Film Award, newest first',

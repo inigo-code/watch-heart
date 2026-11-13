@@ -142,6 +142,12 @@ export type Track = {
   seen: Record<string, string>;
   /** Your stars for single episodes, by "s1e3". */
   ratings?: Record<string, number>;
+  /**
+   * When each episode was last ticked or unticked (ms), so merging two phones keeps whichever came last.
+   * Optional and capped: versions before What's new 1.5.8 don't write it, and an episode without one
+   * merges as before (a tick on either phone stays).
+   */
+  changed?: Record<string, number>;
   /** Regular seasons (no specials) and their episode counts, from TMDB or TVmaze. */
   seasons: { n: number; count: number }[];
   /** The latest episode that has aired. */

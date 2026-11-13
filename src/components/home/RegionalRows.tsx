@@ -106,7 +106,8 @@ function QueryRow({
     // The query is compared by its JSON (\`key\`), not by identity.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key, tmdb]);
-  const titles = result?.key === key ? result.titles : null;
+  // Without a TMDB key nothing is asked for: no row, rather than grey shapes that never fill.
+  const titles = !tmdb ? [] : result?.key === key ? result.titles : null;
   if (titles && !titles.length && !above) return null;
   return (
     <View style={styles.block}>

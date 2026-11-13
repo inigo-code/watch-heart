@@ -11,6 +11,7 @@ import { ControlRow, Row, Section, Segmented, ToggleRow } from '@/components/Set
 import { HeartMark } from '@/components/BrandTitle';
 import { useFriends } from '@/friends/FriendsProvider';
 import { useToast } from '@/components/Toast';
+import { UnreadNote } from '@/components/UnreadNote';
 import { UpdateCard } from '@/components/UpdateRow';
 import { ActionSheet } from '@/components/ActionSheet';
 import { Chip } from '@/components/Film';
@@ -51,7 +52,7 @@ export default function SettingsScreen() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const toast = useToast();
-  const { settings, update, reset } = useSettings();
+  const { settings, loadFailed, update, reset } = useSettings();
   const perks = usePerks();
   const friends = useFriends();
   const lock = useAppLock();
@@ -125,6 +126,8 @@ export default function SettingsScreen() {
         contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 32 }]}
         keyboardShouldPersistTaps="handled"
       >
+        {/* What shows below are the defaults, and nothing changed here is saved until yours are read. */}
+        {loadFailed && <UnreadNote theme={theme} what="settings" />}
         <Section theme={theme} title="Account and sync">
           <Row
             theme={theme}

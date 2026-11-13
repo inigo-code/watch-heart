@@ -17,6 +17,7 @@ import { AppHeader, greetingIcon, greetingLine } from '@/components/AppHeader';
 import { Poster } from '@/components/Film';
 import { FriendsRow } from '@/components/home/FriendsRow';
 import { NotifyInvite } from '@/components/home/NotifyInvite';
+import { OfflineNote } from '@/components/home/OfflineNote';
 import { WeekStrip } from '@/components/home/WeekStrip';
 import { RegionalRows } from '@/components/home/RegionalRows';
 import { MovieNightCard, useMovieNights } from '@/components/MovieNight';
@@ -61,18 +62,33 @@ export default function HomeScreen() {
   const friends = useFriends();
   const sync = useSync();
 
+  // Which of the two rows every Home asks for failed last time. Both failing reads as no connection.
+  const [down, setDown] = useState({ trending: false, cinema: false });
   useEffect(() => {
     if (!key) return;
     trendingAllTmdb(key)
-      .then(setTrending)
-      .catch(() => setTrending((t) => t ?? []));
+      .then((titles) => {
+        setTrending(titles);
+        setDown((d) => ({ ...d, trending: false }));
+      })
+      .catch(() => {
+        setTrending((t) => t ?? []);
+        setDown((d) => ({ ...d, trending: true }));
+      });
   }, [key, round]);
   useEffect(() => {
     if (!key) return;
     nowPlayingTmdb(key, region)
-      .then((titles) => setCinema({ region, titles }))
-      .catch(() => setCinema((c) => c ?? { region, titles: [] }));
+      .then((titles) => {
+        setCinema({ region, titles });
+        setDown((d) => ({ ...d, cinema: false }));
+      })
+      .catch(() => {
+        setCinema((c) => c ?? { region, titles: [] });
+        setDown((d) => ({ ...d, cinema: true }));
+      });
   }, [key, region, round]);
+  const offline = down.trending && down.cinema;
 
   // The slider's first cards: new films in your language, or from your country.
   useEffect(() => {
@@ -114,9 +130,11 @@ export default function HomeScreen() {
   useEffect(() => {
     if (!key || !seedKey) return;
     let live = true;
+    // Offline, every seed's lookup comes back empty: keep the picks already showing, else the row is left out.
+    const settle = (titles: Title[]) => live && setPicks((p) => (titles.length || p?.seeds !== seedKey ? { seeds: seedKey, titles } : p));
     forYou(key, seeds, entries, watchlist)
-      .then((titles) => live && setPicks({ seeds: seedKey, titles }))
-      .catch(() => {});
+      .then(settle)
+      .catch(() => settle([]));
     return () => {
       live = false;
     };
@@ -131,20 +149,24 @@ export default function HomeScreen() {
   });
 
   const seen = (t: Title) => viewingsOf(t.source, t.sourceId).length > 0;
+  // Without a TMDB key nothing is asked for, so the rows count as loaded with nothing in them.
+  const trendingTitles = key ? trending : [];
   const up = continueWatching(watchlist, today());
   const continuing = [...up.ongoing, ...up.oldFriends].slice(0, 10);
   // Wait for both for a moment, so the slider doesn't shift when the regional cards arrive.
   const localTitles = !regional ? [] : local?.key === regionalKey ? local.titles : waited ? [] : null;
-  const top = (trending ?? []).filter((t) => t.backdropUrl && !localTitles?.some((l) => l.sourceId === t.sourceId)).slice(0, 4);
+  const top = (trendingTitles ?? []).filter((t) => t.backdropUrl && !localTitles?.some((l) => l.sourceId === t.sourceId)).slice(0, 4);
   const featured: Slide[] =
-    trending && localTitles
+    trendingTitles && localTitles
       ? [...localTitles.map((t) => ({ t, kicker: regional!.kicker })), ...top.map((t, i) => ({ t, kicker: `#${i + 1} THIS WEEK` }))]
       : [];
-  const rest = (trending ?? []).filter((t) => !top.includes(t));
+  // Grey shapes only while it's on its way: once it's in (or failed) with nothing to show, the row is left out.
+  const featuredLoading = !trendingTitles || !localTitles;
+  const rest = (trendingTitles ?? []).filter((t) => !top.includes(t));
   useNudges(featured[0]?.t ?? null);
   const upNext = watchlist.filter((w) => !w.track && w.posterUrl).slice(0, 10).map(titleOf);
-  const forYouTitles = picks?.seeds === seedKey ? picks.titles : null;
-  const cinemaTitles = cinema?.region === region ? cinema.titles : null;
+  const forYouTitles = !key ? [] : picks?.seeds === seedKey ? picks.titles : null;
+  const cinemaTitles = !key ? [] : cinema?.region === region ? cinema.titles : null;
 
   return (
     <ScrollView
@@ -152,6 +174,8 @@ export default function HomeScreen() {
       contentContainerStyle={[styles.content, { paddingTop: insets.top + 10, paddingBottom: insets.bottom + 32 }]}
     >
       <AppHeader theme={theme} line={greetingLine(hour)} icon={greetingIcon(hour)} />
+
+      {offline && <OfflineNote theme={theme} />}
 
       <WeekStrip entries={entries} theme={theme} />
 
@@ -203,7 +227,7 @@ export default function HomeScreen() {
         </View>
       )}
 
-      {seeds.length > 0 && (
+      {seeds.length > 0 && (forYouTitles === null || forYouTitles.length > 0) && (
         <View style={styles.block}>
           <View style={styles.headGroup}>
             <RowHead title="For you" theme={theme} />
@@ -212,21 +236,25 @@ export default function HomeScreen() {
               {seeds.length > 1 ? ` and ${seeds.length - 1} more` : ''}
             </Text>
           </View>
-          {forYouTitles ? forYouTitles.length > 0 && <TitleRow titles={forYouTitles} theme={theme} seen={seen} /> : <Skeleton theme={theme} />}
+          {forYouTitles ? <TitleRow titles={forYouTitles} theme={theme} seen={seen} /> : <Skeleton theme={theme} />}
         </View>
       )}
 
-      <View style={styles.block}>
-        <RowHead title="New this week" theme={theme} more="Find" onMore={() => router.navigate('/search')} />
-        {featured.length ? <NewRow slides={featured} theme={theme} /> : <View style={[styles.newSkeleton, { backgroundColor: theme.card }]} />}
-      </View>
+      {(featuredLoading || featured.length > 0) && (
+        <View style={styles.block}>
+          <RowHead title="New this week" theme={theme} more="Find" onMore={() => router.navigate('/search')} />
+          {featuredLoading ? <View style={[styles.newSkeleton, { backgroundColor: theme.card }]} /> : <NewRow slides={featured} theme={theme} />}
+        </View>
+      )}
 
       <RegionalRows key={`${lang?.code ?? ''}:${round}`} region={region} mine={lang} theme={theme} seen={seen} />
 
-      <View style={styles.block}>
-        <RowHead title="Trending this week" theme={theme} more="More" onMore={() => router.navigate('/search')} />
-        {trending ? <TitleRow titles={rest} theme={theme} seen={seen} width={112} /> : <Skeleton theme={theme} width={112} />}
-      </View>
+      {(trendingTitles === null || rest.length > 0) && (
+        <View style={styles.block}>
+          <RowHead title="Trending this week" theme={theme} more="More" onMore={() => router.navigate('/search')} />
+          {trendingTitles ? <TitleRow titles={rest} theme={theme} seen={seen} width={112} /> : <Skeleton theme={theme} width={112} />}
+        </View>
+      )}
 
       {(cinemaTitles === null || cinemaTitles.length > 0) && (
         <View style={styles.block}>
