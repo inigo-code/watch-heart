@@ -4,8 +4,8 @@
 
 <p align="center">
   <a href="../../releases/latest/download/watch-heart.apk"><img alt="Download APK" src="https://img.shields.io/badge/Download-Android%20APK-F2B84B?style=for-the-badge&logo=android&logoColor=white&labelColor=0B0A0D"></a>
-  <a href="https://inigo-code.github.io/watch-heart-site/fdroid.html"><img alt="Get it with F-Droid" src="https://img.shields.io/badge/Get%20it%20with-F--Droid-1976D2?style=for-the-badge&logo=f-droid&logoColor=white&labelColor=0B0A0D"></a>
-  <a href="https://inigo-code.github.io/watch-heart-site/"><img alt="Website" src="https://img.shields.io/badge/Website-Watch%20Heart-FF4D6D?style=for-the-badge&logo=githubpages&logoColor=white&labelColor=0B0A0D"></a>
+  <a href="https://heartapps.github.io/watch-heart/fdroid.html"><img alt="Get it with F-Droid" src="https://img.shields.io/badge/Get%20it%20with-F--Droid-1976D2?style=for-the-badge&logo=f-droid&logoColor=white&labelColor=0B0A0D"></a>
+  <a href="https://heartapps.github.io/watch-heart/"><img alt="Website" src="https://img.shields.io/badge/Website-Watch%20Heart-FF4D6D?style=for-the-badge&logo=githubpages&logoColor=white&labelColor=0B0A0D"></a>
   <img alt="Version" src="https://img.shields.io/badge/version-1.5.0-F2B84B?style=for-the-badge&labelColor=0B0A0D">
   <img alt="Expo SDK 58" src="https://img.shields.io/badge/Expo-SDK%2058-000020?style=for-the-badge&logo=expo&logoColor=white">
   <img alt="React Native" src="https://img.shields.io/badge/React%20Native-0.88-61DAFB?style=for-the-badge&logo=react&logoColor=black">
@@ -145,7 +145,7 @@ keep a watchlist, and turn each month into an <b>Instagram story</b>. Free, with
 ### With F-Droid (recommended, updates automatically)
 
 1. Install [F-Droid](https://f-droid.org) (or Neo Store / Droid-ify) on your phone.
-2. Open the **[Watch Heart F-Droid page](https://inigo-code.github.io/watch-heart-site/fdroid.html)** on your phone and tap **Add to F-Droid**, or scan its QR code from another screen.
+2. Open the **[Watch Heart F-Droid page](https://heartapps.github.io/watch-heart/fdroid.html)** on your phone and tap **Add to F-Droid**, or scan its QR code from another screen.
 3. Search for **Watch Heart** in F-Droid and install it. New versions show up in F-Droid like any other app.
 
 <details>
@@ -176,8 +176,8 @@ Both ways install the same signed APK, so you can switch between them without lo
 - **On your phone first.** Your diary, watchlist and settings live on the phone and work without an account.
 - **Private sync.** With an account, your diary, watchlist, episode progress and profile sync through Supabase. Row Level Security means every account can read only its own rows, and profile photos sit in a private bucket under your own folder.
 - **Friends see only what you share.** Friends are made by invite code, both ways. They never read your tables: a few server functions check the friendship and return just what you share (diary, reviews, lists; each can be switched off). Who you watched with and your tags are never shared.
-- **Leave any time.** Export a backup, a spreadsheet or a Letterboxd file, or [delete your account](https://inigo-code.github.io/watch-heart-site/delete-account.html) in the app.
-- **No ads, no analytics, no tracking.** See the [privacy policy](https://inigo-code.github.io/watch-heart-site/privacy.html).
+- **Leave any time.** Export a backup, a spreadsheet or a Letterboxd file, or [delete your account](https://heartapps.github.io/watch-heart/delete-account.html) in the app.
+- **No ads, no analytics, no tracking.** See the [privacy policy](https://heartapps.github.io/watch-heart/privacy.html).
 
 ## 📥 Importing from other apps
 
@@ -185,12 +185,12 @@ Settings → **Import from other apps**, then pick the file your old app exporte
 
 | App | What comes across |
 | --- | --- |
-| <img src="https://inigo-code.github.io/watch-heart-site/assets/logos/letterboxd.png" width="20" height="20" alt="" align="top"> Letterboxd | Diary, ratings, reviews, likes, watched films, watchlist |
-| <img src="https://inigo-code.github.io/watch-heart-site/assets/logos/imdb.png" width="20" height="20" alt="" align="top"> IMDb | Ratings (dated when you rated) and watchlist |
-| <img src="https://inigo-code.github.io/watch-heart-site/assets/logos/trakt.png" width="20" height="20" alt="" align="top"> Trakt, <img src="https://inigo-code.github.io/watch-heart-site/assets/logos/moviebase.png" width="20" height="20" alt="" align="top"> Moviebase (through Trakt) | History, ratings, watchlist, with exact matches |
-| <img src="https://inigo-code.github.io/watch-heart-site/assets/logos/myanimelist.png" width="20" height="20" alt="" align="top"> MyAnimeList, <img src="https://inigo-code.github.io/watch-heart-site/assets/logos/anilist.png" width="20" height="20" alt="" align="top"> AniList | Completed, watching, on hold and dropped, with episodes; plan to watch goes to the watchlist |
-| <img src="https://inigo-code.github.io/watch-heart-site/assets/logos/netflix.png" width="20" height="20" alt="" align="top"> Netflix | Viewing activity, with series grouped per day |
-| <img src="https://inigo-code.github.io/watch-heart-site/assets/logos/refract.png" width="20" height="20" alt="" align="top"> Refract, <img src="https://inigo-code.github.io/watch-heart-site/assets/logos/serializd.png" width="20" height="20" alt="" align="top"> Serializd, <img src="https://inigo-code.github.io/watch-heart-site/assets/logos/tvtime.png" width="20" height="20" alt="" align="top"> TV Time | Any CSV or JSON export: titles, dates, ratings, reviews |
+| <img src="https://heartapps.github.io/watch-heart/assets/logos/letterboxd.png" width="20" height="20" alt="" align="top"> Letterboxd | Diary, ratings, reviews, likes, watched films, watchlist |
+| <img src="https://heartapps.github.io/watch-heart/assets/logos/imdb.png" width="20" height="20" alt="" align="top"> IMDb | Ratings (dated when you rated) and watchlist |
+| <img src="https://heartapps.github.io/watch-heart/assets/logos/trakt.png" width="20" height="20" alt="" align="top"> Trakt, <img src="https://heartapps.github.io/watch-heart/assets/logos/moviebase.png" width="20" height="20" alt="" align="top"> Moviebase (through Trakt) | History, ratings, watchlist, with exact matches |
+| <img src="https://heartapps.github.io/watch-heart/assets/logos/myanimelist.png" width="20" height="20" alt="" align="top"> MyAnimeList, <img src="https://heartapps.github.io/watch-heart/assets/logos/anilist.png" width="20" height="20" alt="" align="top"> AniList | Completed, watching, on hold and dropped, with episodes; plan to watch goes to the watchlist |
+| <img src="https://heartapps.github.io/watch-heart/assets/logos/netflix.png" width="20" height="20" alt="" align="top"> Netflix | Viewing activity, with series grouped per day |
+| <img src="https://heartapps.github.io/watch-heart/assets/logos/refract.png" width="20" height="20" alt="" align="top"> Refract, <img src="https://heartapps.github.io/watch-heart/assets/logos/serializd.png" width="20" height="20" alt="" align="top"> Serializd, <img src="https://heartapps.github.io/watch-heart/assets/logos/tvtime.png" width="20" height="20" alt="" align="top"> TV Time | Any CSV or JSON export: titles, dates, ratings, reviews |
 
 <sub>Logos from <a href="https://simpleicons.org">Simple Icons</a> (CC0); each belongs to its owner. Watch Heart isn't affiliated with any of these apps.</sub>
 
