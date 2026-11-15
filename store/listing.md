@@ -92,6 +92,12 @@ Film and series data and images come from TMDB. Watch Heart uses TMDB and the TM
 | Feature graphic | `feature-graphic.png` | 1024 × 500 |
 | Phone screenshots | `screenshots/01.png` to `06.png` | 1080 × 1920 |
 
+## Release notes for 1.6.0 (500 max)
+
+<en-IN>
+Memory stories: put your own photo from the night in a film frame, with filters and your own words, and share it. Award winners and new lists in Discover. Sort your watchlist by Shortest first, and search your diary by the words in your reviews. A text size setting, people you might know under Friends, and links straight to each streaming service. Home tells you when you're offline, and an episode you untick stays unticked on your other phone.
+</en-IN>
+
 ## Release notes for the first Play release (500 max)
 
 Welcome to Watch Heart on Google Play! Log films, series and anime with half stars and reviews, keep a watchlist, track episodes, plan a movie night, and share your month as a story. Friends and sync are optional, and there are no ads.
