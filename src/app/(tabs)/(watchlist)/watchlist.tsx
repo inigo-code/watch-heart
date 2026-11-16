@@ -10,6 +10,7 @@ import { Text } from '@/components/AppText';
 import { trackable } from '@/api/episodes';
 import { ActionSheet } from '@/components/ActionSheet';
 import { ContinueWatching } from '@/components/ContinueWatching';
+import { useDaySheet } from '@/components/DaySheet';
 import { AddToList } from '@/components/lists/AddToList';
 import { MovieNightSheet, nightLabel, useMovieNights } from '@/components/MovieNight';
 import { openTitle } from '@/components/title/Rows';
@@ -19,6 +20,7 @@ import { usePullRefresh } from '@/components/PullRefresh';
 import { Segments } from '@/components/Segments';
 import { useToast } from '@/components/Toast';
 import { formatRuntime } from '@/lib/dates';
+import { useQuickLog } from '@/lib/useQuickLog';
 import { KIND_COLORS, font, fonts, shadow, useTheme } from '@/lib/theme';
 import { useLists } from '@/lists/ListsProvider';
 import { useSettings } from '@/settings/SettingsProvider';
@@ -52,6 +54,8 @@ export default function WatchlistScreen() {
   const toast = useToast();
   const { width } = useWindowDimensions();
   const { watchlist, removeFromWatchlist, importWatchlist } = useDiary();
+  const days = useDaySheet();
+  const quickLog = useQuickLog();
   const { forTitle } = useMovieNights();
   const [filter, setFilter] = useState<Filter>('all');
   const [sort, setSort] = useState<Sort>('added');
@@ -250,6 +254,14 @@ export default function WatchlistScreen() {
                 ...(menu.source === 'tmdb' && menu.sourceId ? [{ label: 'Open the title page', icon: 'open-outline' as const, onPress: () => openTitle(titleOf(menu)) }] : []),
                 { label: 'Plan a watch', icon: 'calendar-outline' as const, onPress: () => setPlanning(menu) },
                 { label: 'Watched it: log now', icon: 'checkmark-done-outline', onPress: () => log(menu) },
+                {
+                  label: 'Watched it: just pick the day',
+                  icon: 'calendar-outline',
+                  onPress: () => {
+                    const w = menu;
+                    days.ask({ title: w.title }, (d) => quickLog(titleOf(w), d));
+                  },
+                },
                 { label: 'Add to a list', icon: 'albums-outline' as const, onPress: () => setListing(menu) },
                 ...(trackable(menu)
                   ? [{ label: 'Track episodes', icon: 'list-outline' as const, onPress: () => router.push({ pathname: '/track', params: { id: menu.id } }) }]

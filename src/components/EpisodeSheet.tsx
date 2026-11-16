@@ -10,17 +10,24 @@ import { StarInput } from '@/components/Film';
 import { Tap } from '@/components/Motion';
 import { SectionLabel } from '@/components/SectionLabel';
 import { friendlyDate, today } from '@/lib/dates';
+import { UNKNOWN_DAY } from '@/lib/tracking';
 import { font, fonts } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
 
-/** One episode: its picture, name, summary and details, and your rating. Rating an unseen episode logs it. */
-export function EpisodeSheet({ episode, theme, seen, rating, onRate, onTick, onClose }: {
+/**
+ * One episode: its picture, name, summary and details, and your rating. Rating an unseen episode logs it.
+ * `onPickDay` asks which day you saw it: to log it on another day, or move it there.
+ */
+export function EpisodeSheet({ episode, theme, seen, seenOn, rating, onRate, onTick, onPickDay, onClose }: {
   episode: Episode | null;
   theme: Theme;
   seen: boolean;
+  /** The day it was seen (UNKNOWN_DAY when you don't remember). */
+  seenOn: string | null;
   rating: number;
   onRate: (rating: number) => void;
   onTick: () => void;
+  onPickDay: () => void;
   onClose: () => void;
 }) {
   const insets = useSafeAreaInsets();
@@ -61,6 +68,16 @@ export function EpisodeSheet({ episode, theme, seen, rating, onRate, onTick, onC
                 <Text style={[styles.tickText, { color: seen ? theme.text : theme.accentText }]}>{seen ? 'UNTICK' : 'MARK AS WATCHED'}</Text>
               </Tap>
             )}
+            {out && (
+              <Tap onPress={onPickDay} accessibilityRole="button" style={styles.day}>
+                <Ionicons name="calendar-outline" size={16} color={theme.accent} />
+                <Text style={[styles.dayText, { color: theme.text }]}>
+                  {seen && seenOn
+                    ? `${seenOn === UNKNOWN_DAY ? 'Seen, date unknown' : `Seen ${friendlyDate(seenOn).toLowerCase()}`} · Change the day`
+                    : 'Watched it another day? Choose the day'}
+                </Text>
+              </Tap>
+            )}
           </ScrollView>
         </View>
       )}
@@ -81,4 +98,6 @@ const styles = StyleSheet.create({
   rate: { gap: 8, marginTop: 12 },
   tick: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: 50, borderRadius: 25, marginTop: 12 },
   tickText: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 1 },
+  day: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, minHeight: 44 },
+  dayText: { fontSize: font.footnote, fontWeight: '600' },
 });

@@ -5,14 +5,17 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { ActionSheet } from '@/components/ActionSheet';
 import { Text } from '@/components/AppText';
+import { HeaderDisc } from '@/components/BackDisc';
+import { dayWords, useDaySheet } from '@/components/DaySheet';
 import { seasonEpisodes, showInfo } from '@/api/episodes';
 import type { Episode, ShowInfo } from '@/api/episodes';
 import { EpisodeSheet } from '@/components/EpisodeSheet';
 import { Chip, KindBadge, Poster } from '@/components/Film';
 import { useToast } from '@/components/Toast';
 import { daysAgo, friendlyDate, isoDate, parseIso, today } from '@/lib/dates';
-import { UNKNOWN_DAY, counts, epKey, nextUp, withInfo } from '@/lib/tracking';
+import { UNKNOWN_DAY, airedKeys, counts, epKey, nextUp, seasonAired, withInfo } from '@/lib/tracking';
 import type { Day } from '@/lib/tracking';
 import { font, fonts, useTheme } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
@@ -28,9 +31,6 @@ type Params = {
   /** The day ticks are logged on: a YYYY-MM-DD day, or "unknown". Today when not given. */
   on?: string;
 };
-
-/** "today", "yesterday", "Mon 3 Nov 2025", "date unknown": for the toasts. */
-const dayWords = (d: Day) => (d.undated ? 'date unknown' : d.watchedOn === today() || d.watchedOn === daysAgo(1) ? friendlyDate(d.watchedOn).toLowerCase() : friendlyDate(d.watchedOn));
 
 const STATUSES: { key: TrackStatus; label: string }[] = [
   { key: 'watching', label: 'Watching' },
@@ -64,6 +64,10 @@ export default function TrackScreen() {
   const [day, setDay] = useState<Day>(() =>
     params.on === 'unknown' ? { watchedOn: today(), undated: true } : params.on && /^\d{4}-\d{2}-\d{2}$/.test(params.on) ? { watchedOn: params.on } : { watchedOn: today() },
   );
+  // Long presses ask for a day; the ⋯ menu holds the whole-show actions.
+  const days = useDaySheet();
+  const [menu, setMenu] = useState(false);
+  const [clearing, setClearing] = useState(false);
   const dayChoice = day.undated ? 'unknown' : day.watchedOn === today() ? 'today' : day.watchedOn === daysAgo(1) ? 'yesterday' : 'other';
   const pickDay = () =>
     DateTimePickerAndroid.open({
@@ -144,9 +148,61 @@ export default function TrackScreen() {
     toast(`Caught up to S${e.season} · E${e.number}`);
   };
 
+  const target = item ?? show;
+  const aired_ = info ? { seasons: info.seasons, lastAired: info.lastAired } : null;
+  const allAired = aired_ ? airedKeys(aired_) : [];
+  const unseenAired = allAired.filter((k) => !track?.seen[k]);
+  const seenKeys = Object.keys(track?.seen ?? {});
+  const seenLine = (d: string) => (d === UNKNOWN_DAY ? 'Seen, date unknown' : `Seen ${friendlyDate(d)}`);
+
+  /** Long press on an episode: the day you watched it (or move it to another day), catch up to it, or untick it. */
+  const episodeMenu = (e: Episode) => {
+    const key = epKey(e.season, e.number);
+    const was = track?.seen[key];
+    days.ask(
+      {
+        title: `S${e.season} · E${e.number}${e.name ? ` · ${e.name}` : ''}${was ? `\n${seenLine(was)}` : ''}`,
+        verb: was ? 'Seen' : 'Watched',
+        extra: [
+          { label: 'Catch up to here (every episode before it too)', icon: 'play-skip-forward-outline', onPress: () => upToHere(e) },
+          ...(was ? [{ label: 'Untick', icon: 'close-circle-outline' as const, destructive: true, onPress: () => tick(e) }] : []),
+        ],
+      },
+      (d) => {
+        tracker.logOn(target, [key], d, info ?? undefined);
+        toast(`S${e.season} · E${e.number} logged · ${dayWords(d)}`);
+      },
+    );
+  };
+
+  /** Long press on a season: the whole season on one day (unseen ones ticked, seen ones moved), or unmark it. */
+  const seasonMenu = (n: number) => {
+    const keys = aired_ ? seasonAired(aired_, n) : [];
+    if (!keys.length) return;
+    const seenHere = keys.filter((k) => track?.seen[k]);
+    days.ask(
+      {
+        title: `Season ${n} · ${seenHere.length} of ${keys.length} aired episodes seen`,
+        verb: 'Season watched',
+        extra: seenHere.length
+          ? [{ label: `Unmark season ${n}`, icon: 'close-circle-outline', destructive: true, onPress: () => (tracker.logSeason(target, n, keys, false, info ?? undefined), toast(`Season ${n} unmarked`)) }]
+          : [],
+      },
+      (d) => {
+        tracker.logOn(target, keys, d, info ?? undefined);
+        toast(`Season ${n} logged · ${dayWords(d)}`);
+      },
+    );
+  };
+
   return (
     <ScrollView contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 40 }]}>
-      <Stack.Screen options={{ title: 'EPISODES' }} />
+      <Stack.Screen
+        options={{
+          title: 'EPISODES',
+          headerRight: () => (info ? <HeaderDisc icon="ellipsis-horizontal" label="More for the whole show" onPress={() => setMenu(true)} /> : null),
+        }}
+      />
       <View style={styles.head}>
         <Poster uri={show.posterUrl} title={show.title} width={92} theme={theme} radius={6} />
         <View style={{ flex: 1, gap: 6 }}>
@@ -178,7 +234,15 @@ export default function TrackScreen() {
           {up && (
             <Pressable
               onPress={() => (setSeason(up.season), tracker.toggle(item ?? show, up.season, up.number, info ?? undefined, day), toast(`S${up.season} · E${up.number} logged · ${dayWords(day)}`))}
+              onLongPress={() =>
+                days.ask({ title: `S${up.season} · E${up.number}` }, (d) => {
+                  setSeason(up.season);
+                  tracker.logOn(target, [epKey(up.season, up.number)], d, info ?? undefined);
+                  toast(`S${up.season} · E${up.number} logged · ${dayWords(d)}`);
+                })
+              }
               accessibilityRole="button"
+              accessibilityHint="Long press to choose the day"
               style={[styles.plus, { backgroundColor: theme.accent }]}
             >
               <Text style={[styles.plusText, { color: theme.accentText }]}>+1</Text>
@@ -208,7 +272,7 @@ export default function TrackScreen() {
       )}
 
       <View style={styles.dayBox}>
-        <Text style={[styles.note, { color: theme.textMuted }]}>TICKS ARE LOGGED AS SEEN</Text>
+        <Text style={[styles.note, { color: theme.textMuted }]}>TICKS ARE LOGGED AS SEEN · HOLD AN EPISODE OR SEASON FOR ANOTHER DAY</Text>
         <View style={styles.row}>
           <Chip theme={theme} label="Today" active={dayChoice === 'today'} onPress={() => setDay({ watchedOn: today() })} />
           <Chip theme={theme} label="Yesterday" active={dayChoice === 'yesterday'} onPress={() => setDay({ watchedOn: daysAgo(1) })} />
@@ -226,7 +290,7 @@ export default function TrackScreen() {
         <>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>
             {info.seasons.map((s) => (
-              <SeasonChip key={s.n} theme={theme} label={`S${s.n}`} active={current === s.n} done={!!track && Array.from({ length: s.count }, (_, i) => epKey(s.n, i + 1)).every((k) => track.seen[k])} onPress={() => setSeason(s.n)} />
+              <SeasonChip key={s.n} theme={theme} label={`S${s.n}`} active={current === s.n} done={!!track && Array.from({ length: s.count }, (_, i) => epKey(s.n, i + 1)).every((k) => track.seen[k])} onPress={() => setSeason(s.n)} onLongPress={() => seasonMenu(s.n)} />
             ))}
           </ScrollView>
 
@@ -236,7 +300,9 @@ export default function TrackScreen() {
                 if (current != null) tracker.logSeason(item ?? show, current, seasonKeys, !seasonDone, info, day);
                 toast(seasonDone ? `Season ${current} unmarked` : `Season ${current} logged · ${dayWords(day)}`);
               }}
+              onLongPress={() => current != null && seasonMenu(current)}
               accessibilityRole="button"
+              accessibilityHint="Long press to choose the day"
               style={({ pressed }) => [styles.seasonAll, { borderColor: theme.border, opacity: pressed ? 0.7 : 1 }]}
             >
               <Ionicons name={seasonDone ? 'close-circle-outline' : 'checkmark-done'} size={18} color={theme.accent} />
@@ -269,7 +335,7 @@ export default function TrackScreen() {
                   <Pressable
                     key={e.number}
                     onPress={() => setOpenedKey({ season: e.season, number: e.number })}
-                    onLongPress={() => out && upToHere(e)}
+                    onLongPress={() => out && episodeMenu(e)}
                     accessibilityRole="button"
                     accessibilityLabel={`Episode ${e.number}, ${e.name}`}
                     style={({ pressed }) => [styles.episode, { backgroundColor: theme.card, borderColor: seen ? theme.accent + '66' : theme.border, opacity: !out ? 0.55 : pressed ? 0.8 : 1 }]}
@@ -306,7 +372,7 @@ export default function TrackScreen() {
               })}
             </View>
           )}
-          <Text style={[styles.note, { color: theme.textMuted }]}>Tap an episode for details. Hold to catch up to it.</Text>
+          <Text style={[styles.note, { color: theme.textMuted }]}>Tap an episode for details. Hold it to choose the day you saw it, or to catch up to it.</Text>
         </>
       )}
       <EpisodeSheet
@@ -315,11 +381,68 @@ export default function TrackScreen() {
         seen={!!opened && isSeen(opened)}
         rating={opened ? rated(opened) : 0}
         onRate={(r) => opened && tracker.rateEpisode(item ?? show, epKey(opened.season, opened.number), r, info ?? undefined, day)}
+        seenOn={opened ? (track?.seen[epKey(opened.season, opened.number)] ?? null) : null}
         onTick={() => {
           if (opened) tick(opened);
           setOpenedKey(null);
         }}
+        onPickDay={() => {
+          const e = opened;
+          setOpenedKey(null);
+          if (e) episodeMenu(e);
+        }}
         onClose={() => setOpenedKey(null)}
+      />
+      {days.sheet}
+      <ActionSheet
+        visible={menu}
+        title={show.title}
+        onClose={() => setMenu(false)}
+        actions={[
+          ...(unseenAired.length
+            ? [
+                {
+                  label: `Mark every aired episode as seen (${unseenAired.length} to go)…`,
+                  icon: 'checkmark-done' as const,
+                  onPress: () =>
+                    days.ask({ title: `${unseenAired.length} episodes not ticked yet` }, (d) => {
+                      tracker.logOn(target, unseenAired, d, info ?? undefined);
+                      toast(`${unseenAired.length} episodes logged · ${dayWords(d)}`);
+                    }),
+                },
+              ]
+            : []),
+          ...(seenKeys.length
+            ? [
+                {
+                  label: `Change the day for every seen episode (${seenKeys.length})…`,
+                  icon: 'calendar-outline' as const,
+                  onPress: () =>
+                    days.ask({ title: `All ${seenKeys.length} seen episodes`, verb: 'Seen' }, (d) => {
+                      tracker.logOn(target, seenKeys, d, info ?? undefined);
+                      toast(`${seenKeys.length} episodes now seen · ${dayWords(d)}`);
+                    }),
+                },
+                { label: 'Unmark every episode', icon: 'close-circle-outline' as const, destructive: true, onPress: () => setClearing(true) },
+              ]
+            : []),
+        ]}
+      />
+      <ActionSheet
+        visible={clearing}
+        title={`Unmark all ${seenKeys.length} episodes of ${show.title}? Diary entries made by ticking them go too. Viewings you rated or reviewed stay, without these episodes.`}
+        onClose={() => setClearing(false)}
+        actions={[
+          {
+            label: 'Unmark all',
+            icon: 'close-circle-outline',
+            destructive: true,
+            onPress: () => {
+              tracker.markMany(target, seenKeys, false, info ?? undefined);
+              toast('Every episode unmarked');
+            },
+          },
+        ]}
       />
     </ScrollView>
   );
@@ -328,10 +451,11 @@ export default function TrackScreen() {
 /** "seen today", "seen mon 3 nov 2025", or just "seen" for a day you don't remember. */
 const seenWords = (d: string) => (d === UNKNOWN_DAY ? 'seen' : `seen ${friendlyDate(d).toLowerCase()}`);
 
-function SeasonChip({ theme, label, active, done, onPress }: { theme: Theme; label: string; active: boolean; done: boolean; onPress: () => void }) {
+function SeasonChip({ theme, label, active, done, onPress, onLongPress }: { theme: Theme; label: string; active: boolean; done: boolean; onPress: () => void; onLongPress: () => void }) {
   return (
     <Pressable
       onPress={onPress}
+      onLongPress={onLongPress}
       accessibilityRole="button"
       accessibilityState={{ selected: active }}
       style={[styles.seasonChip, { backgroundColor: active ? theme.chipActive : 'transparent', borderColor: active ? theme.chipActive : theme.border }]}

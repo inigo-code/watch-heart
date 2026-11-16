@@ -46,6 +46,17 @@ export const DATA_SOURCES = {
  */
 const NOTES: { id: string; items: string[] }[] = [
   {
+    id: '1.6.2',
+    items: [
+      'Hold an episode to pick the day you watched it, or move it to another day. Its sheet shows the day you saw it, with Change the day',
+      'Hold a season (its chip or Mark season as seen) to log the whole season on one day, or unmark it',
+      'The ⋯ menu on the Episodes page can mark every aired episode as seen, change the day for every episode you’ve seen, or unmark them all',
+      'Hold +1 in Up next or Continue watching to log the next episode on another day',
+      'Hold Log it on a title’s page, or choose “Watched it: just pick the day” on the Watchlist, to log it on a day without the form',
+      'Diary: hold an entry and choose Change the date. Its episodes move with it',
+    ],
+  },
+  {
     id: '1.6.1',
     items: [
       'Episodes can be logged on any day: the Episodes page has Today, Yesterday, Pick a date and Don’t remember, and ticks, Mark season as seen and Up next use the day you choose',

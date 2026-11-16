@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Text } from '@/components/AppText';
 import { ConfirmTrash } from '@/components/ConfirmTrash';
+import { useDaySheet } from '@/components/DaySheet';
 import { Tap } from '@/components/Motion';
 import { trackable } from '@/api/episodes';
 import { browseGenre } from '@/api/tmdb';
@@ -20,6 +21,7 @@ import { Synopsis, TitleMore, useAbout } from '@/components/title/AboutTitle';
 import { FriendsOnTitle } from '@/components/title/FriendsOnTitle';
 import { useToast } from '@/components/Toast';
 import { friendlyDate } from '@/lib/dates';
+import { useQuickLog } from '@/lib/useQuickLog';
 import { font, fonts, useTheme } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
 import { useLists } from '@/lists/ListsProvider';
@@ -45,6 +47,9 @@ export default function TitleScreen() {
   const [listing, setListing] = useState(false);
   const [planning, setPlanning] = useState(false);
   const { forTitle } = useMovieNights();
+  // Hold Log it to log on a day straight away, without the form.
+  const days = useDaySheet();
+  const quickLog = useQuickLog();
 
   // Search in the Anime tab knows it's anime; TMDB's own details can't always tell (an anime film, say).
   const t: Title | null = a ? { ...a.title, kind: seed?.kind === 'anime' ? 'anime' : a.title.kind, overview: a.overview } : seed;
@@ -107,7 +112,9 @@ export default function TitleScreen() {
           <View style={styles.mainActions}>
             <Pressable
               onPress={log}
+              onLongPress={() => days.ask({ title: t.title }, (d) => quickLog(t, d))}
               accessibilityRole="button"
+              accessibilityHint="Long press to log it on a day without the form"
               style={({ pressed }) => [styles.logBtn, { backgroundColor: theme.accent, opacity: pressed ? 0.85 : 1 }]}
             >
               <Ionicons name="add" size={20} color={theme.accentText} />
@@ -183,6 +190,7 @@ export default function TitleScreen() {
         </View>
       </Animated.ScrollView>
       <AddToList item={listing ? t : null} theme={theme} onClose={() => setListing(false)} />
+      {days.sheet}
       <MovieNightSheet t={t} visible={planning} theme={theme} onClose={() => setPlanning(false)} />
       <ConfirmTrash
         title={trashing?.title ?? null}

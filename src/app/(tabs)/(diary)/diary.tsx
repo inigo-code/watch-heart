@@ -10,13 +10,15 @@ import { usePullRefresh } from '@/components/PullRefresh';
 import { ActionSheet } from '@/components/ActionSheet';
 import { AddToList } from '@/components/lists/AddToList';
 import { ConfirmTrash } from '@/components/ConfirmTrash';
+import { dayWords, useDaySheet } from '@/components/DaySheet';
 import { PosterTile, ReelHeader, TicketStub } from '@/components/Diary';
 import { Chip } from '@/components/Film';
 import { TipCard } from '@/components/TipCard';
 import { useToast } from '@/components/Toast';
-import { monthKey, today } from '@/lib/dates';
+import { friendlyDate, monthKey, today } from '@/lib/dates';
 import { plainText } from '@/lib/richText';
 import { computeStats } from '@/lib/stats';
+import { useTracker } from '@/lib/useTracker';
 import { KIND_COLORS, font, fonts, shadow, useTheme } from '@/lib/theme';
 import { useSettings } from '@/settings/SettingsProvider';
 import { useDiary } from '@/store/DiaryStore';
@@ -71,7 +73,16 @@ export default function DiaryScreen() {
   const toast = useToast();
   const { width } = useWindowDimensions();
   const { settings, update } = useSettings();
-  const { entries, ready, deleteEntry, restoreEntry } = useDiary();
+  const { entries, ready, deleteEntry, restoreEntry, updateEntry } = useDiary();
+  const tracker = useTracker();
+  // "Change the date" on an entry's menu: its episodes on the tracker move with it.
+  const days = useDaySheet();
+  const redate = (e: Entry) =>
+    days.ask({ title: `${e.title}\n${e.undated ? 'Date unknown' : `Watched ${friendlyDate(e.watchedOn)}`}` }, (d) => {
+      tracker.redate(e, d);
+      updateEntry(e.id, { watchedOn: d.undated ? e.watchedOn : d.watchedOn, undated: d.undated ? true : undefined });
+      toast(`Moved to ${dayWords(d)}`);
+    });
   const sync = useSync();
   const pull = usePullRefresh(theme, () => sync.syncNow());
   const [filter, setFilter] = useState<Filter>('all');
@@ -304,6 +315,7 @@ export default function DiaryScreen() {
           menu
             ? [
                 { label: 'Edit entry', icon: 'create-outline', onPress: () => router.push({ pathname: '/log', params: { id: menu.id } }) },
+                { label: 'Change the date', icon: 'calendar-outline', onPress: () => redate(menu) },
                 { label: 'Log again', icon: 'repeat', onPress: () => router.push({ pathname: '/log', params: { again: menu.id } }) },
                 { label: 'Share as story card', icon: 'sparkles-outline', onPress: () => router.push({ pathname: '/card/[id]', params: { id: menu.id } }) },
                 { label: 'Add to a list', icon: 'albums-outline', onPress: () => setListing(menu) },
@@ -317,6 +329,7 @@ export default function DiaryScreen() {
       />
       <AddToList item={listing} theme={theme} onClose={() => setListing(null)} />
       <ConfirmTrash title={trashing?.title ?? null} onConfirm={() => trashing && remove(trashing)} onClose={() => setTrashing(null)} />
+      {days.sheet}
     </View>
   );
 }

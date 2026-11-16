@@ -4,13 +4,14 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ActionSheet } from '@/components/ActionSheet';
+import { dayWords, useDaySheet } from '@/components/DaySheet';
 import { Text } from '@/components/AppText';
 import { Poster } from '@/components/Film';
 import { Rise, Tap } from '@/components/Motion';
 import { SectionLabel } from '@/components/SectionLabel';
 import { useToast } from '@/components/Toast';
 import { friendlyDate, today } from '@/lib/dates';
-import { continueWatching, counts, nextUp } from '@/lib/tracking';
+import { continueWatching, counts, epKey, nextUp } from '@/lib/tracking';
 import { font, fonts } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
 import { useTracker } from '@/lib/useTracker';
@@ -26,6 +27,7 @@ export function ContinueWatching({ items, theme, hidden }: { items: WatchItem[];
   const toast = useToast();
   const { removeFromWatchlist, importWatchlist } = useDiary();
   const [menu, setMenu] = useState<WatchItem | null>(null);
+  const days = useDaySheet();
   const tracked = items.filter((w) => w.track);
   const groups = continueWatching(tracked, today());
   const finished = tracked.filter((w) => w.track!.status === 'completed' || w.track!.status === 'dropped');
@@ -88,6 +90,13 @@ export function ContinueWatching({ items, theme, hidden }: { items: WatchItem[];
                           tracker.toggle(w, up.season, up.number);
                           toast(`${w.title}: S${up.season} · E${up.number} logged · today`);
                         }}
+                        onLongPress={() =>
+                          days.ask({ title: `${w.title}: S${up.season} · E${up.number}` }, (d) => {
+                            tracker.logOn(w, [epKey(up.season, up.number)], d);
+                            toast(`${w.title}: S${up.season} · E${up.number} logged · ${dayWords(d)}`);
+                          })
+                        }
+                        accessibilityHint="Long press to choose the day"
                         hitSlop={6}
                         scale={0.9}
                         accessibilityRole="button"
@@ -125,6 +134,7 @@ export function ContinueWatching({ items, theme, hidden }: { items: WatchItem[];
           ))}
         </View>
       )}
+      {days.sheet}
       <ActionSheet
         visible={menu !== null}
         title={menu?.title}
