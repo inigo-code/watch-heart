@@ -98,3 +98,38 @@ None needed: the app asks for no permission that has its own declaration form.
 - **Fingerprint lock:** biometric (USE_BIOMETRIC) for the optional App lock. Biometric data isn't collected: Android checks the fingerprint, face or PIN itself and only tells the app whether it passed.
 - **Saving stories:** WRITE_EXTERNAL_STORAGE, which Android 9 and older use to save a story image to Photos.
 - **Profile photos:** these come from Android's photo picker, which needs no permission. Camera, READ_MEDIA_IMAGES and READ_MEDIA_VIDEO are blocked in `app.json`, so there's no photo and video permissions declaration.
+
+## Production access application
+
+Drafted 2026-11-15 for Dashboard → Apply for access to production. Each box takes 300 characters at most. Check the facts in the first step against what actually happened in the closed test before sending: Google can ask for evidence.
+
+**1. About your closed test**
+
+How did you recruit users?
+> I invited friends, family and colleagues who watch a lot of films, series and anime, by message and email, and added them to the closed test by email. No paid testing provider was used.
+
+How easy was it to recruit testers? Inigo's own answer.
+
+Engagement from testers:
+> Testers logged and rated films and series, wrote reviews, imported their Letterboxd and IMDb history, tracked episodes, added each other as friends and shared story cards to Instagram. That matches real use: a quick log after watching, plus browsing Discover and the watchlist.
+
+Summary of feedback, and how it was collected:
+> Collected in person and by messages with screenshots. Bugs: Load more stayed after everything loaded, text cut off and layouts broke with large system fonts, What's new piled up, streaming links opened search pages. Requests: friend suggestions, memory photo cards, text size.
+
+**2. About your app**
+
+Intended audience:
+> People aged 13 and over who watch films, series and anime and want one private diary for all of it: ratings, reviews, a watchlist and episode tracking. It suits Letterboxd or IMDb users who also watch TV and anime, and friends who like to see what each other watched.
+
+How does the app provide value to users?
+> A free diary for films, series and anime with no ads: log and rate what you watch, track episodes with air-date alerts, see where to stream, keep lists and share story cards. It works without an account; an optional account adds sync between phones and friends by invite.
+
+Expected installs in the first year: the lowest range.
+
+**3. Production readiness**
+
+Changes made from what you learned in the closed test:
+> Fixed Load more, cut-off text and large-font layouts. What's new now shows only new notes and scrolls. Streaming links open the title's watch page. Added friend suggestions, memory photo cards with filters, an in-app text size setting, award lists and safer handling of failed loads.
+
+How did you decide the app is ready for production?
+> Every bug testers reported is fixed in the current build, and testers have used it day to day without new problems. Data safety, content rating and the privacy policy are done, and small fixes can reach Play users quickly through over-the-air updates.
