@@ -98,6 +98,6 @@ const styles = StyleSheet.create({
   rate: { gap: 8, marginTop: 12 },
   tick: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: 50, borderRadius: 25, marginTop: 12 },
   tickText: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 1 },
-  day: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, minHeight: 44 },
+  day: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, minHeight: 48 },
   dayText: { fontSize: font.footnote, fontWeight: '600' },
 });

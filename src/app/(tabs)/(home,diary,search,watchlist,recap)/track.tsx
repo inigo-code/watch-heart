@@ -13,6 +13,7 @@ import { seasonEpisodes, showInfo } from '@/api/episodes';
 import type { Episode, ShowInfo } from '@/api/episodes';
 import { EpisodeSheet } from '@/components/EpisodeSheet';
 import { Chip, KindBadge, Poster } from '@/components/Film';
+import { SectionLabel } from '@/components/SectionLabel';
 import { useToast } from '@/components/Toast';
 import { daysAgo, friendlyDate, isoDate, parseIso, today } from '@/lib/dates';
 import { UNKNOWN_DAY, airedKeys, counts, epKey, nextUp, seasonAired, withInfo } from '@/lib/tracking';
@@ -183,7 +184,6 @@ export default function TrackScreen() {
     days.ask(
       {
         title: `Season ${n} · ${seenHere.length} of ${keys.length} aired episodes seen`,
-        verb: 'Season watched',
         extra: seenHere.length
           ? [{ label: `Unmark season ${n}`, icon: 'close-circle-outline', destructive: true, onPress: () => (tracker.logSeason(target, n, keys, false, info ?? undefined), toast(`Season ${n} unmarked`)) }]
           : [],
@@ -271,8 +271,9 @@ export default function TrackScreen() {
         </View>
       )}
 
+      {/* The same question, chips and words as the log form's "Watched on". */}
       <View style={styles.dayBox}>
-        <Text style={[styles.note, { color: theme.textMuted }]}>TICKS ARE LOGGED AS SEEN · HOLD AN EPISODE OR SEASON FOR ANOTHER DAY</Text>
+        <SectionLabel theme={theme}>Watched on</SectionLabel>
         <View style={styles.row}>
           <Chip theme={theme} label="Today" active={dayChoice === 'today'} onPress={() => setDay({ watchedOn: today() })} />
           <Chip theme={theme} label="Yesterday" active={dayChoice === 'yesterday'} onPress={() => setDay({ watchedOn: daysAgo(1) })} />
@@ -281,6 +282,7 @@ export default function TrackScreen() {
           )}
           <Chip theme={theme} icon="help-circle-outline" label="Don’t remember" active={dayChoice === 'unknown'} onPress={() => setDay({ watchedOn: today(), undated: true })} />
         </View>
+        <Text style={[styles.note, { color: theme.textMuted }]}>Ticks below are logged on this day. Hold an episode or a season to choose another.</Text>
       </View>
 
       {failed && <Text style={[styles.note, { color: theme.danger }]}>{failed}</Text>}

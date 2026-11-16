@@ -46,6 +46,18 @@ export const DATA_SOURCES = {
  */
 const NOTES: { id: string; items: string[] }[] = [
   {
+    id: '1.6.3',
+    items: [
+      'This week on Home shows the day of the week (MON, TUE…) instead of the date',
+      'Friends lately keeps its place on Home while it loads, so Up next no longer jumps down when you open the app or pull to refresh',
+      'An entry with no watch date shows “DATE ?” on its ticket, as it does in the Diary, not the day you logged it',
+      'Where to watch and On your services name your country in full',
+      'The Episodes page asks “Watched on” the same way the log form does',
+      'Recap explains why entries without a watch date aren’t in a month',
+      'Settings: short hints like “Needs an account” are no longer cut off',
+    ],
+  },
+  {
     id: '1.6.2',
     items: [
       'Hold an episode to pick the day you watched it, or move it to another day. Its sheet shows the day you saw it, with Change the day',

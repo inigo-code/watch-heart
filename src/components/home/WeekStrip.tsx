@@ -7,7 +7,7 @@ import { Text } from '@/components/AppText';
 import { Poster, Stars } from '@/components/Film';
 import { Rise, Tap } from '@/components/Motion';
 import { SectionLabel } from '@/components/SectionLabel';
-import { friendlyDate, isoDate, monthKey, ordinal, parseIso, today } from '@/lib/dates';
+import { dayParts, friendlyDate, isoDate, monthKey, parseIso, today } from '@/lib/dates';
 import { easeNextLayout } from '@/lib/motion';
 import { computeStats } from '@/lib/stats';
 import { font, fonts } from '@/lib/theme';
@@ -66,12 +66,12 @@ export function WeekStrip({ entries, theme }: { entries: Entry[]; theme: Theme }
               onPress={() => (that.length > 1 ? toggle(day) : shown ? router.push({ pathname: '/entry/[id]', params: { id: shown.id } }) : router.navigate('/search'))}
               scale={0.94}
               accessibilityRole="button"
-              accessibilityLabel={that.length > 1 ? `${day}: ${that.length} titles` : shown ? `${day}: ${shown.title}` : isToday ? 'Today: log what you watched' : day}
+              accessibilityLabel={that.length > 1 ? `${friendlyDate(day)}: ${that.length} titles` : shown ? `${friendlyDate(day)}: ${shown.title}` : isToday ? 'Today: log what you watched' : friendlyDate(day)}
               accessibilityState={that.length > 1 ? { expanded: open === day } : undefined}
               style={{ width: tile }}
             >
               <Text numberOfLines={1} maxFontSizeMultiplier={1.1} style={[styles.dayDate, { color: isToday ? theme.accent : theme.textMuted }]}>
-                {ordinal(Number(day.slice(8)))}
+                {dayParts(day).weekday.toUpperCase()}
               </Text>
               {/* A pile: the day's other posters peek out from behind the top one. */}
               <View style={{ width: tile, height: tile * 1.5 }}>

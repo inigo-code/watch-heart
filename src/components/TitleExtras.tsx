@@ -10,6 +10,7 @@ import { SectionLabel } from '@/components/SectionLabel';
 import { tmdbKey } from '@/api';
 import { omdbKey as omdbKeyFor, watchRegion } from '@/api/omdb';
 import type { Provider } from '@/api/tmdb';
+import { countryName } from '@/lib/discover';
 import { loadTitleScores, scoresId, setScoreDefaults } from '@/lib/titleScores';
 import type { TitleScores } from '@/lib/titleScores';
 import { font, fonts } from '@/lib/theme';
@@ -105,7 +106,7 @@ export function TitleExtras({ source, sourceId, imdbId, title, year, series, the
         )}
       </View>
 
-      <SectionLabel theme={theme}>WHERE TO WATCH · {region}</SectionLabel>
+      <SectionLabel theme={theme}>Where to watch · {countryName(region)}</SectionLabel>
       {w && (w.stream.length || w.free.length || w.rent.length || w.buy.length) ? (
         <View style={{ gap: 10 }}>
           <Providers theme={theme} kind="Stream" list={w.stream} title={title ?? ''} page={w.link} />

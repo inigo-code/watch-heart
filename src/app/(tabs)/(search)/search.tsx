@@ -12,6 +12,7 @@ import { Segments } from '@/components/Segments';
 import { search, sourceFor, tmdbKey, trending } from '@/api';
 import { watchRegion } from '@/api/omdb';
 import { DiscoverHome } from '@/components/discover/DiscoverHome';
+import { SectionLabel } from '@/components/SectionLabel';
 import { Poster } from '@/components/Film';
 import { openTitle, warmTitle } from '@/components/title/Rows';
 import { useToast } from '@/components/Toast';
@@ -183,9 +184,9 @@ export default function SearchScreen() {
             ) : error ? (
               <Text style={[styles.note, { color: theme.danger }]}>{error}</Text>
             ) : results.length > 0 ? (
-              <Text style={[styles.section, { color: theme.textMuted }]}>
-                {q ? 'RESULTS' : source === 'tvmaze' ? 'POPULAR ON TV TODAY' : 'TRENDING THIS WEEK'}
-              </Text>
+              <SectionLabel theme={theme} style={styles.section}>
+                {q ? 'Results' : source === 'tvmaze' ? 'Popular on TV today' : 'Trending this week'}
+              </SectionLabel>
             ) : !loading && q ? (
               <Text style={[styles.note, { color: theme.textMuted }]}>Nothing found for “{q}”.</Text>
             ) : !loading && kind === 'tv' && source === 'tvmaze' ? (
@@ -305,7 +306,7 @@ const styles = StyleSheet.create({
   search: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, height: 46, borderRadius: 12 },
   searchInput: { flex: 1, fontSize: font.body, height: '100%' },
   list: { paddingHorizontal: 16 },
-  section: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 1.5, paddingVertical: 8 },
+  section: { paddingVertical: 8 },
   note: { fontFamily: fonts.mono, fontSize: font.footnote, paddingVertical: 12, lineHeight: 19 },
   rowBtn: { padding: 8 },
   modes: { flexDirection: 'row', borderRadius: 22, padding: 4, gap: 4 },

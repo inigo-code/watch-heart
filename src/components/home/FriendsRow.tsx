@@ -10,33 +10,65 @@ import { Face, RowHead, openTitle, warmTitle } from '@/components/title/Rows';
 import { useFriends } from '@/friends/FriendsProvider';
 import { friendsFeed } from '@/friends/friendsApi';
 import type { FriendEntry } from '@/friends/friendsApi';
+import { storage } from '@/lib/storage';
 import { font, fonts } from '@/lib/theme';
 import { viewingRating, watchedLabel } from '@/lib/watched';
 import type { Theme } from '@/lib/theme';
 import type { Title } from '@/store/types';
 
+/** Whether the row showed last time ("1" or "0"), so its place is kept while it loads. No friend data. */
+const SHOWN_KEY = 'home:friendsRow';
+const POSTER = 104;
+
 /**
  * Home's "Friends lately": what your friends watched most recently, each poster with their face and
  * stars, like Letterboxd's friends row. Only for an account with friends; hidden otherwise.
+ *
+ * It comes from the network after the rows below it, so it would pop in above Up next. When it showed
+ * last time, grey shapes hold its place until it loads; a refresh (`round`) keeps the old row on screen
+ * until the new one is in.
  */
-export function FriendsRow({ theme }: { theme: Theme }) {
-  const { available, friends, photos, byId } = useFriends();
+export function FriendsRow({ theme, round }: { theme: Theme; round: number }) {
+  const { available, friends, photos, byId, loading } = useFriends();
   const [feed, setFeed] = useState<FriendEntry[] | null>(null);
+  const [shownLast, setShownLast] = useState<boolean | null>(null);
   const has = available && friends.length > 0;
+
+  useEffect(() => {
+    storage
+      .getItem(SHOWN_KEY)
+      .then((v) => setShownLast(v === '1'))
+      .catch(() => setShownLast(false));
+  }, []);
 
   useEffect(() => {
     if (!has) return;
     let live = true;
-    // Kept for five minutes, so moving between tabs doesn't ask again.
+    // Kept for five minutes, so moving between tabs doesn't ask again (pull to refresh clears it).
     cached('friends-feed', 5 * MINUTE, friendsFeed)
-      .then((f) => live && setFeed(f.slice(0, 20)))
-      .catch(() => live && setFeed([]));
+      .then((f) => {
+        if (!live) return;
+        setFeed(f.slice(0, 20));
+        storage.setItem(SHOWN_KEY, f.length ? '1' : '0').catch(() => {});
+      })
+      // Offline: what's on screen stays.
+      .catch(() => live && setFeed((old) => old ?? []));
     return () => {
       live = false;
     };
-  }, [has, friends.length]);
+  }, [has, friends.length, round]);
 
-  if (!has || !feed?.length) return null;
+  // Signed out, or no friends after all: nothing to keep a place for next time.
+  const none = !available || (!loading && friends.length === 0);
+  useEffect(() => {
+    if (none) storage.setItem(SHOWN_KEY, '0').catch(() => {});
+  }, [none]);
+
+  if (none) return null;
+  if (!feed?.length) {
+    const waiting = shownLast && (loading || (has && feed === null));
+    return waiting ? <Placeholder theme={theme} /> : null;
+  }
   return (
     <View style={styles.block}>
       <RowHead title="Friends lately" theme={theme} more="All" onMore={() => router.push('/friends')} />
@@ -101,8 +133,28 @@ export function FriendsRow({ theme }: { theme: Theme }) {
   );
 }
 
+/** The row's shape in grey, the same height as the row. */
+function Placeholder({ theme }: { theme: Theme }) {
+  return (
+    <View style={styles.block} accessibilityLabel="Friends lately, loading">
+      <RowHead title="Friends lately" theme={theme} />
+      <View style={[styles.row, styles.ghostRow]}>
+        {[0, 1, 2, 3].map((i) => (
+          <View key={i} style={{ width: POSTER }}>
+            <View style={{ width: POSTER, height: POSTER * 1.5, borderRadius: 6, backgroundColor: theme.card }} />
+            <View style={[styles.ghostLine, { backgroundColor: theme.card, width: POSTER * 0.8 }]} />
+            <View style={[styles.ghostLine, { backgroundColor: theme.card, width: POSTER * 0.5 }]} />
+          </View>
+        ))}
+      </View>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   block: { gap: 10 },
+  ghostRow: { flexDirection: 'row', overflow: 'hidden' },
+  ghostLine: { height: 12, borderRadius: 4, marginTop: 10 },
   row: { gap: 12, paddingRight: 16 },
   face: { position: 'absolute', right: -4, bottom: -6, borderRadius: 16, borderWidth: 2 },
   name: { fontSize: font.footnote, fontWeight: '700', marginTop: 8 },

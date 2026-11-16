@@ -218,7 +218,7 @@ export default function HomeScreen() {
         </View>
       )}
 
-      <FriendsRow key={round} theme={theme} />
+      <FriendsRow round={round} theme={theme} />
 
       {upNext.length > 0 && (
         <View style={styles.block}>
@@ -251,7 +251,7 @@ export default function HomeScreen() {
 
       {(trendingTitles === null || rest.length > 0) && (
         <View style={styles.block}>
-          <RowHead title="Trending this week" theme={theme} more="More" onMore={() => router.navigate('/search')} />
+          <RowHead title="Trending this week" theme={theme} more="See all" onMore={() => router.navigate('/search')} />
           {trendingTitles ? <TitleRow titles={rest} theme={theme} seen={seen} width={112} /> : <Skeleton theme={theme} width={112} />}
         </View>
       )}

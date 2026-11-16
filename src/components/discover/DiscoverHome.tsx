@@ -45,7 +45,7 @@ export function DiscoverHome({ theme, tmdb, region }: { theme: Theme; tmdb: stri
     <View style={styles.wrap}>
       {providers.length > 0 && (
         <View style={styles.section}>
-          <SectionLabel theme={theme}>On your services · {region}</SectionLabel>
+          <SectionLabel theme={theme}>On your services · {countryName(region)}</SectionLabel>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.providers}>
             {providers.map((p) => (
               <Pressable

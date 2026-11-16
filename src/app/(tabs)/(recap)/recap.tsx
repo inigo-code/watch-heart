@@ -73,9 +73,15 @@ export default function RecapScreen() {
 
       {entries.length === 0 ? (
         <View style={styles.empty}>
-          <MaterialCommunityIcons name="filmstrip-box-multiple" size={48} color={theme.accent} />
+          <View style={[styles.emptyIcon, { backgroundColor: theme.accentSoft }]}>
+            <MaterialCommunityIcons name="filmstrip-box-multiple" size={38} color={theme.accent} />
+          </View>
           <Text style={[styles.emptyTitle, { color: theme.text }]}>NOTHING ON THE REEL YET</Text>
-          <Text style={[styles.emptyText, { color: theme.textMuted }]}>Log a few titles and your monthly recap appears here, ready for Instagram.</Text>
+          <Text style={[styles.emptyText, { color: theme.textMuted }]}>
+            {all.length
+              ? 'Your diary’s entries have no watch dates, so they can’t go in a month. What you log from now on shows up here, ready for Instagram.'
+              : 'Log a few titles and your monthly recap appears here, ready for Instagram.'}
+          </Text>
           <Pressable onPress={() => router.navigate('/search')} style={[styles.emptyBtn, { backgroundColor: theme.accent }]} accessibilityRole="button">
             <Text style={[styles.emptyBtnText, { color: theme.accentText }]}>FIND A TITLE</Text>
           </Pressable>
@@ -201,6 +207,7 @@ const styles = StyleSheet.create({
   controls: { gap: 10 },
   toggles: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   empty: { alignItems: 'center', gap: 10, paddingTop: 60, paddingHorizontal: 20 },
+  emptyIcon: { width: 84, height: 84, borderRadius: 42, alignItems: 'center', justifyContent: 'center', marginBottom: 6 },
   emptyTitle: { fontFamily: fonts.display, fontSize: 28, letterSpacing: 1, textAlign: 'center' },
   emptyText: { fontFamily: fonts.mono, fontSize: font.body, textAlign: 'center', lineHeight: 21 },
   emptyBtn: { height: 44, paddingHorizontal: 20, borderRadius: 22, alignItems: 'center', justifyContent: 'center', marginTop: 8 },

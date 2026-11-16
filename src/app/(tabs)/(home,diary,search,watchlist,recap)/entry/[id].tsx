@@ -95,10 +95,11 @@ export default function EntryScreen() {
         <View style={styles.body}>
           <View style={[styles.ticket, { backgroundColor: paper.paper, borderColor: paper.border }]}>
             <TicketPrint kind={entry.kind} theme={theme} />
+            {/* Undated: the same "DATE ?" stub as the diary's ticket, not the day it was logged. */}
             <View style={[styles.stub, { borderRightColor: paper.border }]}>
-              <Text style={[styles.stubSmall, { color: theme.textMuted }]}>{weekday.toUpperCase()}</Text>
-              <Text style={[styles.stubDay, { color: theme.text }]}>{day}</Text>
-              <Text style={[styles.stubSmall, { color: theme.textMuted }]}>{month.toUpperCase()}</Text>
+              <Text style={[styles.stubSmall, { color: theme.textMuted }]}>{entry.undated ? 'DATE' : weekday.toUpperCase()}</Text>
+              <Text style={[styles.stubDay, { color: theme.text }]}>{entry.undated ? '?' : day}</Text>
+              {!entry.undated && <Text style={[styles.stubSmall, { color: theme.textMuted }]}>{month.toUpperCase()}</Text>}
             </View>
             <View style={styles.ticketBody}>
               <Text style={[styles.watched, { color: theme.textMuted }]}>
