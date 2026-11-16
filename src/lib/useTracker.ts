@@ -3,16 +3,21 @@ import { useCallback } from 'react';
 import { comingEpisodes, showInfo } from '@/api/episodes';
 import type { ShowInfo } from '@/api/episodes';
 import { today } from '@/lib/dates';
-import { epKey, newTrack, parseKey, progressLabel, settle, stamped, withInfo } from '@/lib/tracking';
+import { epKey, newTrack, parseKey, progressLabel, redated, seenDay, settle, stamped, withInfo } from '@/lib/tracking';
+import type { Day } from '@/lib/tracking';
 import { useSettings } from '@/settings/SettingsProvider';
 import { titleOf, useDiary } from '@/store/DiaryStore';
-import type { Title, Track, TrackStatus, WatchItem } from '@/store/types';
+import type { Entry, Title, Track, TrackStatus, WatchItem } from '@/store/types';
 
 // What the tracker does to the diary:
 // - Tracking a show keeps it on the watchlist (it shows under Continue watching, not Up next).
-// - Ticking one episode logs it: today's diary entry for the show gains it ("S1 · Ep 3–4"), or a new
-//   one is made. Unticking takes it out again (an entry left with nothing in it goes).
-// - Catching up (a whole season, or "up to here") only marks episodes seen, without diary entries.
+// - Ticking one episode logs it on the day you chose (today unless you pick another, or "don't remember"):
+//   that day's diary entry for the show gains it ("S1 · Ep 3–4"), or a new one is made. Unticking takes it
+//   out again (an entry left with nothing in it goes).
+// - Catching up ("up to here") only marks episodes seen, without diary entries.
+// - A diary entry's date changing moves its episodes' seen day with it.
+
+const TODAY = (): Day => ({ watchedOn: today() });
 
 /** The season these episodes make up in full, if they're all of one season and all of it. */
 function wholeSeason(keys: string[], track?: Track) {
@@ -72,9 +77,20 @@ export function useTracker() {
     [settings.tmdbKey, updateWatchItem],
   );
 
-  /** Today's tracker entry for this show, if there is one. */
-  const todays = useCallback(
-    (item: WatchItem) => entries.find((e) => e.episodes && e.watchedOn === today() && e.source === item.source && e.sourceId === item.sourceId),
+  /**
+   * The tracker's entry for this show on that day (or among the days you don't remember), if there is one.
+   * An entry about another season (its rating and review are for that season) isn't added to.
+   */
+  const dayEntry = useCallback(
+    (item: WatchItem, when: Day, season: number | undefined) =>
+      entries.find(
+        (e) =>
+          e.episodes &&
+          e.source === item.source &&
+          e.sourceId === item.sourceId &&
+          (when.undated ? !!e.undated : !e.undated && e.watchedOn === when.watchedOn) &&
+          (!e.season || e.season === season),
+      ),
     [entries],
   );
 
@@ -97,79 +113,87 @@ export function useTracker() {
     [entries, updateEntry, purgeEntry],
   );
 
-  /** A new diary entry for a viewing of this show, today. */
+  /** A new diary entry for a viewing of this show, on that day. */
   const logNew = useCallback(
-    (item: WatchItem, viewing: { episodes: string[]; season?: number | null; episodeRatings?: Record<string, number> }) =>
+    (item: WatchItem, when: Day, viewing: { episodes: string[]; season?: number | null; episodeRatings?: Record<string, number> }) =>
       addEntry({
-            kind: item.kind,
-            source: item.source,
-            sourceId: item.sourceId,
-            title: item.title,
-            originalTitle: item.originalTitle,
-            year: item.year,
-            posterUrl: item.posterUrl,
-            backdropUrl: item.backdropUrl,
-            genres: item.genres,
-            runtime: item.runtime,
-            credit: item.credit,
-            watchedOn: today(),
-            rating: 0,
-            liked: false,
-            rewatch: false,
-            progress: progressLabel(viewing.episodes),
-            review: '',
-            spoilers: false,
-            tags: [],
-            fetchedAt: item.fetchedAt ?? null,
-            ...viewing,
+        kind: item.kind,
+        source: item.source,
+        sourceId: item.sourceId,
+        title: item.title,
+        originalTitle: item.originalTitle,
+        year: item.year,
+        posterUrl: item.posterUrl,
+        backdropUrl: item.backdropUrl,
+        genres: item.genres,
+        runtime: item.runtime,
+        credit: item.credit,
+        // A day you don't remember keeps today in watchedOn, as the log form does; `undated` puts it in the Archive.
+        watchedOn: when.undated ? today() : when.watchedOn,
+        ...(when.undated ? { undated: true } : {}),
+        rating: 0,
+        liked: false,
+        rewatch: false,
+        progress: progressLabel(viewing.episodes),
+        review: '',
+        spoilers: false,
+        tags: [],
+        fetchedAt: item.fetchedAt ?? null,
+        ...viewing,
       }),
     [addEntry],
   );
 
   const logEpisode = useCallback(
-    (item: WatchItem, key: string, seen: boolean, track?: Track, rating?: number) => {
-      const e = todays(item);
-      if (seen) {
-        const episodes = [...new Set([...(e?.episodes ?? []), key])];
-        // Every episode of a season in one sitting reads as the season.
-        const season = wholeSeason(episodes, track ?? item.track);
-        const episodeRatings = rating ? { ...e?.episodeRatings, [key]: rating } : e?.episodeRatings;
-        if (e) updateEntry(e.id, { episodes, progress: progressLabel(episodes), episodeRatings, season: season ?? e.season });
-        else logNew(item, { episodes, season, episodeRatings });
-      } else unlog(item, [key]);
+    (item: WatchItem, key: string, seen: boolean, when: Day, track?: Track, rating?: number) => {
+      if (!seen) {
+        unlog(item, [key]);
+        return;
+      }
+      const e = dayEntry(item, when, parseKey(key)?.season);
+      const episodes = [...new Set([...(e?.episodes ?? []), key])];
+      // Every episode of a season in one sitting reads as the season.
+      const season = wholeSeason(episodes, track ?? item.track);
+      const episodeRatings = rating ? { ...e?.episodeRatings, [key]: rating } : e?.episodeRatings;
+      if (e) updateEntry(e.id, { episodes, progress: progressLabel(episodes), episodeRatings, season: season ?? e.season });
+      else logNew(item, when, { episodes, season, episodeRatings });
     },
-    [todays, logNew, updateEntry, unlog],
+    [dayEntry, logNew, updateEntry, unlog],
   );
 
-  /** Ticks (or unticks) one episode and logs it in today's diary. */
+  /** Ticks (or unticks) one episode and logs it in the diary on that day (today unless you chose another). */
   const toggle = useCallback(
-    (target: WatchItem | Title, season: number, number: number, info?: ShowInfo) => {
+    (target: WatchItem | Title, season: number, number: number, info?: ShowInfo, when: Day = TODAY()) => {
       const it = tracked(target, info);
       const track = it.track!;
       const key = epKey(season, number);
       const seen = { ...track.seen };
       const ratings = { ...track.ratings };
       const now = !seen[key];
-      if (now) seen[key] = today();
+      if (now) seen[key] = seenDay(when);
       else {
         delete seen[key];
         delete ratings[key];
       }
       const next = { ...track, seen, ratings, status: track.status === 'paused' || track.status === 'dropped' ? 'watching' : track.status } as Track;
       save(it, next);
-      logEpisode(it, key, now, next);
+      logEpisode(it, key, now, when, next);
     },
     [tracked, save, logEpisode],
   );
 
-  /** Marks several episodes seen (or not) at once, without diary entries: catching up. */
+  /**
+   * Marks several episodes seen (or not) at once, without diary entries: catching up. Returns the episodes
+   * that weren't seen before, so a diary entry can claim them.
+   */
   const markMany = useCallback(
-    (target: WatchItem | Title, keys: string[], seenNow: boolean, info?: ShowInfo) => {
+    (target: WatchItem | Title, keys: string[], seenNow: boolean, info?: ShowInfo, when: Day = TODAY()) => {
       const it = tracked(target, info);
       const seen = { ...it.track!.seen };
       const ratings = { ...it.track!.ratings };
+      const fresh = keys.filter((k) => !seen[k]);
       for (const k of keys) {
-        if (seenNow) seen[k] = seen[k] ?? today();
+        if (seenNow) seen[k] = seen[k] ?? seenDay(when);
         else {
           delete seen[k];
           delete ratings[k];
@@ -177,20 +201,21 @@ export function useTracker() {
       }
       save(it, { ...it.track!, seen, ratings });
       if (!seenNow) unlog(it, keys);
+      return seenNow ? fresh : [];
     },
     [tracked, save, unlog],
   );
 
-  /** Marks a whole season seen, as one diary entry (or takes that back). What was already seen isn't logged twice. */
+  /** Marks a whole season seen, as one diary entry on that day (or takes that back). What was already seen isn't logged twice. */
   const logSeason = useCallback(
-    (target: WatchItem | Title, season: number, keys: string[], done: boolean, info?: ShowInfo) => {
+    (target: WatchItem | Title, season: number, keys: string[], done: boolean, info?: ShowInfo, when: Day = TODAY()) => {
       const it = tracked(target, info);
       const track = it.track!;
       const seen = { ...track.seen };
       const ratings = { ...track.ratings };
       const fresh = keys.filter((k) => !seen[k]);
       for (const k of keys) {
-        if (done) seen[k] = seen[k] ?? today();
+        if (done) seen[k] = seen[k] ?? seenDay(when);
         else {
           delete seen[k];
           delete ratings[k];
@@ -199,30 +224,30 @@ export function useTracker() {
       save(it, { ...track, seen, ratings });
       if (done) {
         if (!fresh.length) return;
-        const e = todays(it);
+        const e = dayEntry(it, when, season);
         const episodes = [...new Set([...(e?.episodes ?? []), ...fresh])];
         if (e) updateEntry(e.id, { episodes, progress: progressLabel(episodes), season });
-        else logNew(it, { episodes, season });
+        else logNew(it, when, { episodes, season });
         return;
       }
       unlog(it, keys);
     },
-    [tracked, save, todays, logNew, updateEntry, unlog],
+    [tracked, save, dayEntry, logNew, updateEntry, unlog],
   );
 
-  /** Your stars for one episode (0 clears them). Rating one you haven't ticked logs it, since you've seen it. */
+  /** Your stars for one episode (0 clears them). Rating one you haven't ticked logs it (on that day), since you've seen it. */
   const rateEpisode = useCallback(
-    (target: WatchItem | Title, key: string, rating: number, info?: ShowInfo) => {
+    (target: WatchItem | Title, key: string, rating: number, info?: ShowInfo, when: Day = TODAY()) => {
       const it = tracked(target, info);
       const track = it.track!;
       const ratings = { ...track.ratings };
       if (rating) ratings[key] = rating;
       else delete ratings[key];
       const fresh = !!rating && !track.seen[key];
-      const next: Track = { ...track, ratings, seen: fresh ? { ...track.seen, [key]: today() } : track.seen };
+      const next: Track = { ...track, ratings, seen: fresh ? { ...track.seen, [key]: seenDay(when) } : track.seen };
       save(it, next);
       if (fresh) {
-        logEpisode(it, key, true, next, rating);
+        logEpisode(it, key, true, when, next, rating);
         return;
       }
       const e = entries.find((x) => x.episodes?.includes(key) && x.source === it.source && x.sourceId === it.sourceId);
@@ -235,6 +260,22 @@ export function useTracker() {
     [tracked, save, logEpisode, entries, updateEntry],
   );
 
+  /**
+   * A diary entry's date was changed (or set to "don't remember"): its episodes move to the new day on the
+   * tracker, so Continue watching and the Episodes page show when you really saw them.
+   */
+  const redate = useCallback(
+    (before: Pick<Entry, 'source' | 'sourceId' | 'title' | 'year' | 'episodes' | 'watchedOn' | 'undated'>, after: Day) => {
+      const from = seenDay(before);
+      const to = seenDay(after);
+      if (from === to || !before.episodes?.length) return;
+      const item = onWatchlist(before);
+      if (!item?.track) return;
+      updateWatchItem(item.id, { track: { ...item.track, seen: redated(item.track.seen, before.episodes, from, to) } });
+    },
+    [onWatchlist, updateWatchItem],
+  );
+
   const setStatus = useCallback(
     (target: WatchItem | Title, status: TrackStatus, info?: ShowInfo) => {
       const it = tracked(target, info);
@@ -243,5 +284,5 @@ export function useTracker() {
     [tracked, updateWatchItem],
   );
 
-  return { ensure, refresh, toggle, markMany, logSeason, rateEpisode, setStatus };
+  return { ensure, refresh, toggle, markMany, logSeason, rateEpisode, redate, setStatus };
 }

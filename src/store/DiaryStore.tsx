@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import type { ReactNode } from 'react';
 
 import { newId } from '@/lib/id';
-import { mergeTrack, settle, stamped } from '@/lib/tracking';
+import { mergeTrack, seenDay, settle, stamped } from '@/lib/tracking';
 import { plainText } from '@/lib/richText';
 import { withRetries } from '@/lib/retry';
 import { storage } from '@/lib/storage';
@@ -390,7 +390,7 @@ export function DiaryStoreProvider({ children }: { children: ReactNode }) {
       const seen = { ...item.track.seen };
       const ratings = { ...item.track.ratings };
       for (const k of e.episodes) {
-        seen[k] = seen[k] ?? e.watchedOn;
+        seen[k] = seen[k] ?? seenDay(e);
         if (e.episodeRatings?.[k]) ratings[k] = e.episodeRatings[k];
       }
       updateWatchItem(item.id, { track: settle(stamped(item.track, { ...item.track, seen, ratings }, Date.now())) });

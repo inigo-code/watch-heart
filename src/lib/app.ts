@@ -46,6 +46,15 @@ export const DATA_SOURCES = {
  */
 const NOTES: { id: string; items: string[] }[] = [
   {
+    id: '1.6.1',
+    items: [
+      'Episodes can be logged on any day: the Episodes page has Today, Yesterday, Pick a date and Don’t remember, and ticks, Mark season as seen and Up next use the day you choose',
+      'Logging a season of a show from the log form ticks off that season’s episodes, so Season 1 no longer shows as unwatched when you go on to Season 2',
+      'Changing the date of a viewing (or setting it to Don’t remember) moves its episodes to that day, so Continue watching no longer says you saw them today',
+      'Log again on a series starts fresh: no episodes or stars copied from the last viewing, and it isn’t marked as a rewatch',
+    ],
+  },
+  {
     id: '1.5.8',
     items: [
       'Watchlist has a new sort, Shortest first, with each title’s running time (per episode for series and anime)',

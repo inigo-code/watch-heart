@@ -5,6 +5,15 @@ import type { Track, WatchItem } from '@/store/types';
 // The rules of the episode tracker. Pure, so they're easy to check.
 
 export const epKey = (season: number, number: number) => `s${season}e${number}`;
+
+/** The day kept for an episode seen on a day you don't remember. Sorts before every real day. */
+export const UNKNOWN_DAY = '0001-01-01';
+
+/** When a viewing happened: a day, or "don't remember" (`undated`). */
+export type Day = { watchedOn: string; undated?: boolean };
+
+/** The day an episode of this viewing counts as seen. */
+export const seenDay = (d: Day) => (d.undated ? UNKNOWN_DAY : d.watchedOn);
 export const parseKey = (key: string) => {
   const m = key.match(/^s(\d+)e(\d+)$/);
   return m ? { season: Number(m[1]), number: Number(m[2]) } : null;
@@ -19,6 +28,21 @@ export function airedKeys(t: Pick<Track, 'seasons' | 'lastAired'>): string[] {
   for (const s of [...t.seasons].sort((a, b) => a.n - b.n)) {
     for (let e = 1; e <= s.count; e++) if (upTo({ season: s.n, number: e }, t.lastAired)) out.push(epKey(s.n, e));
   }
+  return out;
+}
+
+/** One season's aired episodes, in order. */
+export function seasonAired(t: Pick<Track, 'seasons' | 'lastAired'>, season: number): string[] {
+  return airedKeys(t).filter((k) => parseKey(k)?.season === season);
+}
+
+/**
+ * A viewing's date changed: its episodes that were seen on its old day move to the new one. An episode
+ * first seen in another viewing keeps that day.
+ */
+export function redated(seen: Track['seen'], keys: string[], from: string, to: string): Track['seen'] {
+  const out = { ...seen };
+  for (const k of keys) if (out[k] === from) out[k] = to;
   return out;
 }
 
@@ -153,9 +177,9 @@ export function settle(t: Track): Track {
 
 const DAY = 24 * 60 * 60 * 1000;
 
-/** The day you last ticked an episode of it (or started tracking). */
+/** The day you last ticked an episode of it (or started tracking). Days you don't remember don't count. */
 export function lastSeenDay(t: Track): string {
-  const days = Object.values(t.seen).sort();
+  const days = Object.values(t.seen).filter((d) => d !== UNKNOWN_DAY).sort();
   return days[days.length - 1] ?? isoDate(new Date(t.startedAt));
 }
 

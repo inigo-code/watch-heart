@@ -23,12 +23,15 @@ import { Pop, Tap, useReducedMotion } from '@/components/Motion';
 import { SectionLabel } from '@/components/SectionLabel';
 import { ViewingDetails } from '@/components/ViewingDetails';
 import { showInfo, trackable } from '@/api/episodes';
+import type { ShowInfo } from '@/api/episodes';
 import { TitlePicker } from '@/components/TitlePicker';
 import { useToast } from '@/components/Toast';
 import { daysAgo, friendlyDate, isoDate, parseIso, today } from '@/lib/dates';
 import { blankDraft } from '@/lib/entryDraft';
 import { easeNextLayout } from '@/lib/motion';
 import { useDraftPoster } from '@/lib/posterDraft';
+import { seasonAired } from '@/lib/tracking';
+import { useTracker } from '@/lib/useTracker';
 import { hasViewingDetails } from '@/lib/viewing';
 import { buddies } from '@/lib/companions';
 import { applyFormat } from '@/lib/richText';
@@ -70,6 +73,7 @@ function LogForm() {
   const params = useLocalSearchParams<Params>();
   const { settings } = useSettings();
   const { entries, getEntry, viewingsOf, addEntry, updateEntry, deleteEntry, restoreEntry, onWatchlist, addToWatchlist } = useDiary();
+  const tracker = useTracker();
   // People you've watched with before, most often first, as suggestions.
   const known = useMemo(() => buddies(entries).map((b) => b.name), [entries]);
 
@@ -80,14 +84,16 @@ function LogForm() {
     if (editing) return editing;
     const prev = params.again ? getEntry(params.again) : undefined;
     if (prev) {
-      // A new viewing: its own feelings, screen and place.
-      const fresh = { vibes: [], device: null, context: [], platform: null, character: null };
-      return { ...prev, ...fresh, watchedOn: today(), rewatch: true, review: '', spoilers: false, progress: '', tags: [], season: null };
+      // A new viewing: its own date, feelings, screen and place. Its episodes are its own too: the old
+      // viewing's stay with it. Another viewing of a series is usually the next season, not a rewatch.
+      const fresh = { vibes: [], device: null, context: [], platform: null, character: null, episodes: undefined, episodeRatings: undefined };
+      const movie = prev.kind === 'movie';
+      return { ...prev, ...fresh, watchedOn: today(), undated: undefined, rewatch: movie, rating: movie ? prev.rating : 0, review: '', spoilers: false, progress: '', tags: [], season: null };
     }
     if (params.title) {
       const t = JSON.parse(params.title) as Title;
       const season = Number(params.season) || null;
-      return { ...blankDraft(t), season, rewatch: viewingsOf(t.source, t.sourceId).length > 0 };
+      return { ...blankDraft(t), season, rewatch: t.kind === 'movie' && viewingsOf(t.source, t.sourceId).length > 0 };
     }
     return blankDraft({ kind: params.manual ?? 'movie', source: 'manual', sourceId: '', title: '', year: null, posterUrl: null, backdropUrl: null, genres: [], runtime: null });
   });
@@ -183,15 +189,16 @@ function LogForm() {
   };
 
   const series = draft.kind !== 'movie';
-  // A show's seasons, so a rating and review can be for one of them.
-  const [seasons, setSeasons] = useState<number[]>([]);
+  // A show's seasons, so a rating and review can be for one of them, and logging a season ticks its episodes.
+  const [info, setInfo] = useState<ShowInfo | null>(null);
+  const seasons = useMemo(() => info?.seasons.map((x) => x.n) ?? [], [info]);
   const showSource = series && trackable(draft) ? draft.source : null;
   const showId = draft.sourceId;
   useEffect(() => {
     if (!showSource) return;
     const controller = new AbortController();
     showInfo(settings.tmdbKey, showSource, showId, controller.signal)
-      .then((i) => !controller.signal.aborted && setSeasons(i.seasons.map((x) => x.n)))
+      .then((i) => !controller.signal.aborted && setInfo(i))
       .catch(() => {});
     return () => controller.abort();
   }, [settings.tmdbKey, showSource, showId]);
@@ -223,10 +230,38 @@ function LogForm() {
       progress: draft.progress.trim(),
       season: series && draft.season ? draft.season : null,
     };
+    // A new date moves this viewing's episodes on the tracker with it.
+    if (editing) tracker.redate(editing, final);
+    // Logging a season (newly chosen) ticks its aired episodes on the tracker, on this viewing's day, and the
+    // ones not seen before become this viewing's, so moving it to Trash unticks them again.
+    let ticked = 0;
+    if (series && final.season && info && trackable(final) && (!editing || editing.season !== final.season)) {
+      const keys = seasonAired({ seasons: info.seasons, lastAired: info.lastAired }, final.season);
+      if (keys.length) {
+        const show: Title = {
+          kind: final.kind,
+          source: final.source,
+          sourceId: final.sourceId,
+          title: final.title,
+          originalTitle: final.originalTitle ?? undefined,
+          year: final.year,
+          posterUrl: final.posterUrl,
+          backdropUrl: final.backdropUrl,
+          genres: final.genres,
+          runtime: final.runtime,
+          credit: final.credit,
+        };
+        const claimed = tracker.markMany(show, keys, true, info, final);
+        ticked = claimed.length;
+        if (claimed.length) final.episodes = [...new Set([...(final.episodes ?? []), ...claimed])];
+      }
+    }
     if (editing) updateEntry(editing.id, final);
     else addEntry(final);
     if (settings.haptics) Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
-    toast(editing ? 'Entry updated' : `Logged · ${friendlyDate(final.watchedOn)}${queued ? ' · off your watchlist' : ''}`);
+    const when = final.undated ? 'date unknown' : friendlyDate(final.watchedOn);
+    const extra = ticked ? ` · Season ${final.season} ticked off` : queued ? ' · off your watchlist' : '';
+    toast(editing ? `Entry updated${extra}` : `Logged · ${when}${extra}`);
     // A new entry gets the stamp, which closes the form when it's done.
     if (editing || reduced) setLeaving(true);
     else setStamped(final.title);
@@ -266,7 +301,7 @@ function LogForm() {
 
   // Words and stars you haven't saved shouldn't vanish on a stray Back.
   const unsaved = editing
-    ? draft.review.trim() !== editing.review.trim() || draft.rating !== editing.rating || draft.liked !== editing.liked || draft.watchedOn !== editing.watchedOn
+    ? draft.review.trim() !== editing.review.trim() || draft.rating !== editing.rating || draft.liked !== editing.liked || draft.watchedOn !== editing.watchedOn || !!draft.undated !== !!editing.undated
     : !!draft.review.trim() || draft.rating > 0;
   usePreventRemove(unsaved && !stamped && !leaving, () => setAskDiscard(true));
 
@@ -350,7 +385,8 @@ function LogForm() {
                 // Close the form first, so the episodes page opens inside the tab you came from (replacing the
                 // form put a second set of tabs on top, with no way back).
                 const title = params.title ?? JSON.stringify({ ...draft, originalTitle: draft.originalTitle ?? undefined });
-                nextPage.current = { pathname: '/track', params: { title } };
+                // The day chosen here carries over, so the ticks there are logged on it.
+                nextPage.current = { pathname: '/track', params: { title, on: draft.undated ? 'unknown' : draft.watchedOn } };
                 setLeaving(true);
               }}
               accessibilityRole="button"
@@ -410,6 +446,11 @@ function LogForm() {
                   <Chip key={n} theme={theme} label={`Season ${n}`} active={draft.season === n} onPress={() => set({ season: n })} />
                 ))}
               </ScrollView>
+              {!!draft.season && (!editing || editing.season !== draft.season) && (
+                <Text style={[styles.hint, { color: theme.textMuted }]}>
+                  Logging it ticks off Season {draft.season}’s episodes on the Episodes page, {quickDate === 'unknown' ? 'with the date unknown' : `seen ${friendlyDate(draft.watchedOn).toLowerCase()}`}.
+                </Text>
+              )}
             </Field>
           )}
 
