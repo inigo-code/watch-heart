@@ -23,7 +23,9 @@ All are 24-bit PNGs with no alpha: screenshots 1080 × 1920 (9:16), feature grap
 node store/make/compose.mjs
 ```
 
-Captions and layouts are in `SHOTS` at the top of `compose.mjs`. It needs Edge or Chrome, plus `pngjs`, which is already in `node_modules`.
+Captions and layouts are in `SHOTS` at the top of `compose.mjs`.
+
+The Play Store launch post (`store/social`: a 1080 × 1350 feed post, a 1080 × 1920 story, and the captions in `post.md`) comes from the same screens: `node store/make/social.mjs`. It needs Edge or Chrome, plus `pngjs`, which is already in `node_modules`.
 
 ## Take new screens
 
