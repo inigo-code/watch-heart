@@ -26,7 +26,7 @@ Something to watch tonight
 • Home shows this week’s top titles, picks from what you loved, what’s trending and what’s in cinemas
 • In India: FDFS new releases, favourites in your language, and hidden gems
 • Choose your country and language, and Home starts with new films in it
-• Discover by streaming service, genre, decade, language or country, with seasonal collections
+• Discover by streaming service, genre, decade, language or country, with award winners, curated lists and seasonal collections
 • Can’t decide? Pick for me chooses from your watchlist
 
 Title pages with everything
@@ -37,6 +37,7 @@ Title pages with everything
 
 Series and anime, episode by episode
 • Tick off episodes season by season and pick up where you left off
+• Log an episode on any day: today, yesterday, a date, or one you don’t remember
 • An Up next widget puts your next episode on your home screen
 
 Plan a movie night
@@ -45,6 +46,7 @@ Plan a movie night
 Your month as a story
 • Any month, or your year, as a sharp 1440 × 2560 story: three layouts, six palettes, ratings, stats or a ranking
 • Share a single review, a list or your profile as a story card too
+• Or keep a memory: your own photo from the night in a film frame, with filters and your own words
 • Share to Instagram, WhatsApp or anywhere, or save to Photos
 
 Friends, if you like
@@ -90,7 +92,9 @@ Film and series data and images come from TMDB. Watch Heart uses TMDB and the TM
 |---|---|---|
 | App icon | `icon-512.png` | 512 × 512 |
 | Feature graphic | `feature-graphic.png` | 1024 × 500 |
-| Phone screenshots | `screenshots/01.png` to `06.png` | 1080 × 1920 |
+| Phone screenshots | `screenshots/01.png` to `08.png` | 1080 × 1920 |
+
+What each picture shows, and how to make them again: `make/README.md`.
 
 ## Release notes for 1.6.0 (500 max)
 

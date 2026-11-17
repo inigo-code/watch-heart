@@ -15,7 +15,7 @@ Read this first when picking the project up in a new session or from another acc
 | App source | this folder, GitHub `inigo-code/watch-heart` |
 | Website | `..\Sites\Watch Heart`, `inigo-code/watch-heart-site`, https://inigo-code.github.io/watch-heart-site/ |
 | F-Droid repo and signing key | `..\Watch Heart F-Droid` (its `publish.sh` also publishes the site; the keystore is not on GitHub) |
-| Play Store text, Console answers, graphics | `store/listing.md`, `store/play-console.md`, `store/graphics/` |
+| Play Store text, Console answers, graphics | `store/listing.md`, `store/play-console.md`, `store/graphics/` (made by `store/make/`, see its README) |
 | Supabase setup and SQL | `supabase/SETUP.md`, `supabase/*.sql` |
 | Shared screenshot, site and release scripts | `..\Tools` (see its README) |
 | Rules shared with Prompt Heart | `C:\Users\Inigo\.claude\heart-apps.md` |
@@ -105,7 +105,7 @@ The full list is `git log`; every user-facing commit names its What's new versio
 
 **Left as they are, by choice**: Home stays lit on pages opened from Home; the log form covers the tab bar.
 
-**Before going public**: redo the store screenshots in `store/graphics/`, which predate most of this work. (The README's version badge now says 1.5.0, the installed app's version; raise it with the next native build.)
+**Store graphics** were redone on 2026-11-17 from What's new 1.6.3: eight screenshots and the feature graphic, from real web-build screens with a demo diary (`store/make/README.md`). Inigo uploads them to Play Console. (The README's version badge still says 1.5.0, the installed app's version; raise it with the next native build.)
 
 ---
 
