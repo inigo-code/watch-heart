@@ -66,13 +66,10 @@ gets **Settings → Account & sync**.
 
 ## 5. Keep the free project awake
 
-Free projects pause after a week without activity. [.github/workflows/keepalive.yml](../.github/workflows/keepalive.yml)
-reads the database once a day. Give it the URL and key as repository variables:
-
-```bash
-gh variable set SUPABASE_URL --body https://YOUR-REF.supabase.co
-gh variable set SUPABASE_PUBLISHABLE_KEY --body sb_publishable_YOUR_KEY
-```
+Free projects pause after a week without activity. The private repo inigo-code/prompt-heart-backups
+reads this database once a day (`.github/workflows/keepalive.yml` there, which also covers Prompt Heart).
+It runs there because GitHub switches off scheduled workflows in a public repo after 60 days without a
+push. If the project moves, change its URL and publishable key in that file.
 
 ## How sync works
 
