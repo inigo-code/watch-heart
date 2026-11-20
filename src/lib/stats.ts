@@ -35,6 +35,42 @@ export function runtimeOf(e: Entry): number {
   return e.kind === 'movie' ? e.runtime : e.runtime * episodesOf(e);
 }
 
+/** One key per title, however many entries (episodes, rewatches) it has. */
+export const titleKey = (e: Pick<Entry, 'source' | 'sourceId' | 'kind' | 'title'>) =>
+  e.source !== 'manual' && e.sourceId ? `${e.source}:${e.sourceId}` : `${e.kind}:${e.title}`;
+
+/**
+ * One entry per title, for a recap story: a show logged an episode at a time shows once. It keeps the
+ * first entry's id and day, the best rating, a heart if any had one, and, for a series or anime logged
+ * more than once, the episodes added up.
+ */
+export function oneEach(entries: Entry[]): Entry[] {
+  const groups = new Map<string, Entry[]>();
+  for (const e of entries) {
+    const key = titleKey(e);
+    const group = groups.get(key);
+    if (group) group.push(e);
+    else groups.set(key, [e]);
+  }
+  return [...groups.values()].map((group) => {
+    if (group.length === 1) return group[0];
+    const byDay = [...group].sort((a, b) => a.watchedOn.localeCompare(b.watchedOn) || a.createdAt - b.createdAt);
+    const first = byDay[0];
+    const best = [...group].sort((a, b) => b.rating - a.rating || b.watchedOn.localeCompare(a.watchedOn))[0];
+    const eps = group.reduce((n, e) => n + episodesOf(e), 0);
+    return {
+      ...best,
+      id: first.id,
+      watchedOn: first.watchedOn,
+      createdAt: first.createdAt,
+      liked: group.some((e) => e.liked),
+      rewatch: group.some((e) => e.rewatch),
+      progress: first.kind === 'movie' ? best.progress : `${eps} ${eps === 1 ? 'episode' : 'episodes'}`,
+      posterUrl: best.posterUrl ?? group.find((e) => e.posterUrl)?.posterUrl ?? null,
+    };
+  });
+}
+
 export function computeStats(entries: Entry[]): Stats {
   const byKind: Record<MediaKind, number> = { movie: 0, tv: 0, anime: 0 };
   const counted = new Set<string>();
@@ -45,7 +81,7 @@ export function computeStats(entries: Entry[]): Stats {
   let rated = 0;
   let ratingSum = 0;
   for (const e of entries) {
-    const title = e.source !== 'manual' && e.sourceId ? `${e.source}:${e.sourceId}` : `${e.kind}:${e.title}`;
+    const title = titleKey(e);
     if (!counted.has(title)) {
       counted.add(title);
       byKind[e.kind]++;

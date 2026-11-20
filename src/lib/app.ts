@@ -46,6 +46,10 @@ export const DATA_SOURCES = {
  */
 const NOTES: { id: string; items: string[] }[] = [
   {
+    id: '1.6.4',
+    items: ['The Recap story shows each show once, however many episodes you logged that month, and counts it as one title'],
+  },
+  {
     id: '1.6.3',
     items: [
       'This week on Home shows the day of the week (MON, TUE…) instead of the date',

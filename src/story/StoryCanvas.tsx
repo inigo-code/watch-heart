@@ -10,7 +10,7 @@ import { Text } from '@/components/AppText';
 import { CardBrand } from '@/components/BrandTitle';
 import { dayParts } from '@/lib/dates';
 import { plainText } from '@/lib/richText';
-import { computeStats, kindSummary } from '@/lib/stats';
+import { computeStats, kindSummary, oneEach, titleKey } from '@/lib/stats';
 import { fonts } from '@/lib/theme';
 import type { Entry } from '@/store/types';
 
@@ -53,12 +53,14 @@ export type StoryHandle = ComponentRef<typeof View>;
 
 export const StoryCanvas = forwardRef<StoryHandle, Props>(function StoryCanvas({ entries, title, subtitle, options, onReady }, ref) {
   const p = PALETTES[options.palette];
+  // A show logged an episode at a time is one title on the story, not a poster per episode.
+  const titles = useMemo(() => oneEach(entries), [entries]);
   const sorted = useMemo(
     () =>
       options.ranked
-        ? [...entries].sort((a, b) => b.rating - a.rating || Number(b.liked) - Number(a.liked) || a.watchedOn.localeCompare(b.watchedOn))
-        : [...entries].sort((a, b) => a.watchedOn.localeCompare(b.watchedOn) || a.createdAt - b.createdAt),
-    [entries, options.ranked],
+        ? [...titles].sort((a, b) => b.rating - a.rating || Number(b.liked) - Number(a.liked) || a.watchedOn.localeCompare(b.watchedOn))
+        : [...titles].sort((a, b) => a.watchedOn.localeCompare(b.watchedOn) || a.createdAt - b.createdAt),
+    [titles, options.ranked],
   );
   const stats = useMemo(() => computeStats(entries), [entries]);
   // The room left between the title and the stats, measured, so any month fits whatever its size.
@@ -82,12 +84,12 @@ export const StoryCanvas = forwardRef<StoryHandle, Props>(function StoryCanvas({
       )}
 
       <View style={styles.inner}>
-        <Masthead p={p} title={title} subtitle={subtitle} count={entries.length} compact={options.layout === 'spotlight'} />
+        <Masthead p={p} title={title} subtitle={subtitle} count={titles.length} compact={options.layout === 'spotlight'} />
         <View style={styles.middle} onLayout={(e) => setArea(Math.floor(e.nativeEvent.layout.height))}>
           {area > 0 && options.layout === 'strip' && <Strip p={p} entries={shown} total={sorted.length} options={options} area={area} settled={settled} />}
           {area > 0 && options.layout === 'tickets' && <Tickets p={p} entries={shown} total={sorted.length} options={options} area={area} settled={settled} />}
           {area > 0 && options.layout === 'spotlight' && stats.favourite && (
-            <Spotlight p={p} favourite={stats.favourite} rest={shown.filter((e) => e.id !== stats.favourite?.id)} total={sorted.length} options={options} settled={settled} />
+            <Spotlight p={p} favourite={stats.favourite} rest={shown.filter((e) => !stats.favourite || titleKey(e) !== titleKey(stats.favourite))} total={sorted.length} options={options} settled={settled} />
           )}
         </View>
         {options.stats && <StatsBar p={p} stats={stats} />}
