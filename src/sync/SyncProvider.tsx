@@ -35,6 +35,8 @@ type SyncContext = {
   error: string | null;
   lastSyncedAt: number | null;
   email: string | null;
+  /** False at launch until the saved sign-in has been looked for, so "no email" isn't mistaken for signed out. */
+  authChecked: boolean;
   /** Changes on this phone that haven't reached the cloud yet. */
   unsentCount: number;
   /** When the next automatic sync is planned (ms timestamp), or null. */
@@ -146,6 +148,7 @@ export function SyncProvider({ children }: { children: ReactNode }) {
     settingsRef.current = settings;
   });
   const [session, setSession] = useState<Session | null>(null);
+  const [authChecked, setAuthChecked] = useState(!supabase);
   const [state, setState] = useState<{ status: 'idle' | 'syncing' | 'synced' | 'error'; error: string | null; lastSyncedAt: number | null }>({
     status: 'idle',
     error: null,
@@ -173,8 +176,12 @@ export function SyncProvider({ children }: { children: ReactNode }) {
     supabase.auth
       .getSession()
       .then(({ data }) => setSession(data.session))
-      .catch(() => {});
-    const { data } = supabase.auth.onAuthStateChange((_event, s) => setSession(s));
+      .catch(() => {})
+      .finally(() => setAuthChecked(true));
+    const { data } = supabase.auth.onAuthStateChange((_event, s) => {
+      setSession(s);
+      setAuthChecked(true);
+    });
     return () => data.subscription.unsubscribe();
   }, []);
 
@@ -437,6 +444,7 @@ export function SyncProvider({ children }: { children: ReactNode }) {
       error: state.error,
       lastSyncedAt: state.lastSyncedAt,
       email: session?.user.email ?? null,
+      authChecked,
       unsentCount,
       nextSyncAt: userId ? nextSyncAt : null,
       syncNow: runSync,
@@ -449,7 +457,7 @@ export function SyncProvider({ children }: { children: ReactNode }) {
       signOut,
       deleteAccount,
     }),
-    [userId, session, state, unsentCount, nextSyncAt, runSync, signIn, signUp, confirmSignUp, resendSignUpCode, sendPasswordReset, resetPassword, signOut, deleteAccount],
+    [userId, session, authChecked, state, unsentCount, nextSyncAt, runSync, signIn, signUp, confirmSignUp, resendSignUpCode, sendPasswordReset, resetPassword, signOut, deleteAccount],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

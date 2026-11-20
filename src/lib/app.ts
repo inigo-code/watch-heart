@@ -46,6 +46,12 @@ export const DATA_SOURCES = {
  */
 const NOTES: { id: string; items: string[] }[] = [
   {
+    id: '1.6.5',
+    items: [
+      'Friends lately shows up straight away when you open the app, with what it showed last time, and updates as soon as the new one is in. With App lock on, it isn’t kept on the phone.',
+    ],
+  },
+  {
     id: '1.6.4',
     items: ['The Recap story shows each show once, however many episodes you logged that month, and counts it as one title'],
   },
