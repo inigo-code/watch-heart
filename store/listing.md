@@ -96,6 +96,12 @@ Film and series data and images come from TMDB. Watch Heart uses TMDB and the TM
 
 What each picture shows, and how to make them again: `make/README.md`.
 
+## Release notes for 1.7.0 (500 max)
+
+<en-IN>
+A new look with Watch Heart's own icons and calmer colours. When you log something, its ticket prints and gets a LOGGED stamp. Recap has the reel: your month as a strip of film. A calmer Home, with your week as a film strip and what's in cinemas in your country. Hold an episode, a season or +1 to log it on another day. Title pages open in one piece, the Up next widget shows tickets, and buttons grow with larger text.
+</en-IN>
+
 ## Release notes for 1.6.0 (500 max)
 
 <en-IN>
