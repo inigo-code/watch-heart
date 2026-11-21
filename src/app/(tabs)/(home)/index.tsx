@@ -10,7 +10,7 @@ import { usePullRefresh } from '@/components/PullRefresh';
 import { tmdbKey } from '@/api';
 import { watchRegion } from '@/api/omdb';
 import { refreshAnswers } from '@/api/cache';
-import { inCinemasQuery, nowPlayingTmdb } from '@/api/tmdb';
+import { inCinemasQuery, nowPlayingTmdb, trendingAllTmdb } from '@/api/tmdb';
 import { AppHeader } from '@/components/AppHeader';
 import { Poster } from '@/components/Film';
 import { FriendsRow } from '@/components/home/FriendsRow';
@@ -31,15 +31,15 @@ import { font, fonts, useTheme } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
 import { continueWatching, nextUp } from '@/lib/tracking';
 import { useSettings } from '@/settings/SettingsProvider';
-import { titleOf, useDiary } from '@/store/DiaryStore';
+import { useDiary } from '@/store/DiaryStore';
 import { useSync } from '@/sync/SyncProvider';
 import { useFriends } from '@/friends/FriendsProvider';
 import type { Title } from '@/store/types';
 
 /**
- * Home: your diary first (this week, what you're watching, friends, your watchlist), then a few ways to
- * something new: picks from what you loved, what's in cinemas where you are, and new releases from there.
- * Trending and everything else to browse live in Find.
+ * Home: your diary first (this week, what you're watching, friends), then ways to something new: what the
+ * world is watching this week, picks from what you loved, what's in cinemas where you are, and new releases
+ * from there. Your watchlist has its own tab; everything else to browse lives in Find.
  */
 export default function HomeScreen() {
   const theme = useTheme();
@@ -51,6 +51,7 @@ export default function HomeScreen() {
   const { nights } = useMovieNights();
   const [cinema, setCinema] = useState<{ region: string; titles: Title[] } | null>(null);
   const [picks, setPicks] = useState<{ seeds: string; titles: Title[] } | null>(null);
+  const [trending, setTrending] = useState<Title[] | null>(null);
   const lang = homeLanguage(region, settings.homeLanguage);
   // Each pull to refresh asks everything again.
   const [round, setRound] = useState(0);
@@ -71,6 +72,19 @@ export default function HomeScreen() {
         setOffline(isOffline(e));
       });
   }, [key, region, round]);
+
+  // Trending this week, everywhere (films and series, as on Letterboxd's popular this week). Offline, the row
+  // keeps what it had, or is left out.
+  useEffect(() => {
+    if (!key) return;
+    let live = true;
+    trendingAllTmdb(key)
+      .then((titles) => live && setTrending(titles))
+      .catch(() => live && setTrending((t) => t ?? []));
+    return () => {
+      live = false;
+    };
+  }, [key, round]);
 
   const seeds = useMemo(() => favouriteSeeds(entries), [entries]);
   const seedKey = seeds.map((s) => s.sourceId).join(',');
@@ -98,7 +112,7 @@ export default function HomeScreen() {
   const seen = (t: Title) => viewingsOf(t.source, t.sourceId).length > 0;
   const up = continueWatching(watchlist, today());
   const continuing = [...up.ongoing, ...up.oldFriends].slice(0, 10);
-  const upNext = watchlist.filter((w) => !w.track && w.posterUrl).slice(0, 10).map(titleOf);
+  const trendingTitles = !key ? [] : trending;
   const forYouTitles = !key ? [] : picks?.seeds === seedKey ? picks.titles : null;
   // Without a TMDB key nothing is asked for, so the row counts as loaded with nothing in it.
   const cinemaTitles = !key ? [] : cinema?.region === region ? cinema.titles : null;
@@ -157,10 +171,10 @@ export default function HomeScreen() {
 
       <FriendsRow round={round} theme={theme} />
 
-      {upNext.length > 0 && (
+      {(trendingTitles === null || trendingTitles.length > 0) && (
         <View style={styles.block}>
-          <RowHead title="Up next" theme={theme} more="All" onMore={() => router.navigate('/watchlist')} />
-          <TitleRow titles={upNext} theme={theme} />
+          <RowHead title="Trending this week" theme={theme} more="See all" onMore={() => router.navigate('/search')} />
+          {trendingTitles ? <TitleRow titles={trendingTitles} theme={theme} seen={seen} /> : <Skeleton theme={theme} />}
         </View>
       )}
 

@@ -260,7 +260,14 @@ export async function matchTmdb(
 
 export type Provider = { id: number; name: string; logo: string };
 export type WatchOptions = { link: string | null; stream: Provider[]; free: Provider[]; rent: Provider[]; buy: Provider[] };
-export type TitleExtras = { score: number | null; votes: number; imdbId: string | null; watch: WatchOptions | null };
+export type TitleExtras = {
+  score: number | null;
+  votes: number;
+  imdbId: string | null;
+  watch: WatchOptions | null;
+  /** Films: the day it opened (or opens) in cinemas in the region, YYYY-MM-DD; null when TMDB has none. */
+  cinemaDay?: string | null;
+};
 
 type ProviderRow = { provider_id: number; provider_name: string; logo_path: string | null; display_priority?: number };
 type RegionProviders = { link?: string; flatrate?: ProviderRow[]; free?: ProviderRow[]; ads?: ProviderRow[]; rent?: ProviderRow[]; buy?: ProviderRow[] };
@@ -272,7 +279,8 @@ type RegionProviders = { link?: string; flatrate?: ProviderRow[]; free?: Provide
 /** A title's score, IMDb id and where to watch in a region; kept on the phone for 12 hours. */
 export function extrasTmdb(key: string, sourceId: string, region: string, signal?: AbortSignal): Promise<TitleExtras> {
   void signal;
-  return cachedOnDisk(`extras:${sourceId}:${region}`, 12 * 60 * MINUTE, () => loadExtras(key, sourceId, region));
+  // v2: with the cinema date.
+  return cachedOnDisk(`extras2:${sourceId}:${region}`, 12 * 60 * MINUTE, () => loadExtras(key, sourceId, region));
 }
 
 async function loadExtras(key: string, sourceId: string, region: string, signal?: AbortSignal): Promise<TitleExtras> {
@@ -283,8 +291,14 @@ async function loadExtras(key: string, sourceId: string, region: string, signal?
     imdb_id?: string | null;
     external_ids?: { imdb_id?: string | null };
     'watch/providers'?: { results?: Record<string, RegionProviders> };
-  }>(key, `/${type}/${id}`, { append_to_response: 'external_ids,watch/providers' }, signal);
+    release_dates?: { results?: { iso_3166_1: string; release_dates: { type: number; release_date: string }[] }[] };
+  }>(key, `/${type}/${id}`, { append_to_response: type === 'movie' ? 'external_ids,watch/providers,release_dates' : 'external_ids,watch/providers' }, signal);
   const r = d['watch/providers']?.results?.[region];
+  // A limited or full cinema release in the region: the latest one, so a re-release counts from its own day.
+  const cinema = (d.release_dates?.results?.find((x) => x.iso_3166_1 === region)?.release_dates ?? [])
+    .filter((x) => x.type === 2 || x.type === 3)
+    .map((x) => x.release_date.slice(0, 10))
+    .sort();
   const list = (rows?: ProviderRow[]) =>
     [...(rows ?? [])]
       // The ad-supported plan of a service you already see listed ("Amazon Prime Video with Ads").
@@ -296,6 +310,7 @@ async function loadExtras(key: string, sourceId: string, region: string, signal?
     votes: d.vote_count ?? 0,
     imdbId: d.imdb_id || d.external_ids?.imdb_id || null,
     watch: r ? { link: r.link ?? null, stream: list(r.flatrate), free: [...list(r.free), ...list(r.ads)], rent: list(r.rent), buy: list(r.buy) } : null,
+    cinemaDay: cinema[cinema.length - 1] ?? null,
   };
 }
 

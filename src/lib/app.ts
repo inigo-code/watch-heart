@@ -46,6 +46,13 @@ export const DATA_SOURCES = {
  */
 const NOTES: { id: string; items: string[] }[] = [
   {
+    id: '1.7.3',
+    items: [
+      'Book tickets: a film in cinemas in India opens on BookMyShow in your city, and in ten big cities seats.movie finds you the best seats',
+      'Trending this week on Home, in place of Up next: what everyone is watching right now. Your watchlist is still in its own tab',
+    ],
+  },
+  {
     id: '1.7.2',
     items: ['Fixed: the black flash that could still appear when opening the app'],
   },

@@ -16,6 +16,7 @@ import { UpdateCard } from '@/components/UpdateRow';
 import { ActionSheet } from '@/components/ActionSheet';
 import { Chip } from '@/components/Film';
 import { COUNTRIES, countryName, flag } from '@/lib/discover';
+import { TICKET_CITIES, ticketCityName } from '@/lib/tickets';
 import { languagesFor } from '@/lib/regional';
 import { omdbKey, watchRegion } from '@/api/omdb';
 import { askForNotifications } from '@/lib/nudgeSchedule';
@@ -65,6 +66,7 @@ export default function SettingsScreen() {
   const [showOmdb, setShowOmdb] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
   const [pickingCountry, setPickingCountry] = useState(false);
+  const [pickingCity, setPickingCity] = useState(false);
   const region = watchRegion(settings.watchRegion);
   const phoneRegion = watchRegion('');
   const languages = languagesFor(region);
@@ -297,8 +299,18 @@ export default function SettingsScreen() {
             label="Country"
             value={`${countryName(region)}${settings.watchRegion ? '' : ' (phone)'}`}
             onPress={() => setPickingCountry(true)}
-            last={!languages.length}
+            last={!languages.length && region !== 'IN'}
           />
+          {region === 'IN' && (
+            <Row
+              theme={theme}
+              icon="location-outline"
+              label="City for cinema tickets"
+              value={ticketCityName(settings.ticketCity) ?? 'Not chosen'}
+              onPress={() => setPickingCity(true)}
+              last={!languages.length}
+            />
+          )}
           {languages.length > 0 && (
             <ControlRow theme={theme} label="Language" last>
               <View style={styles.chips}>
@@ -483,6 +495,15 @@ export default function SettingsScreen() {
           <Row theme={theme} icon="refresh-outline" label="Reset settings" destructive last onPress={() => setConfirmReset(true)} />
         </Section>
         <ActionSheet
+        visible={pickingCity}
+        title="Your city, for cinema tickets"
+        onClose={() => setPickingCity(false)}
+        actions={TICKET_CITIES.map((c) => ({
+          label: `${c.name}${c.slug === settings.ticketCity ? '  ✓' : ''}`,
+          onPress: () => update({ ticketCity: c.slug }),
+        }))}
+      />
+      <ActionSheet
         visible={pickingCountry}
         title="Your country"
         onClose={() => setPickingCountry(false)}

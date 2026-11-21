@@ -7,10 +7,13 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Text } from '@/components/AppText';
 import { Tap } from '@/components/Motion';
 import { SectionLabel } from '@/components/SectionLabel';
+import { BookTickets } from '@/components/title/BookTickets';
 import { tmdbKey } from '@/api';
 import { omdbKey as omdbKeyFor, watchRegion } from '@/api/omdb';
 import type { Provider } from '@/api/tmdb';
+import { today } from '@/lib/dates';
 import { inCountry } from '@/lib/discover';
+import { bookable } from '@/lib/tickets';
 import { loadTitleScores, scoresId, setScoreDefaults } from '@/lib/titleScores';
 import type { TitleScores } from '@/lib/titleScores';
 import { font, fonts } from '@/lib/theme';
@@ -104,6 +107,9 @@ export function TitleExtras({ source, sourceId, imdbId, title, year, series, the
           </Pressable>
         )}
       </View>
+
+      {/* In cinemas in India: book it, just above where to watch. */}
+      {region === 'IN' && source === 'tmdb' && !series && bookable(e.cinemaDay, today()) && <BookTickets title={title ?? ''} theme={theme} />}
 
       <SectionLabel theme={theme}>Where to watch in {inCountry(region)}</SectionLabel>
       {w && (w.stream.length || w.free.length || w.rent.length || w.buy.length) ? (
