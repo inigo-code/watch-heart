@@ -49,11 +49,14 @@ function UpdatePromptInner() {
 
   // Just updated, with news that hasn't been shown yet. A fresh install starts on the built-in cut and
   // records the news as seen, so it only shows after an update.
+  // An update whose lines are all about a newer build than this phone's has nothing to show either.
   const fresh = Updates.isEmbeddedLaunch;
+  const news = WHATS_NEW.since(settings.seenUpdate);
+  const nothingNew = !fresh && !news.length;
   useEffect(() => {
-    if (ready && fresh && settings.seenUpdate !== WHATS_NEW.id) update({ seenUpdate: WHATS_NEW.id });
-  }, [ready, fresh, settings.seenUpdate, update]);
-  const showNews = ready && !fresh && settings.seenUpdate !== WHATS_NEW.id && !isUpdatePending;
+    if (ready && (fresh || nothingNew) && settings.seenUpdate !== WHATS_NEW.id) update({ seenUpdate: WHATS_NEW.id });
+  }, [ready, fresh, nothingNew, settings.seenUpdate, update]);
+  const showNews = ready && !fresh && news.length > 0 && settings.seenUpdate !== WHATS_NEW.id && !isUpdatePending;
 
   if (showNews) {
     return (
@@ -61,7 +64,7 @@ function UpdatePromptInner() {
         <Text style={[styles.title, { color: theme.text }]}>What’s new in this cut</Text>
         {/* Scrolls on its own, so a long list or a large font never pushes the button off the screen. */}
         <ScrollView style={styles.scroll} contentContainerStyle={styles.list}>
-          {WHATS_NEW.since(settings.seenUpdate).map((item) => (
+          {news.map((item) => (
             <View key={item} style={styles.item}>
               <Ionicons name="sparkles" size={14} color={theme.accent} style={{ marginTop: 3 }} />
               <Text style={[styles.itemText, { color: theme.text }]}>{item}</Text>

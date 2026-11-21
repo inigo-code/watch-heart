@@ -69,8 +69,6 @@ export type Settings = {
   omdbKey: string;
   /** Country for "Where to watch", e.g. "IN" ('' = the phone's region). */
   watchRegion: string;
-  /** India: your city for booking cinema tickets, by BookMyShow's name for it (lib/tickets.ts; '' = not chosen). */
-  ticketCity: string;
   /** The first-run welcome was seen, skipped, or wasn't needed. */
   onboarded: boolean;
   /** Which notifications you want. */
@@ -125,7 +123,6 @@ export const DEFAULT_SETTINGS: Settings = {
   sharing: { diary: true, reviews: true, lists: true, findable: false, preview: false, taste: false },
   omdbKey: '',
   watchRegion: '',
-  ticketCity: '',
   homeLanguage: '',
   onboarded: false,
   askedAlarms: false,

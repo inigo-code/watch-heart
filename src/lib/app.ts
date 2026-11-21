@@ -1,3 +1,5 @@
+import Constants from 'expo-constants';
+
 // Branding and developer details shown in the app. Change them here.
 export const APP_NAME = 'Watch Heart';
 /** For file names and other places spaces don't belong. */
@@ -42,15 +44,22 @@ export const DATA_SOURCES = {
  * Shown once after an update installs ("What's new in this cut"). Every update gets one, over-the-air
  * ones included: before each eas update or build, add a new note at the top with a new id and lines for
  * that update's changes. A phone shows only the notes newer than the last one it saw, so the list never
- * piles up. An update that adds no note shows nothing.
+ * piles up. An update that adds no note shows nothing. A line about something native (it needs that build)
+ * names the build with `fromApp`, so phones still on an older build, which get the same update over the
+ * air, don't read about it.
  */
-const NOTES: { id: string; items: string[] }[] = [
+type Note = string | { text: string; fromApp: string };
+const NOTES: { id: string; items: Note[] }[] = [
+  {
+    id: '1.7.4',
+    // Only the 1.7.3 build ever had Book tickets.
+    items: [{ text: 'Book tickets has been taken off film pages', fromApp: '1.7.3' }],
+  },
   {
     id: '1.7.3',
     items: [
-      'Book tickets: a film in cinemas in India opens on BookMyShow in your city, to pick a cinema, a show and your seats',
       'Trending this week on Home, in place of Up next: what everyone is watching right now. Your watchlist is still in its own tab',
-      'Your diary no longer comes back by itself when the app is reinstalled. Sign in to keep it safe, or use Export backup',
+      { text: 'Your diary no longer comes back by itself when the app is reinstalled. Sign in to keep it safe, or use Export backup', fromApp: '1.7.3' },
     ],
   },
   {
@@ -255,7 +264,11 @@ export const WHATS_NEW = {
   /** The lines a phone hasn't seen yet: only this update's, unless it skipped some. */
   since(seen: string | null) {
     const fresh = seen ? NOTES.filter((n) => newer(n.id, seen)) : NOTES.slice(0, 1);
-    return (fresh.length ? fresh : NOTES.slice(0, 1)).flatMap((n) => n.items);
+    const native = Constants.nativeAppVersion ?? '0';
+    return (fresh.length ? fresh : NOTES.slice(0, 1))
+      .flatMap((n) => n.items)
+      .filter((item) => typeof item === 'string' || native.localeCompare(item.fromApp, undefined, { numeric: true }) >= 0)
+      .map((item) => (typeof item === 'string' ? item : item.text));
   },
 };
 export const SITE_URL = 'https://inigo-code.github.io/watch-heart-site/';
