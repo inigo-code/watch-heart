@@ -44,6 +44,8 @@ test('technical text never reaches the screen', () => {
     'JWT expired',
     '{"code":"PGRST301","message":"bad"}',
     'x'.repeat(200),
+    'Friends aren’t set up on the server yet (supabase/friends.sql).',
+    'TMDB is having trouble (502).',
   ]) {
     assert.equal(shownError(new Error(m), 'Couldn’t load the posters.'), 'Couldn’t load the posters.', m);
   }
@@ -51,9 +53,9 @@ test('technical text never reaches the screen', () => {
 
 test('the app’s own messages all still show', () => {
   for (const m of [
-    'TMDB is having trouble (502). Try again in a moment.',
+    'TMDB is having trouble. Try again in a moment.',
     "That file isn't a valid backup (it isn't JSON).",
-    'Friends aren’t set up on the server yet (supabase/friends.sql).',
+    'Friends aren’t available right now. Try again later.',
     'Allow Watch Heart to save photos, then try again.',
     'Some changes haven’t reached the cloud yet. Connect to the internet and try again.',
     'Confirm your email first: enter the code we sent you.',

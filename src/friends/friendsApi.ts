@@ -22,7 +22,7 @@ export type Friend = {
 export type FriendEntry = Entry & { userId: string };
 
 const client = () => {
-  if (!supabase) throw new Error('Friends need an account, and this build has no sync set up.');
+  if (!supabase) throw new Error('Friends aren’t available in this version of the app.');
   return supabase;
 };
 
@@ -30,7 +30,7 @@ const client = () => {
 function fail(e: { message?: string } | null): never {
   const m = e?.message ?? '';
   if (/Sign in first|No one has that code|own code|Too many wrong codes/.test(m)) throw new Error(m);
-  if (/function .* does not exist|Could not find the function/i.test(m)) throw new Error('Friends aren’t set up on the server yet (supabase/friends.sql).');
+  if (/function .* does not exist|Could not find the function/i.test(m)) throw new Error('Friends aren’t available right now. Try again later.');
   throw new Error(m || 'No connection. Try again in a moment.');
 }
 
@@ -127,12 +127,15 @@ export type FriendRequest = { id: string; name: string; bio: string; sentAt: str
 export type PersonPreview = { id: string; name: string; bio: string; photoPath: string | null; favourites: Favourite[]; titles: number; status: Person['status'] | 'friends' };
 export type Blocked = { id: string; name: string };
 
+/** The server hasn't had supabase/people.sql run yet. Never shown: name search stays hidden instead. */
+class PeopleNotSetUp extends Error {}
+
 /** True when the server hasn't had supabase/people.sql run yet (name search then stays hidden). */
-export const notSetUp = (e: unknown) => e instanceof Error && /people\.sql/.test(e.message);
+export const notSetUp = (e: unknown) => e instanceof PeopleNotSetUp;
 
 function failPeople(e: { message?: string } | null): never {
   const m = e?.message ?? '';
-  if (/function .* does not exist|Could not find the function/i.test(m)) throw new Error('Finding people by name isn’t set up on the server yet (supabase/people.sql).');
+  if (/function .* does not exist|Could not find the function/i.test(m)) throw new PeopleNotSetUp('Finding people isn’t available right now. Try again later.');
   fail(e);
 }
 
@@ -194,7 +197,7 @@ export async function cancelFriendRequest(id: string): Promise<void> {
 
 function failSafety(e: { message?: string } | null): never {
   const m = e?.message ?? '';
-  if (/function .* does not exist|Could not find the function/i.test(m)) throw new Error('This needs a server update first (supabase/friends-safety.sql).');
+  if (/function .* does not exist|Could not find the function/i.test(m)) throw new Error('That isn’t available right now. Try again later.');
   fail(e);
 }
 

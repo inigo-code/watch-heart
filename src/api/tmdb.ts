@@ -30,7 +30,7 @@ async function get<T>(key: string, path: string, params: Record<string, string> 
     headers: { accept: 'application/json', ...(bearer ? { Authorization: `Bearer ${key}` } : {}) },
   });
   if (res.status === 401) throw new Error('TMDB didn’t accept your key. Check it in Settings.');
-  if (!res.ok) throw new Error(`TMDB is having trouble (${res.status}). Try again in a moment.`);
+  if (!res.ok) throw new Error('TMDB is having trouble. Try again in a moment.');
   return (await res.json()) as T;
 }
 

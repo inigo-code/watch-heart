@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { AppState } from 'react-native';
 
 import { useLists } from '@/lists/ListsProvider';
+import { SUPPORT_EMAIL } from '@/lib/app';
 import { removePhotoFile } from '@/lib/profilePhoto';
 import { DEFAULT_SETTINGS, useSettings } from '@/settings/SettingsProvider';
 import { useDiary } from '@/store/DiaryStore';
@@ -330,7 +331,7 @@ export function SyncProvider({ children }: { children: ReactNode }) {
   }, [active, state.status, autoSync]);
 
   const client = useCallback(() => {
-    if (!supabase) throw new Error('Cloud sync is not configured.');
+    if (!supabase) throw new Error('Accounts aren’t available in this version of the app.');
     return supabase;
   }, []);
 
@@ -423,7 +424,7 @@ export function SyncProvider({ children }: { children: ReactNode }) {
     const { error } = await c.rpc('delete_my_account');
     if (error) {
       throw new Error(
-        /delete_my_account/.test(error.message) ? "Account deletion isn't set up on the server yet (run supabase/schema.sql)." : error.message,
+        /delete_my_account/.test(error.message) ? `Your account couldn’t be deleted right now. Try again later, or email ${SUPPORT_EMAIL}.` : error.message,
       );
     }
     await c.auth.signOut({ scope: 'local' }).catch(() => {});

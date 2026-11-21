@@ -75,7 +75,7 @@ async function query(body: object, signal?: AbortSignal): Promise<Title[]> {
     body: JSON.stringify(body),
   });
   if (res.status === 429) throw new Error('AniList needs a short break. Try again in a minute.');
-  if (!res.ok) throw new Error(`AniList is having trouble (${res.status}). Try again in a moment.`);
+  if (!res.ok) throw new Error('AniList is having trouble. Try again in a moment.');
   const json = (await res.json()) as { data?: { Page: { media: Media[] } } };
   return (json.data?.Page.media ?? []).map(toTitle);
 }

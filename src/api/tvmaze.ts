@@ -40,7 +40,7 @@ function toTitle(s: Show): Title {
 
 export async function searchTvmaze(query: string, signal?: AbortSignal): Promise<Title[]> {
   const res = await fetch(`https://api.tvmaze.com/search/shows?q=${encodeURIComponent(query)}`, { signal });
-  if (!res.ok) throw new Error(`TVmaze is having trouble (${res.status}). Try again in a moment.`);
+  if (!res.ok) throw new Error('TVmaze is having trouble. Try again in a moment.');
   const json = (await res.json()) as { show: Show }[];
   return json.map((r) => toTitle(r.show));
 }
@@ -64,7 +64,7 @@ export async function popularTvmaze(signal?: AbortSignal): Promise<Title[]> {
   if (popularCache?.date === date) return popularCache.titles;
   const get = async (path: string) => {
     const res = await fetch(`https://api.tvmaze.com/${path}`, { signal });
-    if (!res.ok) throw new Error(`TVmaze is having trouble (${res.status}). Try again in a moment.`);
+    if (!res.ok) throw new Error('TVmaze is having trouble. Try again in a moment.');
     return (await res.json()) as { show?: Show; _embedded?: { show?: Show } }[];
   };
   const [streaming, network] = await Promise.all([get(`schedule/web?date=${date}`), get(`schedule?date=${date}&country=US`)]);

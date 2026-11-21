@@ -34,13 +34,13 @@ async function tmdbGet<T>(key: string, path: string, signal?: AbortSignal): Prom
   const bearer = key.startsWith('eyJ');
   const q = new URLSearchParams({ language: 'en-US', ...(bearer ? {} : { api_key: key }) });
   const res = await fetch(`${TMDB}${path}?${q}`, { signal, headers: bearer ? { Authorization: `Bearer ${key}` } : {} });
-  if (!res.ok) throw new Error(`TMDB is having trouble (${res.status}).`);
+  if (!res.ok) throw new Error('TMDB is having trouble. Try again in a moment.');
   return res.json() as Promise<T>;
 }
 
 async function mazeGet<T>(path: string, signal?: AbortSignal): Promise<T> {
   const res = await fetch(`${TVMAZE}${path}`, { signal });
-  if (!res.ok) throw new Error(`TVmaze is having trouble (${res.status}).`);
+  if (!res.ok) throw new Error('TVmaze is having trouble. Try again in a moment.');
   return res.json() as Promise<T>;
 }
 

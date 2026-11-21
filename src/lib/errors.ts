@@ -7,9 +7,10 @@ export const NO_CONNECTION = 'No connection. Check your internet and try again.'
 const NETWORK =
   /network request failed|fetch failed|failed to fetch|load failed|network ?error|unknownhost|unable to resolve host|no address associated|connectexception|failed to connect|connection (?:refused|reset|abort|closed)|sockettimeout|timed? ?out|econn|enotfound|enetunreach|ssl|unreachable|internet connection appears to be offline/i;
 
-// Words from code, not for people: exceptions, JavaScript errors, database codes, raw JSON, addresses.
+// Words from code, not for people: exceptions, JavaScript errors, database codes, raw JSON, addresses,
+// server set-up notes and status codes.
 const TECHNICAL =
-  /exception|\bjava\.|\bkotlin\.|\bandroid\.|\b(?:Type|Syntax|Reference|Range)Error\b|JSON Parse|JSON\.parse|in JSON at|unexpected token|undefined|\bnull\b|is not a function|cannot read|\bat \S+ \(|PGRST|\bJWT\b|violates|duplicate key|relation .* does not exist|status code|\bERR_|[{}[\]<>]|https?:\/\/|\\n/i;
+  /exception|\bjava\.|\bkotlin\.|\bandroid\.|\b(?:Type|Syntax|Reference|Range)Error\b|JSON Parse|JSON\.parse|in JSON at|unexpected token|undefined|\bnull\b|is not a function|cannot read|\bat \S+ \(|PGRST|\bJWT\b|violates|duplicate key|relation .* does not exist|status code|\bERR_|[{}[\]<>]|https?:\/\/|\.sql\b|supabase|\(\d{3}\)|\\n/i;
 /** Longer than this, a message isn't one of ours. */
 const MOST_LETTERS = 160;
 

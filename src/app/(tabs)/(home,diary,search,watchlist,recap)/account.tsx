@@ -31,7 +31,7 @@ export default function AccountScreen() {
             <MaterialCommunityIcons name="cloud-off-outline" size={32} color={theme.textMuted} />
             <Text style={[styles.h, { color: theme.text }]}>CLOUD SYNC ISN’T SET UP</Text>
             <Text style={[styles.p, { color: theme.textMuted }]}>
-              This build has no Supabase project yet (see supabase/SETUP.md). Your diary is saved on this phone only.
+              Accounts aren’t available in this version of the app. Your diary is saved on this phone only.
             </Text>
           </Card>
         ) : sync.status === 'signed-out' ? (
