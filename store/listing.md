@@ -96,6 +96,12 @@ Film and series data and images come from TMDB. Watch Heart uses TMDB and the TM
 
 What each picture shows, and how to make them again: `make/README.md`.
 
+## Release notes for 1.7.3 (500 max)
+
+<en-IN>
+Book tickets: a film in cinemas in India opens BookMyShow in your city, to pick a cinema, a show and your seats. Home now shows Trending this week, what everyone is watching right now, in place of Up next (your watchlist keeps its own tab). Opening the app no longer flashes black. Your diary no longer comes back by itself after a reinstall: sign in to keep it safe, or use Export backup.
+</en-IN>
+
 ## Release notes for 1.7.1 (500 max)
 
 <en-IN>
