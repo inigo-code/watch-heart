@@ -18,6 +18,7 @@ import type { Theme } from '@/lib/theme';
 import { findPostersNow, useUpkeepProgress } from '@/lib/tmdbFreshness';
 import { useSettings } from '@/settings/SettingsProvider';
 import { useDiary } from '@/store/DiaryStore';
+import { shownError } from '@/lib/errors';
 
 // Bring your history from other apps: pick whatever they exported, check what was found, add it.
 
@@ -93,7 +94,7 @@ export default function ImportScreen() {
       const bundle = await pickImport();
       if (bundle) setFound(bundle);
     } catch (e) {
-      toast(e instanceof Error ? e.message : String(e));
+      toast(shownError(e, 'Something went wrong. Try again.'));
     } finally {
       setBusy(false);
     }

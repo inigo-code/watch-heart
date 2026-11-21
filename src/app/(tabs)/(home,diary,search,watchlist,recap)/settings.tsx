@@ -33,6 +33,7 @@ import type { AccentKey } from '@/settings/SettingsProvider';
 import { useDiary } from '@/store/DiaryStore';
 import { useSync } from '@/sync/SyncProvider';
 import type { SyncStatus } from '@/sync/SyncProvider';
+import { shownError } from '@/lib/errors';
 
 const SYNC_LABEL: Record<SyncStatus, string> = {
   unconfigured: 'Not set up',
@@ -44,7 +45,7 @@ const SYNC_LABEL: Record<SyncStatus, string> = {
   error: 'Needs attention',
 };
 
-const errorText = (e: unknown) => (e instanceof Error ? e.message : String(e));
+const errorText = (e: unknown) => shownError(e, 'Something went wrong. Try again.');
 
 type Busy = 'backup' | 'import' | 'csv' | 'letterboxd' | null;
 

@@ -8,6 +8,7 @@ import { myBlocks, unblockPerson } from '@/friends/friendsApi';
 import type { Blocked } from '@/friends/friendsApi';
 import { font, fonts } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
+import { shownError } from '@/lib/errors';
 
 /** People you've blocked, shown only when there are some. `round` reloads it when the screen is refreshed. */
 export function BlockedPeople({ theme, round }: { theme: Theme; round: number }) {
@@ -28,7 +29,7 @@ export function BlockedPeople({ theme, round }: { theme: Theme; round: number })
       setBlocked((list) => list.filter((x) => x.id !== b.id));
       toast(`Unblocked ${b.name}`);
     } catch (e) {
-      toast(e instanceof Error ? e.message : 'Couldn’t unblock');
+      toast(shownError(e, 'Couldn’t unblock'));
     } finally {
       setBusy(null);
     }

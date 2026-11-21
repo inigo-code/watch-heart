@@ -15,6 +15,7 @@ import type { PersonPreview } from '@/friends/friendsApi';
 import { useFriends } from '@/friends/FriendsProvider';
 import { font, fonts, useTheme } from '@/lib/theme';
 import type { Title } from '@/store/types';
+import { shownError } from '@/lib/errors';
 
 const asTitle = (f: PersonPreview['favourites'][number]) =>
   ({ kind: f.kind, source: f.source, sourceId: f.sourceId, title: f.title, year: f.year, posterUrl: f.posterUrl, backdropUrl: null, genres: [], runtime: null }) as Title;
@@ -66,7 +67,7 @@ export default function SomeoneScreen() {
     try {
       await work();
     } catch (e) {
-      toast(e instanceof Error ? e.message : 'No connection. Try again in a moment.');
+      toast(shownError(e, 'No connection. Try again in a moment.'));
     } finally {
       setBusy(false);
     }

@@ -24,6 +24,7 @@ import { useTracker } from '@/lib/useTracker';
 import { useSettings } from '@/settings/SettingsProvider';
 import { useDiary } from '@/store/DiaryStore';
 import type { Title, TrackStatus, WatchItem } from '@/store/types';
+import { shownError } from '@/lib/errors';
 
 type Params = {
   id?: string;
@@ -90,7 +91,7 @@ export default function TrackScreen() {
         setInfo(i);
         setFailed(null);
       })
-      .catch((e) => !controller.signal.aborted && setFailed(e instanceof Error ? e.message : String(e)));
+      .catch((e) => !controller.signal.aborted && setFailed(shownError(e, 'Something went wrong. Try again.')));
     return () => controller.abort();
   }, [settings.tmdbKey, source, sourceId]);
 

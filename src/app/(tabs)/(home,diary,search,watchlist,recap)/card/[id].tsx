@@ -17,6 +17,7 @@ import type { PhotoFilter, PosterSpot } from '@/story/MemoryCard';
 import { ReviewCard } from '@/story/ReviewCard';
 import type { StoryHandle } from '@/story/StoryCanvas';
 import { PalettePicker, ShareButtons, StoryPreview } from '@/story/Studio';
+import { shownError } from '@/lib/errors';
 
 /** One entry as an Instagram story: the review card (poster, stars, a line of the review) or a memory (your own photo in a film frame). */
 export default function CardScreen() {
@@ -43,7 +44,7 @@ export default function CardScreen() {
       const uri = await pickMemoryPhoto();
       if (uri) setPhoto(uri);
     } catch (e) {
-      toast(e instanceof Error ? e.message : 'Couldn’t open that photo');
+      toast(shownError(e, 'Couldn’t open that photo'));
     }
   };
 

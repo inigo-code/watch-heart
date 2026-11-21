@@ -19,6 +19,7 @@ import type { Theme } from '@/lib/theme';
 import { useSettings } from '@/settings/SettingsProvider';
 import { useDiary } from '@/store/DiaryStore';
 import type { MediaKind, Title } from '@/store/types';
+import { shownError } from '@/lib/errors';
 
 const KINDS: { kind: MediaKind; label: string }[] = [
   { kind: 'movie', label: 'FILMS' },
@@ -64,7 +65,7 @@ export default function BrowseScreen() {
       .then((r) => setData({ q: qKey, items: r.results.filter((t) => t.posterUrl), page: 1, pages: r.pages, error: null }))
       .catch((e) => {
         if (controller.signal.aborted) return;
-        const message = e instanceof Error && e.message !== 'Network request failed' ? e.message : 'No connection. Check your internet and try again.';
+        const message = shownError(e, 'No connection. Check your internet and try again.');
         setData({ q: qKey, items: [], page: 1, pages: 1, error: message });
       });
     return () => controller.abort();

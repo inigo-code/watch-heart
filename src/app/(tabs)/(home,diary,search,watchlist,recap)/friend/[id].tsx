@@ -26,6 +26,7 @@ import { font, fonts, useTheme } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
 import type { UserList } from '@/lists/ListsProvider';
 import type { Title } from '@/store/types';
+import { shownError } from '@/lib/errors';
 
 const PAGE = 24;
 const COLS = 4;
@@ -88,7 +89,7 @@ export default function FriendScreen() {
             setMore(rows.length === PAGE);
             setFailed(null);
           })
-          .catch((e) => setFailed(e instanceof Error ? e.message : 'Couldn’t load their diary')),
+          .catch((e) => setFailed(shownError(e, 'Couldn’t load their diary'))),
         friendLists(id)
           .catch(() => [] as UserList[])
           .then((l) => {
@@ -146,7 +147,7 @@ export default function FriendScreen() {
       router.back();
       await refresh(true);
     } catch (e) {
-      toast(e instanceof Error ? e.message : 'Couldn’t unfriend');
+      toast(shownError(e, 'Couldn’t unfriend'));
     }
   };
 
@@ -157,7 +158,7 @@ export default function FriendScreen() {
       router.back();
       await refresh(true);
     } catch (e) {
-      toast(e instanceof Error ? e.message : 'Couldn’t block');
+      toast(shownError(e, 'Couldn’t block'));
     }
   };
 

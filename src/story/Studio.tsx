@@ -9,6 +9,7 @@ import { useToast } from '@/components/Toast';
 import { usePerks } from '@/lib/perks';
 import { font, fonts } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
+import { shownError } from '@/lib/errors';
 
 import { PALETTES } from './palettes';
 import type { PaletteKey } from './palettes';
@@ -90,7 +91,7 @@ export function ShareButtons({ target, ready, theme }: { target: RefObject<Story
         toast('Saved to your photos');
       }
     } catch (e) {
-      toast(e instanceof Error ? e.message : String(e));
+      toast(shownError(e, 'Something went wrong. Try again.'));
     } finally {
       setBusy(null);
     }

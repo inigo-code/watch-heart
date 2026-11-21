@@ -23,6 +23,7 @@ import { KIND_COLORS, font, fonts, useTheme } from '@/lib/theme';
 import { useSettings } from '@/settings/SettingsProvider';
 import { useDiary } from '@/store/DiaryStore';
 import type { MediaKind, Title } from '@/store/types';
+import { shownError } from '@/lib/errors';
 
 const KINDS: { kind: MediaKind; label: string }[] = [
   { kind: 'movie', label: 'FILMS' },
@@ -81,7 +82,7 @@ export default function SearchScreen() {
           .catch((e) => {
             if (controller.signal.aborted) return;
             setResults([]);
-            setError(e instanceof Error && e.message !== 'Network request failed' ? e.message : 'No connection. Check your internet and try again.');
+            setError(shownError(e, 'No connection. Check your internet and try again.'));
           })
           .finally(() => !controller.signal.aborted && setLoading(false));
       },

@@ -15,8 +15,9 @@ import type { Theme } from '@/lib/theme';
 import { useDiary } from '@/store/DiaryStore';
 import { useSync } from '@/sync/SyncProvider';
 import type { SyncStatus } from '@/sync/SyncProvider';
+import { NO_CONNECTION, isOffline, shownError } from '@/lib/errors';
 
-const errorText = (e: unknown) => (e instanceof Error ? e.message : String((e as { message?: string })?.message ?? e));
+const errorText = (e: unknown) => shownError(e, 'Something went wrong. Try again.');
 
 export default function AccountScreen() {
   const theme = useTheme();
@@ -93,12 +94,12 @@ const TITLES: Record<Mode, string> = {
 
 /** Friendlier wording for the auth errors people actually hit. */
 function authError(e: unknown) {
+  if (isOffline(e)) return NO_CONNECTION;
   const text = errorText(e);
   if (/rate limit|too many|for security purposes/i.test(text)) return 'Too many emails in a short time. Wait a minute and try again.';
   if (/expired|invalid.*(otp|token)|token.*(invalid|expired)/i.test(text)) return "That code didn't work or has expired. Check it, or send a new one.";
   if (/invalid login credentials/i.test(text)) return 'Wrong email or password.';
   if (/email not confirmed/i.test(text)) return 'Confirm your email first: enter the code we sent you.';
-  if (/network request failed|fetch failed/i.test(text)) return 'No connection. Check your internet and try again.';
   return text;
 }
 

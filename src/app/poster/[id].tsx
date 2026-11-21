@@ -14,6 +14,7 @@ import { font, fonts, useTheme } from '@/lib/theme';
 import { useSettings } from '@/settings/SettingsProvider';
 import { choosePosterForDraft } from '@/lib/posterDraft';
 import { useDiary } from '@/store/DiaryStore';
+import { shownError } from '@/lib/errors';
 
 const COLUMNS = 3;
 const GAP = 10;
@@ -55,7 +56,7 @@ function PosterBody() {
     let live = true;
     postersTmdb(key, sourceId)
       .then((r) => live && setData({ for: sourceId, ...r, error: null }))
-      .catch((e) => live && setData({ for: sourceId, main: null, posters: [], error: e instanceof Error ? e.message : 'Couldn’t load the posters.' }));
+      .catch((e) => live && setData({ for: sourceId, main: null, posters: [], error: shownError(e, 'Couldn’t load the posters.') }));
     return () => {
       live = false;
     };

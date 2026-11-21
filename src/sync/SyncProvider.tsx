@@ -9,6 +9,7 @@ import { DEFAULT_SETTINGS, useSettings } from '@/settings/SettingsProvider';
 import { useDiary } from '@/store/DiaryStore';
 import type { RemoteRecord, SyncStoreApi } from '@/store/DiaryStore';
 import type { Entry, WatchItem } from '@/store/types';
+import { shownError } from '@/lib/errors';
 
 import { AUTO_SYNC_COOLDOWN_MS, createAutoSync } from './autoSync';
 import { syncLists } from './listsSync';
@@ -67,7 +68,7 @@ function chunks<T>(items: T[], size: number): T[][] {
   return out;
 }
 
-const errorText = (e: unknown) => (e instanceof Error ? e.message : String((e as { message?: string })?.message ?? e));
+const errorText = (e: unknown) => shownError(e, 'Something went wrong. Try again.');
 
 /** Rows for every record changed here: the record itself, or a tombstone if it's gone. */
 function rowsFor<T extends { id: string }>(pending: Record<string, number>, records: T[], userId: string) {

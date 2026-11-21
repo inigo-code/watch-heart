@@ -23,6 +23,7 @@ import { easeNextLayout } from '@/lib/motion';
 import { font, fonts, useTheme } from '@/lib/theme';
 import { viewingRating, watchedLabel } from '@/lib/watched';
 import type { Theme } from '@/lib/theme';
+import { shownError } from '@/lib/errors';
 
 /** Your friends as a row of faces, requests, adding someone by code or name, and what friends watched lately. */
 export default function FriendsScreen() {
@@ -107,7 +108,7 @@ export default function FriendsScreen() {
       toast(already ? 'You’re already friends' : 'You’re friends now');
       if (!already) setAddOpen(false);
     } catch (e) {
-      toast(e instanceof Error ? e.message : 'Couldn’t add that code');
+      toast(shownError(e, 'Couldn’t add that code'));
     } finally {
       setAdding(false);
     }
@@ -223,7 +224,7 @@ export default function FriendsScreen() {
                   setCode(c);
                   toast('New code ready');
                 })
-                .catch((e) => toast(e instanceof Error ? e.message : 'Couldn’t make a new code')),
+                .catch((e) => toast(shownError(e, 'Couldn’t make a new code'))),
           },
         ]}
         onClose={() => setConfirmReset(false)}

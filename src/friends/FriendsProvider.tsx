@@ -6,6 +6,7 @@ import { rememberFriends } from '@/friends/friendAlerts';
 import { friendRequests, myFriends, notSetUp, photoUrl } from '@/friends/friendsApi';
 import type { Friend, FriendRequest } from '@/friends/friendsApi';
 import { useSync } from '@/sync/SyncProvider';
+import { shownError } from '@/lib/errors';
 
 type FriendsContext = {
   /** Signed in, so friends are possible. */
@@ -53,7 +54,7 @@ async function photosFor(people: { id: string; photoPath: string | null }[]): Pr
   return photos;
 }
 
-const message = (e: unknown) => (e instanceof Error ? e.message : 'Couldn’t load your friends.');
+const message = (e: unknown) => shownError(e, 'Couldn’t load your friends.');
 
 /** Your friends, fetched when you sign in and whenever a screen asks for a refresh. */
 export function FriendsProvider({ children }: { children: ReactNode }) {

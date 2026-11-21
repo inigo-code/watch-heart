@@ -15,6 +15,7 @@ import type { Theme } from '@/lib/theme';
 import { useSettings } from '@/settings/SettingsProvider';
 import { useDiary } from '@/store/DiaryStore';
 import type { Title } from '@/store/types';
+import { shownError } from '@/lib/errors';
 
 // What TMDB knows about a title, shared by the title page and diary entries: the synopsis, cast and crew,
 // seasons, and what to watch next.
@@ -31,7 +32,7 @@ export function useAbout(id: string | null): { about: TitleAbout | null; error: 
       .then((about) => setResult({ id, about, error: null }))
       .catch((e) => {
         if (controller.signal.aborted) return;
-        setResult({ id, about: null, error: e instanceof Error && e.message !== 'Network request failed' ? e.message : 'No connection.' });
+        setResult({ id, about: null, error: shownError(e, 'No connection.', 'No connection.') });
       });
     return () => controller.abort();
   }, [key, id]);

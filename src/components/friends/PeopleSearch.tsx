@@ -13,8 +13,9 @@ import { useFriends } from '@/friends/FriendsProvider';
 import { font, fonts } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
 import { useSettings } from '@/settings/SettingsProvider';
+import { shownError } from '@/lib/errors';
 
-const message = (e: unknown) => (e instanceof Error ? e.message : 'No connection. Try again in a moment.');
+const message = (e: unknown) => shownError(e, 'No connection. Try again in a moment.');
 const someone = (id: string) => router.push({ pathname: '/someone/[id]', params: { id } });
 const plural = (n: number, one: string) => `${n} ${one}${n === 1 ? '' : 's'}`;
 /** Why someone is suggested: friends you share first, then titles. */

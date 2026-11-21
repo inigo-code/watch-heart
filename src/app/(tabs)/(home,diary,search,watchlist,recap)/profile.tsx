@@ -34,6 +34,7 @@ import type { Favourite } from '@/settings/SettingsProvider';
 import { useDiary } from '@/store/DiaryStore';
 import { useLists } from '@/lists/ListsProvider';
 import { useSync } from '@/sync/SyncProvider';
+import { shownError } from '@/lib/errors';
 
 const GOALS = [25, 52, 100, 150, 365];
 
@@ -99,7 +100,7 @@ function ProfileBody() {
       const uri = await pickProfilePhoto();
       if (uri) setPhoto(uri);
     } catch (e) {
-      toast(`Couldn’t use that picture: ${e instanceof Error ? e.message : String(e)}`);
+      toast(`Couldn’t use that picture: ${shownError(e, 'Something went wrong. Try again.')}`);
     } finally {
       setBusyPhoto(false);
     }

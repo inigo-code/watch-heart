@@ -8,6 +8,7 @@ import { Text } from '@/components/AppText';
 import { useToast } from '@/components/Toast';
 import { font, fonts } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
+import { shownError } from '@/lib/errors';
 
 // Updates download on launch and apply on the next restart; this card shows where things stand and
 // checks or applies one now. The update APIs reject in Expo Go, dev builds and the web preview.
@@ -50,7 +51,7 @@ function LiveCard({ theme }: { theme: Theme }) {
       if (r.isAvailable) await Updates.fetchUpdateAsync();
     } catch (e) {
       setRestarting(false);
-      toast(`Couldn’t check for updates: ${e instanceof Error ? e.message : String(e)}`);
+      toast(`Couldn’t check for updates: ${shownError(e, 'Something went wrong. Try again.')}`);
     }
   };
 

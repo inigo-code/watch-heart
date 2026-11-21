@@ -46,6 +46,10 @@ export const DATA_SOURCES = {
  */
 const NOTES: { id: string; items: string[] }[] = [
   {
+    id: '1.6.6',
+    items: ['With no internet, Find and the rest of the app say “No connection” instead of a technical error'],
+  },
+  {
     id: '1.6.5',
     items: [
       'Friends lately shows up straight away when you open the app, with what it showed last time, and updates as soon as the new one is in. With App lock on, it isn’t kept on the phone.',
