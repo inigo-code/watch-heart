@@ -1,5 +1,5 @@
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { AccessibilityInfo, Animated, Easing, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/AppText';
@@ -25,6 +25,10 @@ const LOBE = 94 * K;
 const DIAMOND = 60 * Math.SQRT2 * K;
 // The longest the app waits on its data before letting go anyway.
 const WAIT_AT_MOST = 3000;
+// How long the native splash takes to fade off the top of this one (Android), and the longest to wait for this
+// one to reach the screen before letting the native splash go anyway.
+const FADE = 150;
+const UNCOVER_AT_MOST = 1500;
 
 /** The reel: a gold disc with six holes round a centre one, and a pink heart in the middle. */
 function Reel() {
@@ -61,15 +65,38 @@ export function SplashOverlay({ ready }: { ready: boolean }) {
   const [spin] = useState(() => new Animated.Value(0));
   const [word] = useState(() => new Animated.Value(0));
   const [leave] = useState(() => new Animated.Value(0));
+  const [probe] = useState(() => new Animated.Value(0));
+  const [uncovered, setUncovered] = useState(false);
+  const handedOver = useRef(false);
   const [introDone, setIntroDone] = useState(false);
   const [timedOut, setTimedOut] = useState(false);
   const [gone, setGone] = useState(false);
 
-  // Everything here is drawn in the first frame (no images), so the native splash can go two frames after
-  // layout, by when the double is on screen.
-  const onLayout = () => requestAnimationFrame(() => requestAnimationFrame(() => SplashScreen.hideAsync().catch(() => {})));
+  // While the native splash is up, Android draws nothing of the app. Letting it go a couple of JavaScript frames
+  // after layout was too soon on phones: the native side was still putting the screen together, so the logo
+  // faded out over plain black for a moment before this double appeared. A one-frame animation run by the
+  // native side on this view can only finish once the view is there, so the native splash goes after that.
+  // The spin waits until the native splash has faded off, so the two logos never disagree.
+  const onLayout = () => {
+    if (handedOver.current) return;
+    handedOver.current = true;
+    let released = false;
+    const release = () => {
+      if (released) return;
+      released = true;
+      try {
+        SplashScreen.setOptions?.({ duration: FADE, fade: true });
+      } catch {}
+      SplashScreen.hideAsync()
+        .catch(() => {})
+        .finally(() => setTimeout(() => setUncovered(true), FADE));
+    };
+    Animated.timing(probe, { toValue: 1, duration: 16, useNativeDriver: true }).start(release);
+    setTimeout(release, UNCOVER_AT_MOST);
+  };
 
   useEffect(() => {
+    if (!uncovered) return;
     let live = true;
     AccessibilityInfo.isReduceMotionEnabled()
       .catch(() => false)
@@ -90,7 +117,7 @@ export function SplashOverlay({ ready }: { ready: boolean }) {
       live = false;
       clearTimeout(timer);
     };
-  }, [spin, word]);
+  }, [spin, word, uncovered]);
 
   const leaving = introDone && (ready || timedOut);
   useEffect(() => {
@@ -110,7 +137,7 @@ export function SplashOverlay({ ready }: { ready: boolean }) {
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
     >
-      <Animated.View style={{ transform: [{ rotate }, { scale: beat }, { scale: leave.interpolate({ inputRange: [0, 1], outputRange: [1, 1.12] }) }] }}>
+      <Animated.View style={{ transform: [{ translateX: probe.interpolate({ inputRange: [0, 1], outputRange: [0, 0] }) }, { rotate }, { scale: beat }, { scale: leave.interpolate({ inputRange: [0, 1], outputRange: [1, 1.12] }) }] }}>
         <Reel />
       </Animated.View>
       <Animated.View style={[styles.wordWrap, { opacity: word, transform: [{ translateY: word.interpolate({ inputRange: [0, 1], outputRange: [8, 0] }) }] }]}>
