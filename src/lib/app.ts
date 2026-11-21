@@ -46,6 +46,10 @@ export const DATA_SOURCES = {
  */
 const NOTES: { id: string; items: string[] }[] = [
   {
+    id: '1.7.2',
+    items: ['Fixed: the black flash that could still appear when opening the app'],
+  },
+  {
     id: '1.7.1',
     items: [
       'Opening the app no longer flashes a black screen between the logo and its animation',

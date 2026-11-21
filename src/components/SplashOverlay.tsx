@@ -1,5 +1,5 @@
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { AccessibilityInfo, Animated, Easing, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/AppText';
@@ -30,9 +30,42 @@ const WAIT_AT_MOST = 3000;
 // one to reach the screen before letting the native splash go anyway.
 const FADE = 150;
 const UNCOVER_AT_MOST = 1500;
+// The longest the opening waits for the settings (it stays up until they're read, so App lock can't be skipped).
+const HOLD_AT_MOST = 10000;
 
-/** The reel: a gold disc with six holes round a centre one, and a pink heart in the middle. App lock's cover
- * draws it too, so the opening looks the same whichever is on top. */
+// Whether the native splash has gone. Until then Android holds back drawing the app's own window, and a window
+// opened over it (App lock's screen is a Modal, a window of its own) left the screen plain black for a moment
+// when it closed, so App lock waits for this.
+let splashGone = false;
+const goneListeners = new Set<() => void>();
+function markSplashGone() {
+  if (splashGone) return;
+  splashGone = true;
+  goneListeners.forEach((l) => l());
+  goneListeners.clear();
+}
+
+/** Lets the native splash go (the safety net, should the opening never draw). */
+export function letSplashGo() {
+  SplashScreen.hideAsync()
+    .catch(() => {})
+    .finally(() => setTimeout(markSplashGone, FADE));
+}
+
+const subscribeGone = (l: () => void) => {
+  goneListeners.add(l);
+  return () => {
+    goneListeners.delete(l);
+  };
+};
+const isGone = () => splashGone;
+
+/** True once the native splash has gone. */
+export function useSplashGone() {
+  return useSyncExternalStore(subscribeGone, isGone, isGone);
+}
+
+/** The reel: a gold disc with six holes round a centre one, and a pink heart in the middle. */
 export function Reel() {
   return (
     <View style={styles.reelBox}>
@@ -60,10 +93,11 @@ export function Reel() {
 /**
  * The opening: drawn exactly as the native splash looks, so the hand-over can't be seen; the reel spins one
  * turn (its six holes land where they started), the name fades in under it, and the whole thing fades away
- * as the app appears. Waits for `ready` (settings and diary loaded), or 3 s at most. With reduced motion it
- * only fades.
+ * as the app appears. Waits for `ready` (settings and diary loaded), or 3 s at most; while `hold` (the
+ * settings not read yet, so whether App lock is on isn't known) it stays up regardless, up to 10 s. With
+ * reduced motion it only fades.
  */
-export function SplashOverlay({ ready, covered = false }: { ready: boolean; covered?: boolean }) {
+export function SplashOverlay({ ready, hold = false }: { ready: boolean; hold?: boolean }) {
   const [spin] = useState(() => new Animated.Value(0));
   const [word] = useState(() => new Animated.Value(0));
   const [leave] = useState(() => new Animated.Value(0));
@@ -72,7 +106,13 @@ export function SplashOverlay({ ready, covered = false }: { ready: boolean; cove
   const handedOver = useRef(false);
   const [introDone, setIntroDone] = useState(false);
   const [timedOut, setTimedOut] = useState(false);
+  const [heldTooLong, setHeldTooLong] = useState(false);
   const [gone, setGone] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setHeldTooLong(true), HOLD_AT_MOST);
+    return () => clearTimeout(timer);
+  }, []);
 
   // While the native splash is up, Android draws nothing of the app. Letting it go a couple of JavaScript frames
   // after layout was too soon on phones: the native side was still putting the screen together, so the logo
@@ -91,16 +131,19 @@ export function SplashOverlay({ ready, covered = false }: { ready: boolean; cove
       } catch {}
       SplashScreen.hideAsync()
         .catch(() => {})
-        .finally(() => setTimeout(() => setUncovered(true), FADE));
+        .finally(() =>
+          setTimeout(() => {
+            setUncovered(true);
+            markSplashGone();
+          }, FADE),
+        );
     };
     Animated.timing(probe, { toValue: 1, duration: 16, useNativeDriver: true }).start(release);
     setTimeout(release, UNCOVER_AT_MOST);
   };
 
   useEffect(() => {
-    // App lock's cover (a still copy of this) sits on top until the settings are in; spinning under it would
-    // show the moment it lifts.
-    if (!uncovered || covered) return;
+    if (!uncovered) return;
     let live = true;
     AccessibilityInfo.isReduceMotionEnabled()
       .catch(() => false)
@@ -121,9 +164,9 @@ export function SplashOverlay({ ready, covered = false }: { ready: boolean; cove
       live = false;
       clearTimeout(timer);
     };
-  }, [spin, word, uncovered, covered]);
+  }, [spin, word, uncovered]);
 
-  const leaving = introDone && (ready || timedOut);
+  const leaving = introDone && (ready || timedOut) && (!hold || heldTooLong);
   useEffect(() => {
     if (!leaving) return;
     Animated.timing(leave, { toValue: 1, duration: 320, easing: Easing.inOut(Easing.quad), useNativeDriver: true }).start(() => setGone(true));

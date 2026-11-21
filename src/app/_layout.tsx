@@ -19,7 +19,7 @@ import { TextSizeProvider } from '@/components/AppText';
 import { ToastProvider } from '@/components/Toast';
 import { BackDisc } from '@/components/BackDisc';
 import { DiaryLoadFailed } from '@/components/DiaryLoadFailed';
-import { SplashOverlay } from '@/components/SplashOverlay';
+import { SplashOverlay, letSplashGo } from '@/components/SplashOverlay';
 import { UpdatePrompt } from '@/components/UpdatePrompt';
 import { tmdbKey } from '@/api';
 import { omdbKey as omdbKeyFor, watchRegion } from '@/api/omdb';
@@ -106,7 +106,7 @@ function Navigator() {
   // The native splash hands over to SplashOverlay, which lifts once the diary and settings are in. This
   // is only a safety net, should the overlay never draw.
   useEffect(() => {
-    const timer = setTimeout(() => SplashScreen.hideAsync().catch(() => {}), 4000);
+    const timer = setTimeout(letSplashGo, 4000);
     return () => clearTimeout(timer);
   }, []);
 
@@ -142,7 +142,7 @@ function Navigator() {
         <Stack.Screen name="welcome" options={{ headerShown: false, gestureEnabled: false, animation: 'fade' }} />
       </Stack>
       <DiaryLoadFailed />
-      <SplashOverlay ready={(ready || loadFailed) && (settingsReady || settingsFailed)} covered={!settingsReady && !settingsFailed} />
+      <SplashOverlay ready={(ready || loadFailed) && (settingsReady || settingsFailed)} hold={!settingsReady && !settingsFailed} />
     </>
   );
 }

@@ -5,7 +5,7 @@ import { AppState, Modal, Platform, Pressable, StyleSheet, View } from 'react-na
 
 import { Text } from '@/components/AppText';
 import { HeartMark } from '@/components/BrandTitle';
-import { Reel, SPLASH_BG } from '@/components/SplashOverlay';
+import { useSplashGone } from '@/components/SplashOverlay';
 import { font, fonts, useTheme } from '@/lib/theme';
 import { useSettings } from '@/settings/SettingsProvider';
 
@@ -74,18 +74,17 @@ export function AppLockProvider({ children }: { children: ReactNode }) {
   }, [enabled, settings.lockAfter]);
 
   const value = useMemo(() => ({ confirm, markUnlocked }), [confirm, markUnlocked]);
-  // Until settings are loaded we don't know whether to lock, so cover the app rather than flash it open.
-  const showLock = (!ready && !loadFailed) || (enabled && !unlocked);
+  // Until the settings are read, the opening splash covers the app (it waits for them), so nothing shows
+  // unlocked. The lock screen is a window of its own, and opening it while the native splash still held back
+  // the app's window left a black gap when it closed, so it also waits for the native splash to go.
+  const splashGone = useSplashGone();
+  const showLock = enabled && !unlocked && splashGone;
 
   return (
     <Ctx.Provider value={value}>
       {children}
-      {/* Without App lock the cover is the opening splash's still double, and goes without a fade onto the
-          splash itself, so the opening never shows a blank screen. */}
-      <Modal visible={showLock} animationType={enabled ? 'fade' : 'none'} statusBarTranslucent navigationBarTranslucent onRequestClose={() => {}}>
-        {/* The lock screen only with App lock on: the cover also fades out after settings load, and showed
-            "locked" on the way out when the lock was off. (Kept through the fade after unlocking, so it doesn't blink.) */}
-        {enabled ? <LockScreen confirm={confirm} onUnlocked={markUnlocked} unread={!ready} /> : <Cover />}
+      <Modal visible={showLock} animationType="fade" statusBarTranslucent navigationBarTranslucent onRequestClose={() => {}}>
+        <LockScreen confirm={confirm} onUnlocked={markUnlocked} unread={!ready} />
       </Modal>
     </Ctx.Provider>
   );
@@ -95,15 +94,6 @@ export function useAppLock() {
   const ctx = useContext(Ctx);
   if (!ctx) throw new Error('useAppLock must be used inside AppLockProvider');
   return ctx;
-}
-
-/** While the settings load: the opening splash, still, in the same place, so it can't be told from it. */
-function Cover() {
-  return (
-    <View style={[StyleSheet.absoluteFill, styles.cover]}>
-      <Reel />
-    </View>
-  );
 }
 
 /** `unread`: locked because the settings couldn't be read, not because App lock is known to be on. */
@@ -165,7 +155,6 @@ function LockScreen({ confirm, onUnlocked, unread }: { confirm: (reason: string)
 
 const styles = StyleSheet.create({
   screen: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32, gap: 20 },
-  cover: { backgroundColor: SPLASH_BG, alignItems: 'center', justifyContent: 'center' },
   texts: { alignItems: 'center', gap: 6 },
   title: { fontSize: font.title2, fontFamily: fonts.uiBold },
   body: { fontSize: font.body, textAlign: 'center', lineHeight: 21 },
