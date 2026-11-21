@@ -11,12 +11,12 @@ import { SectionLabel } from '@/components/SectionLabel';
 import { useToast } from '@/components/Toast';
 import { font, fonts } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
-import { TICKET_CITIES, bestSeatsUrl, bookMyShowUrl, ticketCityName } from '@/lib/tickets';
+import { TICKET_CITIES, bookMyShowUrl, ticketCityName } from '@/lib/tickets';
 import { useSettings } from '@/settings/SettingsProvider';
 
 /**
  * A film in cinemas in India: book it on BookMyShow in your city (its list of films showing there, where you
- * pick this one, a cinema, a show and seats), and where seats.movie covers the city, find the best seats.
+ * pick this one, a cinema, a show and seats).
  * The city is asked the first time and kept (Settings › Region and language).
  */
 export function BookTickets({ title, theme }: { title: string; theme: Theme }) {
@@ -25,7 +25,6 @@ export function BookTickets({ title, theme }: { title: string; theme: Theme }) {
   const [picking, setPicking] = useState(false);
   const city = ticketCityName(settings.ticketCity);
   const slug = city ? settings.ticketCity : null;
-  const seats = slug ? bestSeatsUrl(slug) : null;
 
   const open = (url: string) => Linking.openURL(url).catch(() => toast('Couldn’t open that page. Try again in a moment.'));
 
@@ -46,9 +45,6 @@ export function BookTickets({ title, theme }: { title: string; theme: Theme }) {
         <>
           <View style={styles.buttons}>
             <Button theme={theme} primary icon={<CineIcon name="diary" size={18} color={theme.accentText} />} label="BookMyShow" hint={`Book ${title} on BookMyShow in ${city}`} onPress={() => open(bookMyShowUrl(slug))} />
-            {seats && (
-              <Button theme={theme} icon={<Ionicons name="grid-outline" size={16} color={theme.text} />} label="Best seats" hint={`Find the best seats in ${city} on seats.movie`} onPress={() => open(seats)} />
-            )}
           </View>
           <Text style={[styles.note, { color: theme.textMuted }]}>
             Opens the films showing in {city}: pick {title}, then a cinema, a show and your seats.

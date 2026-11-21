@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-import { TICKET_CITIES, bestSeatsUrl, bookMyShowUrl, bookable, ticketCityName } from '../src/lib/tickets.ts';
+import { TICKET_CITIES, bookMyShowUrl, bookable, ticketCityName } from '../src/lib/tickets.ts';
 
 test('a film can be booked from 30 days before it opens until six weeks after', () => {
   assert.equal(bookable('2026-11-22', '2026-11-22'), true);
@@ -13,11 +13,9 @@ test('a film can be booked from 30 days before it opens until six weeks after', 
   assert.equal(bookable(undefined, '2026-11-22'), false);
 });
 
-test('links use BookMyShow’s and seats.movie’s names for the city', () => {
+test('links use BookMyShow’s name for the city', () => {
   assert.equal(bookMyShowUrl('chennai'), 'https://in.bookmyshow.com/explore/movies-chennai');
   assert.equal(bookMyShowUrl('national-capital-region-ncr'), 'https://in.bookmyshow.com/explore/movies-national-capital-region-ncr');
-  assert.equal(bestSeatsUrl('kochi'), 'https://seats.movie/kochi');
-  assert.equal(bestSeatsUrl('madurai'), null);
 });
 
 test('cities are named and unique, the ten popular ones first, each part A to Z', () => {
@@ -31,5 +29,6 @@ test('cities are named and unique, the ten popular ones first, each part A to Z'
   assert.deepEqual(names.slice(0, 10), sorted(names.slice(0, 10)));
   assert.deepEqual(names.slice(10), sorted(names.slice(10)));
   assert.ok(names.slice(0, 10).includes('Chennai') && names.slice(0, 10).includes('Delhi-NCR'));
-  assert.ok(TICKET_CITIES.slice(0, 10).every((c) => bestSeatsUrl(c.slug)));
+  assert.ok(['mumbai', 'kochi'].every((s) => slugs.slice(0, 10).includes(s)));
+  assert.ok(!slugs.slice(0, 10).includes('madurai'));
 });

@@ -48,8 +48,9 @@ const NOTES: { id: string; items: string[] }[] = [
   {
     id: '1.7.3',
     items: [
-      'Book tickets: a film in cinemas in India opens on BookMyShow in your city, and in ten big cities seats.movie finds you the best seats',
+      'Book tickets: a film in cinemas in India opens on BookMyShow in your city, to pick a cinema, a show and your seats',
       'Trending this week on Home, in place of Up next: what everyone is watching right now. Your watchlist is still in its own tab',
+      'Your diary no longer comes back by itself when the app is reinstalled. Sign in to keep it safe, or use Export backup',
     ],
   },
   {
