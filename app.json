@@ -50,6 +50,7 @@
       "expo-status-bar",
       "./plugins/withSplashSystemBars",
       "./plugins/withStreamingQueries",
+      "./plugins/withOptionalPortrait",
       [
         "expo-splash-screen",
         {
