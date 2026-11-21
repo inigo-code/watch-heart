@@ -47,7 +47,7 @@ export const DATA_SOURCES = {
 const NOTES: { id: string; items: string[] }[] = [
   {
     id: '1.6.6',
-    items: ['With no internet, Find and the rest of the app say “No connection” instead of a technical error'],
+    items: ['With no internet, Find and the rest of the app say “No connection”, and other problems are explained in plain words instead of technical errors'],
   },
   {
     id: '1.6.5',

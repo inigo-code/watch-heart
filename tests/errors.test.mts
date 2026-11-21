@@ -34,3 +34,31 @@ test('nothing readable gives the fallback', () => {
 test('a custom offline line', () => {
   assert.equal(shownError(new Error('fetch failed'), 'x', 'No connection.'), 'No connection.');
 });
+
+test('technical text never reaches the screen', () => {
+  for (const m of [
+    'java.lang.IllegalStateException: Expected BEGIN_OBJECT',
+    "TypeError: Cannot read property 'map' of undefined",
+    'JSON Parse error: Unexpected character: <',
+    'new row violates row-level security policy for table "entries"',
+    'JWT expired',
+    '{"code":"PGRST301","message":"bad"}',
+    'x'.repeat(200),
+  ]) {
+    assert.equal(shownError(new Error(m), 'Couldn’t load the posters.'), 'Couldn’t load the posters.', m);
+  }
+});
+
+test('the app’s own messages all still show', () => {
+  for (const m of [
+    'TMDB is having trouble (502). Try again in a moment.',
+    "That file isn't a valid backup (it isn't JSON).",
+    'Friends aren’t set up on the server yet (supabase/friends.sql).',
+    'Allow Watch Heart to save photos, then try again.',
+    'Some changes haven’t reached the cloud yet. Connect to the internet and try again.',
+    'Confirm your email first: enter the code we sent you.',
+    'Movie not found!',
+  ]) {
+    assert.equal(shownError(new Error(m), 'x'), m);
+  }
+});
