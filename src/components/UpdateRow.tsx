@@ -122,6 +122,6 @@ const styles = StyleSheet.create({
   notchRight: { right: -8 },
   stub: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingTop: 6, paddingBottom: 14 },
   meta: { fontFamily: fonts.ui, fontSize: font.caption },
-  button: { height: 38, paddingHorizontal: 16, borderRadius: 19, alignItems: 'center', justifyContent: 'center' },
+  button: { minHeight: 38, paddingHorizontal: 16, borderRadius: 19, alignItems: 'center', justifyContent: 'center' },
   buttonText: { fontFamily: fonts.uiSemibold, fontSize: font.caption },
 });

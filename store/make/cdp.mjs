@@ -9,6 +9,7 @@
 //   node store/make/cdp.mjs scroll 600           scroll the page under the middle of the screen
 //   node store/make/cdp.mjs eval "js"            run JavaScript in the page and print the result
 //   node store/make/cdp.mjs shot diary          save store/make/screens/diary.png
+//   node store/make/cdp.mjs shot x <path.webp>  save anywhere; a .webp path saves a webp
 //   node store/make/cdp.mjs close
 //
 // Keys: `seed` reads EXPO_PUBLIC_TMDB_KEY and EXPO_PUBLIC_OMDB_KEY from the file named by WH_KEYS
@@ -26,7 +27,8 @@ const ORIGIN = process.env.WH_ORIGIN ?? 'http://localhost:8084';
 const PORT = 9455;
 const PROFILE = process.env.WH_PROFILE ?? join(tmpdir(), 'wh-store-profile');
 const EDGE = ['C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe', 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'].find(existsSync);
-const W = 432, H = 960, DPR = 2.5;
+// WH_SIZE=412x892x2 takes the website's phone screens (824 × 1784) instead.
+const [W, H, DPR] = (process.env.WH_SIZE ?? '432x960x2.5').split('x').map(Number);
 
 async function connect() {
   // Only ever the app's own tab: a browser profile can open others (an extension's welcome page).
@@ -159,8 +161,10 @@ if (cmd === 'open') {
     } else if (cmd === 'eval') {
       console.log(JSON.stringify(await c.evaluate(args[0]), null, 1));
     } else if (cmd === 'shot') {
-      const { data } = await c.send('Page.captureScreenshot', { format: 'png' });
       const out = args[1] ?? join(here, 'screens', `${args[0]}.png`);
+      // A path ending in .webp saves a webp, the format the website uses.
+      const webp = out.endsWith('.webp');
+      const { data } = await c.send('Page.captureScreenshot', webp ? { format: 'webp', quality: 82 } : { format: 'png' });
       mkdirSync(dirname(out), { recursive: true });
       writeFileSync(out, Buffer.from(data, 'base64'));
       console.log('saved', out);

@@ -395,7 +395,7 @@ const styles = StyleSheet.create({
   h: { fontFamily: fonts.uiBold, fontSize: font.title2 },
   p: { fontFamily: fonts.ui, fontSize: font.footnote, lineHeight: 19 },
   email: { fontSize: font.headline, fontWeight: '800' },
-  input: { fontSize: font.headline, height: 50, borderRadius: 10, borderWidth: 1, paddingHorizontal: 16 },
+  input: { fontSize: font.headline, minHeight: 50, borderRadius: 10, borderWidth: 1, paddingHorizontal: 16 },
   code: { fontFamily: fonts.uiSemibold, fontSize: font.title2, textAlign: 'center' },
   codeEmpty: { textAlign: 'center' },
   switch: { fontFamily: fonts.uiSemibold, fontSize: font.footnote, textAlign: 'center', paddingVertical: 4 },

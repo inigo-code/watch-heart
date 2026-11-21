@@ -46,21 +46,15 @@ export function TicketPrint({ kind, theme }: { kind: MediaKind; theme: Theme }) 
 export function TicketStub({ entry, theme, onPress, onLongPress }: {
   entry: Entry;
   theme: Theme;
-  onPress: () => void;
+  /** Without it the ticket is only shown, not a button (the stamp when you log). */
+  onPress?: () => void;
   onLongPress?: () => void;
 }) {
   const { day, weekday } = dayParts(entry.watchedOn);
   const p = ticketPaper(entry.kind, theme);
-  return (
-    <Tap
-      onPress={onPress}
-      onLongPress={onLongPress}
-      delayLongPress={350}
-      scale={0.98}
-      accessibilityRole="button"
-      accessibilityLabel={`${entry.title}, watched ${weekday} ${day}${entry.rating ? `, ${entry.rating / 2} stars` : ''}`}
-      style={[styles.ticket, { backgroundColor: p.paper, borderColor: p.border }]}
-    >
+  const label = `${entry.title}, watched ${weekday} ${day}${entry.rating ? `, ${entry.rating / 2} stars` : ''}`;
+  const body = (
+    <>
       <TicketPrint kind={entry.kind} theme={theme} />
       <View style={styles.stub}>
         <Text style={[styles.weekday, { color: theme.textMuted }]}>{entry.undated ? 'DATE' : weekday.toUpperCase()}</Text>
@@ -92,7 +86,17 @@ export function TicketStub({ entry, theme, onPress, onLongPress }: {
           {!!entry.review.trim() && <Ionicons name="reader-outline" size={13} color={theme.textMuted} accessibilityLabel="Has a review" />}
         </View>
       </View>
+    </>
+  );
+  const frame = [styles.ticket, { backgroundColor: p.paper, borderColor: p.border }];
+  return onPress ? (
+    <Tap onPress={onPress} onLongPress={onLongPress} delayLongPress={350} scale={0.98} accessibilityRole="button" accessibilityLabel={label} style={frame}>
+      {body}
     </Tap>
+  ) : (
+    <View accessible accessibilityLabel={label} style={frame}>
+      {body}
+    </View>
   );
 }
 
@@ -178,6 +182,6 @@ const styles = StyleSheet.create({
   reelRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, gap: 10 },
   reelMonth: { fontFamily: fonts.display, fontSize: 34, lineHeight: 36, letterSpacing: 2, includeFontPadding: false },
   reelMeta: { fontFamily: fonts.ticketBold, fontSize: 12, letterSpacing: 1.2 },
-  reelShare: { flexDirection: 'row', alignItems: 'center', gap: 5, borderWidth: 1, borderRadius: 14, height: 28, paddingHorizontal: 10 },
+  reelShare: { flexDirection: 'row', alignItems: 'center', gap: 5, borderWidth: 1, borderRadius: 14, minHeight: 28, paddingHorizontal: 10 },
   reelShareText: { fontFamily: fonts.ticketBold, fontSize: 12, letterSpacing: 1 },
 });

@@ -1,13 +1,14 @@
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
+import { ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { EmptyScene } from '@/components/EmptyScene';
 import { Text } from '@/components/AppText';
 import { CountUp } from '@/components/Motion';
 import { Chip } from '@/components/Film';
 import { RatingChart } from '@/components/RatingChart';
+import { RecapReel } from '@/components/RecapReel';
 import { SectionLabel } from '@/components/SectionLabel';
 import { Segmented } from '@/components/SettingsUI';
 import { formatRuntime, monthKey, monthName, today } from '@/lib/dates';
@@ -72,20 +73,18 @@ export default function RecapScreen() {
       </View>
 
       {entries.length === 0 ? (
-        <View style={styles.empty}>
-          <View style={[styles.emptyIcon, { backgroundColor: theme.chip }]}>
-            <MaterialCommunityIcons name="filmstrip-box-multiple" size={38} color={theme.textMuted} />
-          </View>
-          <Text style={[styles.emptyTitle, { color: theme.text }]}>Nothing on the reel yet</Text>
-          <Text style={[styles.emptyText, { color: theme.textMuted }]}>
-            {all.length
+        <EmptyScene
+          theme={theme}
+          scene="strip"
+          icon="recap"
+          title="Nothing on the reel yet"
+          text={
+            all.length
               ? 'Your diary’s entries have no watch dates, so they can’t go in a month. What you log from now on shows up here, ready for Instagram.'
-              : 'Log a few titles and your monthly recap appears here, ready for Instagram.'}
-          </Text>
-          <Pressable onPress={() => router.navigate('/search')} style={[styles.emptyBtn, { backgroundColor: theme.accent }]} accessibilityRole="button">
-            <Text style={[styles.emptyBtnText, { color: theme.accentText }]}>Find a title</Text>
-          </Pressable>
-        </View>
+              : 'Log a few titles and your monthly recap appears here, ready for Instagram.'
+          }
+          action={{ label: 'Find a title', icon: 'find', onPress: () => router.navigate('/search') }}
+        />
       ) : (
         <>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.periods}>
@@ -118,6 +117,11 @@ export default function RecapScreen() {
                   <Chip theme={theme} icon="stats-chart" label="Stats" active={options.stats} onPress={() => setOptions({ stats: !options.stats })} />
                   <Chip theme={theme} icon="podium-outline" label="Rank by rating" active={options.ranked} onPress={() => setOptions({ ranked: !options.ranked })} />
                 </View>
+              </View>
+
+              <View style={styles.reel}>
+                <Label theme={theme}>The reel</Label>
+                <RecapReel entries={chosen} theme={theme} />
               </View>
 
               <Numbers theme={theme} stats={stats} />
@@ -206,12 +210,8 @@ const styles = StyleSheet.create({
   periods: { gap: 8 },
   controls: { gap: 10 },
   toggles: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  empty: { alignItems: 'center', gap: 10, paddingTop: 60, paddingHorizontal: 20 },
-  emptyIcon: { width: 84, height: 84, borderRadius: 42, alignItems: 'center', justifyContent: 'center', marginBottom: 6 },
-  emptyTitle: { fontFamily: fonts.uiBold, fontSize: font.title2, textAlign: 'center' },
   emptyText: { fontFamily: fonts.ui, fontSize: font.body, textAlign: 'center', lineHeight: 21 },
-  emptyBtn: { height: 44, paddingHorizontal: 20, borderRadius: 22, alignItems: 'center', justifyContent: 'center', marginTop: 8 },
-  emptyBtnText: { fontFamily: fonts.uiSemibold, fontSize: font.body },
+  reel: { gap: 10 },
   numbers: { gap: 10 },
   tiles: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   tile: { width: '31.5%', flexGrow: 1, borderWidth: 1, borderRadius: 10, paddingVertical: 10, alignItems: 'center' },

@@ -213,7 +213,7 @@ const styles = StyleSheet.create({
   showMore: { fontFamily: fonts.uiSemibold, fontSize: font.footnote, marginTop: 4 },
   facts: { fontFamily: fonts.ui, fontSize: font.footnote },
   tabs: { flexDirection: 'row', gap: 8 },
-  tab: { borderWidth: 1, borderRadius: 16, height: 32, paddingHorizontal: 16, alignItems: 'center', justifyContent: 'center' },
+  tab: { borderWidth: 1, borderRadius: 16, minHeight: 32, paddingHorizontal: 16, alignItems: 'center', justifyContent: 'center' },
   tabText: { fontFamily: fonts.uiSemibold, fontSize: font.caption },
   seasons: { gap: 12, paddingRight: 16 },
   season: { width: 96 },

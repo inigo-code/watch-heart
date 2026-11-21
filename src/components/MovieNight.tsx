@@ -223,7 +223,7 @@ const styles = StyleSheet.create({
   grabber: { alignSelf: 'center', width: 36, height: 4, borderRadius: 2, marginBottom: 4 },
   sheetTitle: { fontFamily: fonts.uiSemibold, fontSize: font.title2 },
   sheetSub: { fontFamily: fonts.ui, fontSize: font.caption, lineHeight: 17, marginBottom: 4 },
-  option: { flexDirection: 'row', alignItems: 'center', gap: 12, height: 50, borderRadius: 12, borderWidth: 1, paddingHorizontal: 14 },
+  option: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 50, borderRadius: 12, borderWidth: 1, paddingHorizontal: 14 },
   optionText: { fontSize: font.body, fontWeight: '600' },
   // The same paper and tear as a Diary ticket.
   ticket: { flexDirection: 'row', alignItems: 'center', borderRadius: 10, borderWidth: StyleSheet.hairlineWidth, paddingVertical: 7, paddingRight: 6, gap: 10, overflow: 'hidden' },

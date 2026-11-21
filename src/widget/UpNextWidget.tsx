@@ -11,6 +11,9 @@ import type { UpNextItem, UpNextSnapshot } from './upNext';
 
 type Colours = UpNextSnapshot['dark'];
 const c = (hex: string) => hex as ColorProp;
+// The app's own faces. A phone on an older build has no Instrument Sans for the widget and gets the default.
+const UI = 'InstrumentSans_400Regular';
+const UI_SEMIBOLD = 'InstrumentSans_600SemiBold';
 
 /**
  * The "Up next" widget: what to watch next, each opening its episode tracker or title page, and a + that
@@ -45,8 +48,8 @@ export function UpNextWidget({ snap, colours, rows }: { snap: UpNextSnapshot; co
           clickActionData={{ uri: 'watchheart://watchlist' }}
           style={{ flex: 1, justifyContent: 'center', width: 'match_parent', flexDirection: 'column' }}
         >
-          <TextWidget text="Watch Heart is locked" style={{ fontSize: 14, fontWeight: 'bold', color: c(colours.text) }} maxLines={1} />
-          <TextWidget text="Tap to unlock" style={{ fontSize: 13, color: c(colours.muted) }} maxLines={1} />
+          <TextWidget text="Watch Heart is locked" style={{ fontFamily: UI_SEMIBOLD, fontSize: 14, color: c(colours.text) }} maxLines={1} />
+          <TextWidget text="Tap to unlock" style={{ fontFamily: UI, fontSize: 13, color: c(colours.muted) }} maxLines={1} />
         </FlexWidget>
       ) : items.length ? (
         items.map((it, i) => <Row key={i} it={it} colours={colours} />)
@@ -58,7 +61,7 @@ export function UpNextWidget({ snap, colours, rows }: { snap: UpNextSnapshot; co
         >
           <TextWidget
             text="Nothing up next. Track a series, or add something to your watchlist."
-            style={{ fontSize: 13, color: c(colours.muted) }}
+            style={{ fontFamily: UI, fontSize: 13, color: c(colours.muted) }}
             maxLines={3}
           />
         </FlexWidget>
@@ -67,7 +70,9 @@ export function UpNextWidget({ snap, colours, rows }: { snap: UpNextSnapshot; co
   );
 }
 
+/** One title as a ticket: its poster as the stub, a torn line, then the title and where you are in it. */
 function Row({ it, colours }: { it: UpNextItem; colours: Colours }) {
+  const border = c(colours.border ?? colours.card);
   return (
     <FlexWidget
       clickAction="OPEN_URI"
@@ -77,24 +82,29 @@ function Row({ it, colours }: { it: UpNextItem; colours: Colours }) {
         flexDirection: 'row',
         alignItems: 'center',
         backgroundColor: c(colours.card),
-        borderRadius: 12,
-        padding: 6,
+        borderRadius: 10,
+        borderWidth: 1,
+        borderColor: border,
+        paddingVertical: 6,
+        paddingLeft: 8,
+        paddingRight: 10,
         marginTop: 6,
       }}
     >
       {it.poster ? (
-        <ImageWidget image={it.poster as `https:${string}`} imageWidth={34} imageHeight={51} radius={4} resizeMode="cover" />
+        <ImageWidget image={it.poster as `https:${string}`} imageWidth={34} imageHeight={51} radius={3} resizeMode="cover" />
       ) : (
-        <FlexWidget style={{ width: 34, height: 51, borderRadius: 4, backgroundColor: c(colours.bg) }} />
+        <FlexWidget style={{ width: 34, height: 51, borderRadius: 3, backgroundColor: c(colours.bg) }} />
       )}
+      <FlexWidget style={{ width: 1, height: 51, marginLeft: 8, borderLeftWidth: 1.5, borderStyle: 'dashed', borderColor: border }} />
       <FlexWidget style={{ flex: 1, flexDirection: 'column', marginLeft: 10 }}>
-        <TextWidget text={it.title} style={{ fontSize: 14, fontWeight: 'bold', color: c(colours.text) }} maxLines={1} truncate="END" />
+        <TextWidget text={it.title} style={{ fontFamily: UI_SEMIBOLD, fontSize: 14, color: c(colours.text) }} maxLines={1} truncate="END" />
         <TextWidget text={it.line} style={{ fontFamily: 'CourierPrime_700Bold', fontSize: 12, color: c(colours.accent) }} maxLines={1} />
-        <TextWidget text={it.note} style={{ fontSize: 11, color: c(colours.muted) }} maxLines={1} truncate="END" />
+        <TextWidget text={it.note} style={{ fontFamily: UI, fontSize: 11, color: c(colours.muted) }} maxLines={1} truncate="END" />
       </FlexWidget>
     </FlexWidget>
   );
 }
 
 /** How many rows fit a widget this tall (in dp). */
-export const rowsFor = (heightDp: number) => Math.max(1, Math.min(MAX_ITEMS, Math.floor((heightDp - 60) / 69)));
+export const rowsFor = (heightDp: number) => Math.max(1, Math.min(MAX_ITEMS, Math.floor((heightDp - 60) / 71)));

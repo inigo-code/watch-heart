@@ -1,0 +1,32 @@
+<!doctype html>
+<!-- The widget picker's preview of Up next (assets/widget-preview/up-next.png), drawn the way UpNextWidget.tsx
+     draws it in the dark look. Redraw with: node store/make/widget/draw.mjs -->
+<html><head><meta charset="utf-8"><style>
+@font-face { font-family: Bebas; src: url(../../../node_modules/@expo-google-fonts/bebas-neue/400Regular/BebasNeue_400Regular.ttf); }
+@font-face { font-family: Courier; src: url(../../../node_modules/@expo-google-fonts/courier-prime/700Bold/CourierPrime_700Bold.ttf); }
+@font-face { font-family: Ui; font-weight: 400; src: url(../../../node_modules/@expo-google-fonts/instrument-sans/400Regular/InstrumentSans_400Regular.ttf); }
+@font-face { font-family: Ui; font-weight: 600; src: url(../../../node_modules/@expo-google-fonts/instrument-sans/600SemiBold/InstrumentSans_600SemiBold.ttf); }
+html, body { margin: 0; background: transparent; }
+/* 320 x 208 dp at 2x. */
+.w { zoom: 2; width: 320px; height: 208px; box-sizing: border-box; background: #0B0A0D; border-radius: 22px; padding: 12px; display: flex; flex-direction: column; }
+.head { display: flex; align-items: center; margin-bottom: 6px; }
+.up { font-family: Bebas; font-size: 24px; color: #F4EFE6; letter-spacing: 0.05em; line-height: 1; padding-top: 3px; }
+.logo { width: 16px; height: 16px; border-radius: 4px; margin-left: 8px; }
+.brand { font-family: Courier; font-size: 10px; color: #F2B84B; letter-spacing: 0.1em; white-space: pre; }
+.plus { margin-left: auto; width: 36px; height: 36px; border-radius: 18px; background: #F2B84B; color: #0B0A0D; font: 700 24px/36px sans-serif; text-align: center; }
+.row { display: flex; align-items: center; background: #16141A; border: 1px solid #2A2631; border-radius: 10px; padding: 6px 10px 6px 8px; margin-top: 6px; }
+.poster { width: 34px; height: 51px; border-radius: 3px; flex: none; }
+.tear { width: 0; height: 51px; margin-left: 8px; border-left: 1.5px dashed #2A2631; }
+.text { margin-left: 10px; min-width: 0; }
+.title { font: 600 14px Ui; color: #F4EFE6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.line { font-family: Courier; font-size: 12px; color: #F2B84B; }
+.note { font: 400 11px Ui; color: #8F8898; }
+</style></head><body>
+<div class="w">
+  <div class="head"><span class="up">UP NEXT</span><img class="logo" src="data:image/png;base64,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"><span class="brand"> WATCH HEART</span><span class="plus">+</span></div>
+  <div class="row"><div class="poster" style="background: linear-gradient(160deg, #2f5f82, #10202e)"></div><div class="tear"></div>
+    <div class="text"><div class="title">Severance</div><div class="line">S2 · E4</div><div class="note">6 episodes left</div></div></div>
+  <div class="row"><div class="poster" style="background: linear-gradient(160deg, #7fa070, #23331f)"></div><div class="tear"></div>
+    <div class="text"><div class="title">Frieren: Beyond Journey’s End</div><div class="line">S1 · E11</div><div class="note">17 episodes left</div></div></div>
+</div>
+</body></html>

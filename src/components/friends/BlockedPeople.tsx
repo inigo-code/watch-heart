@@ -61,6 +61,6 @@ const styles = StyleSheet.create({
   block: { gap: 10 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, borderBottomWidth: StyleSheet.hairlineWidth, paddingVertical: 8 },
   name: { flex: 1, fontSize: font.body, fontWeight: '600' },
-  btn: { height: 34, paddingHorizontal: 14, borderRadius: 17, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
+  btn: { minHeight: 34, paddingHorizontal: 14, borderRadius: 17, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
   btnText: { fontFamily: fonts.uiSemibold, fontSize: font.caption },
 });

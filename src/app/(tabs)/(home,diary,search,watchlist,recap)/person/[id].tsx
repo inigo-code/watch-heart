@@ -154,7 +154,7 @@ const styles = StyleSheet.create({
   bio: { fontSize: font.body, lineHeight: 22 },
   more: { fontFamily: fonts.uiSemibold, fontSize: font.footnote, marginTop: 4 },
   filterRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  filter: { borderWidth: 1, borderRadius: 14, height: 28, paddingHorizontal: 10, alignItems: 'center', justifyContent: 'center' },
+  filter: { borderWidth: 1, borderRadius: 14, minHeight: 28, paddingHorizontal: 10, alignItems: 'center', justifyContent: 'center' },
   filterText: { fontFamily: fonts.uiSemibold, fontSize: 12 },
   watched: { opacity: 0.25 },
   tick: { position: 'absolute', top: 6, right: 6, width: 22, height: 22, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },

@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-const { oneEach, computeStats } = await import('@/lib/stats');
+const { oneEach, computeStats, busiestDay } = await import('@/lib/stats');
 
 type Entry = Parameters<typeof oneEach>[0][number];
 
@@ -63,4 +63,11 @@ test('manual entries group by kind and title', () => {
 test('the story’s title count matches the stats', () => {
   const list = [entry({}), entry({}), entry({ sourceId: '2', title: 'Bleach' })];
   assert.equal(oneEach(list).length, computeStats(list).total);
+});
+
+test('the reel lights the day with the most viewings, the earlier one on a tie', () => {
+  const day = (watchedOn: string, sourceId: string) => entry({ watchedOn, sourceId });
+  assert.equal(busiestDay([day('2026-11-01', '1'), day('2026-11-02', '2')]), null);
+  assert.deepEqual(busiestDay([day('2026-11-03', '1'), day('2026-11-03', '2'), day('2026-11-05', '3'), day('2026-11-05', '4'), day('2026-11-05', '5')]), { day: '2026-11-05', count: 3 });
+  assert.deepEqual(busiestDay([day('2026-11-09', '1'), day('2026-11-09', '2'), day('2026-11-04', '3'), day('2026-11-04', '4')]), { day: '2026-11-04', count: 2 });
 });

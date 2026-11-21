@@ -19,7 +19,8 @@ export type UpNextItem = {
   uri: string;
 };
 
-type Colours = { bg: string; card: string; text: string; muted: string; accent: string; onAccent: string };
+// `border` came with 1.7.0; a snapshot saved before then has none.
+type Colours = { bg: string; card: string; border?: string; text: string; muted: string; accent: string; onAccent: string };
 /** The app's look: one chosen look, or 'system' to follow the phone's light and dark. */
 export type WidgetMode = 'dark' | 'light' | 'system';
 export type UpNextSnapshot = {
@@ -78,7 +79,7 @@ export function upNextSnapshot(watchlist: WatchItem[], todayIso: string, accent:
   }
   const colours = (dark: boolean): Colours => {
     const t = buildTheme(dark, accent);
-    return { bg: t.bg, card: t.card, text: t.text, muted: t.textMuted, accent: t.accent, onAccent: t.accentText };
+    return { bg: t.bg, card: t.card, border: t.border, text: t.text, muted: t.textMuted, accent: t.accent, onAccent: t.accentText };
   };
   return { items: locked ? [] : items.slice(0, MAX_ITEMS), dark: colours(true), light: colours(false), mode, locked };
 }

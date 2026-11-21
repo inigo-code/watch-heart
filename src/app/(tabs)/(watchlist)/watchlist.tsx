@@ -6,6 +6,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { FlatList, Modal, Pressable, ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { EmptyScene } from '@/components/EmptyScene';
 import { Text } from '@/components/AppText';
 import { trackable } from '@/api/episodes';
 import { ActionSheet } from '@/components/ActionSheet';
@@ -149,7 +150,7 @@ export default function WatchlistScreen() {
           onChange={(v) => setChosen({ from: params.view, view: v })}
           options={[
             { key: 'next', label: `Up next · ${queue.length}` },
-            { key: 'watching', label: `WATCHING · ${tracked.length}` },
+            { key: 'watching', label: `Watching · ${tracked.length}` },
           ]}
         />
       )}
@@ -226,18 +227,14 @@ export default function WatchlistScreen() {
         )}
         ListEmptyComponent={
           view !== 'next' ? undefined : queue.length === 0 ? (
-            <View style={styles.empty}>
-              <View style={[styles.emptyIcon, { backgroundColor: theme.chip }]}>
-                <MaterialCommunityIcons name="bookmark-multiple-outline" size={38} color={theme.textMuted} />
-              </View>
-              <Text style={[styles.emptyTitle, { color: theme.text }]}>Nothing queued up</Text>
-              <Text style={[styles.emptyText, { color: theme.textMuted }]}>
-                Tap the bookmark on any title to save it here
-              </Text>
-              <Pressable onPress={() => router.navigate('/search')} style={[styles.emptyBtn, { backgroundColor: theme.accent }]} accessibilityRole="button">
-                <Text style={[styles.emptyBtnText, { color: theme.accentText }]}>Find a title</Text>
-              </Pressable>
-            </View>
+            <EmptyScene
+              theme={theme}
+              scene="strip"
+              icon="watchlist"
+              title="Nothing queued up"
+              text="Tap the bookmark on any title to save it here."
+              action={{ label: 'Find a title', icon: 'find', onPress: () => router.navigate('/search') }}
+            />
           ) : (
             <Text style={[styles.emptyText, { color: theme.textMuted, marginTop: 24 }]}>Nothing of that kind on your list.</Text>
           )
@@ -332,7 +329,10 @@ function NextWatch({
                 )}
               </Pressable>
             </Pop>
-            <KindBadge kind={item.kind} theme={theme} />
+            {/* The badge sets itself at the start of a row; the pick is centred. */}
+            <View style={styles.featureBadge}>
+              <KindBadge kind={item.kind} theme={theme} />
+            </View>
             <Text style={[styles.featureTitle, { color: theme.text }]} numberOfLines={2}>
               {item.title}
             </Text>
@@ -378,7 +378,7 @@ const styles = StyleSheet.create({
   pickText: { fontFamily: fonts.uiSemibold, fontSize: font.footnote },
   toolbar: { flexDirection: 'row', alignItems: 'center' },
   headRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
-  listsBtn: { flexShrink: 0, flexDirection: 'row', alignItems: 'center', gap: 6, height: 46, paddingHorizontal: 16, borderRadius: 23, borderWidth: 1.5 },
+  listsBtn: { flexShrink: 0, flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 46, paddingHorizontal: 16, borderRadius: 23, borderWidth: 1.5 },
   listsText: { fontFamily: fonts.uiSemibold, fontSize: font.footnote },
   chips: { gap: 8 },
   sortBtn: { flexDirection: 'row', alignItems: 'center', gap: 5, alignSelf: 'flex-end' },
@@ -387,17 +387,14 @@ const styles = StyleSheet.create({
   tileNight: { fontFamily: fonts.uiSemibold, fontSize: 12, marginTop: 1 },
   tileMeta: { fontFamily: fonts.ui, fontSize: font.caption, marginTop: 2 },
   empty: { alignItems: 'center', gap: 10, paddingTop: 50, paddingHorizontal: 24 },
-  emptyIcon: { width: 84, height: 84, borderRadius: 42, alignItems: 'center', justifyContent: 'center', marginBottom: 6 },
-  emptyTitle: { fontFamily: fonts.uiBold, fontSize: font.title2 },
   emptyText: { fontFamily: fonts.ui, fontSize: font.body, textAlign: 'center', lineHeight: 21 },
-  emptyBtn: { height: 44, paddingHorizontal: 20, borderRadius: 22, alignItems: 'center', justifyContent: 'center', marginTop: 8 },
-  emptyBtnText: { fontFamily: fonts.uiSemibold, fontSize: font.body },
   backdrop: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
   feature: { width: '100%', maxWidth: 380, borderRadius: 20, borderWidth: 1, padding: 22, alignItems: 'center', gap: 10 },
   featureKicker: { fontFamily: fonts.uiSemibold, fontSize: font.caption },
+  featureBadge: { alignSelf: 'center' },
   featureTitle: { fontFamily: fonts.uiBold, fontSize: font.title2, lineHeight: 29, textAlign: 'center' },
   featureMeta: { fontFamily: fonts.ui, fontSize: font.footnote, textAlign: 'center' },
   featureButtons: { gap: 8, marginTop: 8, alignSelf: 'stretch' },
-  featureBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: 46, borderRadius: 23 },
+  featureBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 46, borderRadius: 23 },
   featureBtnText: { fontFamily: fonts.uiSemibold, fontSize: font.footnote },
 });

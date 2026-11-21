@@ -1,10 +1,10 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useMemo, useRef, useState } from 'react';
 import { Pressable, ScrollView, SectionList, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { EmptyScene } from '@/components/EmptyScene';
 import { Text, TextInput } from '@/components/AppText';
 import { CineIcon } from '@/components/CineIcon';
 import { usePullRefresh } from '@/components/PullRefresh';
@@ -270,21 +270,13 @@ export default function DiaryScreen() {
         onScrollToIndexFailed={() => {}}
         ListEmptyComponent={
           !ready ? undefined : entries.length === 0 ? (
-            <View style={styles.empty}>
-              <View style={[styles.emptyIcon, { backgroundColor: theme.chip }]}>
-                <MaterialCommunityIcons name="projector" size={40} color={theme.textMuted} />
-              </View>
-              <Text style={[styles.emptyTitle, { color: theme.text }]}>The screen is dark</Text>
-              <Text style={[styles.emptyText, { color: theme.textMuted }]}>Log the last film, series or anime you watched, and your diary starts rolling.</Text>
-              <Pressable
-                onPress={() => router.navigate('/search')}
-                accessibilityRole="button"
-                style={({ pressed }) => [styles.emptyBtn, { backgroundColor: theme.accent, opacity: pressed ? 0.85 : 1 }]}
-              >
-                <MaterialCommunityIcons name="movie-search-outline" size={18} color={theme.accentText} />
-                <Text style={[styles.emptyBtnText, { color: theme.accentText }]}>Find a title</Text>
-              </Pressable>
-            </View>
+            <EmptyScene
+              theme={theme}
+              scene="ticket"
+              title="The screen is dark"
+              text="Log the last film, series or anime you watched, and your diary starts rolling."
+              action={{ label: 'Find a title', icon: 'find', onPress: () => router.navigate('/search') }}
+            />
           ) : (
             <View style={styles.empty}>
               <Text style={[styles.emptyTitle, { color: theme.text }]}>No matches</Text>
@@ -368,12 +360,9 @@ const styles = StyleSheet.create({
   empty: { alignItems: 'center', gap: 10, paddingTop: 64, paddingHorizontal: 28 },
   end: { alignItems: 'center', gap: 12, paddingTop: 36, paddingBottom: 8 },
   endText: { fontFamily: fonts.ui, fontSize: font.footnote },
-  endBtn: { flexDirection: 'row', alignItems: 'center', gap: 8, height: 44, paddingHorizontal: 20, borderRadius: 22, borderWidth: 1 },
+  endBtn: { flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: 44, paddingHorizontal: 20, borderRadius: 22, borderWidth: 1 },
   endBtnText: { fontFamily: fonts.uiSemibold, fontSize: font.footnote },
-  emptyIcon: { width: 84, height: 84, borderRadius: 42, alignItems: 'center', justifyContent: 'center', marginBottom: 6 },
   emptyTitle: { fontFamily: fonts.uiBold, fontSize: font.title2 },
   emptyText: { fontFamily: fonts.ui, fontSize: font.body, textAlign: 'center', lineHeight: 21 },
-  emptyBtn: { flexDirection: 'row', alignItems: 'center', gap: 8, height: 46, paddingHorizontal: 20, borderRadius: 23, marginTop: 10 },
-  emptyBtnText: { fontFamily: fonts.uiSemibold, fontSize: font.body },
   fab: { position: 'absolute', right: 20, width: 62, height: 62, borderRadius: 31, alignItems: 'center', justifyContent: 'center' },
 });

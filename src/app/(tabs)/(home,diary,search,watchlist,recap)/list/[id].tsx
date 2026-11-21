@@ -297,7 +297,7 @@ const styles = StyleSheet.create({
   },
   addText: { fontSize: font.footnote, fontWeight: '700' },
   listHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 },
-  share: { flexDirection: 'row', alignItems: 'center', gap: 6, height: 34, borderRadius: 17, paddingHorizontal: 14 },
+  share: { flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 34, borderRadius: 17, paddingHorizontal: 14 },
   shareText: { fontFamily: fonts.uiSemibold, fontSize: font.caption },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, borderRadius: 12, padding: 10 },
   rank: { fontFamily: fonts.display, fontSize: 28, width: 30, textAlign: 'center' },

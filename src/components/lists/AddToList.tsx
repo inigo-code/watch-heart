@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
   rowName: { flex: 1, fontSize: font.body, fontWeight: '600' },
   newRow: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderRadius: 12, paddingLeft: 12, paddingRight: 6, minHeight: 50 },
   input: { flex: 1, fontSize: font.body, paddingVertical: 8 },
-  create: { height: 36, borderRadius: 18, paddingHorizontal: 14, alignItems: 'center', justifyContent: 'center' },
+  create: { minHeight: 36, borderRadius: 18, paddingHorizontal: 14, alignItems: 'center', justifyContent: 'center' },
   createText: { fontFamily: fonts.uiSemibold, fontSize: font.caption },
   done: { height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center' },
   doneText: { fontFamily: fonts.uiSemibold, fontSize: font.body },

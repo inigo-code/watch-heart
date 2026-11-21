@@ -208,7 +208,7 @@ const styles = StyleSheet.create({
   badgeText: { fontFamily: fonts.uiSemibold, fontSize: font.caption },
   badgeTextSmall: { fontSize: 12 },
   sprockets: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 6 },
-  chip: { flexDirection: 'row', alignItems: 'center', gap: 6, height: 32, paddingHorizontal: 12, borderRadius: 16, borderWidth: 1 },
+  chip: { flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 32, paddingHorizontal: 12, borderRadius: 16, borderWidth: 1 },
   dot: { width: 7, height: 7, borderRadius: 4 },
   chipText: { fontFamily: fonts.uiSemibold, fontSize: font.caption },
 });

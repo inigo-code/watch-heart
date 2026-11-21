@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { EmptyScene } from '@/components/EmptyScene';
 import { Text, TextInput } from '@/components/AppText';
 import { KeyboardSafe } from '@/components/KeyboardSafe';
 import { ListCover } from '@/components/lists/ListCover';
@@ -65,11 +66,7 @@ export default function ListsScreen() {
         }
         ListEmptyComponent={
           !ready ? undefined : (
-            <View style={styles.empty}>
-              <Ionicons name="albums-outline" size={44} color={theme.textMuted} />
-              <Text style={[styles.emptyTitle, { color: theme.text }]}>No lists yet</Text>
-              <Text style={[styles.lede, { color: theme.textMuted, textAlign: 'center' }]}>Name one above, or open any entry and tap Add to list.</Text>
-            </View>
+            <EmptyScene theme={theme} scene="ticket" title="No lists yet" text="Name one above, or open any entry and tap Add to list." />
           )
         }
         renderItem={({ item: l }) => (
@@ -106,11 +103,9 @@ const styles = StyleSheet.create({
   lede: { fontFamily: fonts.ui, fontSize: font.footnote, lineHeight: 18 },
   newRow: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderRadius: 12, paddingLeft: 12, paddingRight: 6, minHeight: 52 },
   input: { flex: 1, fontSize: font.body, paddingVertical: 8 },
-  create: { height: 38, borderRadius: 19, paddingHorizontal: 14, alignItems: 'center', justifyContent: 'center' },
+  create: { minHeight: 38, borderRadius: 19, paddingHorizontal: 14, alignItems: 'center', justifyContent: 'center' },
   createText: { fontFamily: fonts.uiSemibold, fontSize: font.caption },
   card: { flexDirection: 'row', alignItems: 'center', gap: 14, borderWidth: 1, borderRadius: 14, padding: 12 },
   name: { fontFamily: fonts.uiBold, fontSize: font.title },
   meta: { fontFamily: fonts.uiSemibold, fontSize: font.caption },
-  empty: { alignItems: 'center', gap: 10, paddingTop: 40, paddingHorizontal: 20 },
-  emptyTitle: { fontFamily: fonts.uiBold, fontSize: font.title2 },
 });

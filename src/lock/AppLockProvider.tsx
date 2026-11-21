@@ -161,7 +161,7 @@ const styles = StyleSheet.create({
   texts: { alignItems: 'center', gap: 6 },
   title: { fontSize: font.title2, fontFamily: fonts.uiBold },
   body: { fontSize: font.body, textAlign: 'center', lineHeight: 21 },
-  button: { flexDirection: 'row', alignItems: 'center', gap: 8, height: 48, paddingHorizontal: 28, borderRadius: 24, marginTop: 8 },
+  button: { flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: 48, paddingHorizontal: 28, borderRadius: 24, marginTop: 8 },
   buttonText: { fontSize: font.body, fontFamily: fonts.uiSemibold },
   message: { fontSize: font.body, textAlign: 'center' },
 });

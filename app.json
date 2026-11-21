@@ -3,7 +3,7 @@
     "name": "Watch Heart",
     "slug": "watch-heart",
     "owner": "inigojo",
-    "version": "1.6.0",
+    "version": "1.7.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "scheme": "watchheart",
@@ -110,7 +110,9 @@
         {
           "fonts": [
             "./node_modules/@expo-google-fonts/bebas-neue/400Regular/BebasNeue_400Regular.ttf",
-            "./node_modules/@expo-google-fonts/courier-prime/700Bold/CourierPrime_700Bold.ttf"
+            "./node_modules/@expo-google-fonts/courier-prime/700Bold/CourierPrime_700Bold.ttf",
+            "./node_modules/@expo-google-fonts/instrument-sans/400Regular/InstrumentSans_400Regular.ttf",
+            "./node_modules/@expo-google-fonts/instrument-sans/600SemiBold/InstrumentSans_600SemiBold.ttf"
           ],
           "widgets": [
             {

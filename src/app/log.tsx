@@ -40,7 +40,7 @@ import { KIND_COLORS, font, fonts, useTheme } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
 import { useSettings } from '@/settings/SettingsProvider';
 import { useDiary } from '@/store/DiaryStore';
-import type { EntryDraft, MediaKind, Title } from '@/store/types';
+import type { Entry, EntryDraft, MediaKind, Title } from '@/store/types';
 
 type Params = {
   /** Edit this entry. */
@@ -107,7 +107,7 @@ function LogForm() {
   const reviewSel = useRef({ start: 0, end: 0 });
   const set = (patch: Partial<EntryDraft>) => setDraft((d) => ({ ...d, ...patch }));
   const reduced = useReducedMotion();
-  const [stamped, setStamped] = useState<string | null>(null);
+  const [stamped, setStamped] = useState<Entry | null>(null);
   const closeForm = useCallback(() => (router.canGoBack() ? router.back() : router.replace('/diary')), []);
   // Set once saved or deleted, so closing the form doesn't ask about unsaved changes.
   const [leaving, setLeaving] = useState(false);
@@ -256,15 +256,15 @@ function LogForm() {
         if (claimed.length) final.episodes = [...new Set([...(final.episodes ?? []), ...claimed])];
       }
     }
-    if (editing) updateEntry(editing.id, final);
-    else addEntry(final);
-    if (settings.haptics) Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+    const saved = editing ? (updateEntry(editing.id, final), null) : addEntry(final);
+    // A new entry's thump comes with its stamp; without the stamp, a plain success tap.
+    if (settings.haptics && (editing || reduced)) Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
     const when = final.undated ? 'date unknown' : friendlyDate(final.watchedOn);
     const extra = ticked ? ` · Season ${final.season} ticked off` : queued ? ' · off your watchlist' : '';
     toast(editing ? `Entry updated${extra}` : `Logged · ${when}${extra}`);
     // A new entry gets the stamp, which closes the form when it's done.
-    if (editing || reduced) setLeaving(true);
-    else setStamped(final.title);
+    if (!saved || reduced) setLeaving(true);
+    else setStamped(saved);
   };
 
   const saveForLater = () => {
@@ -604,7 +604,7 @@ function LogForm() {
       />
       <ConfirmTrash title={trashing && editing ? editing.title : null} onConfirm={remove} onClose={() => setTrashing(false)} />
       <TitlePicker visible={picking} theme={theme} initialQuery={draft.title} initialKind={draft.kind} onPick={repick} onClose={() => setPicking(false)} />
-      {!!stamped && <LoggedStamp theme={theme} title={stamped} onDone={closeForm} />}
+      {!!stamped && <LoggedStamp theme={theme} entry={stamped} onDone={closeForm} />}
     </KeyboardSafe>
   );
 }
@@ -645,7 +645,7 @@ const styles = StyleSheet.create({
   manual: { padding: 16, gap: 18 },
   form: { padding: 16, gap: 20 },
   field: { gap: 8 },
-  headerSaveDisc: { height: 40, paddingHorizontal: 16, borderRadius: 20, backgroundColor: 'rgba(0,0,0,0.5)', alignItems: 'center', justifyContent: 'center' },
+  headerSaveDisc: { minHeight: 40, paddingHorizontal: 16, borderRadius: 20, backgroundColor: 'rgba(0,0,0,0.5)', alignItems: 'center', justifyContent: 'center' },
   row: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   seasonRow: { flexDirection: 'row', gap: 8, paddingRight: 8 },
   input: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: font.body },

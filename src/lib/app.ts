@@ -46,6 +46,18 @@ export const DATA_SOURCES = {
  */
 const NOTES: { id: string; items: string[] }[] = [
   {
+    id: '1.7.0',
+    items: [
+      'When you log something new, its ticket prints and a LOGGED stamp comes down on it',
+      'Recap has the reel: everything you watched that month as a strip of film, in order, with your busiest day lit. Tap a frame to open it',
+      'Empty pages are drawn as a blank ticket or an empty strip of film, with one button for what to do next',
+      'The Up next widget shows each title as a ticket, in the app’s own type',
+      'Buttons and chips grow with larger text instead of cutting it off',
+      'The Watchlist’s pick is centred properly',
+      'With the new version from Google Play or F-Droid, the opening screen fills the whole screen on Android 15',
+    ],
+  },
+  {
     id: '1.6.9',
     items: [
       'New icons drawn for Watch Heart: a cinema for Home, a ticket for the Diary, a lens for Find, a bookmark for the Watchlist, a reel for Recap and a clapperboard for logging',

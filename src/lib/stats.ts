@@ -124,3 +124,14 @@ export function kindSummary(byKind: Record<MediaKind, number>): string {
 }
 
 export const KIND_LABEL: Record<MediaKind, string> = { movie: 'Film', tv: 'Series', anime: 'Anime' };
+
+/** The day with the most viewings, if any day had more than one. */
+export function busiestDay(entries: Entry[]): { day: string; count: number } | null {
+  const counts = new Map<string, number>();
+  for (const e of entries) counts.set(e.watchedOn, (counts.get(e.watchedOn) ?? 0) + 1);
+  let best: { day: string; count: number } | null = null;
+  for (const [day, count] of counts) {
+    if (count > 1 && (!best || count > best.count || (count === best.count && day < best.day))) best = { day, count };
+  }
+  return best;
+}

@@ -79,10 +79,10 @@ export function CompanionField({ names, onChange, known, theme }: { names: strin
 const styles = StyleSheet.create({
   wrap: { gap: 10 },
   row: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  chosen: { flexDirection: 'row', alignItems: 'center', gap: 6, height: 32, paddingHorizontal: 12, borderRadius: 16 },
+  chosen: { flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 32, paddingHorizontal: 12, borderRadius: 16 },
   chosenText: { fontSize: font.footnote, fontWeight: '700' },
   input: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, minHeight: 46 },
   field: { flex: 1, fontSize: font.body, paddingVertical: 8 },
-  suggestion: { flexDirection: 'row', alignItems: 'center', gap: 4, height: 30, paddingHorizontal: 10, borderRadius: 15, borderWidth: 1 },
+  suggestion: { flexDirection: 'row', alignItems: 'center', gap: 4, minHeight: 30, paddingHorizontal: 10, borderRadius: 15, borderWidth: 1 },
   suggestionText: { fontFamily: fonts.ui, fontSize: font.caption },
 });

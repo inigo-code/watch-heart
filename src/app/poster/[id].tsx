@@ -165,7 +165,7 @@ const styles = StyleSheet.create({
   title: { fontFamily: fonts.uiBold, fontSize: font.title2 },
   note: { fontFamily: fonts.ui, fontSize: font.caption, lineHeight: 17 },
   empty: { textAlign: 'center', paddingVertical: 32 },
-  reset: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', gap: 8, height: 38, paddingHorizontal: 14, borderRadius: 19, borderWidth: 1, marginTop: 6 },
+  reset: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', gap: 8, minHeight: 38, paddingHorizontal: 14, borderRadius: 19, borderWidth: 1, marginTop: 6 },
   resetText: { fontFamily: fonts.uiSemibold, fontSize: font.caption },
   poster: { borderRadius: 6, borderWidth: 2 },
   tick: { position: 'absolute', right: 6, top: 6, width: 22, height: 22, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
