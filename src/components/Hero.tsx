@@ -29,14 +29,23 @@ const CREDIT_LABEL: Record<MediaKind, string> = { movie: 'Directed by', tv: 'On'
  * The top of a title's page: its backdrop fading into the screen like the lights going down, the poster
  * in front, and the title on the marquee.
  */
-export function Hero({ t, theme, topInset = 0, onPoster, scrollY, children }: { t: HeroTitle; theme: Theme; topInset?: number; onPoster?: () => void; scrollY?: Animated.Value; children?: ReactNode }) {
+export function Hero({ t, theme, topInset = 0, onPoster, scrollY, pending, children }: {
+  t: HeroTitle;
+  theme: Theme;
+  topInset?: number;
+  onPoster?: () => void;
+  scrollY?: Animated.Value;
+  /** The details are still on their way: their lines hold their place, so the title doesn't jump when they land. */
+  pending?: boolean;
+  children?: ReactNode;
+}) {
   const { width } = useWindowDimensions();
   const backdrop = t.backdropUrl ?? t.posterUrl;
   const height = Math.round(width * 0.56) + topInset;
   // A series' running time is per episode. Anime films (Spirited Away) are logged as anime but run
   // longer than any episode, so they read as a plain running time.
   const perEpisode = t.kind !== 'movie' && !!t.runtime && t.runtime < 70;
-  const meta = [t.year, t.runtime ? formatRuntime(t.runtime) + (perEpisode ? ' / ep' : '') : null].filter(Boolean).join(' · ');
+  const meta = [t.year, t.runtime ? formatRuntime(t.runtime) + (perEpisode ? ' / ep' : '') : null].filter(Boolean).join(', ');
   return (
     <View>
       <View style={{ height, backgroundColor: theme.elevated, overflow: 'hidden' }}>
@@ -67,7 +76,8 @@ export function Hero({ t, theme, topInset = 0, onPoster, scrollY, children }: { 
               {t.originalTitle}
             </Text>
           )}
-          {!!meta && <Text style={[styles.meta, { color: theme.textMuted }]}>{meta}</Text>}
+          {meta ? <Text style={[styles.meta, { color: theme.textMuted }]}>{meta}</Text> : pending && <Ghost theme={theme} width="45%" />}
+          {pending && !t.credit && <Ghost theme={theme} width="70%" />}
           {!!t.credit && (
             <Text style={[styles.meta, { color: theme.textMuted }]} numberOfLines={2}>
               {CREDIT_LABEL[t.kind]} <Text style={{ color: theme.text, fontFamily: fonts.uiSemibold }}>{t.credit}</Text>
@@ -77,7 +87,7 @@ export function Hero({ t, theme, topInset = 0, onPoster, scrollY, children }: { 
       </View>
       {t.genres.length > 0 && (
         <Text style={[styles.genres, { color: theme.textMuted }]} numberOfLines={1}>
-          {t.genres.slice(0, 4).join(' · ')}
+          {t.genres.slice(0, 4).join(', ')}
         </Text>
       )}
       {children}
@@ -85,7 +95,18 @@ export function Hero({ t, theme, topInset = 0, onPoster, scrollY, children }: { 
   );
 }
 
+/** A line of text still to come: a quiet bar the height of the line it stands for. */
+function Ghost({ theme, width }: { theme: Theme; width: `${number}%` }) {
+  return (
+    <View accessible={false}>
+      <Text style={[styles.meta, { color: 'transparent' }]}> </Text>
+      <View style={[styles.ghost, { width, backgroundColor: theme.chip }]} />
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
+  ghost: { position: 'absolute', left: 0, top: '22%', bottom: '22%', borderRadius: 4 },
   row: { flexDirection: 'row', gap: 14, paddingHorizontal: 16, marginTop: -70, alignItems: 'flex-end' },
   poster: { borderWidth: StyleSheet.hairlineWidth, boxShadow: '0 8px 24px rgba(0,0,0,0.5)' },
   posterBadge: { position: 'absolute', right: 6, bottom: 6, width: 26, height: 26, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },

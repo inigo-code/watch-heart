@@ -1,7 +1,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Linking from 'expo-linking';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Animated, ActivityIndicator, Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -9,7 +9,7 @@ import { Text } from '@/components/AppText';
 import { CineIcon } from '@/components/CineIcon';
 import { ConfirmTrash } from '@/components/ConfirmTrash';
 import { useDaySheet } from '@/components/DaySheet';
-import { Tap } from '@/components/Motion';
+import { EASE, Tap, useReducedMotion } from '@/components/Motion';
 import { trackable } from '@/api/episodes';
 import { browseGenre } from '@/api/tmdb';
 import { Stars } from '@/components/Film';
@@ -46,13 +46,22 @@ export default function TitleScreen() {
   const [trashing, setTrashing] = useState<Entry | null>(null);
   const { listsWith } = useLists();
   const seed = useMemo(() => (params.t ? (JSON.parse(params.t) as Title) : null), [params.t]);
-  const { about: a, error } = useAbout(id);
+  const { about: a, error, loading } = useAbout(id);
   const [listing, setListing] = useState(false);
   const [planning, setPlanning] = useState(false);
   const { forTitle } = useMovieNights();
   // Hold Log it to log on a day straight away, without the form.
   const days = useDaySheet();
   const quickLog = useQuickLog();
+  // Opened before its details arrived: placeholders hold the page's shape, then the page fades in once,
+  // instead of lines and buttons popping in one by one. Details already here show at once.
+  const reduced = useReducedMotion();
+  const [shown] = useState(() => new Animated.Value(loading ? 0 : 1));
+  useEffect(() => {
+    if (loading) return;
+    if (reduced) shown.setValue(1);
+    else Animated.timing(shown, { toValue: 1, duration: 220, easing: EASE, useNativeDriver: true }).start();
+  }, [loading, reduced, shown]);
 
   // Search in the Anime tab knows it's anime; TMDB's own details can't always tell (an anime film, say).
   const t: Title | null = a ? { ...a.title, kind: seed?.kind === 'anime' ? 'anime' : a.title.kind, overview: a.overview } : seed;
@@ -87,9 +96,12 @@ export default function TitleScreen() {
         scrollEventThrottle={16}
         onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], { useNativeDriver: true })}
       >
-        <Hero t={{ ...t, genres: [] }} theme={theme} topInset={insets.top} scrollY={scrollY} />
+        <Hero t={{ ...t, genres: [] }} theme={theme} topInset={insets.top} scrollY={scrollY} pending={loading} />
 
-        <View style={styles.body}>
+        {loading ? (
+          <BodyPlaceholder theme={theme} />
+        ) : (
+        <Animated.View style={[styles.body, { opacity: shown }]}>
           {t.genres.length > 0 && (
             <View style={styles.genres}>
               {t.genres.map((g) => {
@@ -160,7 +172,7 @@ export default function TitleScreen() {
 
           {viewings.length > 0 && (
             <View style={styles.block}>
-              <SectionLabel theme={theme}>In your diary · {viewings.length === 1 ? 'seen once' : `seen ${viewings.length}×`}</SectionLabel>
+              <SectionLabel theme={theme}>In your diary, {viewings.length === 1 ? 'seen once' : viewings.length === 2 ? 'seen twice' : `seen ${viewings.length} times`}</SectionLabel>
               {viewings.map((v) => (
                 <View key={v.id} style={[styles.viewing, { backgroundColor: theme.card, borderColor: theme.border }]}>
                   <Pressable
@@ -169,7 +181,7 @@ export default function TitleScreen() {
                     style={styles.viewingOpen}
                   >
                   <Ionicons name="ticket-outline" size={16} color={theme.accent} />
-                  <Text style={[styles.viewingDate, { color: theme.text }]}>{v.season ? `Season ${v.season} · ` : ''}
+                  <Text style={[styles.viewingDate, { color: theme.text }]}>{v.season ? `Season ${v.season}, ` : ''}
                     {v.undated ? 'Date unknown' : friendlyDate(v.watchedOn)}
                   </Text>
                   {v.rating ? <Stars rating={v.rating} size={13} color={theme.star} /> : null}
@@ -190,7 +202,8 @@ export default function TitleScreen() {
           <FriendsOnTitle source={t.source} sourceId={t.sourceId} theme={theme} />
 
           {a && <TitleMore id={id} t={t} about={a} theme={theme} />}
-        </View>
+        </Animated.View>
+        )}
       </Animated.ScrollView>
       {/* The backdrop is the width × 0.56; the bar fills in as its bottom passes under it. */}
       <TopScrim scrollY={scrollY} theme={theme} topInset={insets.top} from={Math.round(width * 0.56) - 56} />
@@ -207,6 +220,30 @@ export default function TitleScreen() {
         }}
         onClose={() => setTrashing(null)}
       />
+    </View>
+  );
+}
+
+/** The page's shape while its details load: genres, the log button, the tools, a few lines of synopsis. */
+function BodyPlaceholder({ theme }: { theme: Theme }) {
+  const bar = { backgroundColor: theme.chip };
+  return (
+    <View style={styles.body} accessibilityLabel="Loading" accessible>
+      <View style={styles.genres}>
+        <View style={[styles.ghostPill, bar, { width: 92 }]} />
+        <View style={[styles.ghostPill, bar, { width: 76 }]} />
+      </View>
+      <View style={[styles.ghostLog, bar]} />
+      <View style={styles.tools}>
+        <View style={[styles.ghostTool, bar]} />
+        <View style={[styles.ghostTool, bar]} />
+        <View style={[styles.ghostTool, bar]} />
+      </View>
+      <View style={styles.ghostLines}>
+        {(['100%', '96%', '88%', '60%'] as const).map((w) => (
+          <View key={w} style={[styles.ghostLine, bar, { width: w }]} />
+        ))}
+      </View>
     </View>
   );
 }
@@ -228,10 +265,15 @@ const styles = StyleSheet.create({
   genre: { borderWidth: 1, borderRadius: 14, paddingHorizontal: 10, paddingVertical: 4 },
   genreText: { fontSize: font.footnote, fontWeight: '600' },
   mainActions: { flexDirection: 'row', gap: 10 },
-  logBtn: { flex: 1, height: 50, borderRadius: 25, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
+  logBtn: { flex: 1, minHeight: 50, borderRadius: 25, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
   logText: { fontFamily: fonts.uiSemibold, fontSize: font.body },
   square: { width: 50, height: 50, borderRadius: 25, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
   tools: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: -10 },
+  ghostPill: { height: 32, borderRadius: 16 },
+  ghostLog: { height: 50, borderRadius: 25 },
+  ghostTool: { width: 112, height: 42, borderRadius: 21 },
+  ghostLines: { gap: 10 },
+  ghostLine: { height: 12, borderRadius: 6 },
   tool: {
     flexGrow: 1,
     flexDirection: 'row',

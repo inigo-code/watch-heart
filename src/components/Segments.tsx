@@ -10,7 +10,7 @@ import type { Theme } from '@/lib/theme';
 const H = 44;
 const PAD = 3;
 
-type Option<K> = { key: K; label: string; icon?: keyof typeof Ionicons.glyphMap };
+type Option<K> = { key: K; label: string; icon?: keyof typeof Ionicons.glyphMap; /** Shown after the label, lighter. */ count?: number };
 
 /**
  * The app's one switch, for choosing between views: the lit pill slides to the side you tap. `pill` and
@@ -40,10 +40,11 @@ export function Segments<K extends string | number>({ theme, options, value, onC
         const on = o.key === value;
         const color = on ? (onPill ?? theme.chipActiveText) : theme.textMuted;
         return (
-          <Pressable key={String(o.key)} onPress={() => onChange(o.key)} accessibilityRole="tab" accessibilityLabel={o.label} accessibilityState={{ selected: on }} hitSlop={{ top: 4, bottom: 4 }} style={styles.option}>
+          <Pressable key={String(o.key)} onPress={() => onChange(o.key)} accessibilityRole="tab" accessibilityLabel={o.count === undefined ? o.label : `${o.label}, ${o.count}`} accessibilityState={{ selected: on }} hitSlop={{ top: 4, bottom: 4 }} style={styles.option}>
             {o.icon && <Ionicons name={o.icon} size={16} color={color} />}
             <Text numberOfLines={1} style={[styles.label, { color }]}>
               {o.label}
+              {o.count !== undefined && <Text style={styles.count}>{`  ${o.count}`}</Text>}
             </Text>
           </Pressable>
         );
@@ -53,8 +54,9 @@ export function Segments<K extends string | number>({ theme, options, value, onC
 }
 
 const styles = StyleSheet.create({
-  wrap: { flexDirection: 'row', height: H, borderRadius: H / 2, padding: PAD },
+  wrap: { flexDirection: 'row', minHeight: H, borderRadius: H / 2, padding: PAD },
   pill: { position: 'absolute', top: PAD, bottom: PAD, left: PAD, borderRadius: (H - PAD * 2) / 2 },
   option: { flex: 1, flexDirection: 'row', gap: 6, alignItems: 'center', justifyContent: 'center' },
   label: { fontFamily: fonts.uiSemibold, fontSize: font.caption },
+  count: { fontFamily: fonts.ui, opacity: 0.75 },
 });

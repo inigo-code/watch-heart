@@ -72,7 +72,7 @@ function ProfileBody() {
     update({ name: d.name.trim(), bio: d.bio.trim() });
     if (quiet) return;
     Keyboard.dismiss();
-    toast(sync.email ? 'Profile saved · syncing to your account' : 'Profile saved');
+    toast(sync.email ? 'Profile saved and syncing to your account' : 'Profile saved');
   };
   // Leaving the screen keeps what you typed. (The draft is read from the ref, so this runs once, on leaving.)
   const saveOnLeave = useRef(saveText);
@@ -242,7 +242,7 @@ function ProfileBody() {
           <Fact theme={theme} icon="albums-outline" text={`${s.viewings} viewings logged`} />
           <Fact theme={theme} icon="tv-outline" text={`${s.episodes} episodes of series and anime`} />
           <Fact theme={theme} icon="star-outline" text={s.avgStars ? `${s.avgStars} stars on average` : 'No ratings yet'} />
-          <Fact theme={theme} icon="heart-outline" text={`${s.loved} loved · ${s.reviews} reviews`} />
+          <Fact theme={theme} icon="heart-outline" text={`${s.loved} loved, ${s.reviews} ${s.reviews === 1 ? 'review' : 'reviews'}`} />
           {s.binge && s.binge.episodes >= 3 && (
             <Fact theme={theme} icon="flash-outline" text={`Longest binge: ${s.binge.episodes} on ${friendlyDate(s.binge.date)}`} />
           )}
@@ -274,8 +274,8 @@ function ProfileBody() {
                 {s.thisYear >= goal
                   ? 'Goal reached. Encore?'
                   : s.thisYear >= onPace
-                    ? `${s.thisYear - onPace} ahead of pace`
-                    : `${onPace - s.thisYear} behind pace`}
+                    ? `${s.thisYear - onPace} ${s.thisYear - onPace === 1 ? 'title' : 'titles'} ahead of pace`
+                    : `${onPace - s.thisYear} ${onPace - s.thisYear === 1 ? 'title' : 'titles'} behind pace`}
               </Text>
             </>
           ) : (
@@ -301,7 +301,7 @@ function ProfileBody() {
           <ActivityGraph weeks={s.weeks} theme={theme} />
           <View style={styles.activityFoot}>
             <Text style={[styles.hint, { color: theme.textMuted, flex: 1 }]}>
-              {s.activeDays} days with something logged · streak {s.currentStreak} · best {s.longestStreak}
+              {s.activeDays} days with something logged. Streak {s.currentStreak}, best {s.longestStreak}
             </Text>
             <ActivityKey theme={theme} />
           </View>
@@ -434,7 +434,7 @@ function ProfileBody() {
                         `last ${friendlyDate(b.lastOn).toLowerCase()}`,
                       ]
                         .filter(Boolean)
-                        .join(' · ')}
+                        .join(', ')}
                     </Text>
                   </View>
                   <Ionicons name="chevron-forward" size={16} color={theme.textMuted} />
@@ -445,7 +445,7 @@ function ProfileBody() {
         )}
 
         {/* Achievements */}
-        <Block theme={theme} title={`Achievements · ${s.achievements.filter((a) => a.tier).length} of ${s.achievements.length} unlocked`}>
+        <Block theme={theme} title={`Achievements, ${s.achievements.filter((a) => a.tier).length} of ${s.achievements.length} unlocked`}>
           <Achievements list={s.achievements} theme={theme} />
           <PerksLine points={achievementPoints(s.achievements)} theme={theme} />
         </Block>
@@ -490,7 +490,6 @@ function Count({ theme, value, label, color }: { theme: Theme; value: number; la
         <CountUp value={value} format={(n) => n.toLocaleString()} />
       </Text>
       <View style={styles.numberLabelRow}>
-        <View style={[styles.dot, { backgroundColor: color }]} />
         <Text style={[styles.numberLabel, { color: theme.textMuted }]}>{label}</Text>
       </View>
     </View>
@@ -574,7 +573,6 @@ const styles = StyleSheet.create({
   number: { flex: 1, borderWidth: 1, borderRadius: 12, paddingVertical: 12, paddingHorizontal: 6, alignItems: 'center' },
   numberValue: { fontFamily: fonts.display, fontSize: 34, includeFontPadding: false },
   numberLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  dot: { width: 6, height: 6, borderRadius: 3 },
   numberLabel: { fontFamily: fonts.uiSemibold, fontSize: 12 },
   facts: { borderWidth: 1, borderRadius: 12, padding: 14, gap: 10, marginTop: -8 },
   fact: { flexDirection: 'row', alignItems: 'center', gap: 10 },

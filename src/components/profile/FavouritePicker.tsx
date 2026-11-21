@@ -113,7 +113,7 @@ export function FavouritePicker({ visible, theme, entries, onPick, onClose }: {
                   <Text style={[styles.name, { color: theme.text }]} numberOfLines={2}>
                     {item.fav.title}
                   </Text>
-                  <Text style={[styles.meta, { color: theme.textMuted }]}>{[KIND_LABEL[item.fav.kind], item.fav.year].filter(Boolean).join(' · ')}</Text>
+                  <Text style={[styles.meta, { color: theme.textMuted }]}>{[KIND_LABEL[item.fav.kind], item.fav.year].filter(Boolean).join(', ')}</Text>
                 </View>
               </Pressable>
             ) : (
@@ -124,9 +124,9 @@ export function FavouritePicker({ visible, theme, entries, onPick, onClose }: {
                   {item.t.fav.title}
                 </Text>
                 <Text style={[styles.meta, { color: theme.textMuted }]}>
-                  {[KIND_LABEL[item.t.fav.kind], item.t.fav.year, item.t.rating ? `${'★'.repeat(Math.floor(item.t.rating / 2))}${item.t.rating % 2 ? '½' : ''}` : null, item.t.liked ? '♥' : null]
-                    .filter(Boolean)
-                    .join(' · ')}
+                  {[KIND_LABEL[item.t.fav.kind], item.t.fav.year].filter(Boolean).join(', ')}
+                  {item.t.rating ? `  ${'★'.repeat(Math.floor(item.t.rating / 2))}${item.t.rating % 2 ? '½' : ''}` : ''}
+                  {item.t.liked ? '  ♥' : ''}
                 </Text>
               </View>
             </Pressable>

@@ -14,13 +14,13 @@ import { shownError } from '@/lib/errors';
 // checks or applies one now. The update APIs reject in Expo Go, dev builds and the web preview.
 const canUpdate = Updates.isEnabled && !__DEV__;
 
-/** What's running: "1.0.0 · update 5bdf7e74, 27 Oct" or "1.0.0 · built-in". */
+/** What's running: "1.0.0, update 5bdf7e74 from 27 Oct" or "1.0.0, built in". */
 export function describeRunning(): string {
   const version = Constants.expoConfig?.version ?? '';
-  if (!canUpdate) return `${version} · development`;
-  if (Updates.isEmbeddedLaunch || !Updates.updateId) return `${version} · built-in`;
+  if (!canUpdate) return `${version}, development build`;
+  if (Updates.isEmbeddedLaunch || !Updates.updateId) return `${version}, built in`;
   const when = Updates.createdAt ? Updates.createdAt.toLocaleDateString(undefined, { day: 'numeric', month: 'short' }) : '';
-  return `${version} · update ${Updates.updateId.slice(0, 8)}${when ? `, ${when}` : ''}`;
+  return `${version}, update ${Updates.updateId.slice(0, 8)}${when ? ` from ${when}` : ''}`;
 }
 
 type State = 'dev' | 'checking' | 'downloading' | 'ready' | 'latest' | 'idle';

@@ -5,16 +5,31 @@
 import { storage } from '@/lib/storage';
 
 const store = new Map<string, { at: number; value: Promise<unknown> }>();
+// The answers that have arrived, so a screen can draw them on its first frame instead of one frame later.
+const settled = new Map<string, unknown>();
 
 export function cached<T>(key: string, maxAgeMs: number, load: () => Promise<T>): Promise<T> {
   const hit = store.get(key);
   if (hit && Date.now() - hit.at < maxAgeMs) return hit.value as Promise<T>;
   const value = load();
   store.set(key, { at: Date.now(), value });
-  value.catch(() => {
-    if (store.get(key)?.value === value) store.delete(key);
-  });
+  settled.delete(key);
+  value.then(
+    (v) => {
+      if (store.get(key)?.value === value) settled.set(key, v);
+    },
+    () => {
+      if (store.get(key)?.value === value) store.delete(key);
+    },
+  );
   return value;
+}
+
+/** The kept answer for `key` if it has already arrived (and is younger than `maxAgeMs`), without waiting. */
+export function peek<T>(key: string, maxAgeMs: number): T | undefined {
+  const hit = store.get(key);
+  if (!hit || Date.now() - hit.at >= maxAgeMs) return undefined;
+  return settled.get(key) as T | undefined;
 }
 
 export const MINUTE = 60_000;
@@ -24,6 +39,7 @@ let refreshedAt = 0;
 /** Pull to refresh: forget what's kept, so the next question goes to the network. */
 export function refreshAnswers() {
   store.clear();
+  settled.clear();
   refreshedAt = Date.now();
 }
 

@@ -87,7 +87,7 @@ export default function ListsScreen() {
               )}
               <Text style={[styles.meta, { color: theme.textMuted }]}>
                 {l.items.length} {l.items.length === 1 ? 'title' : 'titles'}
-                {l.ranked ? ' · Ranked' : ''}
+                {l.ranked ? ', ranked' : ''}
               </Text>
             </View>
             <Ionicons name="chevron-forward" size={18} color={theme.textMuted} />

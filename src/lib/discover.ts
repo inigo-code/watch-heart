@@ -155,7 +155,7 @@ export function seasonalShelves(today = new Date()): Seasonal[] {
       id: 'diwali',
       icon: 'sparkles',
       name: 'Diwali at home',
-      note: n > 0 ? `Indian family favourites · ${until(n, 'Diwali')}` : 'Indian family favourites',
+      note: n > 0 ? `Indian family favourites, ${until(n, 'Diwali')}` : 'Indian family favourites',
       q: { kind: 'movie', country: 'IN', genres: ['Family'], minScore: 7, minVotes: 50 },
     });
   }
@@ -165,7 +165,7 @@ export function seasonalShelves(today = new Date()): Seasonal[] {
       id: 'halloween',
       icon: 'moon',
       name: 'Halloween',
-      note: n ? `Films for the night · ${until(n, 'Halloween')}` : 'Films for the night · it’s Halloween',
+      note: n ? `Films for the night, ${until(n, 'Halloween')}` : 'Films for the night: it’s Halloween',
       q: { kind: 'movie', keywords: [3335], minScore: 6.3, minVotes: 300 },
     });
   }
@@ -175,7 +175,7 @@ export function seasonalShelves(today = new Date()): Seasonal[] {
       id: 'christmas',
       icon: 'gift',
       name: 'Christmas',
-      note: n > 0 ? `Festive favourites · ${until(n, 'Christmas')}` : 'Festive favourites',
+      note: n > 0 ? `Festive favourites, ${until(n, 'Christmas')}` : 'Festive favourites',
       q: { kind: 'movie', keywords: [207317], notGenres: ['Horror'], minScore: 6.5, minVotes: 300 },
     });
   }
@@ -191,7 +191,7 @@ export function seasonalShelves(today = new Date()): Seasonal[] {
       id: 'valentine',
       icon: 'heart',
       name: 'Valentine’s romance',
-      note: n ? `Well-loved love stories · ${until(n, 'Valentine’s Day')}` : 'Well-loved love stories · it’s Valentine’s Day',
+      note: n ? `Well-loved love stories, ${until(n, 'Valentine’s Day')}` : 'Well-loved love stories: it’s Valentine’s Day',
       q: { kind: 'movie', genres: ['Romance'], minScore: 7, minVotes: 1000 },
     });
   }

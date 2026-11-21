@@ -41,6 +41,7 @@ import type { Theme } from '@/lib/theme';
 import { useSettings } from '@/settings/SettingsProvider';
 import { useDiary } from '@/store/DiaryStore';
 import type { Entry, EntryDraft, MediaKind, Title } from '@/store/types';
+import { onDay } from '@/components/DaySheet';
 
 type Params = {
   /** Edit this entry. */
@@ -259,9 +260,8 @@ function LogForm() {
     const saved = editing ? (updateEntry(editing.id, final), null) : addEntry(final);
     // A new entry's thump comes with its stamp; without the stamp, a plain success tap.
     if (settings.haptics && (editing || reduced)) Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
-    const when = final.undated ? 'date unknown' : friendlyDate(final.watchedOn);
-    const extra = ticked ? ` · Season ${final.season} ticked off` : queued ? ' · off your watchlist' : '';
-    toast(editing ? `Entry updated${extra}` : `Logged · ${when}${extra}`);
+    const extra = ticked ? `, season ${final.season} ticked off` : queued ? ' and taken off your watchlist' : '';
+    toast(editing ? `Entry updated${extra}` : `Logged ${onDay({ watchedOn: final.watchedOn, undated: !!final.undated })}${extra}`);
     // A new entry gets the stamp, which closes the form when it's done.
     if (!saved || reduced) setLeaving(true);
     else setStamped(saved);
@@ -321,8 +321,8 @@ function LogForm() {
           headerTransparent: !manual,
           headerStyle: { backgroundColor: manual ? theme.bg : 'transparent' },
           headerTintColor: manual ? theme.text : '#FFFFFF',
-          headerBackVisible: manual,
-          headerLeft: manual ? undefined : () => <BackDisc />,
+          headerBackVisible: false,
+          headerLeft: () => <BackDisc plain={manual} />,
           headerRight: () => (
             <Tap onPress={save} hitSlop={10} accessibilityRole="button" accessibilityLabel="Save" style={[headerEnd, !manual && styles.headerSaveDisc]}>
               <Text style={[styles.headerSave, { color: manual ? theme.text : '#FFFFFF' }]}>Save</Text>
@@ -454,7 +454,7 @@ function LogForm() {
             </Field>
           )}
 
-          <Field theme={theme} label={draft.season ? `Your rating · Season ${draft.season}` : 'Your rating'}>
+          <Field theme={theme} label={draft.season ? `Your rating for season ${draft.season}` : 'Your rating'}>
             <View style={styles.ratingRow}>
               <StarInput value={draft.rating} onChange={(rating) => set({ rating })} theme={theme} size={38} />
               <Text style={[styles.ratingValue, { color: draft.rating ? theme.text : theme.textMuted }]}>
@@ -484,14 +484,14 @@ function LogForm() {
               <TextInput
                 value={draft.progress}
                 onChangeText={(progress) => set({ progress })}
-                placeholder="e.g. Season 2 · Ep 1–8"
+                placeholder="e.g. S2 Ep 1–8"
                 placeholderTextColor={theme.textMuted}
                 style={[styles.input, { color: theme.text, backgroundColor: theme.card, borderColor: theme.border }]}
               />
             </Field>
           )}
 
-          <Field theme={theme} label={draft.season ? `Review · Season ${draft.season}` : 'Review'}>
+          <Field theme={theme} label={draft.season ? `Review of season ${draft.season}` : 'Review'}>
             <View style={styles.formatBar}>
               {([
                 ['bold', 'B', { fontWeight: '800' }],

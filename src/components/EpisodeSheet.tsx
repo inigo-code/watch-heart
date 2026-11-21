@@ -34,7 +34,7 @@ export function EpisodeSheet({ episode, theme, seen, seenOn, rating, onRate, onT
   const { height } = useWindowDimensions();
   const e = episode;
   const out = !!e?.airDate && e.airDate <= today();
-  const details = e ? [e.airDate ? friendlyDate(e.airDate) : null, e.runtime ? `${e.runtime} min` : null].filter(Boolean).join(' · ') : '';
+  const details = e ? [e.airDate ? friendlyDate(e.airDate) : null, e.runtime ? `${e.runtime} min` : null].filter(Boolean).join(', ') : '';
   return (
     <BottomSheet visible={e !== null} onClose={onClose}>
       {e && (
@@ -42,7 +42,7 @@ export function EpisodeSheet({ episode, theme, seen, seenOn, rating, onRate, onT
           <ScrollView contentContainerStyle={styles.body} showsVerticalScrollIndicator={false}>
             {!!e.still && <Image source={e.still} style={[styles.still, { backgroundColor: theme.elevated }]} contentFit="cover" transition={150} accessibilityIgnoresInvertColors />}
             <Text style={[styles.kicker, { color: theme.textMuted }]}>
-              Season {e.season} · Episode {e.number}
+              Season {e.season}, episode {e.number}
             </Text>
             <Text style={[styles.name, { color: theme.text }]}>{e.name || `Episode ${e.number}`}</Text>
             <View style={styles.meta}>
@@ -73,7 +73,7 @@ export function EpisodeSheet({ episode, theme, seen, seenOn, rating, onRate, onT
                 <Ionicons name="calendar-outline" size={16} color={theme.accent} />
                 <Text style={[styles.dayText, { color: theme.text }]}>
                   {seen && seenOn
-                    ? `${seenOn === UNKNOWN_DAY ? 'Seen, date unknown' : `Seen ${friendlyDate(seenOn).toLowerCase()}`} · Change the day`
+                    ? `${seenOn === UNKNOWN_DAY ? 'Seen, date unknown' : `Seen ${friendlyDate(seenOn).toLowerCase()}`}. Change the day`
                     : 'Watched it another day? Choose the day'}
                 </Text>
               </Tap>

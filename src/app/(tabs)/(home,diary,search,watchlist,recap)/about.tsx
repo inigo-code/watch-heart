@@ -1,3 +1,4 @@
+import Constants from 'expo-constants';
 import * as Linking from 'expo-linking';
 import { Image, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -7,7 +8,7 @@ import { BrandTitle } from '@/components/BrandTitle';
 import { HeartAppsCard } from '@/components/HeartApps';
 import { Sprockets } from '@/components/Film';
 import { Row, Section } from '@/components/SettingsUI';
-import { UpdateCard, describeRunning } from '@/components/UpdateRow';
+import { UpdateCard } from '@/components/UpdateRow';
 import { ANILIST_ALLOWED, APP_TAGLINE, DATA_SOURCES, DEVELOPER, HEART_APPS, SUPPORT_EMAIL } from '@/lib/app';
 import { font, fonts, useTheme } from '@/lib/theme';
 
@@ -22,14 +23,15 @@ export default function AboutScreen() {
         <View style={styles.cardBody}>
           <BrandTitle theme={{ ...theme, text: theme.dark ? theme.text : theme.bg, accent: theme.accentOnDark }} size={44} />
           <Text style={[styles.tagline, { color: theme.accentOnDark }]}>{APP_TAGLINE}</Text>
-          <Text style={styles.version}>Version {describeRunning()}</Text>
+          {/* The version alone; the card below says which update is running. */}
+          <Text style={styles.version}>Version {Constants.expoConfig?.version}</Text>
           <Pressable
             onPress={() => Linking.openURL(HEART_APPS.url)}
             accessibilityRole="link"
             accessibilityLabel="A Heart App. Open the Heart Apps website"
             style={({ pressed }) => [styles.family, pressed && { opacity: 0.75 }]}
           >
-            <Text style={styles.familyText}>A HEART APP</Text>
+            <Text style={styles.familyText}>A Heart App</Text>
           </Pressable>
         </View>
         <Sprockets color={theme.bg} count={14} hole={6} />
@@ -86,7 +88,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(242, 184, 75, 0.14)',
   },
   // The negative margin takes back the letter spacing after the last letter, so the words sit dead centre.
-  familyText: { fontFamily: fonts.uiSemibold, fontSize: font.caption, lineHeight: 16, marginRight: -1.5, includeFontPadding: false, color: '#F2B84B' },
+  familyText: { fontFamily: fonts.uiSemibold, fontSize: font.caption, lineHeight: 16, includeFontPadding: false, color: '#F2B84B' },
   tmdb: { gap: 6, paddingHorizontal: 4, marginTop: -8 },
   // Smaller than Watch Heart's own title, as TMDB's terms ask.
   tmdbLogo: { width: 78, height: 10, opacity: 0.85 },

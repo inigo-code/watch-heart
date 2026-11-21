@@ -59,7 +59,14 @@ export function counts(t: Track) {
   return { aired: aired.length, seen, total, left: aired.length - seen };
 }
 
-/** "S1 · Ep 3–5", "S1 · Ep 3, 7", "S1 · Ep 9–10 · S2 · Ep 1": what a day's episodes add up to. */
+/**
+ * A progress note as it's shown. Notes saved before 1.7.0 used dots ("S1 · Ep 3–5 · S2 · Ep 1",
+ * "Season 2 · 3 episodes"); they read as "S1 Ep 3–5; S2 Ep 1" and "Season 2, 3 episodes".
+ */
+export const plainProgress = (p: string) =>
+  p.replace(/\bS(\d+) · (?=Ep\b)/g, 'S$1 ').replace(/ · (?=S\d)/g, '; ').replace(/ · /g, ', ');
+
+/** "S1 Ep 3–5", "S1 Ep 3, 7", "S1 Ep 9–10; S2 Ep 1": what a day's episodes add up to. */
 export function progressLabel(keys: string[]): string {
   const bySeason = new Map<number, number[]>();
   for (const k of keys) {
@@ -77,9 +84,9 @@ export function progressLabel(keys: string[]): string {
         runs.push(j > i ? `${sorted[i]}–${sorted[j]}` : String(sorted[i]));
         i = j;
       }
-      return `S${s} · Ep ${runs.join(', ')}`;
+      return `S${s} Ep ${runs.join(', ')}`;
     })
-    .join(' · ');
+    .join('; ');
 }
 
 export const newTrack = (now: number): Track => ({ status: 'watching', seen: {}, seasons: [], lastAired: null, nextAir: null, ended: false, checkedAt: 0, startedAt: now });

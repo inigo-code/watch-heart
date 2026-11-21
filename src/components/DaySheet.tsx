@@ -19,6 +19,10 @@ type Ask = {
 export const dayWords = (d: Day) =>
   d.undated ? 'date unknown' : d.watchedOn === today() || d.watchedOn === daysAgo(1) ? friendlyDate(d.watchedOn).toLowerCase() : friendlyDate(d.watchedOn);
 
+/** "today", "yesterday", "on Mon 3 Nov 2025", "with no date": after "Logged", in toasts. */
+export const onDay = (d: Day) =>
+  d.undated ? 'with no date' : d.watchedOn === today() || d.watchedOn === daysAgo(1) ? friendlyDate(d.watchedOn).toLowerCase() : `on ${friendlyDate(d.watchedOn)}`;
+
 /**
  * Asks which day something was watched: today, yesterday, a date (Android's calendar), or "don't remember".
  * `ask` opens it; render `sheet` once on the page.

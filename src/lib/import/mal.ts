@@ -40,7 +40,7 @@ export function fromMal(xml: string): ImportResult {
     const finished = toDay(tag(block, 'my_finish_date'));
     const started = toDay(tag(block, 'my_start_date'));
     const label = /hold|^3$/.test(status) ? 'on hold' : /drop|^4$/.test(status) ? 'dropped' : /watching|^1$/.test(status) ? 'watching' : '';
-    const progress = isFilm ? '' : total ? `Ep ${seen}/${total}${label ? ` · ${label}` : ''}` : seen ? `${seen} eps${label ? ` · ${label}` : ''}` : label;
+    const progress = isFilm ? '' : total ? `Ep ${seen}/${total}${label ? `, ${label}` : ''}` : seen ? `${seen} eps${label ? `, ${label}` : ''}` : label;
     result.entries.push(
       importedEntry(`mal-${id || title}`, {
         kind: 'anime',

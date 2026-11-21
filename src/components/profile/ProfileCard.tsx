@@ -71,7 +71,7 @@ export const ProfileCard = forwardRef<StoryHandle, Props>(function ProfileCard({
         ))}
       </View>
       <Text allowFontScaling={false} style={[styles.line, { color: p.muted }]}>
-        {stats.thisYear} IN {year} · {stats.longestStreak}-DAY BEST STREAK{stats.avgStars ? ` · ${stats.avgStars}★ AVG` : ''}
+        {`${stats.thisYear} IN ${year}   ${stats.longestStreak}-DAY BEST STREAK${stats.avgStars ? `   ${stats.avgStars}★ AVERAGE` : ''}`}
       </Text>
       <View style={{ flex: 1 }} />
       <CardBrand color={p.muted} style={styles.brand} />

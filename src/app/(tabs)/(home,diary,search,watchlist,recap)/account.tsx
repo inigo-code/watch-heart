@@ -343,7 +343,7 @@ function SignedIn({ theme }: { theme: Theme }) {
         </View>
         <Text style={[styles.p, { color: theme.textMuted }]}>
           {lastSyncedAt ? `Last synced ${new Date(lastSyncedAt).toLocaleTimeString()}` : 'Not synced yet this session'}
-          {unsentCount > 0 ? ` · ${unsentCount} change${unsentCount === 1 ? '' : 's'} waiting` : ''}
+          {unsentCount > 0 ? `, ${unsentCount} change${unsentCount === 1 ? '' : 's'} waiting` : ''}
         </Text>
         {status === 'waiting' && (
           <Text style={[styles.p, { color: theme.textMuted }]}>

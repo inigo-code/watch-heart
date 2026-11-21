@@ -10,7 +10,7 @@ import type { WatchItem } from '@/store/types';
 
 export type UpNextItem = {
   title: string;
-  /** "S2 · E4", or "Film · 2024" for something on the watchlist. */
+  /** "S2 E4", or "Film, 2024" for something on the watchlist. */
   line: string;
   /** "3 left", "Back Fri 31 Oct", "On your watchlist". */
   note: string;
@@ -35,7 +35,7 @@ export type UpNextSnapshot = {
 export const WIDGET_KEY = 'watchheart/widget-up-next';
 export const MAX_ITEMS = 8;
 
-const episode = (s: number, n: number) => `S${s} · E${n}`;
+const episode = (s: number, n: number) => `S${s} E${n}`;
 // Widgets keep their pictures in memory; the smallest TMDB poster that still looks sharp.
 const small = (url: string | null) => (url ? url.replace('/w342/', '/w154/').replace('/w500/', '/w154/') : null);
 const page = (w: WatchItem) => (w.source === 'tmdb' && w.sourceId ? `watchheart://title/${encodeURIComponent(w.sourceId)}` : 'watchheart://watchlist');
@@ -71,7 +71,7 @@ export function upNextSnapshot(watchlist: WatchItem[], todayIso: string, accent:
   for (const w of [...watchlist].filter((x) => !x.track).sort((a, b) => b.addedAt - a.addedAt)) {
     items.push({
       title: w.title,
-      line: [KIND_LABEL[w.kind], w.year].filter(Boolean).join(' · '),
+      line: [KIND_LABEL[w.kind], w.year].filter(Boolean).join(', '),
       note: w.note.trim() || 'On your watchlist',
       poster: small(w.posterUrl),
       uri: page(w),

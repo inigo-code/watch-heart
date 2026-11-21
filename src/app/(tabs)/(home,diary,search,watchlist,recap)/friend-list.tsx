@@ -66,7 +66,7 @@ export default function FriendListScreen() {
           {!!list.description && <Text style={[styles.desc, { color: theme.textMuted }]}>{list.description}</Text>}
           <Text style={[styles.hint, { color: theme.textMuted }]}>
             {list.items.length} {list.items.length === 1 ? 'title' : 'titles'}
-            {list.ranked ? ' · ranked' : ''} · you’ve seen {list.items.filter(seen).length}
+            {list.ranked ? ', ranked' : ''}, you’ve seen {list.items.filter(seen).length}
           </Text>
         </View>
       }

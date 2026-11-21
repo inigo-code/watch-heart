@@ -233,7 +233,7 @@ export default function FriendsScreen() {
   );
 }
 
-/** "Sam · Past Lives ★★★★½ · Sat 24 Oct": opens the title. */
+/** Sam, Past Lives with its stars, and the day: opens the title. */
 function FeedRow({ e, theme }: { e: FriendEntry; theme: Theme }) {
   const what = watchedLabel(e);
   const rating = viewingRating(e);

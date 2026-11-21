@@ -89,7 +89,7 @@ function fromRows(rows: Row[], f: Fields, origin: string, kindHint: MediaKind | 
 
   for (const [k, g] of groups) {
     const seasons = [...g.seasons];
-    const label = seasons.length === 1 ? `Season ${seasons[0].replace(/^season\s*/i, '')} · ` : '';
+    const label = seasons.length === 1 ? `Season ${seasons[0].replace(/^season\s*/i, '')}, ` : '';
     entries.push(
       importedEntry(`g-${origin}-ep-${hash(k)}`, {
         kind: kindFrom(f.type ? g.row[f.type] : undefined) === 'anime' ? 'anime' : 'tv',

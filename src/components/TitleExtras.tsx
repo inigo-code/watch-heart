@@ -105,7 +105,7 @@ export function TitleExtras({ source, sourceId, imdbId, title, year, series, the
         )}
       </View>
 
-      <SectionLabel theme={theme}>Where to watch · {countryName(region)}</SectionLabel>
+      <SectionLabel theme={theme}>Where to watch in {countryName(region)}</SectionLabel>
       {w && (w.stream.length || w.free.length || w.rent.length || w.buy.length) ? (
         <View style={{ gap: 10 }}>
           <Providers theme={theme} kind="Stream" list={w.stream} title={title ?? ''} page={w.link} />
@@ -153,7 +153,8 @@ function Score({
       style={({ pressed }) => [styles.score, { backgroundColor: pressed ? theme.chip : theme.card, borderColor: theme.border }]}
     >
       <View style={styles.scoreHead}>
-        <Text style={[styles.scoreLabel, { color: theme.textMuted }]} numberOfLines={1}>
+        {/* Two lines, so "Rotten Tomatoes" stays whole at larger text sizes. */}
+        <Text style={[styles.scoreLabel, { color: theme.textMuted }]} numberOfLines={2}>
           {label}
         </Text>
         {onPress && <Ionicons name="open-outline" size={12} color={theme.textMuted} />}

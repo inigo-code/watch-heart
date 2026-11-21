@@ -82,7 +82,7 @@ export default function RootLayout() {
 }
 
 // Pages above the tabs wear the same header as the ones in them.
-const PAGE_HEADER = { headerTransparent: true, headerStyle: { backgroundColor: 'transparent' }, headerBackVisible: false, headerLeft: () => <BackDisc /> };
+const PAGE_HEADER = { headerTransparent: true, headerStyle: { backgroundColor: 'transparent' }, headerBackVisible: false, headerLeft: () => <BackDisc plain /> };
 
 function Navigator() {
   const theme = useTheme();

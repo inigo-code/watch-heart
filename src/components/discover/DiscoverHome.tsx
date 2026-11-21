@@ -46,7 +46,7 @@ export function DiscoverHome({ theme, tmdb, region }: { theme: Theme; tmdb: stri
     <View style={styles.wrap}>
       {providers.length > 0 && (
         <View style={styles.section}>
-          <SectionLabel theme={theme}>On your services · {countryName(region)}</SectionLabel>
+          <SectionLabel theme={theme}>On your services in {countryName(region)}</SectionLabel>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={rail.edge} contentContainerStyle={styles.providers}>
             {providers.map((p) => (
               <Pressable
@@ -129,7 +129,7 @@ export function DiscoverHome({ theme, tmdb, region }: { theme: Theme; tmdb: stri
         </View>
         <Ionicons name="chevron-forward" size={16} color={theme.textMuted} />
       </Pressable>
-      <Text style={[styles.credit, { color: theme.textMuted }]}>Discover by TMDB · streaming data by JustWatch</Text>
+      <Text style={[styles.credit, { color: theme.textMuted }]}>Discover data from TMDB, streaming data from JustWatch</Text>
     </View>
   );
 }

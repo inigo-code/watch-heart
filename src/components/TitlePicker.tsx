@@ -119,7 +119,7 @@ function PickerBody({
                 {item.title}
               </Text>
               <Text style={[styles.meta, { color: theme.textMuted }]}>
-                {[KIND_LABEL[item.kind], item.year, item.originalTitle].filter(Boolean).join(' · ')}
+                {[KIND_LABEL[item.kind], item.year, item.originalTitle].filter(Boolean).join(', ')}
               </Text>
             </View>
             <Ionicons name="checkmark-circle-outline" size={22} color={theme.accent} />

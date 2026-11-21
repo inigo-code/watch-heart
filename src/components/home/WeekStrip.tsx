@@ -55,7 +55,7 @@ export function WeekStrip({ entries, theme }: { entries: Entry[]; theme: Theme }
         {month.length > 0 && (
           <Tap onPress={() => router.navigate('/diary')} accessibilityRole="button" accessibilityLabel="Open your diary">
             <Text style={[styles.month, { color: theme.textMuted }]}>
-              {stats.total} this month{hours ? ` · ${hours}h` : ''}
+              {stats.total} this month{hours ? `, ${hours}h` : ''}
             </Text>
           </Tap>
         )}

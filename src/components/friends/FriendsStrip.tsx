@@ -72,7 +72,7 @@ export function FriendsStrip({ theme, adding, onAdd }: { theme: Theme; adding: b
               </Text>
               <Text style={[styles.hint, { color: theme.textMuted }]} numberOfLines={1}>
                 {diaryLine(f)}
-                {f.bio ? ` · ${f.bio}` : ''}
+                {f.bio ? `, ${f.bio}` : ''}
               </Text>
             </View>
             <Ionicons name="chevron-forward" size={18} color={theme.textMuted} />

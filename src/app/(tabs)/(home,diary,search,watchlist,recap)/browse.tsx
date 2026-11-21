@@ -12,9 +12,10 @@ import type { BrowseQuery, BrowseSort, Provider } from '@/api/tmdb';
 import { BottomSheet } from '@/components/BottomSheet';
 import { Chip, Poster } from '@/components/Film';
 import { SectionLabel } from '@/components/SectionLabel';
+import { Segments } from '@/components/Segments';
 import { openTitle, warmTitle } from '@/components/title/Rows';
 import { DECADES, LANGUAGES, kindsFor } from '@/lib/discover';
-import { KIND_COLORS, font, fonts, useTheme } from '@/lib/theme';
+import { font, fonts, useTheme } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
 import { useSettings } from '@/settings/SettingsProvider';
 import { useDiary } from '@/store/DiaryStore';
@@ -122,26 +123,16 @@ export default function BrowseScreen() {
         ListHeaderComponent={
           query.ids ? (
             // A fixed list (award winners): its own order, nothing to sort or filter.
-            <Text style={[styles.listNote, { color: theme.textMuted }]}>{query.ids.length} films, newest first · winners from Wikidata</Text>
+            <Text style={[styles.listNote, { color: theme.textMuted }]}>{query.ids.length} films, newest first, winners from Wikidata</Text>
           ) : (
           <View style={{ gap: 10 }}>
             {kinds.length > 1 && (
-              <View style={[styles.kinds, { borderColor: theme.border }]}>
-                {KINDS.filter((k) => kinds.includes(k.kind)).map((k) => {
-                  const on = query.kind === k.kind;
-                  return (
-                    <Pressable
-                      key={k.kind}
-                      onPress={() => setQuery((q) => ({ ...q, kind: k.kind }))}
-                      accessibilityRole="tab"
-                      accessibilityState={{ selected: on }}
-                      style={[styles.kind, on && { backgroundColor: KIND_COLORS[k.kind] }]}
-                    >
-                      <Text style={[styles.kindText, { color: on ? '#0B0A0D' : theme.textMuted }]}>{k.label}</Text>
-                    </Pressable>
-                  );
-                })}
-              </View>
+              <Segments
+                theme={theme}
+                value={query.kind}
+                onChange={(kind) => setQuery((q) => ({ ...q, kind }))}
+                options={KINDS.filter((k) => kinds.includes(k.kind)).map((k) => ({ key: k.kind, label: k.label }))}
+              />
             )}
             <View style={styles.bar}>
               {SORTS.map((s) => (
@@ -363,7 +354,7 @@ function Filters({
             </Group>
           )}
           {providers.length > 0 && (
-            <Group theme={theme} title={`Streaming on · ${region}`}>
+            <Group theme={theme} title={`Streaming in ${region}`}>
               {providers.map((p) => (
                 <Chip
                   key={p.id}
@@ -400,9 +391,6 @@ function Group({ theme, title, children }: { theme: Theme; title: string; childr
 const styles = StyleSheet.create({
   listNote: { fontFamily: fonts.ui, fontSize: font.footnote },
   bar: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 },
-  kinds: { flexDirection: 'row', borderWidth: 1, borderRadius: 10, padding: 3, gap: 3 },
-  kind: { flex: 1, height: 34, borderRadius: 7, alignItems: 'center', justifyContent: 'center' },
-  kindText: { fontFamily: fonts.uiSemibold, fontSize: font.footnote },
   filterBtn: { width: 38, height: 38, borderRadius: 19, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
   note: { fontFamily: fonts.ui, fontSize: font.footnote, textAlign: 'center', paddingVertical: 32 },
   watched: { opacity: 0.25 },

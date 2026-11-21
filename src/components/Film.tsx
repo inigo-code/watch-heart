@@ -192,7 +192,6 @@ export function Chip({ label, active, icon, color, theme, onPress }: {
       style={[styles.chip, { backgroundColor: active ? theme.chipActive : 'transparent', borderColor: active ? theme.chipActive : theme.border }]}
     >
       {icon && <Ionicons name={icon} size={14} color={color && !active ? color : fg} />}
-      {!icon && color && !active && <View style={[styles.dot, { backgroundColor: color }]} />}
       <Text style={[styles.chipText, { color: fg }]}>{label}</Text>
     </Tap>
   );
@@ -209,6 +208,5 @@ const styles = StyleSheet.create({
   badgeTextSmall: { fontSize: 12 },
   sprockets: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 6 },
   chip: { flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 32, paddingHorizontal: 12, borderRadius: 16, borderWidth: 1 },
-  dot: { width: 7, height: 7, borderRadius: 4 },
   chipText: { fontFamily: fonts.uiSemibold, fontSize: font.caption },
 });

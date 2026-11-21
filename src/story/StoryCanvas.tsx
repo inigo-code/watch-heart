@@ -13,6 +13,7 @@ import { plainText } from '@/lib/richText';
 import { computeStats, kindSummary, oneEach, titleKey } from '@/lib/stats';
 import { fonts } from '@/lib/theme';
 import type { Entry } from '@/store/types';
+import { plainProgress } from '@/lib/tracking';
 
 import { sharp } from './export';
 import { PALETTES } from './palettes';
@@ -159,7 +160,7 @@ function Masthead({ p, title, subtitle, count, compact }: { p: Palette; title: s
         {title}
       </Text>
       <Text allowFontScaling={false} style={[styles.subtitle, { color: p.muted }]}>
-        {subtitle} · {count} {count === 1 ? 'TITLE' : 'TITLES'}
+        {`${subtitle}   ${count} ${count === 1 ? 'TITLE' : 'TITLES'}`}
       </Text>
     </View>
   );
@@ -276,7 +277,7 @@ function Tickets({ p, entries, total, options, settled }: LayoutProps) {
                 {e.rewatch && <Ionicons name="repeat" size={10} color={p.muted} />}
                 {!!e.progress && (
                   <Text allowFontScaling={false} style={[styles.ticketProgress, { color: p.muted }]} numberOfLines={1}>
-                    {e.progress}
+                    {plainProgress(e.progress)}
                   </Text>
                 )}
               </View>

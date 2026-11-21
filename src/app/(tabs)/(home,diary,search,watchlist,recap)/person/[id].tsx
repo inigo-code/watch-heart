@@ -78,7 +78,7 @@ export default function PersonScreen() {
               {!!person.born && (
                 <Text style={[styles.meta, { color: theme.textMuted }]}>
                   Born {person.born.slice(0, 4)}
-                  {person.place ? ` · ${person.place}` : ''}
+                  {person.place ? ` in ${person.place}` : ''}
                 </Text>
               )}
               <Text style={[styles.meta, { color: theme.text }]}>
@@ -110,7 +110,7 @@ export default function PersonScreen() {
                     { borderColor: filter === f ? theme.chipActive : theme.border, backgroundColor: filter === f ? theme.chipActive : 'transparent' },
                   ]}
                 >
-                  <Text style={[styles.filterText, { color: filter === f ? theme.chipActiveText : theme.text }]}>{f}</Text>
+                  <Text style={[styles.filterText, { color: filter === f ? theme.chipActiveText : theme.text }]}>{f.charAt(0).toUpperCase() + f.slice(1)}</Text>
                 </Pressable>
               ))}
           </View>
@@ -136,7 +136,7 @@ export default function PersonScreen() {
             {item.title}
           </Text>
           <Text style={[styles.cellRole, { color: theme.textMuted }]} numberOfLines={2}>
-            {[item.year, item.role].filter(Boolean).join(' · ')}
+            {[item.year, item.role].filter(Boolean).join(', ')}
           </Text>
         </Pressable>
       )}

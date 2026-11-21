@@ -156,7 +156,7 @@ export default function ListScreen() {
                 <Text style={[styles.itemTitle, { color: theme.text }]} numberOfLines={2}>
                   {item.title}
                 </Text>
-                <Text style={[styles.meta, { color: theme.textMuted }]}>{[KIND_LABEL[item.kind], item.year].filter(Boolean).join(' · ')}</Text>
+                <Text style={[styles.meta, { color: theme.textMuted }]}>{[KIND_LABEL[item.kind], item.year].filter(Boolean).join(', ')}</Text>
               </View>
               {editing ? (
                 <View style={styles.tools}>

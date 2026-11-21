@@ -114,13 +114,13 @@ export function computeStats(entries: Entry[]): Stats {
 
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 
-/** "12 films · 3 series · 2 anime", leaving out kinds with none. */
+/** "12 films, 3 series and 2 anime", leaving out kinds with none. */
 export function kindSummary(byKind: Record<MediaKind, number>): string {
   const parts = [];
   if (byKind.movie) parts.push(plural(byKind.movie, 'film', 'films'));
   if (byKind.tv) parts.push(plural(byKind.tv, 'series', 'series'));
   if (byKind.anime) parts.push(`${byKind.anime} anime`);
-  return parts.join(' · ') || 'Nothing yet';
+  return parts.length > 1 ? `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}` : parts[0] || 'Nothing yet';
 }
 
 export const KIND_LABEL: Record<MediaKind, string> = { movie: 'Film', tv: 'Series', anime: 'Anime' };

@@ -112,7 +112,7 @@ export default function ImportScreen() {
       r.skipped ? `${r.skipped} were already here` : '',
       undated ? `${undated} without a watch date are in the Archive` : '',
     ].filter(Boolean);
-    setDone(parts.join(' · '));
+    setDone(`${parts.join('. ')}.`);
     setFound(null);
   };
 
@@ -147,7 +147,7 @@ export default function ImportScreen() {
                 <View style={{ flex: 1 }}>
                   <Text style={[styles.sourceName, { color: theme.text }]}>{s.source}</Text>
                   <Text style={[styles.meta, { color: theme.textMuted }]}>
-                    {[s.entries ? `${s.entries} in the diary` : '', s.watchlist ? `${s.watchlist} on the watchlist` : ''].filter(Boolean).join(' · ')}
+                    {[s.entries ? `${s.entries} in the diary` : '', s.watchlist ? `${s.watchlist} on the watchlist` : ''].filter(Boolean).join(' and ')}
                   </Text>
                   {!!s.note && <Text style={[styles.meta, { color: theme.textMuted }]}>{s.note}</Text>}
                 </View>

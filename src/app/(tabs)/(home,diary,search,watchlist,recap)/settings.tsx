@@ -234,7 +234,7 @@ export default function SettingsScreen() {
               ]}
             />
           </ControlRow>
-          <ControlRow theme={theme} label="Accent" value={`${ACCENTS[settings.accent].label} · ${ACCENTS[settings.accent].note}`} last>
+          <ControlRow theme={theme} label="Accent" value={`${ACCENTS[settings.accent].label}: ${ACCENTS[settings.accent].note.toLowerCase()}`} last>
             <View style={styles.swatches}>
               {(Object.keys(ACCENTS) as AccentKey[]).map((key) => {
                 const [color, onColor] = ACCENTS[key][theme.dark ? 'dark' : 'light'];

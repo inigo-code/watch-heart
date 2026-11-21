@@ -84,7 +84,7 @@ export function FriendsOnTitle({ source, sourceId, theme }: { source: string; so
                   {p.latest.rating ? (
                     <Stars rating={p.latest.rating} size={10} color={theme.star} />
                   ) : (
-                    <Text style={[styles.small, { color: theme.textMuted }]}>seen</Text>
+                    <Text style={[styles.small, { color: theme.textMuted }]}>Seen</Text>
                   )}
                   {p.latest.liked && <Ionicons name="heart" size={10} color={theme.like} />}
                 </View>

@@ -1,4 +1,4 @@
-import { MINUTE, cached, cachedOnDisk } from '@/api/cache';
+import { MINUTE, cached, cachedOnDisk, peek } from '@/api/cache';
 import type { MediaKind, Title } from '@/store/types';
 
 // TMDB: free for non-commercial use with your own key (themoviedb.org/settings/api).
@@ -368,8 +368,13 @@ function crewOf(rows: CrewRow[], creators: { id: number; name: string; profile_p
  */
 export function aboutTmdb(key: string, sourceId: string, signal?: AbortSignal): Promise<TitleAbout> {
   void signal;
-  return cached(`about:${sourceId}`, 12 * 60 * MINUTE, () => loadAbout(key, sourceId));
+  return cached(`about:${sourceId}`, ABOUT_AGE, () => loadAbout(key, sourceId));
 }
+
+const ABOUT_AGE = 12 * 60 * MINUTE;
+
+/** The title page's answer if it's already here (touched in a list, or opened before), so the page opens whole. */
+export const aboutKnown = (sourceId: string) => peek<TitleAbout>(`about:${sourceId}`, ABOUT_AGE);
 
 async function loadAbout(key: string, sourceId: string, signal?: AbortSignal): Promise<TitleAbout> {
   const [type, id] = sourceId.split(':') as ['movie' | 'tv', string];

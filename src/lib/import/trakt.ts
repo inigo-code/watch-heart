@@ -90,8 +90,8 @@ export function fromTrakt(files: Partial<Record<TraktFile, unknown[]>>): ImportR
     const n = g.episodes.length;
     const progress =
       n === 1 && g.episodes[0].season !== undefined
-        ? `S${g.episodes[0].season} · Ep ${g.episodes[0].number}`
-        : `${seasons.length === 1 ? `Season ${seasons[0]} · ` : ''}${n} episodes`;
+        ? `S${g.episodes[0].season} Ep ${g.episodes[0].number}`
+        : `${seasons.length === 1 ? `Season ${seasons[0]}, ` : ''}${n} episodes`;
     entries.push(
       importedEntry(`trakt-ep-${hash(k)}`, {
         kind: 'tv',

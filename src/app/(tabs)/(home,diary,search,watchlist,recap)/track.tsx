@@ -8,7 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ActionSheet } from '@/components/ActionSheet';
 import { Text } from '@/components/AppText';
 import { HeaderDisc } from '@/components/BackDisc';
-import { dayWords, useDaySheet } from '@/components/DaySheet';
+import { onDay, useDaySheet } from '@/components/DaySheet';
 import { seasonEpisodes, showInfo } from '@/api/episodes';
 import type { Episode, ShowInfo } from '@/api/episodes';
 import { EpisodeSheet } from '@/components/EpisodeSheet';
@@ -139,7 +139,7 @@ export default function TrackScreen() {
   const tick = (e: Episode) => {
     const was = isSeen(e);
     tracker.toggle(item ?? show, e.season, e.number, info ?? undefined, day);
-    toast(was ? `Unticked S${e.season} · E${e.number}` : `S${e.season} · E${e.number} logged · ${dayWords(day)}`);
+    toast(was ? `Unticked S${e.season} E${e.number}` : `S${e.season} E${e.number} logged ${onDay(day)}`);
   };
   const rated = (e: Episode) => track?.ratings?.[epKey(e.season, e.number)] ?? 0;
   const upToHere = (e: Episode) => {
@@ -147,7 +147,7 @@ export default function TrackScreen() {
     const keys: string[] = [];
     for (const s of info.seasons) for (let n = 1; n <= s.count; n++) if (s.n < e.season || (s.n === e.season && n <= e.number)) keys.push(epKey(s.n, n));
     tracker.markMany(item ?? show, keys, true, info, day);
-    toast(`Caught up to S${e.season} · E${e.number}`);
+    toast(`Caught up to S${e.season} E${e.number}`);
   };
 
   const target = item ?? show;
@@ -163,7 +163,7 @@ export default function TrackScreen() {
     const was = track?.seen[key];
     days.ask(
       {
-        title: `S${e.season} · E${e.number}${e.name ? ` · ${e.name}` : ''}${was ? `\n${seenLine(was)}` : ''}`,
+        title: `S${e.season} E${e.number}${e.name ? `: ${e.name}` : ''}${was ? `\n${seenLine(was)}` : ''}`,
         verb: was ? 'Seen' : 'Watched',
         extra: [
           { label: 'Catch up to here (every episode before it too)', icon: 'play-skip-forward-outline', onPress: () => upToHere(e) },
@@ -172,7 +172,7 @@ export default function TrackScreen() {
       },
       (d) => {
         tracker.logOn(target, [key], d, info ?? undefined);
-        toast(`S${e.season} · E${e.number} logged · ${dayWords(d)}`);
+        toast(`S${e.season} E${e.number} logged ${onDay(d)}`);
       },
     );
   };
@@ -184,14 +184,14 @@ export default function TrackScreen() {
     const seenHere = keys.filter((k) => track?.seen[k]);
     days.ask(
       {
-        title: `Season ${n} · ${seenHere.length} of ${keys.length} aired episodes seen`,
+        title: `Season ${n}: ${seenHere.length} of ${keys.length} aired episodes seen`,
         extra: seenHere.length
           ? [{ label: `Unmark season ${n}`, icon: 'close-circle-outline', destructive: true, onPress: () => (tracker.logSeason(target, n, keys, false, info ?? undefined), toast(`Season ${n} unmarked`)) }]
           : [],
       },
       (d) => {
         tracker.logOn(target, keys, d, info ?? undefined);
-        toast(`Season ${n} logged · ${dayWords(d)}`);
+        toast(`Season ${n} logged ${onDay(d)}`);
       },
     );
   };
@@ -214,7 +214,7 @@ export default function TrackScreen() {
           {c ? (
             <>
               <Text style={[styles.note, { color: theme.textMuted }]}>
-                {c.seen} of {c.aired} aired episodes seen{c.total > c.aired ? ` · ${c.total} announced` : ''}
+                {c.seen} of {c.aired} aired episodes seen{c.total > c.aired ? `, ${c.total} announced` : ''}
               </Text>
               <View style={[styles.track, { backgroundColor: theme.elevated }]}>
                 <View style={[styles.fill, { width: `${c.aired ? (c.seen / c.aired) * 100 : 0}%`, backgroundColor: theme.accent }]} />
@@ -230,16 +230,16 @@ export default function TrackScreen() {
         <View style={[styles.next, { backgroundColor: theme.card, borderColor: theme.border }]}>
           <Ionicons name={up ? 'play-circle' : 'calendar'} size={22} color={theme.accent} />
           <Text style={[styles.nextText, { color: theme.text }]}>
-            {up ? `Up next: S${up.season} · E${up.number}` : `Caught up. S${track!.nextAir!.season} · E${track!.nextAir!.number} airs ${friendlyDate(track!.nextAir!.date)}`}
+            {up ? `Up next: S${up.season} E${up.number}` : `Caught up. S${track!.nextAir!.season} E${track!.nextAir!.number} airs ${friendlyDate(track!.nextAir!.date)}`}
           </Text>
           {up && (
             <Pressable
-              onPress={() => (setSeason(up.season), tracker.toggle(item ?? show, up.season, up.number, info ?? undefined, day), toast(`S${up.season} · E${up.number} logged · ${dayWords(day)}`))}
+              onPress={() => (setSeason(up.season), tracker.toggle(item ?? show, up.season, up.number, info ?? undefined, day), toast(`S${up.season} E${up.number} logged ${onDay(day)}`))}
               onLongPress={() =>
-                days.ask({ title: `S${up.season} · E${up.number}` }, (d) => {
+                days.ask({ title: `S${up.season} E${up.number}` }, (d) => {
                   setSeason(up.season);
                   tracker.logOn(target, [epKey(up.season, up.number)], d, info ?? undefined);
-                  toast(`S${up.season} · E${up.number} logged · ${dayWords(d)}`);
+                  toast(`S${up.season} E${up.number} logged ${onDay(d)}`);
                 })
               }
               accessibilityRole="button"
@@ -304,7 +304,7 @@ export default function TrackScreen() {
             <Pressable
               onPress={() => {
                 if (current != null) tracker.logSeason(item ?? show, current, seasonKeys, !seasonDone, info, day);
-                toast(seasonDone ? `Season ${current} unmarked` : `Season ${current} logged · ${dayWords(day)}`);
+                toast(seasonDone ? `Season ${current} unmarked` : `Season ${current} logged ${onDay(day)}`);
               }}
               onLongPress={() => current != null && seasonMenu(current)}
               accessibilityRole="button"
@@ -359,7 +359,7 @@ export default function TrackScreen() {
                       <Text style={[styles.epMeta, { color: theme.textMuted }]}>
                         {[e.airDate ? (out ? friendlyDate(e.airDate) : `Airs ${friendlyDate(e.airDate)}`) : 'Date not announced', e.runtime ? `${e.runtime} min` : null, seen && track?.seen[epKey(e.season, e.number)] ? seenWords(track.seen[epKey(e.season, e.number)]) : null]
                           .filter(Boolean)
-                          .join(' · ')}
+                          .join(', ')}
                       </Text>
                     </View>
                     {!!rated(e) && (
@@ -418,7 +418,7 @@ export default function TrackScreen() {
                   onPress: () =>
                     days.ask({ title: `${unseenAired.length} episodes not ticked yet` }, (d) => {
                       tracker.logOn(target, unseenAired, d, info ?? undefined);
-                      toast(`${unseenAired.length} episodes logged · ${dayWords(d)}`);
+                      toast(`${unseenAired.length} episodes logged ${onDay(d)}`);
                     }),
                 },
               ]
@@ -431,7 +431,7 @@ export default function TrackScreen() {
                   onPress: () =>
                     days.ask({ title: `All ${seenKeys.length} seen episodes`, verb: 'Seen' }, (d) => {
                       tracker.logOn(target, seenKeys, d, info ?? undefined);
-                      toast(`${seenKeys.length} episodes now seen · ${dayWords(d)}`);
+                      toast(`${seenKeys.length} episodes moved to ${onDay(d).replace(/^on /, '')}`);
                     }),
                 },
                 { label: 'Unmark every episode', icon: 'close-circle-outline' as const, destructive: true, onPress: () => setClearing(true) },

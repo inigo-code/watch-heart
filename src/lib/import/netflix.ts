@@ -7,7 +7,7 @@ import type { ImportResult, Row } from './common';
 //   Start Time, Duration, Title, Supplemental Video Type…), for every profile. Trailers and previews are
 //   left out, and so are plays under five minutes.
 // Netflix titles name the episode too ("Severance: Season 2: Hello, Ms. Cobel"): episodes of a show
-// watched on the same day become one entry, like "Season 2 · 3 episodes".
+// watched on the same day become one entry, like "Season 2, 3 episodes".
 
 export function isNetflix(headers: string[]): boolean {
   const h = headers.map((x) => x.toLowerCase());
@@ -77,7 +77,7 @@ export function fromNetflix(csv: string): ImportResult & { profile?: string; ski
       kind: g.film ? 'movie' : 'tv',
       title: g.show,
       watchedOn: g.day,
-      progress: g.film ? '' : `${g.seasons.size === 1 ? `${[...g.seasons][0]} · ` : ''}${g.count} ${g.count === 1 ? 'episode' : 'episodes'}`,
+      progress: g.film ? '' : `${g.seasons.size === 1 ? `${[...g.seasons][0]}, ` : ''}${g.count} ${g.count === 1 ? 'episode' : 'episodes'}`,
     }),
   );
   return { entries, watchlist: [], profile, skippedProfiles };

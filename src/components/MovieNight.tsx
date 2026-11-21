@@ -85,7 +85,7 @@ export function useMovieNights() {
     const old = settings.movieNights.filter((n) => n.sourceId === t.sourceId);
     await Promise.all(old.map((n) => cancelMovieNight(n.reminderId)));
     update({ movieNights: [...settings.movieNights.filter((n) => n.sourceId !== t.sourceId), night] });
-    if (!onWatchlist(t)) addToWatchlist(t, `Planned · ${nightLabel(night.at)}`);
+    if (!onWatchlist(t)) addToWatchlist(t, `Planned for ${nightLabel(night.at)}`);
     toast(
       reminderId
         ? `Planned: ${nightLabel(night.at)}. You’ll get a reminder.`
@@ -204,7 +204,7 @@ export function MovieNightCard({ night, theme, showTitle }: { night: MovieNight;
       >
         {showTitle && <Poster uri={night.posterUrl} title={night.title} width={40} theme={theme} radius={3} />}
         <View style={{ flex: 1, gap: 2 }}>
-          <Text style={[styles.admit, { color: theme.textMuted }]}>ADMIT ONE · PLANNED</Text>
+          <Text style={[styles.admit, { color: theme.textMuted }]}>{'ADMIT ONE   PLANNED'}</Text>
           <Text style={[styles.cardWhen, { color: theme.text }]} numberOfLines={2}>
             {showTitle ? night.title : nightLabel(night.at)}
           </Text>

@@ -139,7 +139,8 @@ export default function WatchlistScreen() {
         <Tap onPress={() => router.push('/lists')} accessibilityRole="button" accessibilityLabel="Your lists" style={[styles.listsBtn, { borderColor: theme.border, backgroundColor: theme.chip }]}>
           <Ionicons name="albums-outline" size={20} color={theme.text} />
           <Text style={[styles.listsText, { color: theme.text }]} numberOfLines={1}>
-            My lists{lists.length ? ` · ${lists.length}` : ''}
+            My lists
+            {lists.length > 0 && <Text style={{ fontFamily: fonts.ui, color: theme.textMuted }}>{`  ${lists.length}`}</Text>}
           </Text>
         </Tap>
       </View>
@@ -149,8 +150,8 @@ export default function WatchlistScreen() {
           value={view}
           onChange={(v) => setChosen({ from: params.view, view: v })}
           options={[
-            { key: 'next', label: `Up next · ${queue.length}` },
-            { key: 'watching', label: `Watching · ${tracked.length}` },
+            { key: 'next', label: 'Up next', count: queue.length },
+            { key: 'watching', label: 'Watching', count: tracked.length },
           ]}
         />
       )}
@@ -211,7 +212,6 @@ export default function WatchlistScreen() {
               {item.title}
             </Text>
             <Text style={[styles.tileMeta, { color: theme.textMuted }]} numberOfLines={1}>
-              <Text style={{ color: KIND_COLORS[item.kind] }}>● </Text>
               {(sort === 'runtime' ? runtimeLabel(item) : item.year) ?? '—'}
             </Text>
             {(() => {
@@ -339,7 +339,7 @@ function NextWatch({
             {!!item.year && (
               <Text style={[styles.featureMeta, { color: theme.textMuted }]} numberOfLines={2}>
                 {item.year}
-                {item.credit ? ` · ${item.credit}` : ''}
+                {item.credit ? `, ${item.credit}` : ''}
               </Text>
             )}
             {!!item.note && (

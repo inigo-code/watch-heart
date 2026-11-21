@@ -12,6 +12,7 @@ import { plainText } from '@/lib/richText';
 import { KIND_LABEL } from '@/lib/stats';
 import { fonts } from '@/lib/theme';
 import type { Entry } from '@/store/types';
+import { plainProgress } from '@/lib/tracking';
 
 import { sharp } from './export';
 import { PALETTES } from './palettes';
@@ -71,7 +72,7 @@ export const ReviewCard = forwardRef<StoryHandle, Props>(function ReviewCard({ e
           {entry.title.toUpperCase()}
         </Text>
         <Text allowFontScaling={false} style={[styles.meta, { color: p.muted }]} numberOfLines={1}>
-          {[KIND_LABEL[entry.kind].toUpperCase(), entry.year, entry.progress || null].filter(Boolean).join(' · ')}
+          {[KIND_LABEL[entry.kind].toUpperCase(), entry.year, entry.progress ? plainProgress(entry.progress) : null].filter(Boolean).join(', ')}
         </Text>
         {!!entry.credit && (
           <Text allowFontScaling={false} style={[styles.meta, { color: p.muted }]} numberOfLines={1}>

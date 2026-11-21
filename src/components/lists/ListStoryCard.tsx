@@ -65,7 +65,7 @@ export const ListStoryCard = forwardRef<StoryHandle, { list: UserList; palette: 
         )}
         <Text allowFontScaling={false} style={[styles.count, { color: p.muted }]}>
           {list.items.length} {list.items.length === 1 ? 'TITLE' : 'TITLES'}
-          {more > 0 ? ` · ${more} MORE IN THE APP` : ''}
+          {more > 0 ? `, ${more} MORE IN THE APP` : ''}
         </Text>
       </View>
       <CardBrand color={p.muted} style={styles.brand} />

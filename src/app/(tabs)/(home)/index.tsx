@@ -140,7 +140,7 @@ export default function HomeScreen() {
                     {next && (
                       <View style={[styles.episode, { backgroundColor: theme.accent }]}>
                         <Text style={[styles.episodeText, { color: theme.accentText }]}>
-                          S{next.season} · E{next.number}
+                          S{next.season} E{next.number}
                         </Text>
                       </View>
                     )}
@@ -179,7 +179,7 @@ export default function HomeScreen() {
 
       {(cinemaTitles === null || cinemaTitles.length > 0) && (
         <View style={styles.block}>
-          <RowHead title={`In cinemas · ${countryName(region)}`} theme={theme} more="See all" onMore={() => browse(inCinemasQuery(region), `In cinemas · ${countryName(region)}`)} />
+          <RowHead title={`In cinemas in ${countryName(region)}`} theme={theme} more="See all" onMore={() => browse(inCinemasQuery(region), `In cinemas in ${countryName(region)}`)} />
           {cinemaTitles ? <TitleRow titles={cinemaTitles} theme={theme} seen={seen} /> : <Skeleton theme={theme} />}
         </View>
       )}

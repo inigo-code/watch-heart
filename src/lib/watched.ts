@@ -1,4 +1,4 @@
-import { parseKey } from '@/lib/tracking';
+import { parseKey, plainProgress } from '@/lib/tracking';
 
 type Viewing = { season?: number | null; episodes?: string[]; progress?: string; rating?: number; episodeRatings?: Record<string, number> };
 
@@ -15,7 +15,7 @@ export function watchedLabel(e: Viewing): string | null {
     if (nums.length === 1) return `S${eps[0].season} E${first}`;
     return last - first + 1 === nums.length ? `S${eps[0].season} E${first}–${last}` : `S${eps[0].season}, ${nums.length} episodes`;
   }
-  return e.progress?.trim() || null;
+  return e.progress?.trim() ? plainProgress(e.progress.trim()) : null;
 }
 
 /** The stars to show for a viewing: its own, or a single episode's. */

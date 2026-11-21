@@ -2,7 +2,7 @@ import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import { useCallback } from 'react';
 
-import { dayWords } from '@/components/DaySheet';
+import { onDay } from '@/components/DaySheet';
 import { useToast } from '@/components/Toast';
 import { today } from '@/lib/dates';
 import { blankDraft } from '@/lib/entryDraft';
@@ -30,7 +30,7 @@ export function useQuickLog() {
         rewatch: t.kind === 'movie' && viewingsOf(t.source, t.sourceId).length > 0,
       });
       if (settings.haptics) Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
-      toast(`Logged · ${dayWords(when)}${waiting && !waiting.track ? ' · off your watchlist' : ''}`, {
+      toast(`Logged ${onDay(when)}${waiting && !waiting.track ? ' and taken off your watchlist' : ''}`, {
         label: 'Edit',
         onPress: () => router.push({ pathname: '/log', params: { id: entry.id } }),
       });

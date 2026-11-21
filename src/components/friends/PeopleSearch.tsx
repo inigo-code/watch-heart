@@ -20,7 +20,7 @@ const someone = (id: string) => router.push({ pathname: '/someone/[id]', params:
 const plural = (n: number, one: string) => `${n} ${one}${n === 1 ? '' : 's'}`;
 /** Why someone is suggested: friends you share first, then titles. */
 const why = (p: Suggestion) =>
-  [p.mutual ? `${plural(p.mutual, 'friend')} in common` : '', p.common ? `${plural(p.common, 'title')} in common` : ''].filter(Boolean).join(' · ');
+  [p.mutual ? `${plural(p.mutual, 'friend')} in common` : '', p.common ? `${plural(p.common, 'title')} in common` : ''].filter(Boolean).join(', ');
 
 /**
  * Friends by name: requests waiting for you, people you might know, a search of people who chose to be

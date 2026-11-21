@@ -28,6 +28,7 @@ import { font, fonts, useTheme } from '@/lib/theme';
 import { useLists } from '@/lists/ListsProvider';
 import { useDiary } from '@/store/DiaryStore';
 import type { Title } from '@/store/types';
+import { plainProgress } from '@/lib/tracking';
 
 export default function EntryScreen() {
   const theme = useTheme();
@@ -111,8 +112,9 @@ export default function EntryScreen() {
             </View>
             <View style={styles.ticketBody}>
               <Text style={[styles.watched, { color: theme.textMuted }]}>
-                {entry.season ? `SEASON ${entry.season} · ` : ''}
-                {entry.rewatch ? 'REWATCHED' : 'WATCHED'} {entry.undated ? '· DATE UNKNOWN' : friendlyDate(entry.watchedOn).toUpperCase()}
+                {entry.season ? `SEASON ${entry.season}, ` : ''}
+                {/* The stub already has the day and month; the line adds the year. */}
+                {entry.rewatch ? 'REWATCHED' : 'WATCHED'}{entry.undated ? ', DATE UNKNOWN' : ` IN ${entry.watchedOn.slice(0, 4)}`}
               </Text>
               <View style={styles.line}>
                 {entry.rating ? (
@@ -122,7 +124,7 @@ export default function EntryScreen() {
                 )}
                 {entry.liked && <Ionicons name="heart" size={22} color={theme.like} accessibilityLabel="Liked" />}
               </View>
-              {!!entry.progress && <Text style={[styles.progress, { color: theme.text }]}>{entry.progress}</Text>}
+              {!!entry.progress && <Text style={[styles.progress, { color: theme.text }]}>{plainProgress(entry.progress)}</Text>}
               {!!entry.companions?.length && (
                 <View style={styles.with}>
                   <Ionicons name="people" size={15} color={theme.textMuted} />

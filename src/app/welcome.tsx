@@ -3,13 +3,14 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Stack, router } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
-import { Animated, Easing, Pressable, ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
+import { Animated, BackHandler, Easing, Pressable, ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { tmdbKey } from '@/api';
 import { watchRegion } from '@/api/omdb';
 import { discoverTmdb, trendingAllTmdb } from '@/api/tmdb';
 import { ActionSheet } from '@/components/ActionSheet';
+import { HeaderDisc } from '@/components/BackDisc';
 import { Text, TextInput } from '@/components/AppText';
 import { BrandTitle } from '@/components/BrandTitle';
 import { Chip, Poster } from '@/components/Film';
@@ -84,6 +85,13 @@ export default function WelcomeScreen() {
     leave(then);
   };
 
+  // Android's back key steps back through the set-up instead of leaving it.
+  useEffect(() => {
+    if (step === 0) return;
+    const sub = BackHandler.addEventListener('hardwareBackPress', () => (setStep(step - 1), true));
+    return () => sub.remove();
+  }, [step]);
+
   return (
     <View style={[styles.screen, { backgroundColor: theme.bg }]}>
       <Stack.Screen options={{ headerShown: false, gestureEnabled: false, animation: 'fade' }} />
@@ -92,6 +100,9 @@ export default function WelcomeScreen() {
       ) : (
         <KeyboardSafe style={{ flex: 1 }}>
           <View style={[styles.top, { paddingTop: insets.top + 12 }]}>
+            <View style={styles.back}>
+              <HeaderDisc start plain icon="arrow-back" label="Back" onPress={() => setStep(step - 1)} />
+            </View>
             <View style={styles.progress} accessibilityLabel={`Step ${step + 1} of ${STEPS}`}>
               {Array.from({ length: STEPS }, (_, i) => (
                 <View key={i} style={[styles.dash, { backgroundColor: i <= step ? theme.accent : theme.border }]} />
@@ -318,7 +329,9 @@ const styles = StyleSheet.create({
   headline: { fontFamily: fonts.display, fontSize: font.marquee, lineHeight: 46, letterSpacing: 1, includeFontPadding: false },
   lead: { fontSize: font.body, lineHeight: 22 },
   actions: { gap: 4, marginTop: 8 },
-  top: { flexDirection: 'row', alignItems: 'center', gap: 16, paddingHorizontal: 16, paddingBottom: 8 },
+  top: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingBottom: 8 },
+  // The arrow's glyph lines up with the page's margin, like the plain back arrow on other pages.
+  back: { marginLeft: -8 },
   progress: { flex: 1, flexDirection: 'row', gap: 6 },
   dash: { flex: 1, height: 4, borderRadius: 2 },
   skip: { fontFamily: fonts.uiSemibold, fontSize: font.footnote },

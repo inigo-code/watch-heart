@@ -8,6 +8,7 @@ import { dayParts, monthName } from '@/lib/dates';
 import { KIND_COLORS, font, fonts, kindColor } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
 import type { Entry, MediaKind } from '@/store/types';
+import { plainProgress } from '@/lib/tracking';
 
 const NOTCH = 14;
 const PAPER_PRINT = require('../../assets/ticket-paper.png');
@@ -73,10 +74,11 @@ export function TicketStub({ entry, theme, onPress, onLongPress }: {
         </Text>
         <View style={styles.meta}>
           <KindBadge kind={entry.kind} theme={theme} small />
-          {!!entry.season && <Text style={[styles.progress, { color: theme.accent }]}>{`S${entry.season}`}</Text>}
-          {!!entry.progress && (
+          {/* "S2" once: not again when the note starts with it, and no note that only says "Season 2". */}
+          {!!entry.season && !entry.progress.startsWith(`S${entry.season} `) && <Text style={[styles.progress, { color: theme.accent }]}>{`S${entry.season}`}</Text>}
+          {!!entry.progress && entry.progress.trim().toLowerCase() !== `season ${entry.season}` && (
             <Text style={[styles.progress, { color: theme.textMuted }]} numberOfLines={1}>
-              {entry.progress}
+              {plainProgress(entry.progress)}
             </Text>
           )}
         </View>
@@ -138,11 +140,14 @@ export function ReelHeader({ month, count, theme, onShare }: { month: string; co
       <View style={styles.reelRow}>
         <View style={{ flex: 1 }}>
           <Text maxFontSizeMultiplier={1.15} style={[styles.reelMonth, { color: theme.dark ? theme.text : theme.bg }]}>{archive ? 'THE ARCHIVE' : monthName(month).toUpperCase()}</Text>
-          <Text style={[styles.reelMeta, { color: theme.accentOnDark }]}>
-            {archive
-              ? `NO WATCH DATE · ${count} ${count === 1 ? 'TITLE' : 'TITLES'}`
-              : `${month.slice(0, 4)} · REEL ${String(reel).padStart(2, '0')} · ${count} ${count === 1 ? 'TITLE' : 'TITLES'}`}
-          </Text>
+          {/* Printed fields with room between them, like a film's edge code. */}
+          <View style={styles.reelFields}>
+            {(archive ? ['NO WATCH DATE'] : [month.slice(0, 4), `REEL ${String(reel).padStart(2, '0')}`]).concat(`${count} ${count === 1 ? 'TITLE' : 'TITLES'}`).map((f) => (
+              <Text key={f} style={[styles.reelMeta, { color: theme.accentOnDark }]}>
+                {f}
+              </Text>
+            ))}
+          </View>
         </View>
         {!archive && (
           <Pressable
@@ -181,6 +186,7 @@ const styles = StyleSheet.create({
   reel: { paddingVertical: 6, gap: 8, borderRadius: 4, marginTop: 14 },
   reelRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, gap: 10 },
   reelMonth: { fontFamily: fonts.display, fontSize: 34, lineHeight: 36, letterSpacing: 2, includeFontPadding: false },
+  reelFields: { flexDirection: 'row', flexWrap: 'wrap', columnGap: 16 },
   reelMeta: { fontFamily: fonts.ticketBold, fontSize: 12, letterSpacing: 1.2 },
   reelShare: { flexDirection: 'row', alignItems: 'center', gap: 5, borderWidth: 1, borderRadius: 14, minHeight: 28, paddingHorizontal: 10 },
   reelShareText: { fontFamily: fonts.ticketBold, fontSize: 12, letterSpacing: 1 },

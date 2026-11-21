@@ -55,7 +55,10 @@ export const contextLabel = (key: string) => CONTEXTS.find((c) => c.key === key)
 export const hasViewingDetails = (e: Pick<Entry, 'vibes' | 'device' | 'context' | 'platform' | 'character'>) =>
   !!(e.vibes?.length || e.device || e.context?.length || e.platform || e.character);
 
-/** "On TV · At home · Netflix", for the entry page. */
+/** "On TV, at home, Netflix", for the entry page. */
 export function viewingLine(e: Pick<Entry, 'device' | 'context' | 'platform'>): string {
-  return [DEVICES.find((d) => d.key === e.device)?.phrase, ...(e.context ?? []).map(contextLabel), e.platform].filter(Boolean).join(' · ');
+  const words = [DEVICES.find((d) => d.key === e.device)?.phrase, ...(e.context ?? []).map(contextLabel)]
+    .filter((w): w is string => !!w)
+    .map((w, i) => (i ? w.charAt(0).toLowerCase() + w.slice(1) : w));
+  return [...words, e.platform].filter(Boolean).join(', ');
 }

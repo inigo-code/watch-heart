@@ -13,7 +13,7 @@ import type { Entry, Title, Track, TrackStatus, WatchItem } from '@/store/types'
 // What the tracker does to the diary:
 // - Tracking a show keeps it on the watchlist (it shows under Continue watching, not Up next).
 // - Ticking one episode logs it on the day you chose (today unless you pick another, or "don't remember"):
-//   that day's diary entry for the show gains it ("S1 · Ep 3–4"), or a new one is made. Unticking takes it
+//   that day's diary entry for the show gains it ("S1 Ep 3–4"), or a new one is made. Unticking takes it
 //   out again (an entry left with nothing in it goes).
 // - Catching up ("up to here") only marks episodes seen, without diary entries.
 // - A diary entry's date changing moves its episodes' seen day with it.

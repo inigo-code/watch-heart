@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ActionSheet } from '@/components/ActionSheet';
-import { dayWords, useDaySheet } from '@/components/DaySheet';
+import { onDay, useDaySheet } from '@/components/DaySheet';
 import { Text } from '@/components/AppText';
 import { Poster } from '@/components/Film';
 import { Rise, Tap } from '@/components/Motion';
@@ -73,9 +73,9 @@ export function ContinueWatching({ items, theme, hidden }: { items: WatchItem[];
                         </Text>
                         <Text style={[styles.meta, { color: theme.textMuted }]} numberOfLines={1}>
                           {up
-                            ? `Next: S${up.season} · E${up.number}`
+                            ? `Next: S${up.season} E${up.number}`
                             : t.nextAir
-                              ? `S${t.nextAir.season} · E${t.nextAir.number} · ${friendlyDate(t.nextAir.date)}`
+                              ? `S${t.nextAir.season} E${t.nextAir.number}, ${friendlyDate(t.nextAir.date)}`
                               : 'New episodes to come'}
                         </Text>
                         <View style={[styles.bar, { backgroundColor: theme.elevated }]}>
@@ -88,12 +88,12 @@ export function ContinueWatching({ items, theme, hidden }: { items: WatchItem[];
                       <Tap
                         onPress={() => {
                           tracker.toggle(w, up.season, up.number);
-                          toast(`${w.title}: S${up.season} · E${up.number} logged · today`);
+                          toast(`${w.title}: S${up.season} E${up.number} logged today`);
                         }}
                         onLongPress={() =>
-                          days.ask({ title: `${w.title}: S${up.season} · E${up.number}` }, (d) => {
+                          days.ask({ title: `${w.title}: S${up.season} E${up.number}` }, (d) => {
                             tracker.logOn(w, [epKey(up.season, up.number)], d);
-                            toast(`${w.title}: S${up.season} · E${up.number} logged · ${dayWords(d)}`);
+                            toast(`${w.title}: S${up.season} E${up.number} logged ${onDay(d)}`);
                           })
                         }
                         accessibilityHint="Long press to choose the day"

@@ -6,7 +6,7 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Text } from '@/components/AppText';
 import { tmdbKey } from '@/api';
 import { trackable } from '@/api/episodes';
-import { aboutTmdb, madeBy } from '@/api/tmdb';
+import { aboutKnown, aboutTmdb, madeBy } from '@/api/tmdb';
 import type { TitleAbout } from '@/api/tmdb';
 import { PeopleRow, RowHead, TitleRow } from '@/components/title/Rows';
 import { font, fonts } from '@/lib/theme';
@@ -21,7 +21,11 @@ import { shownError } from '@/lib/errors';
 // seasons, and what to watch next.
 
 /** Fetches a TMDB title's details, cast and recommendations; null for anything that isn't from TMDB. */
-export function useAbout(id: string | null): { about: TitleAbout | null; error: string | null } {
+/**
+ * A title's details for its page. Ones already fetched (a poster touched in a list warms them) come back on
+ * the first frame; `loading` is true only while the page is really waiting for them.
+ */
+export function useAbout(id: string | null): { about: TitleAbout | null; error: string | null; loading: boolean } {
   const key = tmdbKey(useSettings().settings.tmdbKey);
   const [result, setResult] = useState<{ id: string; about: TitleAbout | null; error: string | null } | null>(null);
 
@@ -37,7 +41,9 @@ export function useAbout(id: string | null): { about: TitleAbout | null; error: 
     return () => controller.abort();
   }, [key, id]);
 
-  return result?.id === id ? { about: result.about, error: result.error } : { about: null, error: null };
+  if (result?.id === id) return { about: result.about, error: result.error, loading: false };
+  const known = id ? aboutKnown(id) : undefined;
+  return { about: known ?? null, error: null, loading: !known && !!key && !!id };
 }
 
 /** The tagline and synopsis (folded to four lines), and for series, whether it's still running. */
@@ -82,12 +88,13 @@ export function Synopsis({
       {series && about && (
         <Text style={[styles.facts, { color: theme.textMuted }]}>
           {[
-            about.status,
+            // TMDB says "Returning Series"; the app writes sentence case.
+            about.status ? about.status.charAt(0) + about.status.slice(1).toLowerCase() : null,
             `${about.seasons.length} ${about.seasons.length === 1 ? 'season' : 'seasons'}`,
             about.title.episodes ? `${about.title.episodes} episodes` : null,
           ]
             .filter(Boolean)
-            .join(' · ')}
+            .join(', ')}
         </Text>
       )}
     </View>
@@ -173,7 +180,7 @@ export function TitleMore({ id, t, about, theme }: { id: string; t: Title; about
                   {s.name}
                 </Text>
                 <Text style={[styles.seasonSub, { color: theme.textMuted }]}>
-                  {s.episodes} eps{s.year ? ` · ${s.year}` : ''}
+                  {s.episodes} eps{s.year ? `, ${s.year}` : ''}
                 </Text>
               </Pressable>
             ))}
