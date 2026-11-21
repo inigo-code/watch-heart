@@ -51,6 +51,10 @@ export const DATA_SOURCES = {
 type Note = string | { text: string; fromApp: string };
 const NOTES: { id: string; items: Note[] }[] = [
   {
+    id: '1.7.5',
+    items: ['In cinemas is closer to what’s really showing: in India, films that aren’t in an Indian language now leave it after three weeks'],
+  },
+  {
     id: '1.7.4',
     // Only the 1.7.3 build ever had Book tickets.
     items: [{ text: 'Book tickets has been taken off film pages', fromApp: '1.7.3' }],

@@ -1,4 +1,5 @@
 import { MINUTE, cached, cachedOnDisk, peek } from '@/api/cache';
+import { stillInCinemas } from '@/lib/regional';
 import type { MediaKind, Title } from '@/store/types';
 
 // TMDB: free for non-commercial use with your own key (themoviedb.org/settings/api).
@@ -679,7 +680,10 @@ async function loadDiscover(key: string, q: BrowseQuery, page: number, signal?: 
     if (!lte || lte > today) p[`${dateField}.lte`] = today;
   }
   const d = await get<{ results: Result[]; total_pages: number }>(key, `/discover/${type}`, p, signal);
-  return { results: d.results.map((r) => toTitle(r, type)), pages: Math.min(d.total_pages, 500) };
+  // With a region, each film's release_date is its date there. Foreign films leave cinemas sooner.
+  const today = isoDaysFromNow(0);
+  const shown = inCinemas ? d.results.filter((r) => stillInCinemas(q.region!, r.original_language, r.release_date, today)) : d.results;
+  return { results: shown.map((r) => toTitle(r, type)), pages: Math.min(d.total_pages, 500) };
 }
 
 const IDS_PAGE = 18;
@@ -701,13 +705,14 @@ export function trendingAllTmdb(key: string): Promise<Title[]> {
 }
 
 /**
- * Films running in cinemas in a country: opened there in the last five weeks, most popular first. TMDB's
- * own "now playing" lets in films with any old or festival date in the country, so this asks Discover for
- * that country's cinema releases instead.
+ * Films running in cinemas in a country: opened there in the last five weeks (three for films not in its own
+ * languages, `stillInCinemas`), most popular first. TMDB's own "now playing" lets in films with any old or
+ * festival date in the country, so this asks Discover for that country's cinema releases instead.
  */
 export const inCinemasQuery = (region: string): BrowseQuery => ({ kind: 'movie', theatrical: true, region, days: [-35, 0], notGenres: ['Documentary', 'Music'] });
 
 /** Films in cinemas in a country now, most popular first. Kept for six hours. */
 export function nowPlayingTmdb(key: string, region: string): Promise<Title[]> {
-  return cachedOnDisk(`in-cinemas:${region}`, 6 * 60 * MINUTE, async () => (await loadDiscover(key, inCinemasQuery(region), 1)).results);
+  // v2: foreign films for three weeks.
+  return cachedOnDisk(`in-cinemas2:${region}`, 6 * 60 * MINUTE, async () => (await loadDiscover(key, inCinemasQuery(region), 1)).results);
 }
