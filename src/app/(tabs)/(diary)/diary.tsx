@@ -140,14 +140,14 @@ export default function DiaryScreen() {
       </Text>
 
       {entries.length > 0 && (
-        <View style={[styles.marquee, { borderColor: theme.accent + '55', backgroundColor: theme.accentSoft }]}>
-          <MarqueeStat theme={theme} value={String(yearStats.total)} label={`IN ${today().slice(0, 4)}`} />
-          <View style={[styles.marqueeRule, { backgroundColor: theme.accent + '44' }]} />
-          <MarqueeStat theme={theme} value={`${hours}h`} label="WATCHED" />
-          <View style={[styles.marqueeRule, { backgroundColor: theme.accent + '44' }]} />
-          <MarqueeStat theme={theme} value={yearStats.avgStars ? `${yearStats.avgStars}★` : '—'} label="AVG" />
-          <View style={[styles.marqueeRule, { backgroundColor: theme.accent + '44' }]} />
-          <MarqueeStat theme={theme} value={String(yearStats.liked)} label="LOVED" />
+        <View style={[styles.marquee, { borderColor: theme.border, backgroundColor: theme.card }]}>
+          <MarqueeStat theme={theme} value={String(yearStats.total)} label={`In ${today().slice(0, 4)}`} />
+          <View style={[styles.marqueeRule, { backgroundColor: theme.border }]} />
+          <MarqueeStat theme={theme} value={`${hours}h`} label="Watched" />
+          <View style={[styles.marqueeRule, { backgroundColor: theme.border }]} />
+          <MarqueeStat theme={theme} value={yearStats.avgStars ? `${yearStats.avgStars}★` : '—'} label="Average" />
+          <View style={[styles.marqueeRule, { backgroundColor: theme.border }]} />
+          <MarqueeStat theme={theme} value={String(yearStats.liked)} label="Loved" />
         </View>
       )}
 
@@ -216,7 +216,7 @@ export default function DiaryScreen() {
           style={({ pressed }) => [styles.endBtn, { borderColor: theme.border, backgroundColor: pressed ? theme.chip : 'transparent' }]}
         >
           <Ionicons name="arrow-up" size={18} color={theme.accent} />
-          <Text style={[styles.endBtnText, { color: theme.text }]}>BACK TO THE TOP</Text>
+          <Text style={[styles.endBtnText, { color: theme.text }]}>Back to the top</Text>
         </Pressable>
       </View>
     ) : undefined;
@@ -273,7 +273,7 @@ export default function DiaryScreen() {
               <View style={[styles.emptyIcon, { backgroundColor: theme.accentSoft }]}>
                 <MaterialCommunityIcons name="projector" size={40} color={theme.accent} />
               </View>
-              <Text style={[styles.emptyTitle, { color: theme.text }]}>THE SCREEN IS DARK</Text>
+              <Text style={[styles.emptyTitle, { color: theme.text }]}>The screen is dark</Text>
               <Text style={[styles.emptyText, { color: theme.textMuted }]}>Log the last film, series or anime you watched, and your diary starts rolling.</Text>
               <Pressable
                 onPress={() => router.navigate('/search')}
@@ -281,12 +281,12 @@ export default function DiaryScreen() {
                 style={({ pressed }) => [styles.emptyBtn, { backgroundColor: theme.accent, opacity: pressed ? 0.85 : 1 }]}
               >
                 <MaterialCommunityIcons name="movie-search-outline" size={18} color={theme.accentText} />
-                <Text style={[styles.emptyBtnText, { color: theme.accentText }]}>FIND A TITLE</Text>
+                <Text style={[styles.emptyBtnText, { color: theme.accentText }]}>Find a title</Text>
               </Pressable>
             </View>
           ) : (
             <View style={styles.empty}>
-              <Text style={[styles.emptyTitle, { color: theme.text }]}>NO MATCHES</Text>
+              <Text style={[styles.emptyTitle, { color: theme.text }]}>No matches</Text>
               <Text style={[styles.emptyText, { color: theme.textMuted }]}>Try another search or filter.</Text>
             </View>
           )
@@ -300,7 +300,7 @@ export default function DiaryScreen() {
           accessibilityLabel="Log something you watched"
           style={({ pressed }) => [
             styles.fab,
-            { backgroundColor: theme.accent, bottom: 20, boxShadow: shadow.glow(theme.accent), transform: [{ scale: pressed ? 0.95 : 1 }] },
+            { backgroundColor: theme.accent, bottom: 20, boxShadow: shadow.raised, transform: [{ scale: pressed ? 0.95 : 1 }] },
           ]}
         >
           <MaterialCommunityIcons name="movie-open-plus-outline" size={28} color={theme.accentText} />
@@ -340,7 +340,7 @@ function MarqueeStat({ theme, value, label }: { theme: ReturnType<typeof useThem
       <Text style={[styles.marqueeValue, { color: theme.text }]} numberOfLines={1}>
         {value}
       </Text>
-      <Text style={[styles.marqueeLabel, { color: theme.accent }]}>{label}</Text>
+      <Text style={[styles.marqueeLabel, { color: theme.textMuted }]}>{label}</Text>
     </View>
   );
 }
@@ -356,7 +356,7 @@ const styles = StyleSheet.create({
   marquee: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderRadius: 12, paddingVertical: 10 },
   marqueeStat: { flex: 1, alignItems: 'center' },
   marqueeValue: { fontFamily: fonts.display, fontSize: 28, lineHeight: 30, includeFontPadding: false },
-  marqueeLabel: { fontFamily: fonts.monoBold, fontSize: 12, letterSpacing: 1.2 },
+  marqueeLabel: { fontFamily: fonts.uiSemibold, fontSize: 12 },
   marqueeRule: { width: 1, alignSelf: 'stretch' },
   search: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, height: 44, borderRadius: 12 },
   searchInput: { flex: 1, fontSize: font.body, height: '100%' },
@@ -366,13 +366,13 @@ const styles = StyleSheet.create({
   gridRow: { flexDirection: 'row', gap: GAP },
   empty: { alignItems: 'center', gap: 10, paddingTop: 64, paddingHorizontal: 28 },
   end: { alignItems: 'center', gap: 12, paddingTop: 36, paddingBottom: 8 },
-  endText: { fontFamily: fonts.mono, fontSize: font.footnote },
+  endText: { fontFamily: fonts.ui, fontSize: font.footnote },
   endBtn: { flexDirection: 'row', alignItems: 'center', gap: 8, height: 44, paddingHorizontal: 20, borderRadius: 22, borderWidth: 1 },
-  endBtnText: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 1.5 },
+  endBtnText: { fontFamily: fonts.uiSemibold, fontSize: font.footnote },
   emptyIcon: { width: 84, height: 84, borderRadius: 42, alignItems: 'center', justifyContent: 'center', marginBottom: 6 },
-  emptyTitle: { fontFamily: fonts.display, fontSize: 32, letterSpacing: 1.5 },
-  emptyText: { fontFamily: fonts.mono, fontSize: font.body, textAlign: 'center', lineHeight: 21 },
+  emptyTitle: { fontFamily: fonts.uiBold, fontSize: font.title2 },
+  emptyText: { fontFamily: fonts.ui, fontSize: font.body, textAlign: 'center', lineHeight: 21 },
   emptyBtn: { flexDirection: 'row', alignItems: 'center', gap: 8, height: 46, paddingHorizontal: 20, borderRadius: 23, marginTop: 10 },
-  emptyBtnText: { fontFamily: fonts.monoBold, fontSize: font.body, letterSpacing: 1 },
+  emptyBtnText: { fontFamily: fonts.uiSemibold, fontSize: font.body },
   fab: { position: 'absolute', right: 20, width: 62, height: 62, borderRadius: 31, alignItems: 'center', justifyContent: 'center' },
 });

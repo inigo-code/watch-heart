@@ -79,5 +79,5 @@ const styles = StyleSheet.create({
     maxWidth: '90%',
   },
   text: { fontSize: font.body, fontWeight: '600', flexShrink: 1 },
-  action: { fontSize: font.body, fontFamily: fonts.monoBold, textTransform: 'uppercase' },
+  action: { fontSize: font.body, fontFamily: fonts.uiSemibold },
 });

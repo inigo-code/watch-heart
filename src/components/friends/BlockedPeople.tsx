@@ -48,7 +48,7 @@ export function BlockedPeople({ theme, round }: { theme: Theme; round: number })
             <ActivityIndicator color={theme.accent} />
           ) : (
             <Pressable onPress={() => unblock(b)} hitSlop={8} accessibilityRole="button" accessibilityLabel={`Unblock ${b.name}`} style={[styles.btn, { borderColor: theme.border }]}>
-              <Text style={[styles.btnText, { color: theme.text }]}>UNBLOCK</Text>
+              <Text style={[styles.btnText, { color: theme.text }]}>Unblock</Text>
             </Pressable>
           )}
         </View>
@@ -62,5 +62,5 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, borderBottomWidth: StyleSheet.hairlineWidth, paddingVertical: 8 },
   name: { flex: 1, fontSize: font.body, fontWeight: '600' },
   btn: { height: 34, paddingHorizontal: 14, borderRadius: 17, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
-  btnText: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 1 },
+  btnText: { fontFamily: fonts.uiSemibold, fontSize: font.caption },
 });

@@ -71,7 +71,7 @@ export default function TrashScreen() {
         ListEmptyComponent={
           <View style={styles.empty}>
             <Ionicons name="trash-outline" size={36} color={theme.textMuted} />
-            <Text style={[styles.emptyTitle, { color: theme.text }]}>TRASH IS EMPTY</Text>
+            <Text style={[styles.emptyTitle, { color: theme.text }]}>Trash is empty</Text>
             <Text style={[styles.emptyText, { color: theme.textMuted }]}>Deleted entries stay here for {TRASH_DAYS} days</Text>
           </View>
         }
@@ -97,12 +97,12 @@ export default function TrashScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1 },
   list: { padding: 16, gap: 10 },
-  note: { fontFamily: fonts.mono, fontSize: font.footnote, marginBottom: 4 },
+  note: { fontFamily: fonts.ui, fontSize: font.footnote, marginBottom: 4 },
   card: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: 12, borderWidth: StyleSheet.hairlineWidth },
   title: { fontSize: font.body, fontWeight: '700' },
-  meta: { fontFamily: fonts.mono, fontSize: font.caption },
+  meta: { fontFamily: fonts.ui, fontSize: font.caption },
   btn: { width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center' },
   empty: { alignItems: 'center', gap: 10, paddingTop: 96, paddingHorizontal: 24 },
-  emptyTitle: { fontFamily: fonts.display, fontSize: 28, letterSpacing: 1 },
-  emptyText: { fontFamily: fonts.mono, fontSize: font.body, lineHeight: 21, textAlign: 'center', maxWidth: 300 },
+  emptyTitle: { fontFamily: fonts.uiBold, fontSize: font.title2 },
+  emptyText: { fontFamily: fonts.ui, fontSize: font.body, lineHeight: 21, textAlign: 'center', maxWidth: 300 },
 });

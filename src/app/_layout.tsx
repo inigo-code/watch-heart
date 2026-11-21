@@ -1,6 +1,10 @@
 import { BebasNeue_400Regular } from '@expo-google-fonts/bebas-neue/400Regular';
 import { CourierPrime_400Regular } from '@expo-google-fonts/courier-prime/400Regular';
 import { CourierPrime_700Bold } from '@expo-google-fonts/courier-prime/700Bold';
+import { InstrumentSans_400Regular } from '@expo-google-fonts/instrument-sans/400Regular';
+import { InstrumentSans_500Medium } from '@expo-google-fonts/instrument-sans/500Medium';
+import { InstrumentSans_600SemiBold } from '@expo-google-fonts/instrument-sans/600SemiBold';
+import { InstrumentSans_700Bold } from '@expo-google-fonts/instrument-sans/700Bold';
 import Constants, { ExecutionEnvironment } from 'expo-constants';
 import { useFonts } from 'expo-font';
 import { Stack, router, usePathname } from 'expo-router';
@@ -39,7 +43,15 @@ SplashScreen.preventAutoHideAsync().catch(() => {});
 const shareDisabled = Platform.OS === 'web' || Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
 
 export default function RootLayout() {
-  const [fontsLoaded, fontError] = useFonts({ BebasNeue_400Regular, CourierPrime_400Regular, CourierPrime_700Bold });
+  const [fontsLoaded, fontError] = useFonts({
+    BebasNeue_400Regular,
+    CourierPrime_400Regular,
+    CourierPrime_700Bold,
+    InstrumentSans_400Regular,
+    InstrumentSans_500Medium,
+    InstrumentSans_600SemiBold,
+    InstrumentSans_700Bold,
+  });
 
   // Draw nothing (the splash stays up) until the fonts are in. Android measures text once, so text
   // laid out in the fallback font keeps the wrong width: a gap in the title, cut-off tab labels.
@@ -112,7 +124,7 @@ function Navigator() {
         screenOptions={{
           headerStyle: { backgroundColor: theme.bg },
           headerTintColor: theme.text,
-          headerTitleStyle: { fontFamily: fonts.display, fontSize: 24 },
+          headerTitleStyle: { fontFamily: fonts.uiSemibold, fontSize: 18 },
           headerShadowVisible: false,
           contentStyle: { backgroundColor: theme.bg },
           // One way of moving everywhere: pages come in from the right with the page behind easing back a
@@ -125,7 +137,7 @@ function Navigator() {
         {/* Above the tabs: the pop-ups. Every other page lives in the tabs' own stacks ((tabs)/(home,diary,…)),
             so the tab bar stays on them. */}
         <Stack.Screen name="log" options={{ title: '', presentation: 'modal', animation: 'slide_from_bottom' }} />
-        <Stack.Screen name="poster/[id]" options={{ title: 'CHOOSE A POSTER', ...PAGE_HEADER }} />
+        <Stack.Screen name="poster/[id]" options={{ title: 'Choose a poster', ...PAGE_HEADER }} />
         <Stack.Screen name="share" options={{ title: '', ...PAGE_HEADER }} />
         <Stack.Screen name="welcome" options={{ headerShown: false, gestureEnabled: false, animation: 'fade' }} />
       </Stack>

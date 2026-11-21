@@ -38,7 +38,7 @@ export default function ProfileCardScreen() {
         />
       </StoryPreview>
       <ShareButtons target={ref} ready theme={theme} />
-      <SectionLabel theme={theme}>PALETTE</SectionLabel>
+      <SectionLabel theme={theme}>Palette</SectionLabel>
       <PalettePicker value={settings.story.palette} onChange={(palette) => update({ story: { ...settings.story, palette } })} theme={theme} />
     </ScrollView>
   );

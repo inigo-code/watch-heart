@@ -162,7 +162,7 @@ export function ViewingDetails({ draft, onChange, theme }: { draft: Details; onC
                     <View style={[styles.ring, { borderColor: theme.accent }]}>
                       <Face uri={draft.character.photo} name={draft.character.name} theme={theme} size={64} round />
                     </View>
-                    <Text style={[styles.character, { color: theme.accent }]} numberOfLines={2}>
+                    <Text style={[styles.character, { color: theme.textMuted }]} numberOfLines={2}>
                       {draft.character.name}
                     </Text>
                   </Pressable>
@@ -194,15 +194,15 @@ const styles = StyleSheet.create({
   wrap: { borderWidth: 1, borderRadius: 14 },
   head: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14 },
   title: { fontSize: font.body, fontWeight: '700' },
-  sub: { fontFamily: fonts.mono, fontSize: font.caption, marginTop: 2 },
+  sub: { fontFamily: fonts.ui, fontSize: font.caption, marginTop: 2 },
   body: { paddingHorizontal: 14, paddingBottom: 16, gap: 18 },
   group: { gap: 10 },
   groupHead: { flexDirection: 'row', alignItems: 'center' },
-  note: { fontFamily: fonts.mono, fontSize: font.caption },
+  note: { fontFamily: fonts.ui, fontSize: font.caption },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   cast: { gap: 12, paddingRight: 8 },
   person: { width: 76, alignItems: 'center' },
   ring: { borderWidth: 2.5, borderRadius: 40, padding: 2 },
   character: { fontSize: font.caption, fontWeight: '700', textAlign: 'center', marginTop: 6 },
-  actor: { fontFamily: fonts.mono, fontSize: 12, textAlign: 'center' },
+  actor: { fontFamily: fonts.ui, fontSize: 12, textAlign: 'center' },
 });

@@ -99,7 +99,7 @@ function PosterBody() {
       ListHeaderComponent={
         <View style={styles.head}>
           <Text style={[styles.title, { color: theme.text }]} numberOfLines={2}>
-            {subject.title.toUpperCase()}
+            {subject.title}
           </Text>
           <Text style={[styles.note, { color: theme.textMuted }]}>
             {draft
@@ -113,7 +113,7 @@ function PosterBody() {
               style={({ pressed }) => [styles.reset, { borderColor: theme.border, backgroundColor: pressed ? theme.chip : 'transparent' }]}
             >
               <Ionicons name="refresh-outline" size={16} color={theme.text} />
-              <Text style={[styles.resetText, { color: theme.text }]}>USE TMDB’S POSTER</Text>
+              <Text style={[styles.resetText, { color: theme.text }]}>Use TMDB’s poster</Text>
             </Pressable>
           )}
         </View>
@@ -162,11 +162,11 @@ function PosterBody() {
 const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
   head: { gap: 6, marginBottom: 6 },
-  title: { fontFamily: fonts.display, fontSize: 28, letterSpacing: 0.5 },
-  note: { fontFamily: fonts.mono, fontSize: font.caption, lineHeight: 17 },
+  title: { fontFamily: fonts.uiBold, fontSize: font.title2 },
+  note: { fontFamily: fonts.ui, fontSize: font.caption, lineHeight: 17 },
   empty: { textAlign: 'center', paddingVertical: 32 },
   reset: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', gap: 8, height: 38, paddingHorizontal: 14, borderRadius: 19, borderWidth: 1, marginTop: 6 },
-  resetText: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 1.2 },
+  resetText: { fontFamily: fonts.uiSemibold, fontSize: font.caption },
   poster: { borderRadius: 6, borderWidth: 2 },
   tick: { position: 'absolute', right: 6, top: 6, width: 22, height: 22, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
 });

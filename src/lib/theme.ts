@@ -57,11 +57,22 @@ const light: typeof dark = {
 
 export type Theme = typeof dark;
 
-/** Display face for titles (cinema marquee) and a typewriter face for labels (screenplay). */
+/**
+ * Three faces, each with one job:
+ * - Bebas Neue, the cinema marquee: the wordmark, screen titles and big numbers only.
+ * - Instrument Sans for everything you read and tap. Text picks its weight from `fontWeight` (AppText maps
+ *   400/500/600/700 to these files, since Android can't make a custom face bolder on its own).
+ * - Courier Prime, the typewriter on a printed ticket: only on the Diary's ticket stubs, the stamp and the
+ *   shareable stories and cards, where it is the artefact. Never for interface text.
+ */
 export const fonts = {
   display: 'BebasNeue_400Regular',
-  mono: 'CourierPrime_400Regular',
-  monoBold: 'CourierPrime_700Bold',
+  ui: 'InstrumentSans_400Regular',
+  uiMedium: 'InstrumentSans_500Medium',
+  uiSemibold: 'InstrumentSans_600SemiBold',
+  uiBold: 'InstrumentSans_700Bold',
+  ticket: 'CourierPrime_400Regular',
+  ticketBold: 'CourierPrime_700Bold',
 } as const;
 
 /** The type scale. Pick the nearest step rather than a new number. */
@@ -101,8 +112,9 @@ export function buildTheme(isDark: boolean, accent: AccentKey): Theme {
   const base = isDark ? dark : light;
   const [a, aText, aSoft] = ACCENTS[accent][isDark ? 'dark' : 'light'];
   // Surfaces that stay dark in both looks (the Diary's film strip, the About card) take the bright accent.
-  // One highlight everywhere: anything selected or chosen wears the accent.
-  return { ...base, accent: a, accentText: aText, accentSoft: aSoft, chipActive: a, chipActiveText: aText, accentOnDark: ACCENTS[accent].dark[0] };
+  // The accent is for the main action on a page (and stars, and the tab you're on). A selected chip or
+  // segment is the page's ink instead, so a page with filters doesn't turn into a wall of yellow.
+  return { ...base, accent: a, accentText: aText, accentSoft: aSoft, accentOnDark: ACCENTS[accent].dark[0] };
 }
 
 export function useTheme(): Theme {

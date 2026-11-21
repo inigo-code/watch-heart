@@ -57,14 +57,14 @@ const stars = (half: number) => `${Math.floor(half / 2) || ''}${half % 2 ? '½' 
 
 const styles = StyleSheet.create({
   wrap: { gap: 6 },
-  empty: { fontFamily: fonts.mono, fontSize: font.footnote },
+  empty: { fontFamily: fonts.ui, fontSize: font.footnote },
   summary: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 4 },
   avg: { fontFamily: fonts.display, fontSize: 40, lineHeight: 42, includeFontPadding: false },
-  summaryText: { fontFamily: fonts.mono, fontSize: font.caption, lineHeight: 17 },
+  summaryText: { fontFamily: fonts.ui, fontSize: font.caption, lineHeight: 17 },
   bars: { flexDirection: 'row', alignItems: 'flex-end', gap: 4 },
   col: { flex: 1, alignItems: 'center', justifyContent: 'flex-end', gap: 3 },
-  count: { fontFamily: fonts.monoBold, fontSize: 12 },
+  count: { fontFamily: fonts.uiSemibold, fontSize: 12 },
   bar: { width: '100%', borderRadius: 3 },
   labels: { flexDirection: 'row', gap: 4 },
-  label: { flex: 1, textAlign: 'center', fontFamily: fonts.mono, fontSize: 12 },
+  label: { flex: 1, textAlign: 'center', fontFamily: fonts.ui, fontSize: 12 },
 });

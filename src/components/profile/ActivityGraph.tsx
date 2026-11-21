@@ -67,11 +67,11 @@ export function ActivityGraph({ weeks, theme }: { weeks: ProfileStats['weeks']; 
 export function ActivityKey({ theme }: { theme: Theme }) {
   return (
     <View style={styles.key}>
-      <Text style={[styles.keyText, { color: theme.textMuted }]}>LESS</Text>
+      <Text style={[styles.keyText, { color: theme.textMuted }]}>Less</Text>
       {[theme.elevated, theme.accent + '5C', theme.accent + 'A6', theme.accent].map((c) => (
         <View key={c} style={[styles.cell, { backgroundColor: c }]} />
       ))}
-      <Text style={[styles.keyText, { color: theme.textMuted }]}>MORE</Text>
+      <Text style={[styles.keyText, { color: theme.textMuted }]}>More</Text>
     </View>
   );
 }
@@ -79,12 +79,12 @@ export function ActivityKey({ theme }: { theme: Theme }) {
 const styles = StyleSheet.create({
   wrap: { flexDirection: 'row', gap: 6 },
   days: { paddingTop: 16, gap: GAP },
-  dayLabel: { height: CELL, fontFamily: fonts.mono, fontSize: 10, lineHeight: CELL },
+  dayLabel: { height: CELL, fontFamily: fonts.ui, fontSize: 10, lineHeight: CELL },
   months: { flexDirection: 'row', gap: GAP, height: 14 },
-  monthLabel: { width: CELL, fontFamily: fonts.mono, fontSize: 10, overflow: 'visible' },
+  monthLabel: { width: CELL, fontFamily: fonts.ui, fontSize: 10, overflow: 'visible' },
   grid: { flexDirection: 'row', gap: GAP, marginTop: 2 },
   week: { gap: GAP },
   cell: { width: CELL, height: CELL, borderRadius: 3 },
   key: { flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'flex-end' },
-  keyText: { fontFamily: fonts.mono, fontSize: font.caption - 2, letterSpacing: 1 },
+  keyText: { fontFamily: fonts.ui, fontSize: font.caption - 2 },
 });

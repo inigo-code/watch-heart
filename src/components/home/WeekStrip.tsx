@@ -122,7 +122,7 @@ export function WeekStrip({ entries, theme }: { entries: Entry[]; theme: Theme }
       )}
       <Tap onPress={() => router.navigate('/search')} accessibilityRole="button" style={[styles.log, { backgroundColor: theme.accent }]}>
         <Ionicons name="add" size={22} color={theme.accentText} />
-        <Text style={[styles.logText, { color: theme.accentText }]}>LOG WHAT YOU WATCHED</Text>
+        <Text style={[styles.logText, { color: theme.accentText }]}>Log what you watched</Text>
       </Tap>
     </Rise>
   );
@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
   head: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   month: { fontSize: font.footnote, fontWeight: '600' },
   week: { flexDirection: 'row', gap: GAP },
-  dayDate: { fontFamily: fonts.monoBold, fontSize: font.caption, textAlign: 'center', marginBottom: 4 },
+  dayDate: { fontFamily: fonts.uiSemibold, fontSize: font.caption, textAlign: 'center', marginBottom: 4 },
   behind: { opacity: 0.75 },
   tray: { borderWidth: 1, borderRadius: 12, padding: 12, gap: 10 },
   trayHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
   trayTitle: { fontSize: font.caption, fontWeight: '600' },
   day: { borderWidth: 1, borderRadius: 6, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' },
   more: { position: 'absolute', top: 2, right: 2, minWidth: 16, height: 16, borderRadius: 8, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 3 },
-  moreText: { fontFamily: fonts.monoBold, fontSize: 12, lineHeight: 15 },
+  moreText: { fontFamily: fonts.uiSemibold, fontSize: 12, lineHeight: 15 },
   log: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: 52, borderRadius: 26, marginTop: 4 },
-  logText: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 1 },
+  logText: { fontFamily: fonts.uiSemibold, fontSize: font.footnote },
 });

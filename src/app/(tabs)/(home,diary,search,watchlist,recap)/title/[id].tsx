@@ -118,7 +118,7 @@ export default function TitleScreen() {
               style={({ pressed }) => [styles.logBtn, { backgroundColor: theme.accent, opacity: pressed ? 0.85 : 1 }]}
             >
               <Ionicons name="add" size={20} color={theme.accentText} />
-              <Text style={[styles.logText, { color: theme.accentText }]}>{viewings.length ? 'LOG AGAIN' : 'LOG IT'}</Text>
+              <Text style={[styles.logText, { color: theme.accentText }]}>{viewings.length ? 'Log again' : 'Log it'}</Text>
             </Pressable>
             <Pressable
               onPress={toggleWatchlist}
@@ -157,7 +157,7 @@ export default function TitleScreen() {
 
           {viewings.length > 0 && (
             <View style={styles.block}>
-              <SectionLabel theme={theme}>IN YOUR DIARY · {viewings.length === 1 ? 'SEEN ONCE' : `SEEN ${viewings.length}×`}</SectionLabel>
+              <SectionLabel theme={theme}>In your diary · {viewings.length === 1 ? 'seen once' : `seen ${viewings.length}×`}</SectionLabel>
               {viewings.map((v) => (
                 <View key={v.id} style={[styles.viewing, { backgroundColor: theme.card, borderColor: theme.border }]}>
                   <Pressable
@@ -210,21 +210,21 @@ function Tool({ theme, icon, label, onPress }: { theme: Theme; icon: keyof typeo
   return (
     <Tap onPress={onPress} accessibilityRole="button" style={[styles.tool, { borderColor: theme.border }]}>
       <Ionicons name={icon} size={17} color={theme.text} />
-      <Text style={[styles.toolText, { color: theme.text }]}>{label.toUpperCase()}</Text>
+      <Text style={[styles.toolText, { color: theme.text }]}>{label}</Text>
     </Tap>
   );
 }
 
 const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
-  muted: { fontFamily: fonts.mono, fontSize: font.body, textAlign: 'center' },
+  muted: { fontFamily: fonts.ui, fontSize: font.body, textAlign: 'center' },
   body: { padding: 16, gap: 22 },
   genres: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: -6 },
   genre: { borderWidth: 1, borderRadius: 14, paddingHorizontal: 10, paddingVertical: 4 },
   genreText: { fontSize: font.footnote, fontWeight: '600' },
   mainActions: { flexDirection: 'row', gap: 10 },
   logBtn: { flex: 1, height: 50, borderRadius: 25, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
-  logText: { fontFamily: fonts.monoBold, fontSize: font.body, letterSpacing: 1.5 },
+  logText: { fontFamily: fonts.uiSemibold, fontSize: font.body },
   square: { width: 50, height: 50, borderRadius: 25, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
   tools: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: -10 },
   tool: {
@@ -238,10 +238,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     paddingHorizontal: 12,
   },
-  toolText: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 1 },
+  toolText: { fontFamily: fonts.uiSemibold, fontSize: font.caption },
   block: { gap: 10 },
   viewing: { flexDirection: 'row', alignItems: 'center', gap: 4, borderWidth: 1, borderRadius: 10, paddingLeft: 12 },
   viewingOpen: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10, height: 46 },
   viewingDelete: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
-  viewingDate: { flex: 1, fontFamily: fonts.mono, fontSize: font.body },
+  viewingDate: { flex: 1, fontFamily: fonts.ui, fontSize: font.body },
 });

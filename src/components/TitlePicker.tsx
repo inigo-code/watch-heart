@@ -71,7 +71,7 @@ function PickerBody({
   return (
     <KeyboardSafe style={[styles.sheet, { backgroundColor: theme.bg, paddingTop: insets.top + 12 }]}>
       <View style={styles.head}>
-        <Text style={[styles.title, { color: theme.text }]}>FIND THE RIGHT TITLE</Text>
+        <Text style={[styles.title, { color: theme.text }]}>Find the right title</Text>
         <Pressable onPress={onClose} hitSlop={10} accessibilityRole="button" accessibilityLabel="Close">
           <Ionicons name="close" size={26} color={theme.text} />
         </Pressable>
@@ -133,12 +133,12 @@ function PickerBody({
 const styles = StyleSheet.create({
   sheet: { flex: 1, paddingHorizontal: 16, gap: 12 },
   head: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  title: { fontFamily: fonts.display, fontSize: font.largeTitle, letterSpacing: 1 },
-  note: { fontFamily: fonts.mono, fontSize: font.footnote, lineHeight: 18 },
+  title: { fontFamily: fonts.uiBold, fontSize: font.title2 },
+  note: { fontFamily: fonts.ui, fontSize: font.footnote, lineHeight: 18 },
   kinds: { flexDirection: 'row', gap: 8 },
   search: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderRadius: 12, paddingHorizontal: 12, height: 48 },
   input: { flex: 1, fontSize: font.body },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: StyleSheet.hairlineWidth, borderRadius: 12, padding: 10 },
   name: { fontSize: font.body, fontWeight: '700' },
-  meta: { fontFamily: fonts.mono, fontSize: font.caption, marginTop: 2 },
+  meta: { fontFamily: fonts.ui, fontSize: font.caption, marginTop: 2 },
 });

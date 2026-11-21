@@ -55,7 +55,7 @@ export default function ListsScreen() {
                 />
                 {!!name.trim() && (
                   <Pressable onPress={create} accessibilityRole="button" style={[styles.create, { backgroundColor: theme.accent }]}>
-                    <Text style={[styles.createText, { color: theme.accentText }]}>CREATE</Text>
+                    <Text style={[styles.createText, { color: theme.accentText }]}>Create</Text>
                   </Pressable>
                 )}
               </View>
@@ -67,7 +67,7 @@ export default function ListsScreen() {
           !ready ? undefined : (
             <View style={styles.empty}>
               <Ionicons name="albums-outline" size={44} color={theme.accent} />
-              <Text style={[styles.emptyTitle, { color: theme.text }]}>NO LISTS YET</Text>
+              <Text style={[styles.emptyTitle, { color: theme.text }]}>No lists yet</Text>
               <Text style={[styles.lede, { color: theme.textMuted, textAlign: 'center' }]}>Name one above, or open any entry and tap Add to list.</Text>
             </View>
           )
@@ -88,9 +88,9 @@ export default function ListsScreen() {
                   {l.description}
                 </Text>
               )}
-              <Text style={[styles.meta, { color: theme.accent }]}>
-                {l.items.length} {l.items.length === 1 ? 'TITLE' : 'TITLES'}
-                {l.ranked ? ' · RANKED' : ''}
+              <Text style={[styles.meta, { color: theme.textMuted }]}>
+                {l.items.length} {l.items.length === 1 ? 'title' : 'titles'}
+                {l.ranked ? ' · Ranked' : ''}
               </Text>
             </View>
             <Ionicons name="chevron-forward" size={18} color={theme.textMuted} />
@@ -103,14 +103,14 @@ export default function ListsScreen() {
 
 const styles = StyleSheet.create({
   content: { padding: 16, gap: 12 },
-  lede: { fontFamily: fonts.mono, fontSize: font.footnote, lineHeight: 18 },
+  lede: { fontFamily: fonts.ui, fontSize: font.footnote, lineHeight: 18 },
   newRow: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderRadius: 12, paddingLeft: 12, paddingRight: 6, minHeight: 52 },
   input: { flex: 1, fontSize: font.body, paddingVertical: 8 },
   create: { height: 38, borderRadius: 19, paddingHorizontal: 14, alignItems: 'center', justifyContent: 'center' },
-  createText: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 1 },
+  createText: { fontFamily: fonts.uiSemibold, fontSize: font.caption },
   card: { flexDirection: 'row', alignItems: 'center', gap: 14, borderWidth: 1, borderRadius: 14, padding: 12 },
-  name: { fontFamily: fonts.display, fontSize: font.title2, letterSpacing: 0.5 },
-  meta: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 1 },
+  name: { fontFamily: fonts.uiBold, fontSize: font.title },
+  meta: { fontFamily: fonts.uiSemibold, fontSize: font.caption },
   empty: { alignItems: 'center', gap: 10, paddingTop: 40, paddingHorizontal: 20 },
-  emptyTitle: { fontFamily: fonts.display, fontSize: font.largeTitle, letterSpacing: 1 },
+  emptyTitle: { fontFamily: fonts.uiBold, fontSize: font.title2 },
 });

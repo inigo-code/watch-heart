@@ -29,7 +29,7 @@ export default function AccountScreen() {
         {sync.status === 'unconfigured' ? (
           <Card theme={theme}>
             <MaterialCommunityIcons name="cloud-off-outline" size={32} color={theme.textMuted} />
-            <Text style={[styles.h, { color: theme.text }]}>CLOUD SYNC ISN’T SET UP</Text>
+            <Text style={[styles.h, { color: theme.text }]}>Cloud sync isn’t set up</Text>
             <Text style={[styles.p, { color: theme.textMuted }]}>
               Accounts aren’t available in this version of the app. Your diary is saved on this phone only.
             </Text>
@@ -74,7 +74,7 @@ function Button({
       accessibilityState={{ disabled: disabled || busy, busy }}
       style={({ pressed }) => [styles.btn, { backgroundColor: bg, opacity: disabled ? 0.5 : pressed ? 0.85 : 1 }]}
     >
-      {busy ? <ActivityIndicator color={fg} /> : <Text style={[styles.btnText, { color: fg }]}>{label.toUpperCase()}</Text>}
+      {busy ? <ActivityIndicator color={fg} /> : <Text style={[styles.btnText, { color: fg }]}>{label}</Text>}
     </Pressable>
   );
 }
@@ -216,7 +216,7 @@ function SignIn({ theme }: { theme: Theme }) {
         size={34}
         color={theme.accent}
       />
-      <Text style={[styles.h, { color: theme.text }]}>{TITLES[mode].toUpperCase()}</Text>
+      <Text style={[styles.h, { color: theme.text }]}>{TITLES[mode]}</Text>
       <Text style={[styles.p, { color: theme.textMuted }]}>
         {mode === 'forgot'
           ? "Enter your account's email and we'll send you a code to choose a new password."
@@ -329,7 +329,7 @@ function SignedIn({ theme }: { theme: Theme }) {
   return (
     <>
       <Card theme={theme}>
-        <SectionLabel theme={theme}>SIGNED IN AS</SectionLabel>
+        <SectionLabel theme={theme}>Signed in as</SectionLabel>
         <Text style={[styles.email, { color: theme.text }]}>{email}</Text>
         <Text style={[styles.p, { color: theme.textMuted }]}>
           {entries.length} {entries.length === 1 ? 'entry' : 'entries'} and {watchlist.length} on the watchlist, kept in your account.
@@ -392,16 +392,16 @@ function SignedIn({ theme }: { theme: Theme }) {
 const styles = StyleSheet.create({
   content: { padding: 16, gap: 12 },
   card: { padding: 18, borderRadius: 14, borderWidth: StyleSheet.hairlineWidth, gap: 12 },
-  h: { fontFamily: fonts.display, fontSize: 28, letterSpacing: 1 },
-  p: { fontFamily: fonts.mono, fontSize: font.footnote, lineHeight: 19 },
+  h: { fontFamily: fonts.uiBold, fontSize: font.title2 },
+  p: { fontFamily: fonts.ui, fontSize: font.footnote, lineHeight: 19 },
   email: { fontSize: font.headline, fontWeight: '800' },
   input: { fontSize: font.headline, height: 50, borderRadius: 10, borderWidth: 1, paddingHorizontal: 16 },
-  code: { fontFamily: fonts.monoBold, fontSize: font.title2, letterSpacing: 8, textAlign: 'center' },
+  code: { fontFamily: fonts.uiSemibold, fontSize: font.title2, textAlign: 'center' },
   codeEmpty: { textAlign: 'center' },
-  switch: { fontFamily: fonts.monoBold, fontSize: font.footnote, textAlign: 'center', paddingVertical: 4, letterSpacing: 0.5 },
+  switch: { fontFamily: fonts.uiSemibold, fontSize: font.footnote, textAlign: 'center', paddingVertical: 4 },
   btn: { height: 50, borderRadius: 25, alignItems: 'center', justifyContent: 'center' },
-  btnText: { fontFamily: fonts.monoBold, fontSize: font.body, letterSpacing: 1.5 },
-  error: { fontFamily: fonts.mono, fontSize: font.footnote },
+  btnText: { fontFamily: fonts.uiSemibold, fontSize: font.body },
+  error: { fontFamily: fonts.ui, fontSize: font.footnote },
   statusRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   statusText: { fontSize: font.headline, fontWeight: '700' },
 });

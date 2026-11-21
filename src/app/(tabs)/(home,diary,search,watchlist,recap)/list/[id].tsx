@@ -59,7 +59,7 @@ export default function ListScreen() {
     <KeyboardSafe>
       <Stack.Screen
         options={{
-          title: 'LIST',
+          title: 'List',
           headerRight: () => (
             <Pressable
               onPress={() => setEditing((e) => !e)}
@@ -67,7 +67,7 @@ export default function ListScreen() {
               accessibilityRole="button"
               accessibilityLabel={editing ? 'Done editing' : 'Edit list'}
             >
-              <Text style={[styles.headerBtn, { color: theme.accent }]}>{editing ? 'DONE' : 'EDIT'}</Text>
+              <Text style={[styles.headerBtn, { color: theme.accent }]}>{editing ? 'Done' : 'Edit'}</Text>
             </Pressable>
           ),
         }}
@@ -101,7 +101,7 @@ export default function ListScreen() {
               </View>
             ) : (
               <View style={{ gap: 4 }}>
-                <Text style={[styles.name, { color: theme.text }]}>{list.name.toUpperCase()}</Text>
+                <Text style={[styles.name, { color: theme.text }]}>{list.name}</Text>
                 {!!list.description && <Text style={[styles.lede, { color: theme.textMuted }]}>{list.description}</Text>}
               </View>
             )}
@@ -129,7 +129,7 @@ export default function ListScreen() {
                   style={({ pressed }) => [styles.share, { backgroundColor: theme.accent, opacity: pressed ? 0.85 : 1 }]}
                 >
                   <Ionicons name="logo-instagram" size={16} color={theme.accentText} />
-                  <Text style={[styles.shareText, { color: theme.accentText }]}>STORY</Text>
+                  <Text style={[styles.shareText, { color: theme.accentText }]}>Story</Text>
                 </Pressable>
               </View>
             )}
@@ -275,10 +275,10 @@ function Tool({
 const styles = StyleSheet.create({
   missing: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   content: { padding: 16, gap: 8 },
-  headerBtn: { fontFamily: fonts.monoBold, fontSize: font.body, letterSpacing: 1, paddingHorizontal: 8 },
-  name: { fontFamily: fonts.display, fontSize: font.marquee, lineHeight: 46, letterSpacing: 0.5 },
-  lede: { fontFamily: fonts.mono, fontSize: font.footnote, lineHeight: 18 },
-  nameInput: { fontFamily: fonts.display, fontSize: font.largeTitle, borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 6 },
+  headerBtn: { fontFamily: fonts.uiSemibold, fontSize: font.body, paddingHorizontal: 8 },
+  name: { fontFamily: fonts.uiBold, fontSize: 28, lineHeight: 34 },
+  lede: { fontFamily: fonts.ui, fontSize: font.footnote, lineHeight: 18 },
+  nameInput: { fontFamily: fonts.uiSemibold, fontSize: font.title2, borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 6 },
   descInput: { fontSize: font.body, borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, minHeight: 60 },
   toggle: { flexDirection: 'row', alignItems: 'center', gap: 10, borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, minHeight: 50 },
   toggleText: { flex: 1, fontSize: font.body, fontWeight: '600' },
@@ -297,11 +297,11 @@ const styles = StyleSheet.create({
   addText: { fontSize: font.footnote, fontWeight: '700' },
   listHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 },
   share: { flexDirection: 'row', alignItems: 'center', gap: 6, height: 34, borderRadius: 17, paddingHorizontal: 14 },
-  shareText: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 1 },
+  shareText: { fontFamily: fonts.uiSemibold, fontSize: font.caption },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, borderRadius: 12, padding: 10 },
   rank: { fontFamily: fonts.display, fontSize: 28, width: 30, textAlign: 'center' },
   itemTitle: { fontSize: font.body, fontWeight: '700' },
-  meta: { fontFamily: fonts.mono, fontSize: font.caption, marginTop: 2 },
+  meta: { fontFamily: fonts.ui, fontSize: font.caption, marginTop: 2 },
   tools: { flexDirection: 'row', gap: 6 },
   tool: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center' },
 });

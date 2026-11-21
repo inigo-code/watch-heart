@@ -21,7 +21,7 @@ export default function AboutScreen() {
         <Sprockets color={theme.bg} count={14} hole={6} />
         <View style={styles.cardBody}>
           <BrandTitle theme={{ ...theme, text: theme.dark ? theme.text : theme.bg, accent: theme.accentOnDark }} size={44} />
-          <Text style={[styles.tagline, { color: theme.accentOnDark }]}>{APP_TAGLINE.toUpperCase()}</Text>
+          <Text style={[styles.tagline, { color: theme.accentOnDark }]}>{APP_TAGLINE}</Text>
           <Text style={styles.version}>Version {describeRunning()}</Text>
           <Pressable
             onPress={() => Linking.openURL(HEART_APPS.url)}
@@ -71,9 +71,9 @@ const styles = StyleSheet.create({
   content: { padding: 16, gap: 24 },
   card: { borderRadius: 6, paddingVertical: 8, gap: 12 },
   cardBody: { alignItems: 'center', gap: 6, paddingVertical: 14 },
-  tagline: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 1.5 },
+  tagline: { fontFamily: fonts.uiSemibold, fontSize: font.caption },
   // On the card that stays dark in both looks.
-  version: { fontFamily: fonts.mono, fontSize: font.caption, color: '#B8B2A7' },
+  version: { fontFamily: fonts.ui, fontSize: font.caption, color: '#B8B2A7' },
   family: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -86,10 +86,10 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(242, 184, 75, 0.14)',
   },
   // The negative margin takes back the letter spacing after the last letter, so the words sit dead centre.
-  familyText: { fontFamily: fonts.monoBold, fontSize: font.caption, lineHeight: 16, letterSpacing: 1.5, marginRight: -1.5, includeFontPadding: false, color: '#F2B84B' },
+  familyText: { fontFamily: fonts.uiSemibold, fontSize: font.caption, lineHeight: 16, marginRight: -1.5, includeFontPadding: false, color: '#F2B84B' },
   tmdb: { gap: 6, paddingHorizontal: 4, marginTop: -8 },
   // Smaller than Watch Heart's own title, as TMDB's terms ask.
   tmdbLogo: { width: 78, height: 10, opacity: 0.85 },
-  tmdbNotice: { fontFamily: fonts.mono, fontSize: font.caption, lineHeight: 17 },
-  privacy: { fontFamily: fonts.mono, fontSize: font.footnote, lineHeight: 19, textAlign: 'center', paddingHorizontal: 12 },
+  tmdbNotice: { fontFamily: fonts.ui, fontSize: font.caption, lineHeight: 17 },
+  privacy: { fontFamily: fonts.ui, fontSize: font.footnote, lineHeight: 19, textAlign: 'center', paddingHorizontal: 12 },
 });

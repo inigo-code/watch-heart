@@ -148,7 +148,7 @@ function Score({
 }) {
   return (
     <Pressable onPress={onPress} disabled={!onPress} style={[styles.score, { backgroundColor: theme.card, borderColor: color ?? theme.border }]}>
-      <Text style={[styles.scoreLabel, { color: color ?? theme.textMuted }]}>{label.toUpperCase()}</Text>
+      <Text style={[styles.scoreLabel, { color: color ?? theme.textMuted }]}>{label}</Text>
       <Text style={[styles.scoreValue, { color: theme.text }]}>{value}</Text>
       {sub && <Text style={[styles.scoreSub, { color: theme.textMuted }]}>{sub}</Text>}
     </Pressable>
@@ -160,7 +160,7 @@ function Providers({ theme, kind, list, title, page }: { theme: Theme; kind: str
   return (
     <View style={styles.providerRow}>
       <Text style={[styles.providerKind, { color: theme.text }]} numberOfLines={1}>
-        {kind.toUpperCase()}
+        {kind}
       </Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.logos}>
         {list.map((p) => (
@@ -179,9 +179,9 @@ const styles = StyleSheet.create({
   wrap: { gap: 12 },
   scores: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, alignItems: 'stretch' },
   score: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8, minWidth: 92, maxWidth: 140 },
-  scoreLabel: { fontFamily: fonts.monoBold, fontSize: 12, letterSpacing: 1 },
+  scoreLabel: { fontFamily: fonts.uiSemibold, fontSize: 12 },
   scoreValue: { fontFamily: fonts.display, fontSize: 28, lineHeight: 32, includeFontPadding: false },
-  scoreSub: { fontFamily: fonts.mono, fontSize: 12 },
+  scoreSub: { fontFamily: fonts.ui, fontSize: 12 },
   imdb: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -193,13 +193,13 @@ const styles = StyleSheet.create({
     height: 40,
   },
   imdbText: { fontWeight: '900', fontSize: font.body, color: '#000000' },
-  note: { fontFamily: fonts.mono, fontSize: font.caption, lineHeight: 16 },
+  note: { fontFamily: fonts.ui, fontSize: font.caption, lineHeight: 16 },
   providerRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   // Wide enough for STREAM in the typewriter face on any phone.
-  providerKind: { fontFamily: fonts.monoBold, fontSize: font.caption, width: 66, letterSpacing: 1 },
+  providerKind: { fontFamily: fonts.uiSemibold, fontSize: font.caption, width: 66 },
   logos: { gap: 8 },
   logo: { width: 40, height: 40, borderRadius: 10 },
-  credit: { fontFamily: fonts.mono, fontSize: 12 },
+  credit: { fontFamily: fonts.ui, fontSize: 12 },
   exact: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', paddingVertical: 6 },
-  exactText: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 0.5 },
+  exactText: { fontFamily: fonts.uiSemibold, fontSize: font.caption },
 });

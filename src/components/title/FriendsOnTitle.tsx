@@ -137,7 +137,7 @@ function Review({ e, who, photo, theme }: { e: FriendEntry; who: string; photo: 
         <Face uri={photo} name={who} theme={theme} size={30} round />
         <Text style={[styles.reviewWho, { color: theme.text }]}>{who}</Text>
         {viewingRating(e) ? <Stars rating={viewingRating(e)} size={12} color={theme.star} /> : null}
-        {!!watchedLabel(e) && <Text style={[styles.small, { color: theme.accent }]}>{watchedLabel(e)}</Text>}
+        {!!watchedLabel(e) && <Text style={[styles.small, { color: theme.textMuted }]}>{watchedLabel(e)}</Text>}
         {e.liked && <Ionicons name="heart" size={12} color={theme.like} />}
         <Text style={[styles.small, { color: theme.textMuted, marginLeft: 'auto' }]}>{friendlyDate(e.watchedOn)}</Text>
       </View>
@@ -163,12 +163,12 @@ function Review({ e, who, photo, theme }: { e: FriendEntry; who: string; photo: 
 const styles = StyleSheet.create({
   wrap: { gap: 22 },
   block: { gap: 10 },
-  avg: { fontFamily: fonts.mono, fontSize: font.footnote },
+  avg: { fontFamily: fonts.ui, fontSize: font.footnote },
   people: { gap: 14, paddingRight: 16 },
   person: { width: 64, alignItems: 'center', gap: 3 },
   personName: { fontSize: font.caption, fontWeight: '700', marginTop: 3 },
   personMeta: { flexDirection: 'row', alignItems: 'center', gap: 3 },
-  small: { fontFamily: fonts.mono, fontSize: 12 },
+  small: { fontFamily: fonts.ui, fontSize: 12 },
   review: { borderWidth: 1, borderRadius: 12, padding: 12, gap: 8 },
   reviewHead: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   reviewWho: { fontSize: font.footnote, fontWeight: '700' },

@@ -140,7 +140,7 @@ export default function EntryScreen() {
                 <View style={styles.vibes}>
                   {entry.vibes.map((v) => (
                     <Text key={v} style={[styles.vibe, { color: theme.accentText, backgroundColor: theme.accent }]}>
-                      {v.toUpperCase()}
+                      {v}
                     </Text>
                   ))}
                 </View>
@@ -150,7 +150,7 @@ export default function EntryScreen() {
                 <View style={[styles.character, { backgroundColor: theme.card, borderColor: theme.border }]}>
                   <Face uri={entry.character.photo} name={entry.character.name} theme={theme} size={48} round />
                   <View style={{ flex: 1 }}>
-                    <Text style={[styles.characterLabel, { color: theme.accent }]}>FAVOURITE CHARACTER</Text>
+                    <Text style={[styles.characterLabel, { color: theme.textMuted }]}>Favourite character</Text>
                     <Text style={[styles.characterName, { color: theme.text }]}>{entry.character.name}</Text>
                     {!!entry.character.actor && <Text style={[styles.characterActor, { color: theme.textMuted }]}>{entry.character.actor}</Text>}
                   </View>
@@ -163,7 +163,7 @@ export default function EntryScreen() {
 
           {!!entry.review && (
             <View style={styles.reviewWrap}>
-              <SectionLabel theme={theme}>REVIEW</SectionLabel>
+              <SectionLabel theme={theme}>Review</SectionLabel>
               {hideReview ? (
                 <Pressable
                   onPress={() => {
@@ -196,17 +196,17 @@ export default function EntryScreen() {
             <Action
               theme={theme}
               icon="sparkles-outline"
-              label="STORY CARD"
+              label="Story card"
               onPress={() => router.push({ pathname: '/card/[id]', params: { id: entry.id } })}
               primary
             />
-            <Action theme={theme} icon="repeat" label="LOG AGAIN" onPress={() => router.push({ pathname: '/log', params: { again: entry.id } })} />
-            <Action theme={theme} icon="albums-outline" label={onLists.length ? `LISTS (${onLists.length})` : 'ADD TO LIST'} onPress={() => setListing(true)} />
+            <Action theme={theme} icon="repeat" label="Log again" onPress={() => router.push({ pathname: '/log', params: { again: entry.id } })} />
+            <Action theme={theme} icon="albums-outline" label={onLists.length ? `LISTS (${onLists.length})` : 'Add to list'} onPress={() => setListing(true)} />
             {trackable(entry) && (
               <Action
                 theme={theme}
                 icon="list-outline"
-                label="EPISODES"
+                label="Episodes"
                 onPress={() =>
                   router.push({
                     pathname: '/track',
@@ -232,7 +232,7 @@ export default function EntryScreen() {
 
           {viewings.length > 1 && (
             <View style={styles.viewings}>
-              <SectionLabel theme={theme}>YOUR VIEWINGS ({viewings.length})</SectionLabel>
+              <SectionLabel theme={theme}>Your viewings ({viewings.length})</SectionLabel>
               {viewings.map((v) => (
                 <Pressable
                   key={v.id}
@@ -304,37 +304,37 @@ function Action({
 const styles = StyleSheet.create({
   viewingWrap: { gap: 10 },
   vibes: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  vibe: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 1, borderRadius: 4, paddingHorizontal: 8, paddingVertical: 4, overflow: 'hidden' },
-  viewingLine: { fontFamily: fonts.mono, fontSize: font.footnote },
+  vibe: { fontFamily: fonts.uiSemibold, fontSize: font.caption, borderRadius: 4, paddingHorizontal: 8, paddingVertical: 4, overflow: 'hidden' },
+  viewingLine: { fontFamily: fonts.ui, fontSize: font.footnote },
   character: { flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, borderRadius: 12, padding: 10 },
-  characterLabel: { fontFamily: fonts.monoBold, fontSize: 12, letterSpacing: 1.5 },
+  characterLabel: { fontFamily: fonts.uiSemibold, fontSize: 12 },
   characterName: { fontSize: font.body, fontWeight: '700' },
-  characterActor: { fontFamily: fonts.mono, fontSize: font.caption },
+  characterActor: { fontFamily: fonts.ui, fontSize: font.caption },
   with: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 8, marginTop: 6 },
-  withLabel: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 1.5 },
+  withLabel: { fontFamily: fonts.ticketBold, fontSize: font.caption, letterSpacing: 1.5 },
   withName: { fontSize: font.body, fontWeight: '700', textDecorationLine: 'underline' },
   missing: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32 },
-  missingText: { fontFamily: fonts.mono, fontSize: font.body, textAlign: 'center' },
+  missingText: { fontFamily: fonts.ui, fontSize: font.body, textAlign: 'center' },
   body: { padding: 16, gap: 20 },
   ticket: { flexDirection: 'row', borderWidth: 1, borderRadius: 12, overflow: 'hidden' },
   stub: { width: 76, alignItems: 'center', justifyContent: 'center', paddingVertical: 12, borderRightWidth: 1.5, borderStyle: 'dashed' },
-  stubSmall: { fontFamily: fonts.monoBold, fontSize: 12, letterSpacing: 1 },
+  stubSmall: { fontFamily: fonts.ticketBold, fontSize: 12, letterSpacing: 1 },
   stubDay: { fontFamily: fonts.display, fontSize: 44, lineHeight: 46, includeFontPadding: false },
   ticketBody: { flex: 1, padding: 14, gap: 8, justifyContent: 'center' },
-  watched: { fontFamily: fonts.monoBold, fontSize: 12, letterSpacing: 1.2 },
+  watched: { fontFamily: fonts.ticketBold, fontSize: 12, letterSpacing: 1.2 },
   line: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  unrated: { fontFamily: fonts.mono, fontSize: font.body },
-  progress: { fontFamily: fonts.mono, fontSize: font.footnote },
+  unrated: { fontFamily: fonts.ticket, fontSize: font.body },
+  progress: { fontFamily: fonts.ticket, fontSize: font.footnote },
   reviewWrap: { gap: 8 },
   review: { fontSize: font.headline, lineHeight: 26 },
   spoiler: { flexDirection: 'row', alignItems: 'center', gap: 10, borderWidth: 1, borderRadius: 10, padding: 16 },
-  spoilerText: { fontFamily: fonts.mono, fontSize: font.body },
+  spoilerText: { fontFamily: fonts.ui, fontSize: font.body },
   tags: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  tag: { fontFamily: fonts.mono, fontSize: font.footnote, borderWidth: 1, borderRadius: 4, paddingHorizontal: 8, paddingVertical: 3 },
+  tag: { fontFamily: fonts.ui, fontSize: font.footnote, borderWidth: 1, borderRadius: 4, paddingHorizontal: 8, paddingVertical: 3 },
   actions: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   action: { flexGrow: 1, flexBasis: '45%', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: 46, borderRadius: 23 },
-  actionText: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 1 },
+  actionText: { fontFamily: fonts.uiSemibold, fontSize: font.footnote },
   viewings: { gap: 4 },
   viewing: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 10, borderBottomWidth: StyleSheet.hairlineWidth },
-  viewingDate: { fontFamily: fonts.mono, fontSize: font.body, flex: 1 },
+  viewingDate: { fontFamily: fonts.ui, fontSize: font.body, flex: 1 },
 });

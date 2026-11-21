@@ -137,12 +137,12 @@ export default function ImportScreen() {
         style={({ pressed }) => [styles.primary, { backgroundColor: theme.accent, opacity: busy ? 0.6 : pressed ? 0.85 : 1 }]}
       >
         {busy ? <ActivityIndicator color={theme.accentText} /> : <MaterialCommunityIcons name="folder-open-outline" size={22} color={theme.accentText} />}
-        <Text style={[styles.primaryText, { color: theme.accentText }]}>{busy ? 'READING…' : 'CHOOSE FILES'}</Text>
+        <Text style={[styles.primaryText, { color: theme.accentText }]}>{busy ? 'Reading…' : 'Choose files'}</Text>
       </Pressable>
 
       {found && (
         <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.accent + '66' }]}>
-          <Text style={[styles.cardTitle, { color: theme.text }]}>{total ? 'READY TO IMPORT' : 'NOTHING FOUND'}</Text>
+          <Text style={[styles.cardTitle, { color: theme.text }]}>{total ? 'Ready to import' : 'Nothing found'}</Text>
           {found.sources.map((s) => {
             const logo = logoFor(s.source);
             return (
@@ -164,7 +164,7 @@ export default function ImportScreen() {
           {total > 0 && (
             <Pressable onPress={add} accessibilityRole="button" style={({ pressed }) => [styles.primary, { backgroundColor: theme.accent, opacity: pressed ? 0.85 : 1 }]}>
               <MaterialCommunityIcons name="movie-open-check-outline" size={20} color={theme.accentText} />
-              <Text style={[styles.primaryText, { color: theme.accentText }]}>ADD {total} TO WATCH HEART</Text>
+              <Text style={[styles.primaryText, { color: theme.accentText }]}>Add {total} to Watch Heart</Text>
             </Pressable>
           )}
           <Text style={[styles.meta, { color: theme.textMuted }]}>Importing again adds only what’s new</Text>
@@ -173,17 +173,17 @@ export default function ImportScreen() {
 
       {done && (
         <View style={[styles.card, { backgroundColor: theme.accentSoft, borderColor: theme.accent + '66' }]}>
-          <Text style={[styles.cardTitle, { color: theme.text }]}>IMPORTED</Text>
+          <Text style={[styles.cardTitle, { color: theme.text }]}>Imported</Text>
           <Text style={[styles.meta, { color: theme.text }]}>{done}</Text>
           <Pressable onPress={() => router.dismissTo('/')} accessibilityRole="button">
-            <Text style={[styles.link, { color: theme.accent }]}>OPEN THE DIARY →</Text>
+            <Text style={[styles.link, { color: theme.accent }]}>Open the diary →</Text>
           </Pressable>
         </View>
       )}
 
       <PosterStatus theme={theme} haveKey={!!key} running={posters.running} doneCount={posters.done} total={posters.total} foundCount={posters.found} />
 
-      <SectionLabel theme={theme}>HOW TO EXPORT</SectionLabel>
+      <SectionLabel theme={theme}>How to export</SectionLabel>
       {GUIDES.map((g) => {
         const expanded = open === g.app;
         return (
@@ -237,7 +237,7 @@ function PosterStatus({ theme, haveKey, running, doneCount, total, foundCount }:
       </Text>
       {haveKey && !running && (
         <Pressable onPress={findPostersNow} accessibilityRole="button">
-          <Text style={[styles.link, { color: theme.accent }]}>LOOK AGAIN NOW →</Text>
+          <Text style={[styles.link, { color: theme.accent }]}>Look again now →</Text>
         </Pressable>
       )}
     </View>
@@ -247,16 +247,16 @@ function PosterStatus({ theme, haveKey, running, doneCount, total, foundCount }:
 const styles = StyleSheet.create({
   content: { padding: 16, gap: 14 },
   heading: { fontFamily: fonts.display, fontSize: font.marquee, lineHeight: 46, letterSpacing: 1, includeFontPadding: false },
-  sub: { fontFamily: fonts.mono, fontSize: font.footnote, lineHeight: 19, marginTop: 4 },
+  sub: { fontFamily: fonts.ui, fontSize: font.footnote, lineHeight: 19, marginTop: 4 },
   primary: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, height: 52, borderRadius: 26 },
-  primaryText: { fontFamily: fonts.monoBold, fontSize: font.body, letterSpacing: 1.5 },
+  primaryText: { fontFamily: fonts.uiSemibold, fontSize: font.body },
   card: { borderWidth: 1, borderRadius: 14, padding: 16, gap: 10 },
-  cardTitle: { fontFamily: fonts.display, fontSize: 24, letterSpacing: 1 },
+  cardTitle: { fontFamily: fonts.uiSemibold, fontSize: font.title },
   sourceRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   sourceName: { fontSize: font.body, fontWeight: '700' },
-  meta: { fontFamily: fonts.mono, fontSize: font.caption, lineHeight: 17 },
-  link: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 1 },
+  meta: { fontFamily: fonts.ui, fontSize: font.caption, lineHeight: 17 },
+  link: { fontFamily: fonts.uiSemibold, fontSize: font.footnote },
   guide: { borderWidth: StyleSheet.hairlineWidth, borderRadius: 12, padding: 14, gap: 8 },
   guideHead: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  steps: { fontFamily: fonts.mono, fontSize: font.footnote, lineHeight: 19 },
+  steps: { fontFamily: fonts.ui, fontSize: font.footnote, lineHeight: 19 },
 });

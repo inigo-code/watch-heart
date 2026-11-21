@@ -32,7 +32,7 @@ export function FriendsStrip({ theme, adding, onAdd }: { theme: Theme; adding: b
         <SectionLabel theme={theme}>Your friends{friends.length ? ` (${friends.length})` : ''}</SectionLabel>
         {friends.length > 0 && (
           <Tap onPress={toggle} hitSlop={10} accessibilityRole="button" accessibilityState={{ expanded }} style={styles.more}>
-            <Text style={[styles.moreText, { color: theme.textMuted }]}>{expanded ? 'SHOW LESS' : 'SEE ALL'}</Text>
+            <Text style={[styles.moreText, { color: theme.textMuted }]}>{expanded ? 'Show less' : 'See all'}</Text>
             <Ionicons name={expanded ? 'chevron-up' : 'chevron-down'} size={14} color={theme.textMuted} />
           </Tap>
         )}
@@ -86,12 +86,12 @@ const styles = StyleSheet.create({
   block: { gap: 10 },
   head: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   more: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  moreText: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 1 },
+  moreText: { fontFamily: fonts.uiSemibold, fontSize: font.caption },
   row: { gap: 14, paddingRight: 8 },
   cell: { width: FACE + 8, alignItems: 'center', gap: 6 },
   addRing: { width: FACE, height: FACE, borderRadius: FACE / 2, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center' },
   faceName: { fontSize: font.caption, fontWeight: '600', maxWidth: FACE + 8 },
-  hint: { fontFamily: fonts.mono, fontSize: font.caption, lineHeight: 17 },
+  hint: { fontFamily: fonts.ui, fontSize: font.caption, lineHeight: 17 },
   friend: { flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, borderRadius: 14, padding: 12 },
   friendName: { fontSize: font.body, fontWeight: '700' },
 });

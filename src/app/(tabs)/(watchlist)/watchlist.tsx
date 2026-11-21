@@ -21,7 +21,7 @@ import { Segments } from '@/components/Segments';
 import { useToast } from '@/components/Toast';
 import { formatRuntime } from '@/lib/dates';
 import { useQuickLog } from '@/lib/useQuickLog';
-import { KIND_COLORS, font, fonts, shadow, useTheme } from '@/lib/theme';
+import { KIND_COLORS, font, fonts, useTheme } from '@/lib/theme';
 import { useLists } from '@/lists/ListsProvider';
 import { useSettings } from '@/settings/SettingsProvider';
 import type { Theme } from '@/lib/theme';
@@ -129,16 +129,16 @@ export default function WatchlistScreen() {
       <View style={styles.headRow}>
         <View style={styles.titleBlock}>
           <Text maxFontSizeMultiplier={1.15} accessibilityRole="header" style={[styles.heading, { color: theme.text }]}>
-            WATCH<Text style={{ color: theme.accent }}>LIST</Text>
+            WATCH<Text style={{ color: theme.accent }}>List</Text>
           </Text>
           <Text style={[styles.sub, { color: theme.textMuted }]} numberOfLines={1}>
             {queue.length ? `${queue.length} saved` : 'For later'}
           </Text>
         </View>
-        <Tap onPress={() => router.push('/lists')} accessibilityRole="button" accessibilityLabel="Your lists" style={[styles.listsBtn, { borderColor: theme.accent, backgroundColor: theme.accentSoft }]}>
-          <Ionicons name="albums" size={20} color={theme.accent} />
+        <Tap onPress={() => router.push('/lists')} accessibilityRole="button" accessibilityLabel="Your lists" style={[styles.listsBtn, { borderColor: theme.border, backgroundColor: theme.chip }]}>
+          <Ionicons name="albums-outline" size={20} color={theme.text} />
           <Text style={[styles.listsText, { color: theme.text }]} numberOfLines={1}>
-            MY LISTS{lists.length ? ` · ${lists.length}` : ''}
+            My lists{lists.length ? ` · ${lists.length}` : ''}
           </Text>
         </Tap>
       </View>
@@ -148,7 +148,7 @@ export default function WatchlistScreen() {
           value={view}
           onChange={(v) => setChosen({ from: params.view, view: v })}
           options={[
-            { key: 'next', label: `UP NEXT · ${queue.length}` },
+            { key: 'next', label: `Up next · ${queue.length}` },
             { key: 'watching', label: `WATCHING · ${tracked.length}` },
           ]}
         />
@@ -160,11 +160,11 @@ export default function WatchlistScreen() {
             onPress={spin}
             disabled={!shown.length}
             accessibilityRole="button"
-            style={[styles.pickBtn, { backgroundColor: theme.accent, boxShadow: shadow.glow(theme.accent) }]}
+            style={[styles.pickBtn, { backgroundColor: theme.accent }]}
           >
             <MaterialCommunityIcons name="dice-5-outline" size={22} color={theme.accentText} />
             <Text style={[styles.pickText, { color: theme.accentText }]} numberOfLines={1}>
-              CAN’T DECIDE? PICK FOR ME
+              Can’t decide? Pick for me
             </Text>
           </Tap>
           <View style={styles.toolbar}>
@@ -177,7 +177,7 @@ export default function WatchlistScreen() {
           </View>
           <Pressable onPress={() => setSort(SORTS[sort].next)} hitSlop={16} accessibilityRole="button" style={styles.sortBtn}>
             <Ionicons name="swap-vertical" size={14} color={theme.textMuted} />
-            <Text style={[styles.sortText, { color: theme.textMuted }]}>{SORTS[sort].label.toUpperCase()}</Text>
+            <Text style={[styles.sortText, { color: theme.textMuted }]}>{SORTS[sort].label}</Text>
           </Pressable>
         </>
       )}
@@ -230,12 +230,12 @@ export default function WatchlistScreen() {
               <View style={[styles.emptyIcon, { backgroundColor: theme.accentSoft }]}>
                 <MaterialCommunityIcons name="bookmark-multiple-outline" size={38} color={theme.accent} />
               </View>
-              <Text style={[styles.emptyTitle, { color: theme.text }]}>NOTHING QUEUED UP</Text>
+              <Text style={[styles.emptyTitle, { color: theme.text }]}>Nothing queued up</Text>
               <Text style={[styles.emptyText, { color: theme.textMuted }]}>
                 Tap the bookmark on any title to save it here
               </Text>
               <Pressable onPress={() => router.navigate('/search')} style={[styles.emptyBtn, { backgroundColor: theme.accent }]} accessibilityRole="button">
-                <Text style={[styles.emptyBtnText, { color: theme.accentText }]}>FIND A TITLE</Text>
+                <Text style={[styles.emptyBtnText, { color: theme.accentText }]}>Find a title</Text>
               </Pressable>
             </View>
           ) : (
@@ -316,7 +316,7 @@ function NextWatch({
       <Pressable style={[styles.backdrop, { backgroundColor: theme.overlay }]} onPress={onClose}>
         {item && (
           <View style={[styles.feature, { backgroundColor: theme.card, borderColor: theme.accent + '66' }]} onStartShouldSetResponder={() => true}>
-            <Text style={[styles.featureKicker, { color: theme.accent }]}>★ YOUR NEXT WATCH ★</Text>
+            <Text style={[styles.featureKicker, { color: theme.textMuted }]}>Your next watch</Text>
             <Pop when={rolling ? 'rolling' : item.id}>
               {/* While it rolls, the tile-sized poster: already loaded, so nothing flashes blank. */}
               <Pressable
@@ -334,7 +334,7 @@ function NextWatch({
             </Pop>
             <KindBadge kind={item.kind} theme={theme} />
             <Text style={[styles.featureTitle, { color: theme.text }]} numberOfLines={2}>
-              {item.title.toUpperCase()}
+              {item.title}
             </Text>
             {!!item.year && (
               <Text style={[styles.featureMeta, { color: theme.textMuted }]} numberOfLines={2}>
@@ -350,12 +350,12 @@ function NextWatch({
             <View style={styles.featureButtons}>
               <Tap onPress={() => onLog(item)} disabled={rolling} style={[styles.featureBtn, { backgroundColor: theme.accent }]} accessibilityRole="button">
                 <MaterialCommunityIcons name="movie-open-check-outline" size={18} color={theme.accentText} />
-                <Text style={[styles.featureBtnText, { color: theme.accentText }]}>WATCHED IT</Text>
+                <Text style={[styles.featureBtnText, { color: theme.accentText }]}>Watched it</Text>
               </Tap>
               {canSpin && (
                 <Tap onPress={onSpin} disabled={rolling} style={[styles.featureBtn, { borderColor: theme.border, borderWidth: 1 }]} accessibilityRole="button">
                   <MaterialCommunityIcons name="dice-5-outline" size={18} color={theme.text} />
-                  <Text style={[styles.featureBtnText, { color: theme.text }]}>SPIN AGAIN</Text>
+                  <Text style={[styles.featureBtnText, { color: theme.text }]}>Spin again</Text>
                 </Tap>
               )}
             </View>
@@ -373,31 +373,31 @@ const styles = StyleSheet.create({
   heading: { fontFamily: fonts.display, fontSize: font.marquee, lineHeight: 46, letterSpacing: 1, includeFontPadding: false },
   // The gold word is a span a little taller than the line; the gap keeps it off the line below.
   titleBlock: { flex: 1, gap: 4 },
-  sub: { fontFamily: fonts.mono, fontSize: font.footnote },
+  sub: { fontFamily: fonts.ui, fontSize: font.footnote },
   pickBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, height: 50, borderRadius: 25 },
-  pickText: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 1.2 },
+  pickText: { fontFamily: fonts.uiSemibold, fontSize: font.footnote },
   toolbar: { flexDirection: 'row', alignItems: 'center' },
   headRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
   listsBtn: { flexShrink: 0, flexDirection: 'row', alignItems: 'center', gap: 6, height: 46, paddingHorizontal: 16, borderRadius: 23, borderWidth: 1.5 },
-  listsText: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 0.8 },
+  listsText: { fontFamily: fonts.uiSemibold, fontSize: font.footnote },
   chips: { gap: 8 },
   sortBtn: { flexDirection: 'row', alignItems: 'center', gap: 5, alignSelf: 'flex-end' },
-  sortText: { fontFamily: fonts.monoBold, fontSize: 12, letterSpacing: 1 },
+  sortText: { fontFamily: fonts.uiSemibold, fontSize: 12 },
   tileTitle: { fontSize: font.footnote, fontWeight: '700', marginTop: 6, lineHeight: 17 },
-  tileNight: { fontFamily: fonts.monoBold, fontSize: 12, letterSpacing: 0.5, marginTop: 1 },
-  tileMeta: { fontFamily: fonts.mono, fontSize: font.caption, marginTop: 2 },
+  tileNight: { fontFamily: fonts.uiSemibold, fontSize: 12, marginTop: 1 },
+  tileMeta: { fontFamily: fonts.ui, fontSize: font.caption, marginTop: 2 },
   empty: { alignItems: 'center', gap: 10, paddingTop: 50, paddingHorizontal: 24 },
   emptyIcon: { width: 84, height: 84, borderRadius: 42, alignItems: 'center', justifyContent: 'center', marginBottom: 6 },
-  emptyTitle: { fontFamily: fonts.display, fontSize: 30, letterSpacing: 1.5 },
-  emptyText: { fontFamily: fonts.mono, fontSize: font.body, textAlign: 'center', lineHeight: 21 },
+  emptyTitle: { fontFamily: fonts.uiBold, fontSize: font.title2 },
+  emptyText: { fontFamily: fonts.ui, fontSize: font.body, textAlign: 'center', lineHeight: 21 },
   emptyBtn: { height: 44, paddingHorizontal: 20, borderRadius: 22, alignItems: 'center', justifyContent: 'center', marginTop: 8 },
-  emptyBtnText: { fontFamily: fonts.monoBold, fontSize: font.body, letterSpacing: 1 },
+  emptyBtnText: { fontFamily: fonts.uiSemibold, fontSize: font.body },
   backdrop: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
   feature: { width: '100%', maxWidth: 380, borderRadius: 20, borderWidth: 1, padding: 22, alignItems: 'center', gap: 10 },
-  featureKicker: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 3 },
-  featureTitle: { fontFamily: fonts.display, fontSize: 32, lineHeight: 34, textAlign: 'center', letterSpacing: 1 },
-  featureMeta: { fontFamily: fonts.mono, fontSize: font.footnote, textAlign: 'center' },
+  featureKicker: { fontFamily: fonts.uiSemibold, fontSize: font.caption },
+  featureTitle: { fontFamily: fonts.uiBold, fontSize: font.title2, lineHeight: 29, textAlign: 'center' },
+  featureMeta: { fontFamily: fonts.ui, fontSize: font.footnote, textAlign: 'center' },
   featureButtons: { gap: 8, marginTop: 8, alignSelf: 'stretch' },
   featureBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: 46, borderRadius: 23 },
-  featureBtnText: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 1 },
+  featureBtnText: { fontFamily: fonts.uiSemibold, fontSize: font.footnote },
 });

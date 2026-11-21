@@ -76,7 +76,7 @@ export function Synopsis({
           <Text style={[styles.overview, { color: theme.text }]} numberOfLines={more ? undefined : 4}>
             {text}
           </Text>
-          {text.length > 220 && <Text style={[styles.showMore, { color: theme.accent }]}>{more ? 'SHOW LESS' : 'SHOW MORE'}</Text>}
+          {text.length > 220 && <Text style={[styles.showMore, { color: theme.accent }]}>{more ? 'Show less' : 'Show more'}</Text>}
         </Pressable>
       )}
       {series && about && (
@@ -137,10 +137,10 @@ export function TitleMore({ id, t, about, theme }: { id: string; t: Title; about
                   accessibilityState={{ selected: on }}
                   style={[
                     styles.tab,
-                    { borderColor: on ? theme.accent : theme.border, backgroundColor: on ? theme.accent : 'transparent', opacity: tab.n ? 1 : 0.4 },
+                    { borderColor: on ? theme.chipActive : theme.border, backgroundColor: on ? theme.chipActive : 'transparent', opacity: tab.n ? 1 : 0.4 },
                   ]}
                 >
-                  <Text style={[styles.tabText, { color: on ? theme.accentText : theme.text }]}>{tab.label.toUpperCase()}</Text>
+                  <Text style={[styles.tabText, { color: on ? theme.chipActiveText : theme.text }]}>{tab.label}</Text>
                 </Pressable>
               );
             })}
@@ -210,16 +210,16 @@ const styles = StyleSheet.create({
   block: { gap: 10 },
   tagline: { fontSize: font.body, fontStyle: 'italic', lineHeight: 21 },
   overview: { fontSize: font.body, lineHeight: 22 },
-  showMore: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 1, marginTop: 4 },
-  facts: { fontFamily: fonts.mono, fontSize: font.footnote },
+  showMore: { fontFamily: fonts.uiSemibold, fontSize: font.footnote, marginTop: 4 },
+  facts: { fontFamily: fonts.ui, fontSize: font.footnote },
   tabs: { flexDirection: 'row', gap: 8 },
   tab: { borderWidth: 1, borderRadius: 16, height: 32, paddingHorizontal: 16, alignItems: 'center', justifyContent: 'center' },
-  tabText: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 1.5 },
+  tabText: { fontFamily: fonts.uiSemibold, fontSize: font.caption },
   seasons: { gap: 12, paddingRight: 16 },
   season: { width: 96 },
   seasonPoster: { width: 96, height: 144, borderRadius: 6 },
   seasonNo: { fontFamily: fonts.display, fontSize: 40 },
   seasonName: { fontSize: font.footnote, fontWeight: '700', marginTop: 6 },
-  seasonSub: { fontFamily: fonts.mono, fontSize: font.caption },
-  credit: { fontFamily: fonts.mono, fontSize: font.caption, textAlign: 'center' },
+  seasonSub: { fontFamily: fonts.ui, fontSize: font.caption },
+  credit: { fontFamily: fonts.ui, fontSize: font.caption, textAlign: 'center' },
 });

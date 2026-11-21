@@ -155,7 +155,7 @@ export function FriendsRow({ theme, round }: { theme: Theme; round: number }) {
                 {e.title}
               </Text>
               {!!what && (
-                <Text style={[styles.what, { color: theme.accent }]} numberOfLines={1}>
+                <Text style={[styles.what, { color: theme.textMuted }]} numberOfLines={1}>
                   {what}
                 </Text>
               )}
@@ -203,9 +203,9 @@ const styles = StyleSheet.create({
   ghostLine: { height: 12, borderRadius: 4, marginTop: 10 },
   row: { gap: 12, paddingRight: 16 },
   face: { position: 'absolute', right: -4, bottom: -6, borderRadius: 16, borderWidth: 2 },
-  name: { fontSize: font.footnote, fontWeight: '700', marginTop: 8 },
+  name: { fontSize: font.footnote, fontWeight: '600', marginTop: 8, lineHeight: 18 },
   meta: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 },
   stars: { fontSize: 12 },
-  what: { fontFamily: fonts.monoBold, fontSize: 12 },
-  who: { fontFamily: fonts.mono, fontSize: font.caption, flexShrink: 1 },
+  what: { fontFamily: fonts.uiSemibold, fontSize: 12 },
+  who: { fontFamily: fonts.ui, fontSize: font.caption, flexShrink: 1 },
 });

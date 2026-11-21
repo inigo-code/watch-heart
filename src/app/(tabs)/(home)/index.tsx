@@ -11,7 +11,7 @@ import { tmdbKey } from '@/api';
 import { watchRegion } from '@/api/omdb';
 import { refreshAnswers } from '@/api/cache';
 import { inCinemasQuery, nowPlayingTmdb } from '@/api/tmdb';
-import { AppHeader, greetingIcon, greetingLine } from '@/components/AppHeader';
+import { AppHeader } from '@/components/AppHeader';
 import { Poster } from '@/components/Film';
 import { FriendsRow } from '@/components/home/FriendsRow';
 import { NotifyInvite } from '@/components/home/NotifyInvite';
@@ -24,7 +24,6 @@ import { RowHead, TitleRow } from '@/components/title/Rows';
 import { today } from '@/lib/dates';
 import { countryName } from '@/lib/discover';
 import { isOffline } from '@/lib/errors';
-import { useHour } from '@/lib/greeting';
 import { useNudges } from '@/lib/useNudges';
 import { homeLanguage } from '@/lib/regional';
 import { favouriteSeeds, forYou } from '@/lib/home';
@@ -45,7 +44,6 @@ import type { Title } from '@/store/types';
 export default function HomeScreen() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
-  const hour = useHour();
   const { settings } = useSettings();
   const key = tmdbKey(settings.tmdbKey);
   const region = watchRegion(settings.watchRegion);
@@ -110,9 +108,9 @@ export default function HomeScreen() {
   return (
     <ScrollView
       refreshControl={pull}
-      contentContainerStyle={[styles.content, { paddingTop: insets.top + 10, paddingBottom: insets.bottom + 32 }]}
+      contentContainerStyle={[styles.content, { paddingTop: insets.top + 4, paddingBottom: insets.bottom + 32 }]}
     >
-      <AppHeader theme={theme} line={greetingLine(hour)} icon={greetingIcon(hour)} />
+      <AppHeader theme={theme} />
 
       {offline && <OfflineNote theme={theme} />}
 
@@ -162,7 +160,7 @@ export default function HomeScreen() {
       {upNext.length > 0 && (
         <View style={styles.block}>
           <RowHead title="Up next" theme={theme} more="All" onMore={() => router.navigate('/watchlist')} />
-          <TitleRow titles={upNext} theme={theme} width={92} />
+          <TitleRow titles={upNext} theme={theme} />
         </View>
       )}
 
@@ -179,7 +177,6 @@ export default function HomeScreen() {
         </View>
       )}
 
-
       {(cinemaTitles === null || cinemaTitles.length > 0) && (
         <View style={styles.block}>
           <RowHead title={`In cinemas · ${countryName(region)}`} theme={theme} more="See all" onMore={() => browse(inCinemasQuery(region), `In cinemas · ${countryName(region)}`)} />
@@ -195,7 +192,7 @@ export default function HomeScreen() {
         style={({ pressed }) => [styles.discover, { backgroundColor: pressed ? theme.chip : 'transparent', borderColor: theme.border }]}
       >
         <Ionicons name="compass" size={18} color={theme.accent} />
-        <Text style={[styles.discoverText, { color: theme.text }]}>DISCOVER MORE</Text>
+        <Text style={[styles.discoverText, { color: theme.text }]}>Discover more</Text>
       </Pressable>
     </ScrollView>
   );
@@ -213,14 +210,14 @@ function Skeleton({ theme, width = 104 }: { theme: Theme; width?: number }) {
 }
 
 const styles = StyleSheet.create({
-  content: { paddingHorizontal: 16, gap: 24 },
+  content: { paddingHorizontal: 16, gap: 32 },
   block: { gap: 10 },
   row: { flexDirection: 'row', gap: 12, paddingRight: 16 },
-  name: { fontSize: font.footnote, fontWeight: '700', marginTop: 6 },
+  name: { fontSize: font.footnote, fontWeight: '600', marginTop: 8, lineHeight: 18 },
   headGroup: { gap: 4 },
-  because: { fontFamily: fonts.mono, fontSize: font.caption, lineHeight: 17 },
+  because: { fontFamily: fonts.ui, fontSize: font.caption, lineHeight: 17 },
   episode: { position: 'absolute', left: 6, bottom: 6, borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2 },
-  episodeText: { fontFamily: fonts.monoBold, fontSize: 12, letterSpacing: 0.5 },
+  episodeText: { fontFamily: fonts.uiSemibold, fontSize: 12 },
   discover: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: 46, borderRadius: 23, borderWidth: 1 },
-  discoverText: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 1.5 },
+  discoverText: { fontFamily: fonts.uiSemibold, fontSize: font.footnote },
 });

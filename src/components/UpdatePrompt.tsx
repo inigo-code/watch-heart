@@ -58,7 +58,6 @@ function UpdatePromptInner() {
   if (showNews) {
     return (
       <Ticket theme={theme} onClose={() => update({ seenUpdate: WHATS_NEW.id })}>
-        <Text style={[styles.kicker, { color: theme.accent }]}>NOW SHOWING</Text>
         <Text style={[styles.title, { color: theme.text }]}>What’s new in this cut</Text>
         {/* Scrolls on its own, so a long list or a large font never pushes the button off the screen. */}
         <ScrollView style={styles.scroll} contentContainerStyle={styles.list}>
@@ -124,15 +123,14 @@ const styles = StyleSheet.create({
   punch: { position: 'absolute', top: '58%', width: 22, height: 22, borderRadius: 11 },
   punchLeft: { left: -11 },
   punchRight: { right: -11 },
-  kicker: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 2 },
-  title: { fontSize: font.largeTitle, fontFamily: fonts.display, letterSpacing: 1, textAlign: 'center', marginTop: 4 },
+  title: { fontSize: font.title2, fontFamily: fonts.uiBold, textAlign: 'center', marginTop: 4 },
   body: { fontSize: font.body, lineHeight: 20, textAlign: 'center' },
   scroll: { alignSelf: 'stretch', flexGrow: 0, flexShrink: 1, marginTop: 6 },
   list: { gap: 10 },
   item: { flexDirection: 'row', gap: 10 },
   itemText: { flex: 1, fontSize: font.body, lineHeight: 20 },
   primary: { alignSelf: 'stretch', height: 50, borderRadius: 25, alignItems: 'center', justifyContent: 'center', marginTop: 8 },
-  primaryText: { fontSize: font.body, fontFamily: fonts.monoBold, textTransform: 'uppercase', letterSpacing: 1 },
+  primaryText: { fontSize: font.body, fontFamily: fonts.uiSemibold },
   secondary: { paddingVertical: 8, paddingHorizontal: 20 },
   secondaryText: { fontSize: font.body, fontWeight: '700' },
 });

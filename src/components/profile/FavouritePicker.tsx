@@ -78,7 +78,7 @@ export function FavouritePicker({ visible, theme, entries, onPick, onClose }: {
     <Modal visible={visible} animationType="slide" onRequestClose={onClose} statusBarTranslucent>
       <KeyboardSafe style={[styles.sheet, { backgroundColor: theme.bg, paddingTop: insets.top + 12 }]}>
         <View style={styles.head}>
-          <Text style={[styles.title, { color: theme.text }]}>PICK A FAVOURITE</Text>
+          <Text style={[styles.title, { color: theme.text }]}>Pick a favourite</Text>
           <Pressable onPress={onClose} hitSlop={10} accessibilityRole="button" accessibilityLabel="Close">
             <Ionicons name="close" size={26} color={theme.text} />
           </Pressable>
@@ -105,7 +105,7 @@ export function FavouritePicker({ visible, theme, entries, onPick, onClose }: {
           }
           renderItem={({ item }) =>
             item.type === 'head' ? (
-              <Text style={[styles.head2, { color: theme.textMuted }]}>NOT IN YOUR DIARY</Text>
+              <Text style={[styles.head2, { color: theme.textMuted }]}>Not in your diary</Text>
             ) : item.type === 'more' ? (
               <Pressable onPress={() => onPick(item.fav)} accessibilityRole="button" style={({ pressed }) => [styles.row, { backgroundColor: theme.card, borderColor: theme.border, opacity: pressed ? 0.8 : 1 }]}>
                 <Poster uri={item.fav.posterUrl} title={item.fav.title} width={42} theme={theme} radius={4} />
@@ -141,11 +141,11 @@ export function FavouritePicker({ visible, theme, entries, onPick, onClose }: {
 const styles = StyleSheet.create({
   sheet: { flex: 1, paddingHorizontal: 16, gap: 12 },
   head: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  title: { fontFamily: fonts.display, fontSize: font.largeTitle, letterSpacing: 1 },
+  title: { fontFamily: fonts.uiBold, fontSize: font.title2 },
   search: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderRadius: 12, paddingHorizontal: 12, height: 48 },
   input: { flex: 1, fontSize: font.body },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: StyleSheet.hairlineWidth, borderRadius: 12, padding: 10 },
   name: { fontSize: font.body, fontWeight: '700' },
-  meta: { fontFamily: fonts.mono, fontSize: font.caption, marginTop: 2 },
-  head2: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 1.5, marginTop: 6 },
+  meta: { fontFamily: fonts.ui, fontSize: font.caption, marginTop: 2 },
+  head2: { fontFamily: fonts.uiSemibold, fontSize: font.caption, marginTop: 6 },
 });

@@ -119,7 +119,7 @@ export default function SomeoneScreen() {
     <ScrollView contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 32 }]} refreshControl={pull}>
       <View style={styles.who}>
         <Face uri={photo} name={person.name} theme={theme} size={96} round />
-        <Text style={[styles.name, { color: theme.text }]}>{person.name.toUpperCase()}</Text>
+        <Text style={[styles.name, { color: theme.text }]}>{person.name}</Text>
         {!!person.bio && <Text style={[styles.bio, { color: theme.textMuted }]}>{person.bio}</Text>}
         {person.titles > 0 && (
           <Text style={[styles.count, { color: theme.textMuted }]}>
@@ -133,15 +133,15 @@ export default function SomeoneScreen() {
           <ActivityIndicator color={theme.accent} />
         ) : person.status === 'received' ? (
           <>
-            {button('DECLINE', () => answer(false), false)}
-            {button('ACCEPT', () => answer(true))}
+            {button('Decline', () => answer(false), false)}
+            {button('Accept', () => answer(true))}
           </>
         ) : person.status === 'sent' ? (
-          button('REQUESTED', takeBack, false)
+          button('Requested', takeBack, false)
         ) : person.status === 'friends' ? (
-          button('OPEN THEIR DIARY', () => router.replace({ pathname: '/friend/[id]', params: { id: person.id } }))
+          button('Open their diary', () => router.replace({ pathname: '/friend/[id]', params: { id: person.id } }))
         ) : (
-          button('ADD FRIEND', ask)
+          button('Add friend', ask)
         )}
       </View>
 
@@ -169,12 +169,12 @@ const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32 },
   content: { padding: 16, gap: 22 },
   who: { alignItems: 'center', gap: 8 },
-  name: { fontFamily: fonts.display, fontSize: 30, letterSpacing: 1, textAlign: 'center' },
+  name: { fontFamily: fonts.uiBold, fontSize: font.title2, textAlign: 'center' },
   bio: { fontSize: font.footnote, lineHeight: 20, textAlign: 'center' },
-  count: { fontFamily: fonts.mono, fontSize: font.caption },
+  count: { fontFamily: fonts.ui, fontSize: font.caption },
   actions: { flexDirection: 'row', justifyContent: 'center', gap: 10, minHeight: 46 },
   action: { flex: 1, height: 46, borderRadius: 23, alignItems: 'center', justifyContent: 'center' },
-  actionText: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 1.5 },
+  actionText: { fontFamily: fonts.uiSemibold, fontSize: font.footnote },
   favourites: { gap: 10 },
-  note: { fontFamily: fonts.mono, fontSize: font.caption, lineHeight: 17, textAlign: 'center' },
+  note: { fontFamily: fonts.ui, fontSize: font.caption, lineHeight: 17, textAlign: 'center' },
 });

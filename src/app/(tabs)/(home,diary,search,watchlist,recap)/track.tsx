@@ -200,7 +200,7 @@ export default function TrackScreen() {
     <ScrollView contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 40 }]}>
       <Stack.Screen
         options={{
-          title: 'EPISODES',
+          title: 'Episodes',
           headerRight: () => (info ? <HeaderDisc icon="ellipsis-horizontal" label="More for the whole show" onPress={() => setMenu(true)} /> : null),
         }}
       />
@@ -209,7 +209,7 @@ export default function TrackScreen() {
         <View style={{ flex: 1, gap: 6 }}>
           <KindBadge kind={show.kind} theme={theme} small />
           <Text style={[styles.title, { color: theme.text }]} numberOfLines={3}>
-            {show.title.toUpperCase()}
+            {show.title}
           </Text>
           {c ? (
             <>
@@ -309,7 +309,7 @@ export default function TrackScreen() {
               style={({ pressed }) => [styles.seasonAll, { borderColor: theme.border, opacity: pressed ? 0.7 : 1 }]}
             >
               <Ionicons name={seasonDone ? 'close-circle-outline' : 'checkmark-done'} size={18} color={theme.accent} />
-              <Text style={[styles.seasonAllText, { color: theme.text }]}>{seasonDone ? `UNMARK SEASON ${current}` : `MARK SEASON ${current} AS SEEN`}</Text>
+              <Text style={[styles.seasonAllText, { color: theme.text }]}>{seasonDone ? `Unmark season ${current}` : `Mark season ${current} as seen`}</Text>
             </Pressable>
           )}
 
@@ -323,7 +323,7 @@ export default function TrackScreen() {
               style={({ pressed }) => [styles.seasonAll, { borderColor: theme.border, opacity: pressed ? 0.7 : 1 }]}
             >
               <Ionicons name="star-outline" size={18} color={theme.accent} />
-              <Text style={[styles.seasonAllText, { color: theme.text }]}>RATE & REVIEW SEASON {current}</Text>
+              <Text style={[styles.seasonAllText, { color: theme.text }]}>Rate & review season {current}</Text>
             </Pressable>
           )}
 
@@ -474,23 +474,23 @@ const styles = StyleSheet.create({
   dayBox: { gap: 8 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
   head: { flexDirection: 'row', gap: 14, alignItems: 'center' },
-  title: { fontFamily: fonts.display, fontSize: font.largeTitle, lineHeight: 30, letterSpacing: 0.5 },
-  note: { fontFamily: fonts.mono, fontSize: font.caption, lineHeight: 16 },
+  title: { fontFamily: fonts.uiBold, fontSize: font.title2, lineHeight: 29 },
+  note: { fontFamily: fonts.ui, fontSize: font.caption, lineHeight: 16 },
   track: { height: 8, borderRadius: 4, overflow: 'hidden' },
   fill: { height: '100%', borderRadius: 4 },
   next: { flexDirection: 'row', alignItems: 'center', gap: 10, borderWidth: 1, borderRadius: 12, padding: 12 },
   nextText: { flex: 1, fontSize: font.body, fontWeight: '700' },
   plus: { height: 36, minWidth: 52, borderRadius: 18, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 12 },
-  plusText: { fontFamily: fonts.monoBold, fontSize: font.body },
+  plusText: { fontFamily: fonts.uiSemibold, fontSize: font.body },
   row: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   seasonChip: { flexDirection: 'row', alignItems: 'center', gap: 4, height: 34, paddingHorizontal: 14, borderRadius: 17, borderWidth: 1 },
-  seasonChipText: { fontFamily: fonts.monoBold, fontSize: font.footnote },
+  seasonChipText: { fontFamily: fonts.uiSemibold, fontSize: font.footnote },
   seasonAll: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: 44, borderRadius: 22, borderWidth: 1, borderStyle: 'dashed' },
-  seasonAllText: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 1 },
+  seasonAllText: { fontFamily: fonts.uiSemibold, fontSize: font.caption },
   episode: { flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, borderRadius: 12, paddingVertical: 10, paddingHorizontal: 12 },
   epNum: { fontFamily: fonts.display, fontSize: 26, width: 32, textAlign: 'center' },
   epName: { fontSize: font.body, fontWeight: '600' },
-  epMeta: { fontFamily: fonts.mono, fontSize: font.caption, marginTop: 2 },
+  epMeta: { fontFamily: fonts.ui, fontSize: font.caption, marginTop: 2 },
   epRating: { flexDirection: 'row', alignItems: 'center', gap: 3 },
   epRatingText: { marginTop: 0 },
 });

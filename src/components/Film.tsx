@@ -140,7 +140,7 @@ export function KindBadge({ kind, theme, small }: { kind: MediaKind; theme: Them
   const color = kindColor(kind, theme);
   return (
     <View style={[styles.badge, { borderColor: color + '88', backgroundColor: color + '1A' }, small && styles.badgeSmall]}>
-      <Text style={[styles.badgeText, { color }, small && styles.badgeTextSmall]}>{KIND_LABEL[kind].toUpperCase()}</Text>
+      <Text style={[styles.badgeText, { color }, small && styles.badgeTextSmall]}>{KIND_LABEL[kind]}</Text>
     </View>
   );
 }
@@ -176,7 +176,7 @@ export function Chip({ label, active, icon, color, theme, onPress }: {
     >
       {icon && <Ionicons name={icon} size={14} color={color && !active ? color : fg} />}
       {!icon && color && !active && <View style={[styles.dot, { backgroundColor: color }]} />}
-      <Text style={[styles.chipText, { color: fg }]}>{label.toUpperCase()}</Text>
+      <Text style={[styles.chipText, { color: fg }]}>{label}</Text>
     </Tap>
   );
 }
@@ -188,10 +188,10 @@ const styles = StyleSheet.create({
   starInput: { alignSelf: 'flex-start', paddingVertical: 4 },
   badge: { borderWidth: 1, borderRadius: 4, paddingHorizontal: 6, paddingVertical: 1, alignSelf: 'flex-start' },
   badgeSmall: { paddingHorizontal: 4, paddingVertical: 0 },
-  badgeText: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 1 },
+  badgeText: { fontFamily: fonts.uiSemibold, fontSize: font.caption },
   badgeTextSmall: { fontSize: 12 },
   sprockets: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 6 },
   chip: { flexDirection: 'row', alignItems: 'center', gap: 6, height: 32, paddingHorizontal: 12, borderRadius: 16, borderWidth: 1 },
   dot: { width: 7, height: 7, borderRadius: 4 },
-  chipText: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 1 },
+  chipText: { fontFamily: fonts.uiSemibold, fontSize: font.caption },
 });

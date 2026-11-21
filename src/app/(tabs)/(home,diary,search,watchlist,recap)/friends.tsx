@@ -83,12 +83,12 @@ export default function FriendsScreen() {
     return (
       <View style={styles.center}>
         <Ionicons name="people-outline" size={44} color={theme.accent} />
-        <Text style={[styles.emptyTitle, { color: theme.text }]}>FRIENDS NEED AN ACCOUNT</Text>
+        <Text style={[styles.emptyTitle, { color: theme.text }]}>Friends need an account</Text>
         <Text style={[styles.emptyText, { color: theme.textMuted }]}>
           Sign in (or make a free account) to get your invite code, add friends by theirs, and see what they’re watching.
         </Text>
         <Pressable onPress={() => router.push('/account')} accessibilityRole="button" style={[styles.primary, { backgroundColor: theme.accent }]}>
-          <Text style={[styles.primaryText, { color: theme.accentText }]}>SIGN IN</Text>
+          <Text style={[styles.primaryText, { color: theme.accentText }]}>Sign in</Text>
         </Pressable>
       </View>
     );
@@ -143,7 +143,7 @@ export default function FriendsScreen() {
         {showAdd && (
           <View style={styles.block}>
             <View style={[styles.codeCard, { backgroundColor: theme.card, borderColor: theme.accent }]}>
-              <Text style={[styles.codeLabel, { color: theme.textMuted }]}>YOUR INVITE CODE</Text>
+              <Text style={[styles.codeLabel, { color: theme.textMuted }]}>Your invite code</Text>
               {code ? (
                 <Text style={[styles.code, { color: theme.text }]} selectable accessibilityLabel={`Your invite code: ${code.split('').join(' ')}`}>
                   {formatCode(code)}
@@ -159,11 +159,11 @@ export default function FriendsScreen() {
               <View style={styles.codeButtons}>
                 <Pressable onPress={share} disabled={!code} accessibilityRole="button" style={[styles.primary, styles.grow, { backgroundColor: theme.accent }]}>
                   <Ionicons name="share-social-outline" size={18} color={theme.accentText} />
-                  <Text style={[styles.primaryText, { color: theme.accentText }]}>SHARE</Text>
+                  <Text style={[styles.primaryText, { color: theme.accentText }]}>Share</Text>
                 </Pressable>
                 <Pressable onPress={() => setConfirmReset(true)} disabled={!code} accessibilityRole="button" style={[styles.secondary, { borderColor: theme.border }]}>
                   <Ionicons name="refresh" size={17} color={theme.text} />
-                  <Text style={[styles.secondaryText, { color: theme.text }]}>NEW CODE</Text>
+                  <Text style={[styles.secondaryText, { color: theme.text }]}>New code</Text>
                 </Pressable>
               </View>
             </View>
@@ -187,7 +187,7 @@ export default function FriendsScreen() {
                 accessibilityRole="button"
                 style={[styles.addBtn, { backgroundColor: theme.accent, opacity: !entry.trim() || adding ? 0.5 : 1 }]}
               >
-                {adding ? <ActivityIndicator color={theme.accentText} /> : <Text style={[styles.primaryText, { color: theme.accentText }]}>ADD</Text>}
+                {adding ? <ActivityIndicator color={theme.accentText} /> : <Text style={[styles.primaryText, { color: theme.accentText }]}>Add</Text>}
               </Pressable>
             </View>
           </View>
@@ -287,22 +287,22 @@ function FeedRow({ e, theme }: { e: FriendEntry; theme: Theme }) {
 
 const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32, gap: 14 },
-  emptyTitle: { fontFamily: fonts.display, fontSize: 28, letterSpacing: 1, textAlign: 'center' },
-  emptyText: { fontFamily: fonts.mono, fontSize: font.footnote, lineHeight: 19, textAlign: 'center' },
+  emptyTitle: { fontFamily: fonts.uiBold, fontSize: font.title2, textAlign: 'center' },
+  emptyText: { fontFamily: fonts.ui, fontSize: font.footnote, lineHeight: 19, textAlign: 'center' },
   content: { padding: 16, gap: 24 },
   codeCard: { borderWidth: 1.5, borderRadius: 16, padding: 18, gap: 8, alignItems: 'center' },
-  codeLabel: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 2 },
+  codeLabel: { fontFamily: fonts.uiSemibold, fontSize: font.caption },
   code: { fontFamily: fonts.display, fontSize: 52, letterSpacing: 4, lineHeight: 56 },
-  hint: { fontFamily: fonts.mono, fontSize: font.caption, lineHeight: 17 },
+  hint: { fontFamily: fonts.ui, fontSize: font.caption, lineHeight: 17 },
   codeButtons: { flexDirection: 'row', gap: 10, alignSelf: 'stretch', marginTop: 6 },
   grow: { flex: 1 },
   primary: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: 46, borderRadius: 23, paddingHorizontal: 22 },
-  primaryText: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 1.5 },
+  primaryText: { fontFamily: fonts.uiSemibold, fontSize: font.footnote },
   secondary: { flexDirection: 'row', alignItems: 'center', gap: 6, height: 46, borderRadius: 23, borderWidth: 1, paddingHorizontal: 16 },
-  secondaryText: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 1 },
+  secondaryText: { fontFamily: fonts.uiSemibold, fontSize: font.caption },
   block: { gap: 10 },
   addRow: { flexDirection: 'row', gap: 10 },
-  input: { flex: 1, minWidth: 0, height: 48, borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, fontFamily: fonts.monoBold, fontSize: font.body, letterSpacing: 2 },
+  input: { flex: 1, minWidth: 0, height: 48, borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, fontFamily: fonts.uiSemibold, fontSize: font.body },
   addBtn: { width: 76, height: 48, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   feedRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10, borderBottomWidth: StyleSheet.hairlineWidth },
   feedText: { fontSize: font.footnote, lineHeight: 19 },

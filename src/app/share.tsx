@@ -54,7 +54,7 @@ function ShareBody() {
     <View style={styles.screen}>
       <Stack.Screen options={{ title: '' }} />
       <MaterialCommunityIcons name="ticket-confirmation-outline" size={56} color={theme.accent} />
-      <Text style={[styles.title, { color: theme.text }]}>READING YOUR TICKET</Text>
+      <Text style={[styles.title, { color: theme.text }]}>Reading your ticket</Text>
       <Text style={[styles.body, { color: theme.textMuted }]} numberOfLines={3}>
         {shared || 'Waiting for the shared link…'}
       </Text>
@@ -65,6 +65,6 @@ function ShareBody() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 14, padding: 32 },
-  title: { fontFamily: fonts.display, fontSize: 32, letterSpacing: 1.5 },
-  body: { fontFamily: fonts.mono, fontSize: font.footnote, textAlign: 'center', lineHeight: 19 },
+  title: { fontFamily: fonts.uiBold, fontSize: font.title2 },
+  body: { fontFamily: fonts.ui, fontSize: font.footnote, textAlign: 'center', lineHeight: 19 },
 });

@@ -52,9 +52,9 @@ export function RegionalRows({ region, mine, theme, seen }: { region: string; mi
                   onPress={() => setLang(l)}
                   accessibilityRole="tab"
                   accessibilityState={{ selected: on }}
-                  style={[styles.chip, { backgroundColor: on ? theme.accent : theme.chip }]}
+                  style={[styles.chip, { backgroundColor: on ? theme.chipActive : theme.chip }]}
                 >
-                  <Text style={[styles.chipText, { color: on ? theme.accentText : theme.text }]}>{l.name}</Text>
+                  <Text style={[styles.chipText, { color: on ? theme.chipActiveText : theme.text }]}>{l.name}</Text>
                 </Pressable>
               );
             })}
@@ -130,7 +130,7 @@ function QueryRow({
 const styles = StyleSheet.create({
   block: { gap: 10 },
   head: { gap: 4 },
-  sub: { fontFamily: fonts.mono, fontSize: font.caption, lineHeight: 17 },
+  sub: { fontFamily: fonts.ui, fontSize: font.caption, lineHeight: 17 },
   chips: { gap: 8, paddingRight: 16 },
   chip: { borderRadius: 16, paddingHorizontal: 14, height: 32, justifyContent: 'center' },
   chipText: { fontSize: font.footnote, fontWeight: '600' },

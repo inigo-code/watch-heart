@@ -59,7 +59,7 @@ export default function RecapScreen() {
   const setOptions = (patch: Partial<StoryOptions>) => update({ story: { ...options, ...patch } });
 
   const title = isYear(period) ? period : monthName(period).toUpperCase();
-  const subtitle = isYear(period) ? 'YEAR IN REVIEW' : period.slice(0, 4);
+  const subtitle = isYear(period) ? 'Year in review' : period.slice(0, 4);
   const previewWidth = Math.min(width - 32, 300);
 
   return (
@@ -76,14 +76,14 @@ export default function RecapScreen() {
           <View style={[styles.emptyIcon, { backgroundColor: theme.accentSoft }]}>
             <MaterialCommunityIcons name="filmstrip-box-multiple" size={38} color={theme.accent} />
           </View>
-          <Text style={[styles.emptyTitle, { color: theme.text }]}>NOTHING ON THE REEL YET</Text>
+          <Text style={[styles.emptyTitle, { color: theme.text }]}>Nothing on the reel yet</Text>
           <Text style={[styles.emptyText, { color: theme.textMuted }]}>
             {all.length
               ? 'Your diary’s entries have no watch dates, so they can’t go in a month. What you log from now on shows up here, ready for Instagram.'
               : 'Log a few titles and your monthly recap appears here, ready for Instagram.'}
           </Text>
           <Pressable onPress={() => router.navigate('/search')} style={[styles.emptyBtn, { backgroundColor: theme.accent }]} accessibilityRole="button">
-            <Text style={[styles.emptyBtnText, { color: theme.accentText }]}>FIND A TITLE</Text>
+            <Text style={[styles.emptyBtnText, { color: theme.accentText }]}>Find a title</Text>
           </Pressable>
         </View>
       ) : (
@@ -152,7 +152,7 @@ function Numbers({ theme, stats }: { theme: Theme; stats: Stats }) {
             <Text style={[styles.tileValue, { color: theme.text }]} numberOfLines={1} adjustsFontSizeToFit>
               {typeof t.value === 'number' ? <CountUp value={t.value} /> : t.value}
             </Text>
-            <Text style={[styles.tileLabel, { color: theme.accent }]}>{t.label.toUpperCase()}</Text>
+            <Text style={[styles.tileLabel, { color: theme.textMuted }]}>{t.label}</Text>
           </View>
         ))}
       </View>
@@ -166,7 +166,7 @@ function Numbers({ theme, stats }: { theme: Theme; stats: Stats }) {
         {(['movie', 'tv', 'anime'] as const).map((k) => (
           <Text key={k} style={[styles.mixText, { color: theme.textMuted }]}>
             <Text style={{ color: KIND_COLORS[k] }}>■ </Text>
-            {stats.byKind[k]} {k === 'movie' ? 'FILMS' : k === 'tv' ? 'SERIES' : 'ANIME'}
+            {stats.byKind[k]} {k === 'movie' ? 'films' : k === 'tv' ? 'series' : 'anime'}
           </Text>
         ))}
       </View>
@@ -178,17 +178,17 @@ function Numbers({ theme, stats }: { theme: Theme; stats: Stats }) {
         <View style={[styles.facts, { borderColor: theme.border }]}>
           {stats.topGenre && (
             <Text style={[styles.fact, { color: theme.textMuted }]}>
-              TOP GENRE <Text style={{ color: theme.text }}>{stats.topGenre.toUpperCase()}</Text>
+              Top genre <Text style={{ color: theme.text }}>{stats.topGenre}</Text>
             </Text>
           )}
           {stats.topVibe && (
             <Text style={[styles.fact, { color: theme.textMuted }]}>
-              TOP VIBE <Text style={{ color: theme.text }}>{stats.topVibe.toUpperCase()}</Text>
+              Top vibe <Text style={{ color: theme.text }}>{stats.topVibe}</Text>
             </Text>
           )}
           {stats.favourite && (
             <Text style={[styles.fact, { color: theme.textMuted }]} numberOfLines={1}>
-              FAVOURITE <Text style={{ color: theme.text }}>{stats.favourite.title.toUpperCase()}</Text>
+              Favourite <Text style={{ color: theme.text }}>{stats.favourite.title}</Text>
             </Text>
           )}
         </View>
@@ -202,24 +202,24 @@ const styles = StyleSheet.create({
   heading: { fontFamily: fonts.display, fontSize: font.marquee, lineHeight: 46, letterSpacing: 1, includeFontPadding: false },
   // The gold word is a span a little taller than the line; the gap keeps it off the line below.
   titleBlock: { gap: 4 },
-  sub: { fontFamily: fonts.mono, fontSize: font.footnote },
+  sub: { fontFamily: fonts.ui, fontSize: font.footnote },
   periods: { gap: 8 },
   controls: { gap: 10 },
   toggles: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   empty: { alignItems: 'center', gap: 10, paddingTop: 60, paddingHorizontal: 20 },
   emptyIcon: { width: 84, height: 84, borderRadius: 42, alignItems: 'center', justifyContent: 'center', marginBottom: 6 },
-  emptyTitle: { fontFamily: fonts.display, fontSize: 28, letterSpacing: 1, textAlign: 'center' },
-  emptyText: { fontFamily: fonts.mono, fontSize: font.body, textAlign: 'center', lineHeight: 21 },
+  emptyTitle: { fontFamily: fonts.uiBold, fontSize: font.title2, textAlign: 'center' },
+  emptyText: { fontFamily: fonts.ui, fontSize: font.body, textAlign: 'center', lineHeight: 21 },
   emptyBtn: { height: 44, paddingHorizontal: 20, borderRadius: 22, alignItems: 'center', justifyContent: 'center', marginTop: 8 },
-  emptyBtnText: { fontFamily: fonts.monoBold, fontSize: font.body, letterSpacing: 1 },
+  emptyBtnText: { fontFamily: fonts.uiSemibold, fontSize: font.body },
   numbers: { gap: 10 },
   tiles: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   tile: { width: '31.5%', flexGrow: 1, borderWidth: 1, borderRadius: 10, paddingVertical: 10, alignItems: 'center' },
   tileValue: { fontFamily: fonts.display, fontSize: 28, lineHeight: 30, includeFontPadding: false },
-  tileLabel: { fontFamily: fonts.monoBold, fontSize: 12, letterSpacing: 1.2 },
+  tileLabel: { fontFamily: fonts.uiSemibold, fontSize: 12 },
   mix: { flexDirection: 'row', height: 10, borderRadius: 5, overflow: 'hidden', gap: 2 },
   mixLegend: { flexDirection: 'row', justifyContent: 'space-between' },
-  mixText: { fontFamily: fonts.monoBold, fontSize: 12, letterSpacing: 1 },
+  mixText: { fontFamily: fonts.uiSemibold, fontSize: 12 },
   facts: { borderTopWidth: 1, paddingTop: 10, gap: 6 },
-  fact: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 1 },
+  fact: { fontFamily: fonts.uiSemibold, fontSize: font.caption },
 });

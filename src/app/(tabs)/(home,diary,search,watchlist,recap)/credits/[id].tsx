@@ -50,7 +50,7 @@ export default function CreditsScreen() {
       sections={sections}
       keyExtractor={(p, i) => `${p.id}:${i}`}
       stickySectionHeadersEnabled={false}
-      ListHeaderComponent={<Text style={[styles.title, { color: theme.text }]}>{about.title.title.toUpperCase()}</Text>}
+      ListHeaderComponent={<Text style={[styles.title, { color: theme.text }]}>{about.title.title}</Text>}
       renderSectionHeader={({ section }) => <SectionLabel theme={theme} style={styles.section}>{section.title}</SectionLabel>}
       renderItem={({ item }) => (
         <Pressable
@@ -72,9 +72,9 @@ export default function CreditsScreen() {
 
 const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
-  title: { fontFamily: fonts.display, fontSize: 32, lineHeight: 34, letterSpacing: 1 },
+  title: { fontFamily: fonts.uiBold, fontSize: font.title2, lineHeight: 29 },
   section: { marginTop: 18, marginBottom: 4 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10, borderBottomWidth: StyleSheet.hairlineWidth },
   name: { fontSize: font.body, fontWeight: '700' },
-  role: { fontFamily: fonts.mono, fontSize: font.footnote, marginTop: 2 },
+  role: { fontFamily: fonts.ui, fontSize: font.footnote, marginTop: 2 },
 });

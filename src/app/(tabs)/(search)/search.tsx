@@ -19,16 +19,16 @@ import { useToast } from '@/components/Toast';
 import { DATA_SOURCES } from '@/lib/app';
 import { today } from '@/lib/dates';
 import { searchHint } from '@/lib/searchHint';
-import { KIND_COLORS, font, fonts, useTheme } from '@/lib/theme';
+import { font, fonts, useTheme } from '@/lib/theme';
 import { useSettings } from '@/settings/SettingsProvider';
 import { useDiary } from '@/store/DiaryStore';
 import type { MediaKind, Title } from '@/store/types';
 import { shownError } from '@/lib/errors';
 
 const KINDS: { kind: MediaKind; label: string }[] = [
-  { kind: 'movie', label: 'FILMS' },
-  { kind: 'tv', label: 'SERIES' },
-  { kind: 'anime', label: 'ANIME' },
+  { kind: 'movie', label: 'Films' },
+  { kind: 'tv', label: 'Series' },
+  { kind: 'anime', label: 'Anime' },
 ];
 
 export default function SearchScreen() {
@@ -148,11 +148,9 @@ export default function SearchScreen() {
             theme={theme}
             value={mode}
             onChange={setMode}
-            pill={theme.accent}
-            onPill={theme.accentText}
             options={[
-              { key: 'trending', label: 'TRENDING', icon: 'flame' },
-              { key: 'discover', label: 'DISCOVER', icon: 'compass' },
+              { key: 'trending', label: 'Trending', icon: 'flame' },
+              { key: 'discover', label: 'Discover', icon: 'compass' },
             ]}
           />
         )}
@@ -162,8 +160,6 @@ export default function SearchScreen() {
             theme={theme}
             value={kind}
             onChange={(k) => update({ searchKind: k })}
-            pill={KIND_COLORS[kind]}
-            onPill="#0B0A0D"
             options={KINDS.map((k) => ({ key: k.kind, label: k.label }))}
           />
         )}
@@ -227,7 +223,7 @@ export default function SearchScreen() {
                   {seen > 0 && (
                     <View style={[styles.seen, { borderColor: theme.accent }]}>
                       <MaterialCommunityIcons name="ticket-confirmation" size={12} color={theme.accent} />
-                      <Text style={[styles.seenText, { color: theme.accent }]}>{seen === 1 ? 'IN YOUR DIARY' : `SEEN ${seen}×`}</Text>
+                      <Text style={[styles.seenText, { color: theme.accent }]}>{seen === 1 ? 'In your diary' : `SEEN ${seen}×`}</Text>
                     </View>
                   )}
                 </View>
@@ -264,7 +260,7 @@ export default function SearchScreen() {
                 style={({ pressed }) => [styles.manual, { borderColor: theme.border, opacity: pressed ? 0.7 : 1 }]}
               >
                 <Ionicons name="create-outline" size={16} color={theme.text} />
-                <Text style={[styles.manualText, { color: theme.text }]}>CAN’T FIND IT? ADD BY HAND</Text>
+                <Text style={[styles.manualText, { color: theme.text }]}>Can’t find it? Add by hand</Text>
               </Pressable>
               {credit && <Text style={[styles.credit, { color: theme.textMuted }]}>Search by {credit}</Text>}
             </View>
@@ -280,17 +276,17 @@ function NeedsKey({ theme, kind, onManual }: { theme: ReturnType<typeof useTheme
   return (
     <View style={[styles.keyCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
       <MaterialCommunityIcons name="key-chain-variant" size={28} color={theme.accent} />
-      <Text style={[styles.keyTitle, { color: theme.text }]}>{kind === 'anime' ? 'ANIME' : 'FILM'} SEARCH NEEDS A FREE TMDB KEY</Text>
+      <Text style={[styles.keyTitle, { color: theme.text }]}>{kind === 'anime' ? 'Anime' : 'Film'} search needs a free TMDB key</Text>
       <Text style={[styles.keyText, { color: theme.textMuted }]}>
         TMDB is the free film and TV database most apps use. Make an account at themoviedb.org, open Settings → API, copy your key, then paste it into Watch
         Heart’s settings. Series search already works without one.
       </Text>
       <View style={styles.keyButtons}>
         <Pressable onPress={() => router.push('/settings')} style={[styles.keyBtn, { backgroundColor: theme.accent }]} accessibilityRole="button">
-          <Text style={[styles.keyBtnText, { color: theme.accentText }]}>ADD KEY</Text>
+          <Text style={[styles.keyBtnText, { color: theme.accentText }]}>Add key</Text>
         </Pressable>
         <Pressable onPress={onManual} style={[styles.keyBtn, { borderColor: theme.border, borderWidth: 1 }]} accessibilityRole="button">
-          <Text style={[styles.keyBtnText, { color: theme.text }]}>ADD BY HAND</Text>
+          <Text style={[styles.keyBtnText, { color: theme.text }]}>Add by hand</Text>
         </Pressable>
       </View>
     </View>
@@ -303,33 +299,33 @@ const styles = StyleSheet.create({
   heading: { fontFamily: fonts.display, fontSize: font.marquee, lineHeight: 46, letterSpacing: 1, includeFontPadding: false },
   kinds: { flexDirection: 'row', borderWidth: 1, borderRadius: 10, padding: 3, gap: 3 },
   kind: { flex: 1, height: 34, borderRadius: 7, alignItems: 'center', justifyContent: 'center' },
-  kindText: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 1.5 },
+  kindText: { fontFamily: fonts.uiSemibold, fontSize: font.footnote },
   search: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, height: 46, borderRadius: 12 },
   searchInput: { flex: 1, fontSize: font.body, height: '100%' },
   list: { paddingHorizontal: 16 },
   section: { paddingVertical: 8 },
-  note: { fontFamily: fonts.mono, fontSize: font.footnote, paddingVertical: 12, lineHeight: 19 },
+  note: { fontFamily: fonts.ui, fontSize: font.footnote, paddingVertical: 12, lineHeight: 19 },
   rowBtn: { padding: 8 },
   modes: { flexDirection: 'row', borderRadius: 22, padding: 4, gap: 4 },
   mode: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, height: 36, borderRadius: 18 },
-  modeText: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 1.5 },
+  modeText: { fontFamily: fonts.uiSemibold, fontSize: font.footnote },
   rowMain: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10, borderRadius: 8 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 8, borderBottomWidth: StyleSheet.hairlineWidth },
   rowBody: { flex: 1, gap: 3 },
   title: { fontSize: font.headline, fontWeight: '700' },
-  year: { fontFamily: fonts.mono, fontSize: font.footnote, fontWeight: '400' },
-  original: { fontFamily: fonts.mono, fontSize: font.caption },
+  year: { fontFamily: fonts.ui, fontSize: font.footnote, fontWeight: '400' },
+  original: { fontFamily: fonts.ui, fontSize: font.caption },
   overview: { fontSize: font.footnote, lineHeight: 18 },
   seen: { flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'flex-start', borderWidth: 1, borderRadius: 4, paddingHorizontal: 5, marginTop: 2 },
-  seenText: { fontFamily: fonts.monoBold, fontSize: 12, letterSpacing: 1 },
+  seenText: { fontFamily: fonts.uiSemibold, fontSize: 12 },
   footer: { alignItems: 'center', gap: 12, paddingTop: 20 },
   manual: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderStyle: 'dashed', borderRadius: 22, height: 44, paddingHorizontal: 18 },
-  manualText: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 1 },
-  credit: { fontFamily: fonts.mono, fontSize: font.caption },
+  manualText: { fontFamily: fonts.uiSemibold, fontSize: font.footnote },
+  credit: { fontFamily: fonts.ui, fontSize: font.caption },
   keyCard: { borderWidth: 1, borderRadius: 14, padding: 18, gap: 10, marginTop: 8 },
-  keyTitle: { fontFamily: fonts.display, fontSize: 24, letterSpacing: 1 },
-  keyText: { fontFamily: fonts.mono, fontSize: font.footnote, lineHeight: 19 },
+  keyTitle: { fontFamily: fonts.uiSemibold, fontSize: font.title },
+  keyText: { fontFamily: fonts.ui, fontSize: font.footnote, lineHeight: 19 },
   keyButtons: { flexDirection: 'row', gap: 10, marginTop: 4 },
   keyBtn: { height: 40, paddingHorizontal: 16, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
-  keyBtnText: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 1 },
+  keyBtnText: { fontFamily: fonts.uiSemibold, fontSize: font.footnote },
 });

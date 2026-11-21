@@ -334,7 +334,7 @@ export default function SettingsScreen() {
               secureTextEntry={!showKey}
               autoCapitalize="none"
               autoCorrect={false}
-              style={[styles.input, { color: theme.text, fontFamily: fonts.mono }]}
+              style={[styles.input, { color: theme.text, fontFamily: fonts.ui }]}
             />
             <Pressable onPress={() => setShowKey((v) => !v)} hitSlop={8} accessibilityLabel={showKey ? 'Hide key' : 'Show key'}>
               <Ionicons name={showKey ? 'eye-off-outline' : 'eye-outline'} size={18} color={theme.textMuted} />
@@ -357,7 +357,7 @@ export default function SettingsScreen() {
               placeholderTextColor={theme.textMuted}
               autoCapitalize="none"
               autoCorrect={false}
-              style={[styles.input, { color: theme.text, fontFamily: fonts.mono }]}
+              style={[styles.input, { color: theme.text, fontFamily: fonts.ui }]}
             />
           </View>
           <Row theme={theme} icon="open-outline" label="Get a free key at omdbapi.com" onPress={() => Linking.openURL('https://www.omdbapi.com/apikey.aspx')} last />

@@ -25,12 +25,12 @@ export function DangerButton({ theme, label, icon = 'trash-outline', onPress, bu
       style={({ pressed }) => [styles.btn, { borderColor: theme.danger, backgroundColor: pressed ? theme.danger + '1F' : 'transparent' }, style]}
     >
       {busy ? <ActivityIndicator color={theme.danger} /> : <Ionicons name={icon} size={18} color={theme.danger} />}
-      <Text style={[styles.text, { color: theme.danger }]}>{label.toUpperCase()}</Text>
+      <Text style={[styles.text, { color: theme.danger }]}>{label}</Text>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   btn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 48, borderRadius: 24, borderWidth: 1.5, paddingHorizontal: 18 },
-  text: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 1.5 },
+  text: { fontFamily: fonts.uiSemibold, fontSize: font.footnote },
 });

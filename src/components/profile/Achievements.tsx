@@ -20,7 +20,7 @@ export function Achievements({ list, theme }: { list: Achievement[]; theme: Them
               <View style={[styles.medal, { borderColor: metal, backgroundColor: a.tier ? metal + '26' : 'transparent' }]}>
                 <Ionicons name={(a.tier ? a.icon : 'lock-closed') as keyof typeof Ionicons.glyphMap} size={18} color={a.tier ? metal : theme.textMuted} />
               </View>
-              {a.tier && <Text style={[styles.tier, { color: metal }]}>{a.tier.toUpperCase()}</Text>}
+              {a.tier && <Text style={[styles.tier, { color: metal }]}>{a.tier}</Text>}
             </View>
             <Text style={[styles.name, { color: theme.text }]} numberOfLines={1}>
               {a.name}
@@ -45,9 +45,9 @@ const styles = StyleSheet.create({
   badge: { width: '48.4%', borderWidth: 1, borderRadius: 12, padding: 12, gap: 4 },
   top: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 },
   medal: { width: 36, height: 36, borderRadius: 18, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
-  tier: { fontFamily: fonts.monoBold, fontSize: 12, letterSpacing: 1.5 },
-  name: { fontFamily: fonts.display, fontSize: font.title, letterSpacing: 0.5 },
-  goal: { fontFamily: fonts.mono, fontSize: font.caption, lineHeight: 15, minHeight: 30 },
+  tier: { fontFamily: fonts.uiSemibold, fontSize: 12 },
+  name: { fontFamily: fonts.uiBold, fontSize: font.title },
+  goal: { fontFamily: fonts.ui, fontSize: font.caption, lineHeight: 15, minHeight: 30 },
   track: { height: 5, borderRadius: 3, overflow: 'hidden', marginTop: 4 },
   fill: { height: '100%', borderRadius: 3 },
 });

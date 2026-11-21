@@ -98,7 +98,7 @@ export default function WelcomeScreen() {
               ))}
             </View>
             <Pressable onPress={() => finish()} hitSlop={12} accessibilityRole="button">
-              <Text style={[styles.skip, { color: theme.textMuted }]}>SKIP</Text>
+              <Text style={[styles.skip, { color: theme.textMuted }]}>Skip</Text>
             </Pressable>
           </View>
           {step === 1 ? (
@@ -164,7 +164,7 @@ function Intro({ theme, posters, bottom, onStart, onSignIn }: { theme: Theme; po
           <Text style={[styles.lead, { color: theme.textMuted }]}>A diary for films, series and anime</Text>
         </Rise>
         <Rise order={4} style={styles.actions}>
-          <Primary theme={theme} label="START YOUR DIARY" onPress={onStart} />
+          <Primary theme={theme} label="Start your diary" onPress={onStart} />
           <Pressable onPress={onSignIn} hitSlop={8} accessibilityRole="button" style={styles.secondary}>
             <Text style={[styles.secondaryText, { color: theme.text }]}>I already have an account</Text>
           </Pressable>
@@ -187,7 +187,7 @@ function You({ theme, onNext, bottom }: { theme: Theme; onNext: () => void; bott
       <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
         <Rise>
           <Text maxFontSizeMultiplier={1.15} accessibilityRole="header" style={[styles.heading, { color: theme.text }]}>
-            WHAT SHOULD WE CALL YOU?
+            What should we call you?
           </Text>
         </Rise>
         <Rise order={1}>
@@ -203,7 +203,7 @@ function You({ theme, onNext, bottom }: { theme: Theme; onNext: () => void; bott
           />
         </Rise>
         <Rise order={2} style={styles.block}>
-          <Text style={[styles.label, { color: theme.accent }]}>WHERE YOU WATCH</Text>
+          <Text style={[styles.label, { color: theme.text }]}>Where you watch</Text>
           <Text style={[styles.lead, { color: theme.textMuted }]}>For new releases and where to watch</Text>
           <Tap onPress={() => setPicking(true)} accessibilityRole="button" accessibilityLabel={`Country: ${countryName(region)}. Change`} style={[styles.country, { backgroundColor: theme.card, borderColor: theme.border }]}>
             <Text style={styles.flag}>{flag(region)}</Text>
@@ -213,7 +213,7 @@ function You({ theme, onNext, bottom }: { theme: Theme; onNext: () => void; bott
         </Rise>
         {languages.length > 0 && (
           <Rise order={3} style={styles.block}>
-            <Text style={[styles.label, { color: theme.accent }]}>YOUR LANGUAGE</Text>
+            <Text style={[styles.label, { color: theme.text }]}>Your language</Text>
             <View style={styles.chips}>
               <Chip theme={theme} label="Any" active={!languages.some((l) => l.code === settings.homeLanguage)} onPress={() => update({ homeLanguage: '' })} />
               {languages.map((l) => (
@@ -226,7 +226,7 @@ function You({ theme, onNext, bottom }: { theme: Theme; onNext: () => void; bott
       <View style={[styles.footer, { paddingBottom: bottom + 16 }]}>
         <Primary
           theme={theme}
-          label="CONTINUE"
+          label="Continue"
           onPress={() => {
             if (name.trim() !== settings.name) update({ name: name.trim() });
             onNext();
@@ -276,7 +276,7 @@ function Seen({ theme, titles, picked, setPicked, bottom, onDone }: { theme: The
       <ScrollView contentContainerStyle={styles.body}>
         <Rise>
           <Text maxFontSizeMultiplier={1.15} accessibilityRole="header" style={[styles.heading, { color: theme.text }]}>
-            TAP WHAT YOU’VE LOVED
+            Tap what you’ve loved
           </Text>
         </Rise>
         <Rise order={1}>
@@ -295,7 +295,7 @@ function Seen({ theme, titles, picked, setPicked, bottom, onDone }: { theme: The
         </Pressable>
       </ScrollView>
       <View style={[styles.footer, { paddingBottom: bottom + 16 }]}>
-        <Primary theme={theme} label={n ? `ADD ${n} TO MY DIARY` : 'OPEN WATCH HEART'} onPress={() => onDone()} />
+        <Primary theme={theme} label={n ? `Add ${n} to my diary` : 'Open Watch Heart'} onPress={() => onDone()} />
       </View>
     </>
   );
@@ -321,11 +321,11 @@ const styles = StyleSheet.create({
   top: { flexDirection: 'row', alignItems: 'center', gap: 16, paddingHorizontal: 16, paddingBottom: 8 },
   progress: { flex: 1, flexDirection: 'row', gap: 6 },
   dash: { flex: 1, height: 4, borderRadius: 2 },
-  skip: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 1 },
+  skip: { fontFamily: fonts.uiSemibold, fontSize: font.footnote },
   body: { padding: 16, gap: 16 },
-  heading: { fontFamily: fonts.display, fontSize: 36, lineHeight: 40, letterSpacing: 1, includeFontPadding: false },
+  heading: { fontFamily: fonts.uiBold, fontSize: 26, lineHeight: 32, includeFontPadding: false },
   block: { gap: 8 },
-  label: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 1.5, marginTop: 8 },
+  label: { fontFamily: fonts.uiSemibold, fontSize: font.caption, marginTop: 8 },
   input: { height: 52, borderWidth: 1, borderRadius: 12, paddingHorizontal: 16, fontSize: font.body },
   country: { flexDirection: 'row', alignItems: 'center', gap: 12, height: 52, borderWidth: 1, borderRadius: 12, paddingHorizontal: 16 },
   flag: { fontSize: 20 },
@@ -335,7 +335,7 @@ const styles = StyleSheet.create({
   tick: { position: 'absolute', top: 6, right: 6, width: 24, height: 24, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   footer: { paddingHorizontal: 16, paddingTop: 8 },
   primary: { height: 52, borderRadius: 26, alignItems: 'center', justifyContent: 'center' },
-  primaryText: { fontFamily: fonts.monoBold, fontSize: font.body, letterSpacing: 1.2 },
+  primaryText: { fontFamily: fonts.uiSemibold, fontSize: font.body },
   secondary: { minHeight: 48, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 8 },
   secondaryText: { fontSize: font.footnote, fontWeight: '600', textAlign: 'center', textDecorationLine: 'underline' },
 });

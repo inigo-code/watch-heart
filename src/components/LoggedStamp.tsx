@@ -35,5 +35,5 @@ const styles = StyleSheet.create({
   wrap: { alignItems: 'center', justifyContent: 'center', padding: 32 },
   stamp: { alignItems: 'center', gap: 6, maxWidth: 280, borderWidth: 2, borderRadius: 16, paddingHorizontal: 32, paddingVertical: 20 },
   logged: { fontFamily: fonts.display, fontSize: 40, lineHeight: 44, letterSpacing: 3, includeFontPadding: false },
-  title: { fontFamily: fonts.monoBold, fontSize: 12, letterSpacing: 1, textAlign: 'center' },
+  title: { fontFamily: fonts.ticketBold, fontSize: 12, letterSpacing: 1, textAlign: 'center' },
 });

@@ -130,7 +130,7 @@ export function PeopleSearch({ theme, onFriendsChanged }: { theme: Theme; onFrie
           style={[styles.btn, p.status === 'sent' ? { borderWidth: 1, borderColor: theme.border } : { backgroundColor: theme.accent }]}
         >
           <Text style={[styles.btnText, { color: p.status === 'sent' ? theme.text : theme.accentText }]}>
-            {p.status === 'sent' ? 'REQUESTED' : p.status === 'received' ? 'ACCEPT' : 'ADD'}
+            {p.status === 'sent' ? 'Requested' : p.status === 'received' ? 'Accept' : 'ADD'}
           </Text>
         </Pressable>
       )}
@@ -207,7 +207,7 @@ export function PeopleSearch({ theme, onFriendsChanged }: { theme: Theme; onFrie
                     <Ionicons name="close" size={18} color={theme.text} />
                   </Pressable>
                   <Pressable onPress={() => answer(r, true)} accessibilityRole="button" accessibilityLabel={`Accept ${r.name}`} style={[styles.btn, { backgroundColor: theme.accent }]}>
-                    <Text style={[styles.btnText, { color: theme.accentText }]}>ACCEPT</Text>
+                    <Text style={[styles.btnText, { color: theme.accentText }]}>Accept</Text>
                   </Pressable>
                 </>
               )}
@@ -300,9 +300,9 @@ const styles = StyleSheet.create({
   person: { flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, borderRadius: 12, padding: 10 },
   who: { flex: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: 12 },
   name: { fontSize: font.body, fontWeight: '700' },
-  bio: { fontFamily: fonts.mono, fontSize: font.caption, marginTop: 2 },
+  bio: { fontFamily: fonts.ui, fontSize: font.caption, marginTop: 2 },
   btn: { height: 34, paddingHorizontal: 14, borderRadius: 17, alignItems: 'center', justifyContent: 'center' },
-  btnText: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 1 },
+  btnText: { fontFamily: fonts.uiSemibold, fontSize: font.caption },
   icon: { width: 34, height: 34, borderRadius: 17, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
   switchRow: { flexDirection: 'row', alignItems: 'center', gap: 12, borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 12 },
 });

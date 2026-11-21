@@ -104,5 +104,5 @@ const styles = StyleSheet.create({
   fan: { height: 112, marginBottom: 8 },
   poster: { position: 'absolute', top: 4, width: 72, height: 106, borderRadius: 5, borderWidth: 2, overflow: 'hidden' },
   name: { fontSize: font.body, fontWeight: '700', lineHeight: 20 },
-  note: { fontFamily: fonts.mono, fontSize: font.caption, lineHeight: 16 },
+  note: { fontFamily: fonts.ui, fontSize: font.caption, lineHeight: 16 },
 });

@@ -75,7 +75,7 @@ export function DiscoverHome({ theme, tmdb, region }: { theme: Theme; tmdb: stri
           >
             <Ionicons name={sh.icon} size={26} color={theme.accent} />
             <View style={{ flex: 1 }}>
-              <Text style={[styles.featureName, { color: theme.text }]}>{sh.name.toUpperCase()}</Text>
+              <Text style={[styles.featureName, { color: theme.text }]}>{sh.name}</Text>
               <Text style={[styles.note, { color: theme.textMuted }]}>{sh.note}</Text>
             </View>
             <Ionicons name="chevron-forward" size={18} color={theme.textMuted} />
@@ -160,14 +160,14 @@ const styles = StyleSheet.create({
   providers: { gap: 10, paddingRight: 16 },
   logo: { width: 56, height: 56, borderRadius: 12 },
   feature: { flexDirection: 'row', alignItems: 'center', gap: 14, borderWidth: 1.5, borderRadius: 14, padding: 14 },
-  featureName: { fontFamily: fonts.display, fontSize: 24, letterSpacing: 1 },
+  featureName: { fontFamily: fonts.uiSemibold, fontSize: font.title },
   shelves: { borderWidth: 1, borderRadius: 14, overflow: 'hidden' },
   shelf: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 14, paddingVertical: 12 },
   shelfName: { fontSize: font.body, fontWeight: '700' },
-  note: { fontFamily: fonts.mono, fontSize: font.caption, marginTop: 2 },
+  note: { fontFamily: fonts.ui, fontSize: font.caption, marginTop: 2 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   chip: { borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8 },
   chipText: { fontSize: font.footnote, fontWeight: '600' },
   build: { flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, borderStyle: 'dashed', borderRadius: 14, padding: 14 },
-  credit: { fontFamily: fonts.mono, fontSize: font.caption, textAlign: 'center' },
+  credit: { fontFamily: fonts.ui, fontSize: font.caption, textAlign: 'center' },
 });

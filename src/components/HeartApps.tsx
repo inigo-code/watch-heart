@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
   card: { borderWidth: 1, borderRadius: 16, padding: 14, gap: 12 },
   head: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   name: { fontFamily: fonts.display, fontSize: 26, letterSpacing: 1, lineHeight: 28 },
-  line: { fontFamily: fonts.mono, fontSize: font.caption, lineHeight: 17 },
+  line: { fontFamily: fonts.ui, fontSize: font.caption, lineHeight: 17 },
   app: { flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, borderRadius: 12, padding: 10 },
   icon: { width: 40, height: 40, borderRadius: 10 },
   appName: { fontSize: font.body, fontWeight: '700' },

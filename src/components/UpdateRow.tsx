@@ -79,7 +79,7 @@ function Card({ theme, state, lastCheck, onPress }: { theme: Theme; state: State
           {busy ? <ActivityIndicator color={theme.accent} /> : <Ionicons name={c.icon} size={22} color={ready ? theme.accentText : theme.accent} />}
         </View>
         <View style={{ flex: 1, gap: 2 }}>
-          <Text style={[styles.title, { color: theme.text }]}>{c.title.toUpperCase()}</Text>
+          <Text style={[styles.title, { color: theme.text }]}>{c.title}</Text>
           <Text style={[styles.body, { color: theme.textMuted }]}>{c.body}</Text>
         </View>
       </View>
@@ -91,8 +91,8 @@ function Card({ theme, state, lastCheck, onPress }: { theme: Theme; state: State
       </View>
       <View style={styles.stub}>
         <View style={{ flex: 1 }}>
-          <Text style={[styles.meta, { color: theme.textMuted }]}>VERSION {describeRunning().toUpperCase()}</Text>
-          {checkedAt && <Text style={[styles.meta, { color: theme.textMuted }]}>CHECKED AT {checkedAt.toUpperCase()}</Text>}
+          <Text style={[styles.meta, { color: theme.textMuted }]}>Version {describeRunning()}</Text>
+          {checkedAt && <Text style={[styles.meta, { color: theme.textMuted }]}>Checked at {checkedAt}</Text>}
         </View>
         {c.button && onPress && (
           <Pressable
@@ -101,7 +101,7 @@ function Card({ theme, state, lastCheck, onPress }: { theme: Theme; state: State
             accessibilityRole="button"
             style={({ pressed }) => [styles.button, { backgroundColor: ready ? theme.accent : theme.chipActive, opacity: pressed ? 0.85 : 1 }]}
           >
-            <Text style={[styles.buttonText, { color: ready ? theme.accentText : theme.chipActiveText }]}>{c.button.toUpperCase()}</Text>
+            <Text style={[styles.buttonText, { color: ready ? theme.accentText : theme.chipActiveText }]}>{c.button}</Text>
           </Pressable>
         )}
       </View>
@@ -113,7 +113,7 @@ const styles = StyleSheet.create({
   card: { borderRadius: 14, borderWidth: 1, overflow: 'hidden' },
   face: { flexDirection: 'row', alignItems: 'center', gap: 14, padding: 16 },
   badge: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
-  title: { fontFamily: fonts.display, fontSize: font.title2, letterSpacing: 1 },
+  title: { fontFamily: fonts.uiBold, fontSize: font.title },
   body: { fontSize: font.footnote, lineHeight: 18 },
   tear: { height: 16, justifyContent: 'center' },
   dots: { marginHorizontal: 14, borderTopWidth: 2, borderStyle: 'dotted' },
@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
   notchLeft: { left: -8 },
   notchRight: { right: -8 },
   stub: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingTop: 6, paddingBottom: 14 },
-  meta: { fontFamily: fonts.mono, fontSize: font.caption, letterSpacing: 0.5 },
+  meta: { fontFamily: fonts.ui, fontSize: font.caption },
   button: { height: 38, paddingHorizontal: 16, borderRadius: 19, alignItems: 'center', justifyContent: 'center' },
-  buttonText: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 1 },
+  buttonText: { fontFamily: fonts.uiSemibold, fontSize: font.caption },
 });

@@ -48,6 +48,8 @@ const NOTES: { id: string; items: string[] }[] = [
   {
     id: '1.6.7',
     items: [
+      'A new look: clearer type throughout, calmer colours, and gold kept for the main buttons',
+      'Headings, buttons and tabs read in normal letters instead of capitals, and Home’s header is smaller',
       'A calmer Home: your week, what you’re watching, friends and your watchlist first, then For you, In cinemas and New Indian releases',
       'In cinemas shows only films playing in cinemas in your country now, with See all',
       'New Indian releases has a chip for each language',

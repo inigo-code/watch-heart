@@ -111,19 +111,19 @@ const styles = StyleSheet.create({
   canvas: { width: STORY_W, height: STORY_H, overflow: 'hidden' },
   backdrop: { position: 'absolute', left: 0, right: 0, top: 0, height: STORY_H * 0.55 },
   inner: { flex: 1, paddingTop: 56, paddingBottom: 32, paddingHorizontal: 28, alignItems: 'center', gap: 6 },
-  kicker: { fontFamily: fonts.monoBold, fontSize: 11, letterSpacing: 4, marginBottom: 6 },
+  kicker: { fontFamily: fonts.ticketBold, fontSize: 11, letterSpacing: 4, marginBottom: 6 },
   // The poster gives up height first, so a long title, credits and review never push the stub and the
   // Watch Heart mark off the bottom of the card.
   posterWrap: { flexBasis: 252, flexShrink: 1, minHeight: 120, aspectRatio: 2 / 3, boxShadow: '0 14px 36px rgba(0,0,0,0.65)', borderRadius: 8, marginBottom: 10 },
   poster: { width: '100%', height: '100%', borderRadius: 8, overflow: 'hidden' },
   noPoster: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   title: { fontFamily: fonts.display, fontSize: 38, lineHeight: 38, textAlign: 'center', letterSpacing: 1, includeFontPadding: false },
-  meta: { fontFamily: fonts.monoBold, fontSize: 9, letterSpacing: 1.5, textAlign: 'center' },
+  meta: { fontFamily: fonts.ticketBold, fontSize: 9, letterSpacing: 1.5, textAlign: 'center' },
   rating: { flexDirection: 'row', alignItems: 'center', marginTop: 8 },
-  review: { fontFamily: fonts.mono, fontSize: 11.5, lineHeight: 17, textAlign: 'center', fontStyle: 'italic', marginTop: 10 },
+  review: { fontFamily: fonts.ticket, fontSize: 11.5, lineHeight: 17, textAlign: 'center', fontStyle: 'italic', marginTop: 10 },
   spacer: { flexGrow: 1 },
   stub: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderStyle: 'dashed', borderRadius: 6, paddingHorizontal: 12, height: 30, gap: 10 },
-  stubText: { fontFamily: fonts.monoBold, fontSize: 9, letterSpacing: 2 },
+  stubText: { fontFamily: fonts.ticketBold, fontSize: 9, letterSpacing: 2 },
   stubTear: { alignSelf: 'stretch', borderLeftWidth: 1, borderStyle: 'dashed' },
   brand: { marginTop: 10 },
 });

@@ -71,9 +71,9 @@ export default function PersonScreen() {
           <View style={styles.top}>
             <Face uri={person.photo} name={person.name} theme={theme} size={110} />
             <View style={{ flex: 1, gap: 4 }}>
-              <Text style={[styles.name, { color: theme.text }]}>{person.name.toUpperCase()}</Text>
+              <Text style={[styles.name, { color: theme.text }]}>{person.name}</Text>
               {!!person.department && (
-                <Text style={[styles.dept, { color: theme.accent }]}>{person.department === 'Acting' ? 'ACTOR' : person.department.toUpperCase()}</Text>
+                <Text style={[styles.dept, { color: theme.textMuted }]}>{person.department === 'Acting' ? 'Actor' : person.department}</Text>
               )}
               {!!person.born && (
                 <Text style={[styles.meta, { color: theme.textMuted }]}>
@@ -91,7 +91,7 @@ export default function PersonScreen() {
               <Text style={[styles.bio, { color: theme.text }]} numberOfLines={bio ? undefined : 4}>
                 {person.bio}
               </Text>
-              {person.bio.length > 240 && <Text style={[styles.more, { color: theme.accent }]}>{bio ? 'SHOW LESS' : 'SHOW MORE'}</Text>}
+              {person.bio.length > 240 && <Text style={[styles.more, { color: theme.accent }]}>{bio ? 'Show less' : 'Show more'}</Text>}
             </Pressable>
           )}
           <View style={styles.filterRow}>
@@ -107,10 +107,10 @@ export default function PersonScreen() {
                   accessibilityState={{ selected: filter === f }}
                   style={[
                     styles.filter,
-                    { borderColor: filter === f ? theme.accent : theme.border, backgroundColor: filter === f ? theme.accent : 'transparent' },
+                    { borderColor: filter === f ? theme.chipActive : theme.border, backgroundColor: filter === f ? theme.chipActive : 'transparent' },
                   ]}
                 >
-                  <Text style={[styles.filterText, { color: filter === f ? theme.accentText : theme.text }]}>{f.toUpperCase()}</Text>
+                  <Text style={[styles.filterText, { color: filter === f ? theme.chipActiveText : theme.text }]}>{f}</Text>
                 </Pressable>
               ))}
           </View>
@@ -148,16 +148,16 @@ const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
   header: { gap: 16, marginBottom: 4 },
   top: { flexDirection: 'row', gap: 16, alignItems: 'center' },
-  name: { fontFamily: fonts.display, fontSize: 34, lineHeight: 36, letterSpacing: 1 },
-  dept: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 2 },
-  meta: { fontFamily: fonts.mono, fontSize: font.footnote },
+  name: { fontFamily: fonts.uiBold, fontSize: 26, lineHeight: 32 },
+  dept: { fontFamily: fonts.uiSemibold, fontSize: font.caption },
+  meta: { fontFamily: fonts.ui, fontSize: font.footnote },
   bio: { fontSize: font.body, lineHeight: 22 },
-  more: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 1, marginTop: 4 },
+  more: { fontFamily: fonts.uiSemibold, fontSize: font.footnote, marginTop: 4 },
   filterRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   filter: { borderWidth: 1, borderRadius: 14, height: 28, paddingHorizontal: 10, alignItems: 'center', justifyContent: 'center' },
-  filterText: { fontFamily: fonts.monoBold, fontSize: 12, letterSpacing: 1 },
+  filterText: { fontFamily: fonts.uiSemibold, fontSize: 12 },
   watched: { opacity: 0.25 },
   tick: { position: 'absolute', top: 6, right: 6, width: 22, height: 22, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
   cellTitle: { fontSize: font.footnote, fontWeight: '700', marginTop: 6, lineHeight: 17 },
-  cellRole: { fontFamily: fonts.mono, fontSize: font.caption },
+  cellRole: { fontFamily: fonts.ui, fontSize: font.caption },
 });

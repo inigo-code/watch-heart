@@ -68,7 +68,7 @@ export function PalettePicker({ value, onChange, theme }: { value: PaletteKey; o
                 {open ? <View style={[styles.paletteDot, { backgroundColor: p.accent }]} /> : <Ionicons name="lock-closed" size={14} color="#FFFFFF" />}
               </LinearGradient>
             </View>
-            <Text style={[styles.paletteLabel, { color: active ? theme.text : theme.textMuted }]}>{p.label.toUpperCase()}</Text>
+            <Text style={[styles.paletteLabel, { color: active ? theme.text : theme.textMuted }]}>{p.label}</Text>
           </Pressable>
         );
       })}
@@ -106,7 +106,7 @@ export function ShareButtons({ target, ready, theme }: { target: RefObject<Story
         style={({ pressed }) => [styles.primary, { backgroundColor: theme.accent, opacity: !ready || busy ? 0.6 : pressed ? 0.85 : 1 }]}
       >
         {busy === 'share' ? <ActivityIndicator color={theme.accentText} /> : <Ionicons name="logo-instagram" size={20} color={theme.accentText} />}
-        <Text style={[styles.primaryText, { color: theme.accentText }]}>{ready ? 'SHARE TO STORY' : 'LOADING POSTERS…'}</Text>
+        <Text style={[styles.primaryText, { color: theme.accentText }]}>{ready ? 'Share to story' : 'Loading posters…'}</Text>
       </Pressable>
       <Pressable
         onPress={() => run('save')}
@@ -128,9 +128,9 @@ const styles = StyleSheet.create({
   paletteRing: { borderWidth: 2.5, borderRadius: 26, padding: 2 },
   paletteSwatch: { width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center' },
   paletteDot: { width: 12, height: 12, borderRadius: 6 },
-  paletteLabel: { fontFamily: fonts.monoBold, fontSize: 12, letterSpacing: 0.5 },
+  paletteLabel: { fontFamily: fonts.uiMedium, fontSize: 12 },
   buttons: { flexDirection: 'row', gap: 10 },
   primary: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, height: 52, borderRadius: 26 },
-  primaryText: { fontFamily: fonts.monoBold, fontSize: font.body, letterSpacing: 1.5 },
+  primaryText: { fontFamily: fonts.uiSemibold, fontSize: font.body },
   secondary: { width: 52, height: 52, borderRadius: 26, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
 });

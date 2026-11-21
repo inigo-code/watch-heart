@@ -44,5 +44,5 @@ export default function ListCardScreen() {
 
 const styles = StyleSheet.create({
   content: { padding: 16, gap: 16 },
-  note: { fontFamily: fonts.mono, fontSize: font.caption, lineHeight: 16 },
+  note: { fontFamily: fonts.ui, fontSize: font.caption, lineHeight: 16 },
 });

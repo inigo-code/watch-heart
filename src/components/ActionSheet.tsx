@@ -108,9 +108,9 @@ export function ActionSheet({ visible, title, actions, quick, onClose }: Props) 
 const styles = StyleSheet.create({
   sheet: { borderTopLeftRadius: 22, borderTopRightRadius: 22, paddingTop: 8, paddingHorizontal: 10 },
   handle: { alignSelf: 'center', width: 36, height: 4, borderRadius: 2, marginBottom: 6 },
-  title: { fontSize: font.footnote, fontFamily: fonts.mono, lineHeight: 18, paddingHorizontal: 12, paddingTop: 4, paddingBottom: 6 },
+  title: { fontSize: font.footnote, fontFamily: fonts.ui, lineHeight: 18, paddingHorizontal: 12, paddingTop: 4, paddingBottom: 6 },
   quick: { gap: 8, paddingTop: 4, paddingBottom: 8 },
-  quickLabel: { fontSize: font.caption, fontFamily: fonts.monoBold, textTransform: 'uppercase', letterSpacing: 1, paddingHorizontal: 12 },
+  quickLabel: { fontSize: font.caption, fontFamily: fonts.uiSemibold, paddingHorizontal: 12 },
   quickRow: { gap: 8, paddingHorizontal: 10 },
   quickItem: {
     flexDirection: 'row',
@@ -127,5 +127,5 @@ const styles = StyleSheet.create({
   icon: { width: 30, height: 30, borderRadius: 9, alignItems: 'center', justifyContent: 'center' },
   rowText: { flex: 1, fontSize: font.body, fontWeight: '600' },
   cancel: { marginTop: 8, height: 46, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
-  cancelText: { fontSize: font.body, fontFamily: fonts.monoBold, textTransform: 'uppercase', letterSpacing: 1 },
+  cancelText: { fontSize: font.body, fontFamily: fonts.uiSemibold },
 });

@@ -317,7 +317,7 @@ function LogForm() {
     <KeyboardSafe style={{ backgroundColor: theme.bg }}>
       <Stack.Screen
         options={{
-          title: editing ? 'EDIT ENTRY' : manual ? 'ADD BY HAND' : '',
+          title: editing ? 'Edit entry' : manual ? 'Add by hand' : '',
           headerTransparent: !manual,
           headerStyle: { backgroundColor: manual ? theme.bg : 'transparent' },
           headerTintColor: manual ? theme.text : '#FFFFFF',
@@ -325,7 +325,7 @@ function LogForm() {
           headerLeft: manual ? undefined : () => <BackDisc />,
           headerRight: () => (
             <Tap onPress={save} hitSlop={10} accessibilityRole="button" accessibilityLabel="Save" style={!manual && styles.headerSaveDisc}>
-              <Text style={[styles.headerSave, { color: manual ? theme.accent : '#FFFFFF' }]}>SAVE</Text>
+              <Text style={[styles.headerSave, { color: manual ? theme.accent : '#FFFFFF' }]}>Save</Text>
             </Tap>
           ),
         }}
@@ -474,7 +474,7 @@ function LogForm() {
                 <Pop when={draft.liked}>
                   <Ionicons name={draft.liked ? 'heart' : 'heart-outline'} size={36} color={draft.liked ? theme.like : theme.textMuted} />
                 </Pop>
-                <Text style={[styles.likeText, { color: draft.liked ? theme.like : theme.textMuted }]}>{draft.liked ? 'LOVED' : 'LIKE'}</Text>
+                <Text style={[styles.likeText, { color: draft.liked ? theme.like : theme.textMuted }]}>{draft.liked ? 'Loved' : 'Like'}</Text>
               </Pressable>
             </View>
           </Field>
@@ -579,13 +579,13 @@ function LogForm() {
             style={({ pressed }) => [styles.logIt, { backgroundColor: theme.accent, opacity: !canSave ? 0.5 : pressed ? 0.85 : 1 }]}
           >
             <MaterialCommunityIcons name="movie-open-check-outline" size={22} color={theme.accentText} />
-            <Text style={[styles.logItText, { color: theme.accentText }]}>{editing ? 'SAVE CHANGES' : 'LOG IT'}</Text>
+            <Text style={[styles.logItText, { color: theme.accentText }]}>{editing ? 'Save changes' : 'Log it'}</Text>
           </Pressable>
 
           {!editing && !queued && (
             <Pressable onPress={saveForLater} accessibilityRole="button" style={({ pressed }) => [styles.later, { borderColor: theme.border, opacity: pressed ? 0.7 : 1 }]}>
               <Ionicons name="bookmark-outline" size={18} color={theme.text} />
-              <Text style={[styles.laterText, { color: theme.text }]}>HAVEN’T SEEN IT? SAVE TO WATCHLIST</Text>
+              <Text style={[styles.laterText, { color: theme.text }]}>Haven’t seen it? Save to watchlist</Text>
             </Pressable>
           )}
 
@@ -639,7 +639,7 @@ function ToggleLine({ theme, icon, label, value, onChange }: {
 }
 
 const styles = StyleSheet.create({
-  headerSave: { fontFamily: fonts.monoBold, fontSize: font.body, letterSpacing: 1, paddingHorizontal: 8 },
+  headerSave: { fontFamily: fonts.uiSemibold, fontSize: font.body, paddingHorizontal: 8 },
   manual: { padding: 16, gap: 18 },
   form: { padding: 16, gap: 20 },
   field: { gap: 8 },
@@ -647,28 +647,28 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   seasonRow: { flexDirection: 'row', gap: 8, paddingRight: 8 },
   input: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: font.body },
-  titleInput: { fontFamily: fonts.display, fontSize: 28, paddingVertical: 6 },
+  titleInput: { fontFamily: fonts.uiSemibold, fontSize: font.title2, paddingVertical: 6 },
   review: { minHeight: 120, lineHeight: 21 },
   ratingRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   ratingValue: { fontFamily: fonts.display, fontSize: 36, width: 44, includeFontPadding: false },
   like: { alignItems: 'center', marginLeft: 'auto' },
-  likeText: { fontFamily: fonts.monoBold, fontSize: 12, letterSpacing: 1 },
+  likeText: { fontFamily: fonts.uiSemibold, fontSize: 12 },
   more: { flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12 },
   moreTitle: { fontSize: font.body, fontWeight: '700' },
-  moreNote: { fontFamily: fonts.mono, fontSize: font.caption, marginTop: 2 },
-  hint: { fontFamily: fonts.mono, fontSize: font.caption, lineHeight: 16 },
+  moreNote: { fontFamily: fonts.ui, fontSize: font.caption, marginTop: 2 },
+  hint: { fontFamily: fonts.ui, fontSize: font.caption, lineHeight: 16 },
   toggle: { flexDirection: 'row', alignItems: 'center', gap: 10, borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, minHeight: 50 },
   toggleText: { flex: 1, fontSize: font.body, fontWeight: '600' },
   logIt: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, height: 54, borderRadius: 27, marginTop: 4 },
-  logItText: { fontFamily: fonts.monoBold, fontSize: font.headline, letterSpacing: 2 },
+  logItText: { fontFamily: fonts.uiSemibold, fontSize: font.headline },
   queued: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10 },
-  queuedText: { fontFamily: fonts.mono, fontSize: font.footnote, flex: 1 },
+  queuedText: { fontFamily: fonts.ui, fontSize: font.footnote, flex: 1 },
   later: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: 48, borderRadius: 24, borderWidth: 1, borderStyle: 'dashed' },
-  laterText: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 1 },
+  laterText: { fontFamily: fonts.uiSemibold, fontSize: font.footnote },
   repick: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderStyle: 'dashed', borderRadius: 10, paddingHorizontal: 12, minHeight: 46, marginTop: 4 },
   repickText: { flex: 1, fontSize: font.footnote, fontWeight: '600' },
   formatBar: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   formatButton: { width: 40, height: 36, borderRadius: 8, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
   formatLabel: { fontSize: font.headline },
-  formatHint: { flex: 1, fontFamily: fonts.mono, fontSize: font.caption, lineHeight: 15 },
+  formatHint: { flex: 1, fontFamily: fonts.ui, fontSize: font.caption, lineHeight: 15 },
 });

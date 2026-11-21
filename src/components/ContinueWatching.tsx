@@ -43,9 +43,9 @@ export function ContinueWatching({ items, theme, hidden }: { items: WatchItem[];
     <View style={styles.wrap}>
       {(
         [
-          ['ONGOING', groups.ongoing],
-          ['OLD FRIENDS', groups.oldFriends],
-          ['COMING BACK', groups.comingBack],
+          ['Ongoing', groups.ongoing],
+          ['Old friends', groups.oldFriends],
+          ['Coming back', groups.comingBack],
         ] as const
       ).map(([label, list]) =>
         list.length ? (
@@ -115,7 +115,7 @@ export function ContinueWatching({ items, theme, hidden }: { items: WatchItem[];
       )}
       {finished.length > 0 && (
         <View style={styles.group}>
-          <SectionLabel theme={theme}>FINISHED AND DROPPED</SectionLabel>
+          <SectionLabel theme={theme}>Finished and dropped</SectionLabel>
           {finished.map((w) => (
             <View key={w.id} style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
               <Tap onPress={() => open(w)} onLongPress={() => setMenu(w)} accessibilityRole="button" accessibilityLabel={`${w.title}, ${w.track!.status}`} style={styles.open}>
@@ -166,7 +166,7 @@ const styles = StyleSheet.create({
   open: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10 },
   cardBody: { flex: 1, gap: 3 },
   title: { fontSize: font.footnote, fontWeight: '700' },
-  meta: { fontFamily: fonts.mono, fontSize: font.caption },
+  meta: { fontFamily: fonts.ui, fontSize: font.caption },
   bar: { height: 5, borderRadius: 3, overflow: 'hidden', marginTop: 2 },
   fill: { height: '100%', borderRadius: 3 },
   plus: {
@@ -177,6 +177,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 10,
   },
-  plusText: { fontFamily: fonts.monoBold, fontSize: font.footnote },
+  plusText: { fontFamily: fonts.uiSemibold, fontSize: font.footnote },
   remove: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
 });

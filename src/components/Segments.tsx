@@ -54,5 +54,5 @@ const styles = StyleSheet.create({
   wrap: { flexDirection: 'row', height: H, borderRadius: H / 2, padding: PAD },
   pill: { position: 'absolute', top: PAD, bottom: PAD, left: PAD, borderRadius: (H - PAD * 2) / 2 },
   option: { flex: 1, flexDirection: 'row', gap: 6, alignItems: 'center', justifyContent: 'center' },
-  label: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 0.3 },
+  label: { fontFamily: fonts.uiSemibold, fontSize: font.caption },
 });

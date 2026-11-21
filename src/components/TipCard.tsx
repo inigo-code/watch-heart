@@ -44,9 +44,9 @@ export function TipCard({ theme, icon, title, children, onDismiss, action }: Pro
 const styles = StyleSheet.create({
   card: { borderRadius: 18, borderWidth: StyleSheet.hairlineWidth, padding: 16, gap: 8, marginBottom: 4 },
   head: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  title: { flex: 1, fontSize: font.body, fontFamily: fonts.monoBold, textTransform: 'uppercase', letterSpacing: 1 },
+  title: { flex: 1, fontSize: font.body, fontFamily: fonts.uiSemibold },
   body: { fontSize: font.footnote, lineHeight: 19 },
   actions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 8, marginTop: 2 },
   btn: { paddingHorizontal: 16, height: 32, borderRadius: 16, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
-  btnText: { fontSize: font.footnote, fontFamily: fonts.monoBold, textTransform: 'uppercase' },
+  btnText: { fontSize: font.footnote, fontFamily: fonts.uiSemibold },
 });

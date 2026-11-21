@@ -147,7 +147,7 @@ export function MovieNightSheet({ t, visible, theme, onClose }: { t: Title; visi
     <BottomSheet visible={visible} onClose={onClose}>
       <View style={[styles.sheet, { backgroundColor: theme.card, paddingBottom: insets.bottom + 16 }]}>
         <View style={[styles.grabber, { backgroundColor: theme.border }]} />
-        <Text style={[styles.sheetTitle, { color: theme.text }]}>PLAN A WATCH</Text>
+        <Text style={[styles.sheetTitle, { color: theme.text }]}>Plan a watch</Text>
         <Text style={[styles.sheetSub, { color: theme.textMuted }]} numberOfLines={2}>
           When are you watching {t.title}? Pick the day, then the time, and you’ll get a reminder then.
         </Text>
@@ -194,7 +194,7 @@ export function MovieNightCard({ night, theme, showTitle }: { night: MovieNight;
           <Ionicons name="calendar" size={26} color={theme.accent} />
         )}
         <View style={{ flex: 1, gap: 2 }}>
-          <Text style={[styles.cardKicker, { color: theme.accent }]}>PLANNED</Text>
+          <Text style={[styles.cardKicker, { color: theme.textMuted }]}>Planned</Text>
           <Text style={[styles.cardWhen, { color: theme.text }]}>{nightLabel(night.at)}</Text>
           {showTitle && (
             <Text style={[styles.cardTitle, { color: theme.textMuted }]} numberOfLines={1}>
@@ -213,14 +213,14 @@ export function MovieNightCard({ night, theme, showTitle }: { night: MovieNight;
 const styles = StyleSheet.create({
   sheet: { borderTopLeftRadius: 22, borderTopRightRadius: 22, padding: 16, gap: 10 },
   grabber: { alignSelf: 'center', width: 36, height: 4, borderRadius: 2, marginBottom: 4 },
-  sheetTitle: { fontFamily: fonts.display, fontSize: 28, letterSpacing: 1 },
-  sheetSub: { fontFamily: fonts.mono, fontSize: font.caption, lineHeight: 17, marginBottom: 4 },
+  sheetTitle: { fontFamily: fonts.uiSemibold, fontSize: font.title2 },
+  sheetSub: { fontFamily: fonts.ui, fontSize: font.caption, lineHeight: 17, marginBottom: 4 },
   option: { flexDirection: 'row', alignItems: 'center', gap: 12, height: 50, borderRadius: 12, borderWidth: 1, paddingHorizontal: 14 },
   optionText: { fontSize: font.body, fontWeight: '600' },
   card: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderRadius: 14, padding: 10, gap: 8 },
   cardMain: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 12 },
-  cardKicker: { fontFamily: fonts.monoBold, fontSize: 12, letterSpacing: 1.5 },
+  cardKicker: { fontFamily: fonts.uiSemibold, fontSize: 12 },
   cardWhen: { fontSize: font.body, fontWeight: '700' },
-  cardTitle: { fontFamily: fonts.mono, fontSize: font.caption },
+  cardTitle: { fontFamily: fonts.ui, fontSize: font.caption },
   cancel: { padding: 6 },
 });

@@ -105,7 +105,7 @@ export function Segmented<T extends string | number>({ theme, options, value, on
   value: T;
   onChange: (v: T) => void;
 }) {
-  return <Segments theme={theme} value={value} onChange={onChange} pill={theme.accent} onPill={theme.accentText} options={options.map((o) => ({ key: o.value, label: o.label, icon: options.length < 3 ? o.icon : undefined }))} />;
+  return <Segments theme={theme} value={value} onChange={onChange} options={options.map((o) => ({ key: o.value, label: o.label, icon: options.length < 3 ? o.icon : undefined }))} />;
 }
 
 /** A labelled control row inside a Section (for Segmented and swatches). */
@@ -131,17 +131,17 @@ export function ControlRow({ theme, label, value, children, last }: {
 const styles = StyleSheet.create({
   section: { gap: 8 },
   group: { borderRadius: 14, borderWidth: StyleSheet.hairlineWidth, overflow: 'hidden' },
-  footer: { fontSize: font.caption, fontFamily: fonts.mono, paddingHorizontal: 6, lineHeight: 17 },
+  footer: { fontSize: font.caption, fontFamily: fonts.ui, paddingHorizontal: 6, lineHeight: 17 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, minHeight: 52, paddingVertical: 8 },
   iconWrap: { width: 30, height: 30, borderRadius: 9, alignItems: 'center', justifyContent: 'center' },
   // The label keeps its words (wrapping to a second line if it must); the value gives way past that.
   // 30% leaves a short hint ("Needs an account") room beside a short label at phone width.
-  label: { flex: 1, minWidth: '30%', fontSize: font.body, fontWeight: '600' },
+  label: { flex: 1, minWidth: '30%', fontSize: font.body, fontWeight: '500' },
   value: { flexShrink: 1, fontSize: font.body, textAlign: 'right' },
   control: { paddingHorizontal: 16, paddingVertical: 12, gap: 10 },
   controlHead: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', gap: 12 },
-  controlLabel: { fontSize: font.body, fontWeight: '600' },
-  controlValue: { flexShrink: 1, textAlign: 'right', fontSize: font.body, fontWeight: '600' },
+  controlLabel: { fontSize: font.body, fontWeight: '500' },
+  controlValue: { flexShrink: 1, textAlign: 'right', fontSize: font.body },
   segmented: { flexDirection: 'row', borderRadius: 11, padding: 3 },
   segment: {
     flex: 1,
@@ -152,6 +152,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  segmentText: { fontSize: font.body, fontWeight: '600' },
-  segmentTextActive: { fontWeight: '800' },
+  segmentText: { fontSize: font.body, fontWeight: '500' },
+  segmentTextActive: { fontWeight: '600' },
 });

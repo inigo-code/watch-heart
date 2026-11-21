@@ -73,7 +73,7 @@ export default function CardScreen() {
       {memory && (
         <Pressable onPress={choose} accessibilityRole="button" style={({ pressed }) => [styles.pick, { borderColor: theme.accent, opacity: pressed ? 0.7 : 1 }]}>
           <Ionicons name="image-outline" size={18} color={theme.accent} />
-          <Text style={[styles.pickText, { color: theme.text }]}>{photo ? 'CHOOSE ANOTHER PHOTO' : 'CHOOSE A PHOTO'}</Text>
+          <Text style={[styles.pickText, { color: theme.text }]}>{photo ? 'Choose another photo' : 'Choose a photo'}</Text>
         </Pressable>
       )}
       <ShareButtons target={ref} ready={ready} theme={theme} />
@@ -82,7 +82,7 @@ export default function CardScreen() {
         <>
           {!!photo && (
             <>
-              <SectionLabel theme={theme}>FILTER</SectionLabel>
+              <SectionLabel theme={theme}>Filter</SectionLabel>
               <View style={styles.wrap}>
                 {(Object.keys(PHOTO_FILTERS) as PhotoFilter[]).map((key) => (
                   <Chip key={key} theme={theme} label={PHOTO_FILTERS[key].label} active={filter === key} onPress={() => setFilter(key)} />
@@ -90,7 +90,7 @@ export default function CardScreen() {
               </View>
             </>
           )}
-          <SectionLabel theme={theme}>YOUR WORDS</SectionLabel>
+          <SectionLabel theme={theme}>Your words</SectionLabel>
           <TextInput
             value={kicker}
             onChangeText={setKicker}
@@ -111,7 +111,7 @@ export default function CardScreen() {
           />
           {!!entry.posterUrl && (
             <>
-              <SectionLabel theme={theme}>POSTER</SectionLabel>
+              <SectionLabel theme={theme}>Poster</SectionLabel>
               <View style={styles.wrap}>
                 {(
                   [
@@ -129,11 +129,11 @@ export default function CardScreen() {
           )}
         </>
       )}
-      <SectionLabel theme={theme}>PALETTE</SectionLabel>
+      <SectionLabel theme={theme}>Palette</SectionLabel>
       <PalettePicker value={settings.story.palette} onChange={(palette) => update({ story: { ...settings.story, palette } })} theme={theme} />
       {!memory && !!entry.review && (
         <>
-          <SectionLabel theme={theme}>SHOW</SectionLabel>
+          <SectionLabel theme={theme}>Show</SectionLabel>
           <View style={styles.row}>
             <Chip theme={theme} icon="reader-outline" label="Review" active={showReview} onPress={() => setShowReview((v) => !v)} />
           </View>
@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
   wrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   input: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: font.body },
   inputTall: { minHeight: 72, textAlignVertical: 'top' },
-  note: { fontFamily: fonts.mono, fontSize: font.footnote },
+  note: { fontFamily: fonts.ui, fontSize: font.footnote },
   pick: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: 48, borderRadius: 24, borderWidth: 1.5 },
-  pickText: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 1 },
+  pickText: { fontFamily: fonts.uiSemibold, fontSize: font.footnote },
 });

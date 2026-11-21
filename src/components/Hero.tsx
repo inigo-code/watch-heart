@@ -23,7 +23,7 @@ type HeroTitle = {
   credit?: string | null;
 };
 
-const CREDIT_LABEL: Record<MediaKind, string> = { movie: 'DIRECTED BY', tv: 'ON', anime: 'STUDIO' };
+const CREDIT_LABEL: Record<MediaKind, string> = { movie: 'Directed by', tv: 'On', anime: 'Studio' };
 
 /**
  * The top of a title's page: its backdrop fading into the screen like the lights going down, the poster
@@ -60,7 +60,7 @@ export function Hero({ t, theme, topInset = 0, onPoster, scrollY, children }: { 
         <View style={styles.info}>
           <KindBadge kind={t.kind} theme={theme} />
           <Text style={[styles.title, { color: theme.text }]} numberOfLines={3}>
-            {t.title.toUpperCase()}
+            {t.title}
           </Text>
           {!!t.originalTitle && (
             <Text style={[styles.original, { color: theme.textMuted }]} numberOfLines={1}>
@@ -70,14 +70,14 @@ export function Hero({ t, theme, topInset = 0, onPoster, scrollY, children }: { 
           {!!meta && <Text style={[styles.meta, { color: theme.textMuted }]}>{meta}</Text>}
           {!!t.credit && (
             <Text style={[styles.meta, { color: theme.textMuted }]} numberOfLines={2}>
-              {CREDIT_LABEL[t.kind]} <Text style={{ color: theme.text, fontFamily: fonts.monoBold }}>{t.credit}</Text>
+              {CREDIT_LABEL[t.kind]} <Text style={{ color: theme.text, fontFamily: fonts.uiSemibold }}>{t.credit}</Text>
             </Text>
           )}
         </View>
       </View>
       {t.genres.length > 0 && (
-        <Text style={[styles.genres, { color: theme.accent }]} numberOfLines={1}>
-          {t.genres.slice(0, 4).join('  ·  ').toUpperCase()}
+        <Text style={[styles.genres, { color: theme.textMuted }]} numberOfLines={1}>
+          {t.genres.slice(0, 4).join(' · ')}
         </Text>
       )}
       {children}
@@ -90,8 +90,8 @@ const styles = StyleSheet.create({
   poster: { borderWidth: StyleSheet.hairlineWidth, boxShadow: '0 8px 24px rgba(0,0,0,0.5)' },
   posterBadge: { position: 'absolute', right: 6, bottom: 6, width: 26, height: 26, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
   info: { flex: 1, gap: 4, paddingBottom: 2 },
-  title: { fontFamily: fonts.display, fontSize: 34, lineHeight: 35, letterSpacing: 0.5, includeFontPadding: false },
-  original: { fontFamily: fonts.mono, fontSize: font.footnote },
-  meta: { fontFamily: fonts.mono, fontSize: font.caption, letterSpacing: 0.5 },
-  genres: { fontFamily: fonts.monoBold, fontSize: 12, letterSpacing: 1.2, paddingHorizontal: 16, marginTop: 12 },
+  title: { fontFamily: fonts.uiBold, fontSize: 26, lineHeight: 32, includeFontPadding: false },
+  original: { fontFamily: fonts.ui, fontSize: font.footnote },
+  meta: { fontFamily: fonts.ui, fontSize: font.caption },
+  genres: { fontFamily: fonts.uiSemibold, fontSize: 12, paddingHorizontal: 16, marginTop: 12 },
 });

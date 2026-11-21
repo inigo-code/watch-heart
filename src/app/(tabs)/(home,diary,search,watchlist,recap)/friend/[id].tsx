@@ -167,7 +167,7 @@ export default function FriendScreen() {
     <View style={styles.header}>
       <View style={styles.who}>
         <Face uri={photos[friend.id] ?? null} name={friend.name} theme={theme} size={96} round />
-        <Text style={[styles.name, { color: theme.text }]}>{friend.name.toUpperCase()}</Text>
+        <Text style={[styles.name, { color: theme.text }]}>{friend.name}</Text>
         {!!friend.bio && <Text style={[styles.bio, { color: theme.textMuted }]}>{friend.bio}</Text>}
       </View>
       <View style={styles.stats}>
@@ -186,9 +186,9 @@ export default function FriendScreen() {
         value={tab}
         onChange={setTab}
         options={[
-          { key: 'diary', label: 'DIARY' },
-          { key: 'reviews', label: 'REVIEWS' },
-          { key: 'lists', label: 'LISTS' },
+          { key: 'diary', label: 'Diary' },
+          { key: 'reviews', label: 'Reviews' },
+          { key: 'lists', label: 'Lists' },
         ]}
       />
     </View>
@@ -200,14 +200,14 @@ export default function FriendScreen() {
     <View style={styles.footer}>
       {tab !== 'lists' && hasMore && (
         <Tap onPress={loadMore} disabled={loadingMore} accessibilityRole="button" style={[styles.more, { borderColor: theme.accent }]}>
-          {loadingMore ? <ActivityIndicator color={theme.accent} /> : <Text style={[styles.moreText, { color: theme.text }]}>{tab === 'reviews' ? 'LOAD MORE REVIEWS' : 'LOAD MORE'}</Text>}
+          {loadingMore ? <ActivityIndicator color={theme.accent} /> : <Text style={[styles.moreText, { color: theme.text }]}>{tab === 'reviews' ? 'Load more reviews' : 'Load more'}</Text>}
         </Tap>
       )}
       {tab !== 'lists' && !hasMore && !!diary?.length && (tab === 'diary' || reviews.length > 0) && (
         <View style={styles.done}>
           <Ionicons name="checkmark-circle-outline" size={16} color={theme.textMuted} />
           <Text style={[styles.doneText, { color: theme.textMuted }]}>
-            {tab === 'reviews' ? `ALL ${reviews.length} ${reviews.length === 1 ? 'REVIEW' : 'REVIEWS'} LOADED` : 'THAT’S THEIR WHOLE DIARY'}
+            {tab === 'reviews' ? `All ${reviews.length} ${reviews.length === 1 ? 'review' : 'reviews'} loaded` : 'That’s their whole diary'}
           </Text>
         </View>
       )}
@@ -300,7 +300,7 @@ function Month({ month, tile, theme, order }: { month: { label: string; items: F
               {e.liked && <Ionicons name="heart" size={12} color={theme.like} />}
             </View>
             {!!watchedLabel(e) && (
-              <Text style={[styles.what, { color: theme.accent }]} numberOfLines={1}>
+              <Text style={[styles.what, { color: theme.textMuted }]} numberOfLines={1}>
                 {watchedLabel(e)}
               </Text>
             )}
@@ -323,7 +323,7 @@ function Review({ e, theme }: { e: FriendEntry; theme: Theme }) {
           <Text style={[styles.rowTitle, { color: theme.text }]} numberOfLines={2}>
             {e.title}
           </Text>
-          {!!watchedLabel(e) && <Text style={[styles.what, { color: theme.accent }]}>{watchedLabel(e)}</Text>}
+          {!!watchedLabel(e) && <Text style={[styles.what, { color: theme.textMuted }]}>{watchedLabel(e)}</Text>}
           <View style={styles.marks}>
             {viewingRating(e) ? <Stars rating={viewingRating(e)} size={14} color={theme.star} /> : null}
             {e.liked && <Ionicons name="heart" size={14} color={theme.like} />}
@@ -355,7 +355,7 @@ const styles = StyleSheet.create({
   list: { padding: 16, gap: 20 },
   header: { gap: 20 },
   who: { alignItems: 'center', gap: 8 },
-  name: { fontFamily: fonts.display, fontSize: 36, lineHeight: 40, letterSpacing: 1, textAlign: 'center' },
+  name: { fontFamily: fonts.uiBold, fontSize: 26, lineHeight: 32, textAlign: 'center' },
   bio: { fontSize: font.body, lineHeight: 22, textAlign: 'center' },
   stats: { flexDirection: 'row', gap: 8 },
   stat: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 2, borderWidth: 1, borderRadius: 12, paddingVertical: 12, paddingHorizontal: 4 },
@@ -366,13 +366,13 @@ const styles = StyleSheet.create({
   month: { gap: 10 },
   wall: { flexDirection: 'row', flexWrap: 'wrap', gap: GAP },
   marks: { flexDirection: 'row', alignItems: 'center', gap: 4, minHeight: 18, marginTop: 2 },
-  what: { fontFamily: fonts.monoBold, fontSize: font.caption },
+  what: { fontFamily: fonts.uiSemibold, fontSize: font.caption },
   empty: { fontSize: font.body, textAlign: 'center', paddingVertical: 24 },
   footer: { gap: 16, marginTop: 8 },
   more: { height: 48, borderWidth: 1.5, borderRadius: 24, alignItems: 'center', justifyContent: 'center' },
-  moreText: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 1 },
+  moreText: { fontFamily: fonts.uiSemibold, fontSize: font.footnote },
   done: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, height: 40, opacity: 0.8 },
-  doneText: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 1 },
+  doneText: { fontFamily: fonts.uiSemibold, fontSize: font.caption },
   review: { gap: 12, borderWidth: 1, borderRadius: 12, padding: 12 },
   reviewHead: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   reviewTitle: { flex: 1, gap: 2 },

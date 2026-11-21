@@ -55,7 +55,7 @@ function Sheet({ item, theme, onClose }: { item: ListItem; theme: Theme; onClose
     <View style={[styles.sheet, { backgroundColor: theme.card, paddingBottom: insets.bottom + 16 }]}>
       <View style={[styles.grabber, { backgroundColor: theme.border }]} />
       <Text style={[styles.title, { color: theme.text }]} numberOfLines={2}>
-        ADD “{item.title.toUpperCase()}” TO…
+        Add “{item.title}” to…
       </Text>
       <ScrollView style={{ maxHeight: 320 }} contentContainerStyle={{ gap: 4 }}>
         {loadFailed && <UnreadNote theme={theme} what="lists" />}
@@ -95,13 +95,13 @@ function Sheet({ item, theme, onClose }: { item: ListItem; theme: Theme; onClose
           />
           {!!name.trim() && (
             <Pressable onPress={create} accessibilityRole="button" style={[styles.create, { backgroundColor: theme.accent }]}>
-              <Text style={[styles.createText, { color: theme.accentText }]}>CREATE</Text>
+              <Text style={[styles.createText, { color: theme.accentText }]}>Create</Text>
             </Pressable>
           )}
         </View>
       )}
       <Pressable onPress={onClose} accessibilityRole="button" style={[styles.done, { backgroundColor: theme.chip }]}>
-        <Text style={[styles.doneText, { color: theme.text }]}>DONE</Text>
+        <Text style={[styles.doneText, { color: theme.text }]}>Done</Text>
       </Pressable>
     </View>
   );
@@ -110,14 +110,14 @@ function Sheet({ item, theme, onClose }: { item: ListItem; theme: Theme; onClose
 const styles = StyleSheet.create({
   sheet: { borderTopLeftRadius: 22, borderTopRightRadius: 22, padding: 16, gap: 12 },
   grabber: { alignSelf: 'center', width: 40, height: 4, borderRadius: 2 },
-  title: { fontFamily: fonts.display, fontSize: font.title2, letterSpacing: 0.5 },
-  note: { fontFamily: fonts.mono, fontSize: font.caption },
+  title: { fontFamily: fonts.uiBold, fontSize: font.title },
+  note: { fontFamily: fonts.ui, fontSize: font.caption },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 48, borderRadius: 10, paddingHorizontal: 8 },
   rowName: { flex: 1, fontSize: font.body, fontWeight: '600' },
   newRow: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderRadius: 12, paddingLeft: 12, paddingRight: 6, minHeight: 50 },
   input: { flex: 1, fontSize: font.body, paddingVertical: 8 },
   create: { height: 36, borderRadius: 18, paddingHorizontal: 14, alignItems: 'center', justifyContent: 'center' },
-  createText: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 1 },
+  createText: { fontFamily: fonts.uiSemibold, fontSize: font.caption },
   done: { height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center' },
-  doneText: { fontFamily: fonts.monoBold, fontSize: font.body, letterSpacing: 1.5 },
+  doneText: { fontFamily: fonts.uiSemibold, fontSize: font.body },
 });

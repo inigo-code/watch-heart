@@ -22,9 +22,9 @@ import type { MediaKind, Title } from '@/store/types';
 import { shownError } from '@/lib/errors';
 
 const KINDS: { kind: MediaKind; label: string }[] = [
-  { kind: 'movie', label: 'FILMS' },
-  { kind: 'tv', label: 'SERIES' },
-  { kind: 'anime', label: 'ANIME' },
+  { kind: 'movie', label: 'Films' },
+  { kind: 'tv', label: 'Series' },
+  { kind: 'anime', label: 'Anime' },
 ];
 
 const SORTS: { key: BrowseSort; label: string }[] = [
@@ -101,7 +101,7 @@ export default function BrowseScreen() {
 
   return (
     <View style={{ flex: 1 }}>
-      <Stack.Screen options={{ title: name.toUpperCase() }} />
+      <Stack.Screen options={{ title: name }} />
       <FlatList
         data={items}
         numColumns={columns}
@@ -259,13 +259,13 @@ function Filters({
     <BottomSheet visible={visible} onClose={onClose}>
       <View style={[styles.sheet, { backgroundColor: theme.bg, paddingBottom: insets.bottom + 12 }]}>
         <View style={styles.sheetHead}>
-          <Text style={[styles.sheetTitle, { color: theme.text }]}>FILTERS</Text>
+          <Text style={[styles.sheetTitle, { color: theme.text }]}>Filters</Text>
           <Pressable
             onPress={() => setDraft({ ...base, kind: draft.kind, sort: draft.sort, genres: base.genres?.filter((g) => genreId(g, draft.kind) !== undefined) })}
             accessibilityRole="button"
             hitSlop={8}
           >
-            <Text style={[styles.clear, { color: theme.textMuted }]}>CLEAR</Text>
+            <Text style={[styles.clear, { color: theme.textMuted }]}>Clear</Text>
           </Pressable>
         </View>
         <ScrollView contentContainerStyle={styles.sheetBody}>
@@ -372,7 +372,7 @@ function Filters({
           accessibilityRole="button"
           style={({ pressed }) => [styles.apply, { backgroundColor: theme.accent, opacity: pressed ? 0.85 : 1 }]}
         >
-          <Text style={[styles.applyText, { color: theme.accentText }]}>SHOW RESULTS</Text>
+          <Text style={[styles.applyText, { color: theme.accentText }]}>Show results</Text>
         </Pressable>
       </View>
     </BottomSheet>
@@ -389,24 +389,24 @@ function Group({ theme, title, children }: { theme: Theme; title: string; childr
 }
 
 const styles = StyleSheet.create({
-  listNote: { fontFamily: fonts.mono, fontSize: font.footnote },
+  listNote: { fontFamily: fonts.ui, fontSize: font.footnote },
   bar: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 },
   kinds: { flexDirection: 'row', borderWidth: 1, borderRadius: 10, padding: 3, gap: 3 },
   kind: { flex: 1, height: 34, borderRadius: 7, alignItems: 'center', justifyContent: 'center' },
-  kindText: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 1.5 },
+  kindText: { fontFamily: fonts.uiSemibold, fontSize: font.footnote },
   filterBtn: { width: 38, height: 38, borderRadius: 19, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
-  note: { fontFamily: fonts.mono, fontSize: font.footnote, textAlign: 'center', paddingVertical: 32 },
+  note: { fontFamily: fonts.ui, fontSize: font.footnote, textAlign: 'center', paddingVertical: 32 },
   watched: { opacity: 0.25 },
   tick: { position: 'absolute', top: 6, right: 6, width: 22, height: 22, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
   cellTitle: { fontSize: font.footnote, fontWeight: '700', marginTop: 6, lineHeight: 17 },
-  cellYear: { fontFamily: fonts.mono, fontSize: font.caption },
+  cellYear: { fontFamily: fonts.ui, fontSize: font.caption },
   sheet: { maxHeight: Dimensions.get('window').height * 0.85, borderTopLeftRadius: 20, borderTopRightRadius: 20 },
   sheetHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingTop: 16, paddingBottom: 8 },
-  sheetTitle: { fontFamily: fonts.display, fontSize: 28, letterSpacing: 1 },
-  clear: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 1 },
+  sheetTitle: { fontFamily: fonts.uiSemibold, fontSize: font.title2 },
+  clear: { fontFamily: fonts.uiSemibold, fontSize: font.footnote },
   sheetBody: { paddingHorizontal: 16, gap: 18, paddingBottom: 16 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  groupNote: { fontFamily: fonts.mono, fontSize: font.caption, marginTop: -6 },
+  groupNote: { fontFamily: fonts.ui, fontSize: font.caption, marginTop: -6 },
   apply: { marginHorizontal: 16, height: 50, borderRadius: 25, alignItems: 'center', justifyContent: 'center' },
-  applyText: { fontFamily: fonts.monoBold, fontSize: font.body, letterSpacing: 1.5 },
+  applyText: { fontFamily: fonts.uiSemibold, fontSize: font.body },
 });

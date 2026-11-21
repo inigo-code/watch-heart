@@ -165,7 +165,7 @@ function ProfileBody() {
             onChangeText={setName}
             onSubmitEditing={() => saveText()}
             returnKeyType="done"
-            placeholder="YOUR NAME"
+            placeholder="Your name"
             placeholderTextColor={theme.textMuted}
             style={[styles.name, { color: theme.text }]}
             maxLength={30}
@@ -188,7 +188,7 @@ function ProfileBody() {
               style={({ pressed }) => [styles.save, { backgroundColor: theme.accent, opacity: pressed ? 0.85 : 1 }]}
             >
               <Ionicons name="checkmark" size={18} color={theme.accentText} />
-              <Text style={[styles.saveText, { color: theme.accentText }]}>SAVE</Text>
+              <Text style={[styles.saveText, { color: theme.accentText }]}>Save</Text>
             </Pressable>
           )}
         </View>
@@ -232,11 +232,11 @@ function ProfileBody() {
               key={k}
               theme={theme}
               value={s.titles[k]}
-              label={KIND_LABEL[k] === 'Film' ? 'FILMS' : KIND_LABEL[k].toUpperCase()}
+              label={KIND_LABEL[k] === 'Film' ? 'Films' : KIND_LABEL[k]}
               color={kindColor(k, theme)}
             />
           ))}
-          <Count theme={theme} value={s.hours} label="HOURS" color={theme.accent} />
+          <Count theme={theme} value={s.hours} label="Hours" color={theme.accent} />
         </View>
         <View style={[styles.facts, { backgroundColor: theme.card, borderColor: theme.border }]}>
           <Fact theme={theme} icon="albums-outline" text={`${s.viewings} viewings logged`} />
@@ -288,9 +288,9 @@ function ProfileBody() {
                 onPress={() => update({ yearGoal: goal === g ? 0 : g })}
                 accessibilityRole="button"
                 accessibilityState={{ selected: goal === g }}
-                style={[styles.goalChip, { borderColor: goal === g ? theme.accent : theme.border, backgroundColor: goal === g ? theme.accent : 'transparent' }]}
+                style={[styles.goalChip, { borderColor: goal === g ? theme.chipActive : theme.border, backgroundColor: goal === g ? theme.chipActive : 'transparent' }]}
               >
-                <Text style={[styles.goalChipText, { color: goal === g ? theme.accentText : theme.text }]}>{g}</Text>
+                <Text style={[styles.goalChipText, { color: goal === g ? theme.chipActiveText : theme.text }]}>{g}</Text>
               </Pressable>
             ))}
           </View>
@@ -317,7 +317,7 @@ function ProfileBody() {
             <View style={styles.vibes}>
               {s.topVibes.map((v, i) => (
                 <View key={v.name} style={[styles.vibe, { backgroundColor: i === 0 ? theme.accent : theme.card, borderColor: i === 0 ? theme.accent : theme.border }]}>
-                  <Text style={[styles.vibeName, { color: i === 0 ? theme.accentText : theme.text }]}>{v.name.toUpperCase()}</Text>
+                  <Text style={[styles.vibeName, { color: i === 0 ? theme.accentText : theme.text }]}>{v.name}</Text>
                   <Text style={[styles.vibeCount, { color: i === 0 ? theme.accentText : theme.textMuted }]}>×{v.count}</Text>
                 </View>
               ))}
@@ -456,7 +456,7 @@ function ProfileBody() {
           style={({ pressed }) => [styles.share, { backgroundColor: theme.accent, opacity: pressed ? 0.85 : 1 }]}
         >
           <Ionicons name="logo-instagram" size={20} color={theme.accentText} />
-          <Text style={[styles.shareText, { color: theme.accentText }]}>SHARE MY PROFILE CARD</Text>
+          <Text style={[styles.shareText, { color: theme.accentText }]}>Share my profile card</Text>
         </Pressable>
 
         <FavouritePicker
@@ -552,30 +552,30 @@ function PerksLine({ points, theme }: { points: number; theme: Theme }) {
 const styles = StyleSheet.create({
   perks: { flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, borderRadius: 12, padding: 12, marginTop: 12 },
   perksTitle: { fontSize: font.body, fontWeight: '700' },
-  perksNote: { fontFamily: fonts.mono, fontSize: font.caption, lineHeight: 16, marginTop: 2 },
+  perksNote: { fontFamily: fonts.ui, fontSize: font.caption, lineHeight: 16, marginTop: 2 },
   content: { padding: 16, gap: 22 },
   favRemove: { position: 'absolute', top: 4, right: 4, width: 22, height: 22, borderRadius: 11, backgroundColor: 'rgba(0,0,0,0.6)', alignItems: 'center', justifyContent: 'center' },
   banner: { position: 'absolute', top: 0, left: 0, right: 0, overflow: 'hidden' },
   who: { alignItems: 'center', gap: 4, paddingTop: 8 },
   save: { flexDirection: 'row', alignItems: 'center', gap: 6, height: 40, paddingHorizontal: 22, borderRadius: 20, marginTop: 8 },
-  saveText: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 1.5 },
+  saveText: { fontFamily: fonts.uiSemibold, fontSize: font.footnote },
   photoRing: { width: 112, height: 112, borderRadius: 56, borderWidth: 3, alignItems: 'center', justifyContent: 'center' },
   photo: { width: 104, height: 104, borderRadius: 52 },
   initial: { fontFamily: fonts.display, fontSize: 54 },
   camera: { position: 'absolute', right: 2, bottom: 2, width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
-  name: { fontFamily: fonts.display, fontSize: font.marquee, letterSpacing: 1, alignSelf: 'stretch', textAlign: 'center', marginTop: 10, paddingVertical: 0 },
-  bio: { fontFamily: fonts.mono, fontSize: font.footnote, lineHeight: 18, alignSelf: 'stretch', textAlign: 'center', paddingVertical: 2 },
+  name: { fontFamily: fonts.uiBold, fontSize: 28, alignSelf: 'stretch', textAlign: 'center', marginTop: 10, paddingVertical: 0 },
+  bio: { fontFamily: fonts.ui, fontSize: font.footnote, lineHeight: 18, alignSelf: 'stretch', textAlign: 'center', paddingVertical: 2 },
   block: { gap: 10 },
   favs: { flexDirection: 'row', justifyContent: 'space-between' },
   fav: { borderRadius: 6 },
   emptyFav: { width: 74, height: 111, borderRadius: 6, borderWidth: 1.5, borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center' },
-  hint: { fontFamily: fonts.mono, fontSize: font.caption, lineHeight: 16 },
+  hint: { fontFamily: fonts.ui, fontSize: font.caption, lineHeight: 16 },
   numbers: { flexDirection: 'row', gap: 8 },
   number: { flex: 1, borderWidth: 1, borderRadius: 12, paddingVertical: 12, paddingHorizontal: 6, alignItems: 'center' },
   numberValue: { fontFamily: fonts.display, fontSize: 34, includeFontPadding: false },
   numberLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   dot: { width: 6, height: 6, borderRadius: 3 },
-  numberLabel: { fontFamily: fonts.monoBold, fontSize: 12, letterSpacing: 1 },
+  numberLabel: { fontFamily: fonts.uiSemibold, fontSize: 12 },
   facts: { borderWidth: 1, borderRadius: 12, padding: 14, gap: 10, marginTop: -8 },
   fact: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   factText: { flex: 1, fontSize: font.footnote },
@@ -587,14 +587,14 @@ const styles = StyleSheet.create({
   pace: { position: 'absolute', top: 0, bottom: 0, width: 2 },
   goalChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   goalChip: { height: 34, minWidth: 52, paddingHorizontal: 12, borderRadius: 17, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
-  goalChipText: { fontFamily: fonts.monoBold, fontSize: font.footnote },
+  goalChipText: { fontFamily: fonts.uiSemibold, fontSize: font.footnote },
   activityFoot: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   vibes: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   friend: { width: 72, alignItems: 'center', gap: 6 },
   friendAdd: { width: 64, height: 64, borderRadius: 32, borderWidth: 1, borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center' },
   vibe: { flexDirection: 'row', alignItems: 'center', gap: 6, borderWidth: 1, borderRadius: 16, paddingHorizontal: 12, height: 32 },
-  vibeName: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 1 },
-  vibeCount: { fontFamily: fonts.mono, fontSize: font.caption },
+  vibeName: { fontFamily: fonts.uiSemibold, fontSize: font.caption },
+  vibeCount: { fontFamily: fonts.ui, fontSize: font.caption },
   tops: { gap: 10 },
   buddies: { borderWidth: 1, borderRadius: 12, overflow: 'hidden' },
   listsRow: { gap: 12 },
@@ -607,8 +607,8 @@ const styles = StyleSheet.create({
   top: { borderWidth: 1, borderRadius: 12, padding: 14, gap: 10 },
   topRow: { flexDirection: 'row', justifyContent: 'space-between', gap: 8 },
   topName: { flex: 1, fontSize: font.footnote, fontWeight: '600' },
-  topCount: { fontFamily: fonts.monoBold, fontSize: font.caption },
+  topCount: { fontFamily: fonts.uiSemibold, fontSize: font.caption },
   topTrack: { height: 5, borderRadius: 3, overflow: 'hidden' },
   share: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, height: 54, borderRadius: 27 },
-  shareText: { fontFamily: fonts.monoBold, fontSize: font.body, letterSpacing: 1.5 },
+  shareText: { fontFamily: fonts.uiSemibold, fontSize: font.body },
 });

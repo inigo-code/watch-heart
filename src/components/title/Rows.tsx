@@ -122,7 +122,7 @@ export function RowHead({ title, theme, more, onMore }: { title: string; theme: 
       </SectionLabel>
       {onMore && (
         <Pressable onPress={onMore} hitSlop={16} accessibilityRole="button" style={styles.more}>
-          <Text style={[styles.moreText, { color: theme.textMuted }]}>{(more ?? 'See all').toUpperCase()}</Text>
+          <Text style={[styles.moreText, { color: theme.textMuted }]}>{more ?? 'See all'}</Text>
           <Ionicons name="chevron-forward" size={14} color={theme.textMuted} />
         </Pressable>
       )}
@@ -132,8 +132,8 @@ export function RowHead({ title, theme, more, onMore }: { title: string; theme: 
 
 const styles = StyleSheet.create({
   row: { gap: 12, paddingRight: 16 },
-  name: { fontSize: font.footnote, fontWeight: '700', marginTop: 6, lineHeight: 17 },
-  sub: { fontFamily: fonts.mono, fontSize: font.caption, marginTop: 1 },
+  name: { fontSize: font.footnote, fontWeight: '600', marginTop: 8, lineHeight: 18 },
+  sub: { fontFamily: fonts.ui, fontSize: font.caption, marginTop: 1 },
   // Seen ones step back, so what you haven't watched stands out.
   watched: { opacity: 0.25 },
   seen: { position: 'absolute', top: 6, right: 6, width: 22, height: 22, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
@@ -142,5 +142,5 @@ const styles = StyleSheet.create({
   initialsText: { fontFamily: fonts.display },
   head: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   more: { flexDirection: 'row', alignItems: 'center', gap: 2 },
-  moreText: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 1 },
+  moreText: { fontFamily: fonts.uiMedium, fontSize: font.footnote },
 });

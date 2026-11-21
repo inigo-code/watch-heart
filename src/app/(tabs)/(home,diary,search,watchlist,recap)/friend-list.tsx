@@ -60,9 +60,9 @@ export default function FriendListScreen() {
       contentContainerStyle={{ padding: 16, gap: list.ranked ? 0 : 14, paddingBottom: insets.bottom + 24 }}
       ListHeaderComponent={
         <View style={styles.header}>
-          <Stack.Screen options={{ title: 'LIST' }} />
-          <Text style={[styles.owner, { color: theme.accent }]}>{owner.toUpperCase()}’S LIST</Text>
-          <Text style={[styles.name, { color: theme.text }]}>{list.name.toUpperCase()}</Text>
+          <Stack.Screen options={{ title: 'List' }} />
+          <Text style={[styles.owner, { color: theme.textMuted }]}>{owner}’s list</Text>
+          <Text style={[styles.name, { color: theme.text }]}>{list.name}</Text>
           {!!list.description && <Text style={[styles.desc, { color: theme.textMuted }]}>{list.description}</Text>}
           <Text style={[styles.hint, { color: theme.textMuted }]}>
             {list.items.length} {list.items.length === 1 ? 'title' : 'titles'}
@@ -83,7 +83,7 @@ export default function FriendListScreen() {
               {item.title}
               {item.year ? <Text style={[styles.hint, { color: theme.textMuted }]}>{`  ${item.year}`}</Text> : null}
             </Text>
-            {seen(item) && <Text style={[styles.seen, { color: theme.accent }]}>SEEN</Text>}
+            {seen(item) && <Text style={[styles.seen, { color: theme.accent }]}>Seen</Text>}
           </Pressable>
         ) : (
           <Pressable onPress={() => openTitle(asTitle(item))} accessibilityRole="button" style={({ pressed }) => [{ width: cell }, pressed && { opacity: 0.8 }]}>
@@ -91,7 +91,7 @@ export default function FriendListScreen() {
             <Text style={[styles.cellTitle, { color: theme.text }]} numberOfLines={2}>
               {item.title}
             </Text>
-            <Text style={[styles.hint, { color: seen(item) ? theme.accent : theme.textMuted }]}>{seen(item) ? 'SEEN' : (item.year ?? '')}</Text>
+            <Text style={[styles.hint, { color: seen(item) ? theme.accent : theme.textMuted }]}>{seen(item) ? 'Seen' : (item.year ?? '')}</Text>
           </Pressable>
         )
       }
@@ -102,13 +102,13 @@ export default function FriendListScreen() {
 const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
   header: { gap: 6, marginBottom: 14 },
-  owner: { fontFamily: fonts.monoBold, fontSize: font.caption, letterSpacing: 2 },
-  name: { fontFamily: fonts.display, fontSize: 36, lineHeight: 38, letterSpacing: 1 },
+  owner: { fontFamily: fonts.uiSemibold, fontSize: font.caption },
+  name: { fontFamily: fonts.uiBold, fontSize: 26, lineHeight: 32 },
   desc: { fontSize: font.body, lineHeight: 21 },
-  hint: { fontFamily: fonts.mono, fontSize: font.caption },
+  hint: { fontFamily: fonts.ui, fontSize: font.caption },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 8, borderBottomWidth: StyleSheet.hairlineWidth },
   rank: { width: 30, fontFamily: fonts.display, fontSize: 26, textAlign: 'center' },
   rowTitle: { flex: 1, fontSize: font.body, fontWeight: '700' },
-  seen: { fontFamily: fonts.monoBold, fontSize: 12, letterSpacing: 1 },
+  seen: { fontFamily: fonts.uiSemibold, fontSize: 12 },
   cellTitle: { fontSize: font.footnote, fontWeight: '700', marginTop: 6 },
 });
