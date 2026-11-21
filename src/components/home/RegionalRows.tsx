@@ -7,7 +7,7 @@ import { discoverTmdb } from '@/api/tmdb';
 import type { BrowseQuery } from '@/api/tmdb';
 import { browse } from '@/components/discover/DiscoverHome';
 import { RowHead, TitleRow, rail } from '@/components/title/Rows';
-import { countryName } from '@/lib/discover';
+import { inCountry } from '@/lib/discover';
 import { INDIAN_LANGUAGES } from '@/lib/regional';
 import type { Language } from '@/lib/regional';
 import { font, fonts } from '@/lib/theme';
@@ -65,7 +65,7 @@ export function RegionalRows({ region, mine, theme, seen }: { region: string; mi
   }
   if (region === 'US') return null;
   return (
-    <QueryRow theme={theme} seen={seen} title={`Popular from ${countryName(region)}`} q={{ kind: 'movie', country: region, from: NOW - 2, minVotes: 20, notGenres: NOT_DOCS }} />
+    <QueryRow theme={theme} seen={seen} title={`Popular from ${inCountry(region)}`} q={{ kind: 'movie', country: region, from: NOW - 2, minVotes: 20, notGenres: NOT_DOCS }} />
   );
 }
 

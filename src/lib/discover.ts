@@ -246,12 +246,29 @@ export const COUNTRIES = ['US', 'GB', 'IN', 'JP', 'KR', 'FR', 'IT', 'ES', 'DE', 
 /** A country's flag, from its two-letter code. */
 export const flag = (code: string) => String.fromCodePoint(...[...code.toUpperCase()].map((c) => 0x1f1e6 + c.charCodeAt(0) - 65));
 
+// Phones run Hermes, which has no Intl.DisplayNames, so the countries people pick or live in are named here.
+const NAMES: Record<string, string> = {
+  US: 'United States', GB: 'United Kingdom', IN: 'India', JP: 'Japan', KR: 'South Korea', FR: 'France', IT: 'Italy', ES: 'Spain', DE: 'Germany',
+  CA: 'Canada', AU: 'Australia', IE: 'Ireland', CN: 'China', HK: 'Hong Kong', TW: 'Taiwan', BR: 'Brazil', MX: 'Mexico',
+  AR: 'Argentina', SE: 'Sweden', DK: 'Denmark', NO: 'Norway', NL: 'Netherlands', BE: 'Belgium', PL: 'Poland', TR: 'Turkey',
+  IR: 'Iran', NZ: 'New Zealand', AE: 'United Arab Emirates', SA: 'Saudi Arabia', QA: 'Qatar', KW: 'Kuwait', OM: 'Oman', BH: 'Bahrain',
+  SG: 'Singapore', MY: 'Malaysia', LK: 'Sri Lanka', NP: 'Nepal', BD: 'Bangladesh', PK: 'Pakistan', PH: 'Philippines',
+  ID: 'Indonesia', TH: 'Thailand', VN: 'Vietnam', ZA: 'South Africa', NG: 'Nigeria', KE: 'Kenya', EG: 'Egypt', CH: 'Switzerland',
+  AT: 'Austria', PT: 'Portugal', FI: 'Finland', GR: 'Greece', CZ: 'Czechia', HU: 'Hungary', RO: 'Romania', IL: 'Israel',
+  RU: 'Russia', UA: 'Ukraine', CL: 'Chile', CO: 'Colombia', PE: 'Peru',
+};
 const REGION_NAMES = typeof Intl !== 'undefined' && 'DisplayNames' in Intl ? new Intl.DisplayNames(['en'], { type: 'region' }) : null;
 /** "Japan" for JP, falling back to the code where the phone can't name it. */
 export const countryName = (code: string) => {
+  const known = NAMES[code.toUpperCase()];
+  if (known) return known;
   try {
     return REGION_NAMES?.of(code) ?? code;
   } catch {
     return code;
   }
 };
+
+const WITH_THE = new Set(['US', 'GB', 'NL', 'AE', 'PH']);
+/** The country as it reads in a sentence: "in the United States", "from India". */
+export const inCountry = (code: string) => (WITH_THE.has(code.toUpperCase()) ? 'the ' : '') + countryName(code);

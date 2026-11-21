@@ -1,5 +1,5 @@
 import type { BrowseQuery } from '@/api/tmdb';
-import { countryName } from '@/lib/discover';
+import { inCountry } from '@/lib/discover';
 
 export type Language = { code: string; name: string };
 
@@ -26,5 +26,5 @@ export const homeLanguage = (region: string, setting: string) => languagesFor(re
 export function regionalFeatured(region: string, lang: Language | null): { q: BrowseQuery; kicker: string } | null {
   if (lang) return { q: { kind: 'movie', country: region, lang: lang.code, days: [-42, 3], notGenres: ['Documentary', 'Music'] }, kicker: `NEW IN ${lang.name.toUpperCase()}` };
   if (region === 'US') return null;
-  return { q: { kind: 'movie', country: region, days: [-42, 3], notGenres: ['Documentary', 'Music'] }, kicker: `NEW FROM ${countryName(region).toUpperCase()}` };
+  return { q: { kind: 'movie', country: region, days: [-42, 3], notGenres: ['Documentary', 'Music'] }, kicker: `NEW FROM ${inCountry(region).toUpperCase()}` };
 }

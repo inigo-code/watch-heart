@@ -10,7 +10,7 @@ import { browse } from '@/components/discover/browse';
 import { CuratedLists } from '@/components/discover/CuratedLists';
 import { SectionLabel } from '@/components/SectionLabel';
 import { rail } from '@/components/title/Rows';
-import { COUNTRIES, DECADES, LANGUAGES, SHELVES, countryName, flag, seasonalShelves } from '@/lib/discover';
+import { COUNTRIES, DECADES, LANGUAGES, SHELVES, countryName, flag, inCountry, seasonalShelves } from '@/lib/discover';
 import { font, fonts } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
 
@@ -46,7 +46,7 @@ export function DiscoverHome({ theme, tmdb, region }: { theme: Theme; tmdb: stri
     <View style={styles.wrap}>
       {providers.length > 0 && (
         <View style={styles.section}>
-          <SectionLabel theme={theme}>On your services in {countryName(region)}</SectionLabel>
+          <SectionLabel theme={theme}>On your services in {inCountry(region)}</SectionLabel>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={rail.edge} contentContainerStyle={styles.providers}>
             {providers.map((p) => (
               <Pressable
@@ -114,7 +114,7 @@ export function DiscoverHome({ theme, tmdb, region }: { theme: Theme; tmdb: stri
       <Chips
         theme={theme}
         title="By country"
-        items={COUNTRIES.map((c) => ({ key: c, label: `${flag(c)} ${c}`, a11y: countryName(c), onPress: () => browse({ kind, country: c }, `From ${countryName(c)}`) }))}
+        items={COUNTRIES.map((c) => ({ key: c, label: `${flag(c)} ${c}`, a11y: countryName(c), onPress: () => browse({ kind, country: c }, `From ${inCountry(c)}`) }))}
       />
 
       <Pressable

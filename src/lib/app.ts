@@ -46,6 +46,12 @@ export const DATA_SOURCES = {
  */
 const NOTES: { id: string; items: string[] }[] = [
   {
+    id: '1.7.1',
+    items: [
+      'Country names are written out in full on phones: “In cinemas in India” instead of “IN”',
+    ],
+  },
+  {
     id: '1.7.0',
     items: [
       'When you log something new, its ticket prints and a LOGGED stamp comes down on it',

@@ -22,7 +22,7 @@ import { browse } from '@/components/discover/browse';
 import { MovieNightCard, useMovieNights } from '@/components/MovieNight';
 import { RowHead, TitleRow } from '@/components/title/Rows';
 import { today } from '@/lib/dates';
-import { countryName } from '@/lib/discover';
+import { inCountry } from '@/lib/discover';
 import { isOffline } from '@/lib/errors';
 import { useNudges } from '@/lib/useNudges';
 import { homeLanguage } from '@/lib/regional';
@@ -179,7 +179,7 @@ export default function HomeScreen() {
 
       {(cinemaTitles === null || cinemaTitles.length > 0) && (
         <View style={styles.block}>
-          <RowHead title={`In cinemas in ${countryName(region)}`} theme={theme} more="See all" onMore={() => browse(inCinemasQuery(region), `In cinemas in ${countryName(region)}`)} />
+          <RowHead title={`In cinemas in ${inCountry(region)}`} theme={theme} more="See all" onMore={() => browse(inCinemasQuery(region), `In cinemas in ${inCountry(region)}`)} />
           {cinemaTitles ? <TitleRow titles={cinemaTitles} theme={theme} seen={seen} /> : <Skeleton theme={theme} />}
         </View>
       )}
