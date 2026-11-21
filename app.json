@@ -14,6 +14,7 @@
     },
     "android": {
       "package": "com.inigocode.watchheart",
+      "allowBackup": false,
       "adaptiveIcon": {
         "backgroundColor": "#0B0A0D",
         "foregroundImage": "./assets/android-icon-foreground.png",
