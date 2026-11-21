@@ -96,6 +96,12 @@ Film and series data and images come from TMDB. Watch Heart uses TMDB and the TM
 
 What each picture shows, and how to make them again: `make/README.md`.
 
+## Release notes for 1.7.1 (500 max)
+
+<en-IN>
+Opening the app no longer flashes a black screen between the logo and its animation. Country names are written out in full: "In cinemas in India" instead of "IN". A slightly smaller app that now also installs on tablets and Chromebooks that only work in landscape.
+</en-IN>
+
 ## Release notes for 1.7.0 (500 max)
 
 <en-IN>
