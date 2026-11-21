@@ -1,6 +1,4 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { Image } from 'expo-image';
-import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
@@ -12,7 +10,7 @@ import { usePullRefresh } from '@/components/PullRefresh';
 import { tmdbKey } from '@/api';
 import { watchRegion } from '@/api/omdb';
 import { refreshAnswers } from '@/api/cache';
-import { discoverTmdb, nowPlayingTmdb, trendingAllTmdb } from '@/api/tmdb';
+import { inCinemasQuery, nowPlayingTmdb } from '@/api/tmdb';
 import { AppHeader, greetingIcon, greetingLine } from '@/components/AppHeader';
 import { Poster } from '@/components/Film';
 import { FriendsRow } from '@/components/home/FriendsRow';
@@ -20,13 +18,15 @@ import { NotifyInvite } from '@/components/home/NotifyInvite';
 import { OfflineNote } from '@/components/home/OfflineNote';
 import { WeekStrip } from '@/components/home/WeekStrip';
 import { RegionalRows } from '@/components/home/RegionalRows';
+import { browse } from '@/components/discover/browse';
 import { MovieNightCard, useMovieNights } from '@/components/MovieNight';
-import { RowHead, TitleRow, openTitle, warmTitle } from '@/components/title/Rows';
+import { RowHead, TitleRow } from '@/components/title/Rows';
 import { today } from '@/lib/dates';
 import { countryName } from '@/lib/discover';
+import { isOffline } from '@/lib/errors';
 import { useHour } from '@/lib/greeting';
 import { useNudges } from '@/lib/useNudges';
-import { homeLanguage, regionalFeatured } from '@/lib/regional';
+import { homeLanguage } from '@/lib/regional';
 import { favouriteSeeds, forYou } from '@/lib/home';
 import { font, fonts, useTheme } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
@@ -38,8 +38,9 @@ import { useFriends } from '@/friends/FriendsProvider';
 import type { Title } from '@/store/types';
 
 /**
- * Home: something to watch tonight, the moment the app opens. The week's top title, then a few rows: the
- * series you're in the middle of, picks from what you loved, what's trending, and what's in cinemas.
+ * Home: your diary first (this week, what you're watching, friends, your watchlist), then a few ways to
+ * something new: picks from what you loved, what's in cinemas where you are, and new releases from there.
+ * Trending and everything else to browse live in Find.
  */
 export default function HomeScreen() {
   const theme = useTheme();
@@ -50,80 +51,28 @@ export default function HomeScreen() {
   const region = watchRegion(settings.watchRegion);
   const { entries, watchlist, viewingsOf } = useDiary();
   const { nights } = useMovieNights();
-  const [trending, setTrending] = useState<Title[] | null>(null);
   const [cinema, setCinema] = useState<{ region: string; titles: Title[] } | null>(null);
   const [picks, setPicks] = useState<{ seeds: string; titles: Title[] } | null>(null);
   const lang = homeLanguage(region, settings.homeLanguage);
-  const regional = regionalFeatured(region, lang);
-  const regionalKey = regional ? JSON.stringify(regional.q) : '';
-  const [local, setLocal] = useState<{ key: string; titles: Title[] } | null>(null);
   // Each pull to refresh asks everything again.
   const [round, setRound] = useState(0);
   const friends = useFriends();
   const sync = useSync();
 
-  // Which of the two rows every Home asks for failed last time. Both failing reads as no connection.
-  const [down, setDown] = useState({ trending: false, cinema: false });
-  useEffect(() => {
-    if (!key) return;
-    trendingAllTmdb(key)
-      .then((titles) => {
-        setTrending(titles);
-        setDown((d) => ({ ...d, trending: false }));
-      })
-      .catch(() => {
-        setTrending((t) => t ?? []);
-        setDown((d) => ({ ...d, trending: true }));
-      });
-  }, [key, round]);
+  // In cinemas is the one row every Home asks for; when it can't reach TMDB, Home says you seem to be offline.
+  const [offline, setOffline] = useState(false);
   useEffect(() => {
     if (!key) return;
     nowPlayingTmdb(key, region)
       .then((titles) => {
         setCinema({ region, titles });
-        setDown((d) => ({ ...d, cinema: false }));
+        setOffline(false);
       })
-      .catch(() => {
+      .catch((e: unknown) => {
         setCinema((c) => c ?? { region, titles: [] });
-        setDown((d) => ({ ...d, cinema: true }));
+        setOffline(isOffline(e));
       });
   }, [key, region, round]);
-  const offline = down.trending && down.cinema;
-
-  // The slider's first cards: new films in your language, or from your country.
-  useEffect(() => {
-    if (!key || !regional) return;
-    let live = true;
-    // Only titles people know lead the slider: new releases with some votes already (Jailer 2, not a film
-    // three people have heard of); in a quiet week, the most popular new release.
-    // Two slides: the best known first, then the best rated new release with a few votes, then the most
-    // popular, so a quiet week still fills both.
-    const usable = (r: { results: Title[] }) => r.results.filter((t) => t.backdropUrl && t.posterUrl);
-    Promise.all([
-      discoverTmdb(key, { ...regional.q, minVotes: 10 }, 1).catch(() => ({ results: [] as Title[] })),
-      discoverTmdb(key, { ...regional.q, sort: 'rating', minVotes: 3 }, 1).catch(() => ({ results: [] as Title[] })),
-      discoverTmdb(key, regional.q, 1).catch(() => ({ results: [] as Title[] })),
-    ])
-      .then((answers) => {
-        const picked: Title[] = [];
-        for (const t of answers.flatMap(usable)) if (picked.length < 2 && !picked.some((p) => p.sourceId === t.sourceId)) picked.push(t);
-        if (live) setLocal({ key: regionalKey, titles: picked });
-      })
-      .catch(() => live && setLocal({ key: regionalKey, titles: [] }));
-    return () => {
-      live = false;
-    };
-    // The query is compared by its JSON (`regionalKey`), not by identity.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key, regionalKey, round]);
-
-  // On a slow connection the regional cards shouldn't hold back a slider that's ready: after a moment it
-  // shows what it has, and they join it when they come.
-  const [waited, setWaited] = useState(false);
-  useEffect(() => {
-    const timer = setTimeout(() => setWaited(true), 1500);
-    return () => clearTimeout(timer);
-  }, []);
 
   const seeds = useMemo(() => favouriteSeeds(entries), [entries]);
   const seedKey = seeds.map((s) => s.sourceId).join(',');
@@ -145,28 +94,18 @@ export default function HomeScreen() {
   const pull = usePullRefresh(theme, async () => {
     refreshAnswers();
     setRound((r) => r + 1);
-    await Promise.all([key ? trendingAllTmdb(key).then(setTrending) : null, friends.refresh(), sync.syncNow()]);
+    await Promise.all([friends.refresh(), sync.syncNow()]);
   });
 
   const seen = (t: Title) => viewingsOf(t.source, t.sourceId).length > 0;
-  // Without a TMDB key nothing is asked for, so the rows count as loaded with nothing in them.
-  const trendingTitles = key ? trending : [];
   const up = continueWatching(watchlist, today());
   const continuing = [...up.ongoing, ...up.oldFriends].slice(0, 10);
-  // Wait for both for a moment, so the slider doesn't shift when the regional cards arrive.
-  const localTitles = !regional ? [] : local?.key === regionalKey ? local.titles : waited ? [] : null;
-  const top = (trendingTitles ?? []).filter((t) => t.backdropUrl && !localTitles?.some((l) => l.sourceId === t.sourceId)).slice(0, 4);
-  const featured: Slide[] =
-    trendingTitles && localTitles
-      ? [...localTitles.map((t) => ({ t, kicker: regional!.kicker })), ...top.map((t, i) => ({ t, kicker: `#${i + 1} THIS WEEK` }))]
-      : [];
-  // Grey shapes only while it's on its way: once it's in (or failed) with nothing to show, the row is left out.
-  const featuredLoading = !trendingTitles || !localTitles;
-  const rest = (trendingTitles ?? []).filter((t) => !top.includes(t));
-  useNudges(featured[0]?.t ?? null);
   const upNext = watchlist.filter((w) => !w.track && w.posterUrl).slice(0, 10).map(titleOf);
   const forYouTitles = !key ? [] : picks?.seeds === seedKey ? picks.titles : null;
+  // Without a TMDB key nothing is asked for, so the row counts as loaded with nothing in it.
   const cinemaTitles = !key ? [] : cinema?.region === region ? cinema.titles : null;
+  // The weekend and new-this-week alerts suggest the most popular film in cinemas.
+  useNudges(cinemaTitles?.[0] ?? null);
 
   return (
     <ScrollView
@@ -240,28 +179,15 @@ export default function HomeScreen() {
         </View>
       )}
 
-      {(featuredLoading || featured.length > 0) && (
+
+      {(cinemaTitles === null || cinemaTitles.length > 0) && (
         <View style={styles.block}>
-          <RowHead title="New this week" theme={theme} more="Find" onMore={() => router.navigate('/search')} />
-          {featuredLoading ? <View style={[styles.newSkeleton, { backgroundColor: theme.card }]} /> : <NewRow slides={featured} theme={theme} />}
+          <RowHead title={`In cinemas · ${countryName(region)}`} theme={theme} more="See all" onMore={() => browse(inCinemasQuery(region), `In cinemas · ${countryName(region)}`)} />
+          {cinemaTitles ? <TitleRow titles={cinemaTitles} theme={theme} seen={seen} /> : <Skeleton theme={theme} />}
         </View>
       )}
 
       <RegionalRows key={`${lang?.code ?? ''}:${round}`} region={region} mine={lang} theme={theme} seen={seen} />
-
-      {(trendingTitles === null || rest.length > 0) && (
-        <View style={styles.block}>
-          <RowHead title="Trending this week" theme={theme} more="See all" onMore={() => router.navigate('/search')} />
-          {trendingTitles ? <TitleRow titles={rest} theme={theme} seen={seen} width={112} /> : <Skeleton theme={theme} width={112} />}
-        </View>
-      )}
-
-      {(cinemaTitles === null || cinemaTitles.length > 0) && (
-        <View style={styles.block}>
-          <RowHead title={`In cinemas · ${countryName(region)}`} theme={theme} />
-          {cinemaTitles ? <TitleRow titles={cinemaTitles} theme={theme} seen={seen} /> : <Skeleton theme={theme} />}
-        </View>
-      )}
 
       <Pressable
         onPress={() => router.navigate({ pathname: '/search', params: { mode: 'discover' } })}
@@ -271,46 +197,6 @@ export default function HomeScreen() {
         <Ionicons name="compass" size={18} color={theme.accent} />
         <Text style={[styles.discoverText, { color: theme.text }]}>DISCOVER MORE</Text>
       </Pressable>
-    </ScrollView>
-  );
-}
-
-type Slide = { t: Title; kicker: string };
-
-/** New films from where you are, then the week's top titles, as small wide cards that open the title. */
-function NewRow({ slides, theme }: { slides: Slide[]; theme: Theme }) {
-  return (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>
-      {slides.map(({ t, kicker }) => (
-        <Tap
-          key={t.sourceId}
-          onPressIn={() => warmTitle(t)}
-          onPress={() => openTitle(t)}
-          accessibilityRole="button"
-          accessibilityLabel={`${t.title}, ${kicker.toLowerCase()}`}
-          style={[styles.newCard, { backgroundColor: theme.card }]}
-        >
-          {/* The poster, already fetched for the rows below, holds the place while the wider picture comes. */}
-          <Image
-            source={t.backdropUrl}
-            placeholder={t.posterUrl ? { uri: t.posterUrl } : undefined}
-            placeholderContentFit="cover"
-            style={StyleSheet.absoluteFill}
-            contentFit="cover"
-            cachePolicy="memory-disk"
-            transition={200}
-          />
-          <LinearGradient colors={['transparent', 'rgba(0,0,0,0.85)']} style={StyleSheet.absoluteFill} />
-          <View style={styles.newBody}>
-            <Text style={[styles.kicker, { color: theme.accentOnDark }]} numberOfLines={1}>
-              {kicker}
-            </Text>
-            <Text style={styles.newTitle} numberOfLines={1}>
-              {t.title.toUpperCase()}
-            </Text>
-          </View>
-        </Tap>
-      ))}
     </ScrollView>
   );
 }
@@ -335,11 +221,6 @@ const styles = StyleSheet.create({
   because: { fontFamily: fonts.mono, fontSize: font.caption, lineHeight: 17 },
   episode: { position: 'absolute', left: 6, bottom: 6, borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2 },
   episodeText: { fontFamily: fonts.monoBold, fontSize: 12, letterSpacing: 0.5 },
-  newCard: { width: 248, height: 140, borderRadius: 12, overflow: 'hidden', justifyContent: 'flex-end' },
-  newSkeleton: { height: 140, borderRadius: 12 },
-  newBody: { padding: 12, gap: 2 },
-  kicker: { fontFamily: fonts.monoBold, fontSize: 12, letterSpacing: 1 },
-  newTitle: { fontFamily: fonts.display, fontSize: 24, lineHeight: 28, color: '#FFFFFF', letterSpacing: 1 },
   discover: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: 46, borderRadius: 23, borderWidth: 1 },
   discoverText: { fontFamily: fonts.monoBold, fontSize: font.footnote, letterSpacing: 1.5 },
 });

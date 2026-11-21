@@ -20,51 +20,47 @@ const NOW = new Date().getFullYear();
 const NOT_DOCS = ['Documentary', 'Music'];
 
 
+const ALL = { code: '', name: 'All' };
+
 /**
- * Home's rows for where you are. In India: FDFS (new Indian releases), favourites in a language you pick,
- * (your language from Settings comes first in each). Hidden gems are in Discover. Elsewhere, one row of what's popular from your country (none for the US, which Trending
- * already is).
+ * Home's row for where you are. In India: new Indian releases, with a chip for each language (yours from
+ * Settings first, picked at the start). Favourites by language are lists in Discover. Elsewhere, one row of
+ * what's popular from your country (none for the US, which Find's Trending already is).
  */
 export function RegionalRows({ region, mine, theme, seen }: { region: string; mine: Language | null; theme: Theme; seen: (t: Title) => boolean }) {
-  const languages = mine ? [mine, ...INDIAN_LANGUAGES.filter((l) => l.code !== mine.code)] : INDIAN_LANGUAGES;
-  const [lang, setLang] = useState(languages[0]);
+  const languages = [ALL, ...(mine ? [mine, ...INDIAN_LANGUAGES.filter((l) => l.code !== mine.code)] : INDIAN_LANGUAGES)];
+  const [lang, setLang] = useState(mine ?? ALL);
   if (region === 'IN') {
-    const favourites: BrowseQuery = { kind: 'movie', lang: lang.code, sort: 'rating', minVotes: lang.code === 'bn' || lang.code === 'kn' ? 40 : 100, notGenres: NOT_DOCS };
+    // Out in the last four weeks, or opening this week.
+    const fresh: BrowseQuery = lang.code
+      ? { kind: 'movie', lang: lang.code, days: [-28, 7], notGenres: NOT_DOCS }
+      : { kind: 'movie', country: 'IN', days: [-28, 7], notGenres: NOT_DOCS };
     return (
-      <>
-        <QueryRow
-          theme={theme}
-          seen={seen}
-          title="FDFS · New Indian releases"
-          sub="First day, first show: out in the last four weeks"
-          q={{ kind: 'movie', country: 'IN', days: [-28, 7], notGenres: NOT_DOCS, preferLang: mine?.code }}
-        />
-        <QueryRow
-          theme={theme}
-          seen={seen}
-          title="Indian favourites"
-          q={favourites}
-          name={`${lang.name} favourites`}
-          above={
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
-              {languages.map((l) => {
-                const on = l.code === lang.code;
-                return (
-                  <Pressable
-                    key={l.code}
-                    onPress={() => setLang(l)}
-                    accessibilityRole="tab"
-                    accessibilityState={{ selected: on }}
-                    style={[styles.chip, { backgroundColor: on ? theme.accent : theme.chip }]}
-                  >
-                    <Text style={[styles.chipText, { color: on ? theme.accentText : theme.text }]}>{l.name}</Text>
-                  </Pressable>
-                );
-              })}
-            </ScrollView>
-          }
-        />
-      </>
+      <QueryRow
+        theme={theme}
+        seen={seen}
+        title="New Indian releases"
+        name={lang.code ? `New ${lang.name} releases` : 'New Indian releases'}
+        q={fresh}
+        above={
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
+            {languages.map((l) => {
+              const on = l.code === lang.code;
+              return (
+                <Pressable
+                  key={l.code || 'all'}
+                  onPress={() => setLang(l)}
+                  accessibilityRole="tab"
+                  accessibilityState={{ selected: on }}
+                  style={[styles.chip, { backgroundColor: on ? theme.accent : theme.chip }]}
+                >
+                  <Text style={[styles.chipText, { color: on ? theme.accentText : theme.text }]}>{l.name}</Text>
+                </Pressable>
+              );
+            })}
+          </ScrollView>
+        }
+      />
     );
   }
   if (region === 'US') return null;

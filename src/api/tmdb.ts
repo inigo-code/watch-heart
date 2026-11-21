@@ -582,7 +582,10 @@ export type BrowseQuery = {
   preferLang?: string;
   country?: string;
   provider?: number;
+  /** With `provider`, where it streams; with `theatrical`, where it's in cinemas. */
   region?: string;
+  /** Films out in cinemas in `region` within `days` (its own release dates there, not the world premiere). */
+  theatrical?: boolean;
   minScore?: number;
   minVotes?: number;
   maxVotes?: number;
@@ -613,7 +616,9 @@ async function loadDiscover(key: string, q: BrowseQuery, page: number, signal?: 
   }
   if (q.ids) return loadIds(key, q.ids, page, signal);
   const type = q.kind === 'movie' ? 'movie' : 'tv';
-  const dateField = type === 'movie' ? 'primary_release_date' : 'first_air_date';
+  const inCinemas = type === 'movie' && !!q.theatrical && !!q.region;
+  // In cinemas in one country: that country's release dates, so a film counts from the day it opened there.
+  const dateField = type === 'movie' ? (inCinemas ? 'release_date' : 'primary_release_date') : 'first_air_date';
   const ids = (q.genres ?? []).map((g) => genreId(g, q.kind));
   // A genre TMDB doesn't use for this kind (Horror series) matches nothing, rather than everything.
   if (ids.some((id) => id === undefined)) return { results: [], pages: 0 };
@@ -638,6 +643,11 @@ async function loadDiscover(key: string, q: BrowseQuery, page: number, signal?: 
     p['air_date.lte'] = isoDaysFromNow(7);
     // Long-running children's shows are always airing and always popular.
     if (q.kind === 'anime') p.without_genres = [p.without_genres, KIDS, FAMILY].filter(Boolean).join(',');
+  }
+  if (inCinemas) {
+    p.region = q.region!;
+    // 2 limited and 3 wide theatrical releases: not festival screenings, streaming or TV premieres.
+    p.with_release_type = '2|3';
   }
   if (q.provider && q.region) {
     p.with_watch_providers = String(q.provider);
@@ -685,10 +695,14 @@ export function trendingAllTmdb(key: string): Promise<Title[]> {
   });
 }
 
+/**
+ * Films running in cinemas in a country: opened there in the last five weeks, most popular first. TMDB's
+ * own "now playing" lets in films with any old or festival date in the country, so this asks Discover for
+ * that country's cinema releases instead.
+ */
+export const inCinemasQuery = (region: string): BrowseQuery => ({ kind: 'movie', theatrical: true, region, days: [-35, 0], notGenres: ['Documentary', 'Music'] });
+
 /** Films in cinemas in a country now, most popular first. Kept for six hours. */
 export function nowPlayingTmdb(key: string, region: string): Promise<Title[]> {
-  return cachedOnDisk(`now-playing:${region}`, 6 * 60 * MINUTE, async () => {
-    const d = await get<{ results: Result[] }>(key, '/movie/now_playing', { region });
-    return [...d.results].sort(byPopularity).map((r) => toTitle(r, 'movie'));
-  });
+  return cachedOnDisk(`in-cinemas:${region}`, 6 * 60 * MINUTE, async () => (await loadDiscover(key, inCinemasQuery(region), 1)).results);
 }

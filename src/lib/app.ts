@@ -46,6 +46,16 @@ export const DATA_SOURCES = {
  */
 const NOTES: { id: string; items: string[] }[] = [
   {
+    id: '1.6.7',
+    items: [
+      'A calmer Home: your week, what you’re watching, friends and your watchlist first, then For you, In cinemas and New Indian releases',
+      'In cinemas shows only films playing in cinemas in your country now, with See all',
+      'New Indian releases has a chip for each language',
+      'Indian favourites by language are now lists in Discover',
+      'New this week and Trending this week left Home; Trending is still in Find',
+    ],
+  },
+  {
     id: '1.6.6',
     items: ['With no internet, Find and the rest of the app say “No connection”, and other problems are explained in plain words instead of technical errors'],
   },

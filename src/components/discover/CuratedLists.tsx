@@ -7,19 +7,29 @@ import { discoverTmdb } from '@/api/tmdb';
 import { browse } from '@/components/discover/browse';
 import { SectionLabel } from '@/components/SectionLabel';
 import { AWARD_LISTS } from '@/lib/awards';
-import { INDIAN_GEMS, LISTS } from '@/lib/discover';
+import { INDIAN_GEMS, LISTS, indianFavourites } from '@/lib/discover';
+import { INDIAN_LANGUAGES } from '@/lib/regional';
 import type { Shelf } from '@/lib/discover';
 import { font, fonts } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
+import { useSettings } from '@/settings/SettingsProvider';
 
-/** Discover's lists, Letterboxd-style: a card per theme with its top three posters fanned out; in India, hidden gems first. */
+/**
+ * Discover's lists, Letterboxd-style: a card per theme with its top three posters fanned out. In India,
+ * Indian favourites by language come first (your language from Settings leading), and hidden gems open Lists.
+ */
 export function CuratedLists({ theme, tmdb, region }: { theme: Theme; tmdb: string; region: string }) {
-  const lists = region === 'IN' ? [INDIAN_GEMS, ...LISTS] : LISTS;
+  const mine = useSettings().settings.homeLanguage;
+  const india = region === 'IN';
+  const favourites = india ? indianFavourites([...INDIAN_LANGUAGES].sort((a, b) => Number(b.code === mine) - Number(a.code === mine))) : [];
+  // Malayalam favourites is one of the Lists elsewhere; in India it's in its own row.
+  const lists = india ? [INDIAN_GEMS, ...LISTS.filter((l) => l.id !== 'malayalam')] : LISTS;
   // India's own award first in India.
   const national = AWARD_LISTS.filter((l) => l.id === 'national');
   const awards = region === 'IN' ? [...national, ...AWARD_LISTS.filter((l) => l.id !== 'national')] : AWARD_LISTS;
   return (
     <>
+      {india && <Row title="Indian favourites" lists={favourites} theme={theme} tmdb={tmdb} />}
       <Row title="Lists" lists={lists} theme={theme} tmdb={tmdb} />
       <Row title="Award winners" lists={awards} theme={theme} tmdb={tmdb} />
     </>

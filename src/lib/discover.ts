@@ -115,6 +115,26 @@ export const LISTS: Shelf[] = [
   },
 ];
 
+/**
+ * Indian favourites, one list per language: the best rated, with enough votes to trust (fewer for Kannada
+ * and Bengali, whose films get fewer on TMDB). Discover shows them as their own row in India.
+ */
+const NOTES: Record<string, string> = {
+  ml: 'Kerala’s best loved films',
+  ta: 'Kollywood’s best loved films',
+  hi: 'Bollywood’s best loved films',
+  te: 'Tollywood’s best loved films',
+  kn: 'Sandalwood’s best loved films',
+  bn: 'Bengal’s best loved films',
+};
+export const indianFavourites = (languages: { code: string; name: string }[]): Shelf[] =>
+  languages.map((l) => ({
+    id: `fav-${l.code}`,
+    name: `${l.name} favourites`,
+    note: NOTES[l.code] ?? 'The best loved films',
+    q: { kind: 'movie', lang: l.code, sort: 'rating', minVotes: l.code === 'bn' || l.code === 'kn' ? 40 : 60, notGenres: ['Documentary', 'Music'], minRuntime: 60 },
+  }));
+
 /** Discover's extra shelf in India: highly rated Indian films few have seen. */
 export const INDIAN_GEMS: Shelf = {
   id: 'gems-in',
