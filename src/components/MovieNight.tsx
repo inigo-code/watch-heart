@@ -181,7 +181,7 @@ export function MovieNightSheet({ t, visible, theme, onClose }: { t: Title; visi
 export function MovieNightCard({ night, theme, showTitle }: { night: MovieNight; theme: Theme; showTitle?: boolean }) {
   const { cancel } = useMovieNights();
   return (
-    <View style={[styles.card, { backgroundColor: theme.accentSoft, borderColor: theme.accent }]}>
+    <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
       <Pressable
         onPress={() => showTitle && router.push({ pathname: '/title/[id]', params: { id: night.sourceId } })}
         disabled={!showTitle}
@@ -191,7 +191,7 @@ export function MovieNightCard({ night, theme, showTitle }: { night: MovieNight;
         {showTitle ? (
           <Poster uri={night.posterUrl} title={night.title} width={40} theme={theme} radius={4} />
         ) : (
-          <Ionicons name="calendar" size={26} color={theme.accent} />
+          <Ionicons name="calendar-outline" size={26} color={theme.textMuted} />
         )}
         <View style={{ flex: 1, gap: 2 }}>
           <Text style={[styles.cardKicker, { color: theme.textMuted }]}>Planned</Text>

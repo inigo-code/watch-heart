@@ -12,7 +12,7 @@ import { ActionSheet } from '@/components/ActionSheet';
 import { Text, TextInput } from '@/components/AppText';
 import { details, tmdbKey } from '@/api';
 import { KeyboardSafe } from '@/components/KeyboardSafe';
-import { BackDisc } from '@/components/BackDisc';
+import { BackDisc, headerEnd } from '@/components/BackDisc';
 import { CompanionField } from '@/components/CompanionField';
 import { DangerButton } from '@/components/DangerButton';
 import { ConfirmTrash } from '@/components/ConfirmTrash';
@@ -324,8 +324,8 @@ function LogForm() {
           headerBackVisible: manual,
           headerLeft: manual ? undefined : () => <BackDisc />,
           headerRight: () => (
-            <Tap onPress={save} hitSlop={10} accessibilityRole="button" accessibilityLabel="Save" style={!manual && styles.headerSaveDisc}>
-              <Text style={[styles.headerSave, { color: manual ? theme.accent : '#FFFFFF' }]}>Save</Text>
+            <Tap onPress={save} hitSlop={10} accessibilityRole="button" accessibilityLabel="Save" style={[headerEnd, !manual && styles.headerSaveDisc]}>
+              <Text style={[styles.headerSave, { color: manual ? theme.text : '#FFFFFF' }]}>Save</Text>
             </Tap>
           ),
         }}
@@ -390,7 +390,7 @@ function LogForm() {
                 setLeaving(true);
               }}
               accessibilityRole="button"
-              style={({ pressed }) => [styles.repick, { borderColor: theme.accent + '88', opacity: pressed ? 0.7 : 1 }]}
+              style={({ pressed }) => [styles.repick, { borderColor: theme.border, opacity: pressed ? 0.7 : 1 }]}
             >
               <Ionicons name="list-outline" size={18} color={theme.accent} />
               <Text style={[styles.repickText, { color: theme.text }]}>Track it episode by episode instead</Text>
@@ -410,8 +410,8 @@ function LogForm() {
             </Field>
           )}
           {queued && (
-            <View style={[styles.queued, { borderColor: theme.accent + '66', backgroundColor: theme.accentSoft }]}>
-              <Ionicons name="bookmark" size={16} color={theme.accent} />
+            <View style={[styles.queued, { borderColor: theme.border, backgroundColor: theme.card }]}>
+              <Ionicons name="bookmark" size={16} color={theme.textMuted} />
               <Text style={[styles.queuedText, { color: theme.text }]}>On your watchlist. Logging it takes it off.</Text>
             </View>
           )}
@@ -533,7 +533,7 @@ function LogForm() {
             accessibilityState={{ expanded: showMore }}
             style={({ pressed }) => [styles.more, { borderColor: theme.border, backgroundColor: pressed ? theme.chip : 'transparent' }]}
           >
-            <Ionicons name="options-outline" size={18} color={theme.accent} />
+            <Ionicons name="options-outline" size={18} color={theme.textMuted} />
             <View style={{ flex: 1 }}>
               <Text style={[styles.moreTitle, { color: theme.text }]}>More details</Text>
               <Text style={[styles.moreNote, { color: theme.textMuted }]} numberOfLines={1}>
@@ -576,10 +576,12 @@ function LogForm() {
             onPress={save}
             disabled={!canSave}
             accessibilityRole="button"
-            style={({ pressed }) => [styles.logIt, { backgroundColor: theme.accent, opacity: !canSave ? 0.5 : pressed ? 0.85 : 1 }]}
+            accessibilityState={{ disabled: !canSave }}
+            // Until there's a title it waits in grey, plainly not ready, rather than as a faded gold.
+            style={({ pressed }) => [styles.logIt, { backgroundColor: canSave ? theme.accent : theme.chip, opacity: pressed ? 0.85 : 1 }]}
           >
-            <MaterialCommunityIcons name="movie-open-check-outline" size={22} color={theme.accentText} />
-            <Text style={[styles.logItText, { color: theme.accentText }]}>{editing ? 'Save changes' : 'Log it'}</Text>
+            <MaterialCommunityIcons name="movie-open-check-outline" size={22} color={canSave ? theme.accentText : theme.textMuted} />
+            <Text style={[styles.logItText, { color: canSave ? theme.accentText : theme.textMuted }]}>{editing ? 'Save changes' : 'Log it'}</Text>
           </Pressable>
 
           {!editing && !queued && (
@@ -663,9 +665,9 @@ const styles = StyleSheet.create({
   logItText: { fontFamily: fonts.uiSemibold, fontSize: font.headline },
   queued: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10 },
   queuedText: { fontFamily: fonts.ui, fontSize: font.footnote, flex: 1 },
-  later: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: 48, borderRadius: 24, borderWidth: 1, borderStyle: 'dashed' },
+  later: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: 48, borderRadius: 24, borderWidth: 1 },
   laterText: { fontFamily: fonts.uiSemibold, fontSize: font.footnote },
-  repick: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderStyle: 'dashed', borderRadius: 10, paddingHorizontal: 12, minHeight: 46, marginTop: 4 },
+  repick: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, minHeight: 46, marginTop: 4 },
   repickText: { flex: 1, fontSize: font.footnote, fontWeight: '600' },
   formatBar: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   formatButton: { width: 40, height: 36, borderRadius: 8, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },

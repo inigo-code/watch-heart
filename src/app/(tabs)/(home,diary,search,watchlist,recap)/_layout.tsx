@@ -11,7 +11,8 @@ import { fonts, useTheme } from '@/lib/theme';
  * the poster picker and the share sheet open above the tabs, from the root.
  *
  * Every page gets the same header and ground from here: the page's glow runs up behind a see-through
- * header, and the way back is always the disc. A page only says what its title is.
+ * header, and the way back is the disc over a picture, a plain arrow elsewhere. A page only says what its
+ * title is.
  */
 export const unstable_settings = {
   // The first page of each tab; links from outside (a notification, the widget) open in Home's stack.
@@ -66,7 +67,7 @@ export default function TabStack() {
         headerTitleStyle: { fontFamily: fonts.uiSemibold, fontSize: 18 },
         headerShadowVisible: false,
         headerBackVisible: false,
-        headerLeft: () => <BackDisc />,
+        headerLeft: () => <BackDisc plain={!FLOATING.has(route.name)} />,
         contentStyle: { backgroundColor: theme.bg },
         // Pages come in from the right with the page behind easing back a little.
         animation: 'ios_from_right',

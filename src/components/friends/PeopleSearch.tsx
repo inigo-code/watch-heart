@@ -187,7 +187,7 @@ export function PeopleSearch({ theme, onFriendsChanged }: { theme: Theme; onFrie
         <View style={styles.block}>
           <SectionLabel theme={theme}>Friend requests ({requests.length})</SectionLabel>
           {requests.map((r) => (
-            <View key={r.id} style={[styles.person, { backgroundColor: theme.card, borderColor: theme.accent }]}>
+            <View key={r.id} style={[styles.person, { backgroundColor: theme.card, borderColor: theme.border }]}>
               <Pressable onPress={() => someone(r.id)} accessibilityRole="button" accessibilityLabel={`See ${r.name}’s profile`} style={styles.who}>
                 <Face uri={photos[r.id] ?? null} name={r.name} theme={theme} size={40} round />
                 <View style={{ flex: 1 }}>

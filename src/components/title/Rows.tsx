@@ -41,7 +41,7 @@ export function openTitle(t: Title) {
 /** A sideways row of posters, each opening its title's page. `seen` marks the ones in your diary. Titles with no poster are left out. */
 export function TitleRow({ titles, theme, seen, width = 104 }: { titles: Title[]; theme: Theme; seen?: (t: Title) => boolean; width?: number }) {
   return (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={rail.edge} contentContainerStyle={styles.row}>
       {titles.filter((t) => t.posterUrl).map((t) => (
         <Tap
           key={`${t.source}:${t.sourceId}`}
@@ -72,7 +72,7 @@ export function TitleRow({ titles, theme, seen, width = 104 }: { titles: Title[]
 /** A sideways row of people: photo, name, and their role (the character, or the job). */
 export function PeopleRow({ people, theme }: { people: Person[]; theme: Theme }) {
   return (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={rail.edge} contentContainerStyle={styles.row}>
       {people.map((p, i) => (
         <Pressable
           key={`${p.id}:${i}`}
@@ -130,8 +130,14 @@ export function RowHead({ title, theme, more, onMore }: { title: string; theme: 
   );
 }
 
+/**
+ * A sideways row runs to the screen's edges, past the page's 16dp margin, so the next card shows it
+ * scrolls; its content starts on the margin. For rows on pages with that margin.
+ */
+export const rail = StyleSheet.create({ edge: { marginHorizontal: -16 } });
+
 const styles = StyleSheet.create({
-  row: { gap: 12, paddingRight: 16 },
+  row: { gap: 12, paddingHorizontal: 16 },
   name: { fontSize: font.footnote, fontWeight: '600', marginTop: 8, lineHeight: 18 },
   sub: { fontFamily: fonts.ui, fontSize: font.caption, marginTop: 1 },
   // Seen ones step back, so what you haven't watched stands out.

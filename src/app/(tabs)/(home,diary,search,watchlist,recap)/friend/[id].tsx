@@ -199,7 +199,7 @@ export default function FriendScreen() {
   const footer = (
     <View style={styles.footer}>
       {tab !== 'lists' && hasMore && (
-        <Tap onPress={loadMore} disabled={loadingMore} accessibilityRole="button" style={[styles.more, { borderColor: theme.accent }]}>
+        <Tap onPress={loadMore} disabled={loadingMore} accessibilityRole="button" style={[styles.more, { borderColor: theme.border }]}>
           {loadingMore ? <ActivityIndicator color={theme.accent} /> : <Text style={[styles.moreText, { color: theme.text }]}>{tab === 'reviews' ? 'Load more reviews' : 'Load more'}</Text>}
         </Tap>
       )}

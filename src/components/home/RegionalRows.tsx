@@ -6,7 +6,7 @@ import { tmdbKey } from '@/api';
 import { discoverTmdb } from '@/api/tmdb';
 import type { BrowseQuery } from '@/api/tmdb';
 import { browse } from '@/components/discover/DiscoverHome';
-import { RowHead, TitleRow } from '@/components/title/Rows';
+import { RowHead, TitleRow, rail } from '@/components/title/Rows';
 import { countryName } from '@/lib/discover';
 import { INDIAN_LANGUAGES } from '@/lib/regional';
 import type { Language } from '@/lib/regional';
@@ -43,7 +43,7 @@ export function RegionalRows({ region, mine, theme, seen }: { region: string; mi
         name={lang.code ? `New ${lang.name} releases` : 'New Indian releases'}
         q={fresh}
         above={
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={rail.edge} contentContainerStyle={styles.chips}>
             {languages.map((l) => {
               const on = l.code === lang.code;
               return (
@@ -131,7 +131,7 @@ const styles = StyleSheet.create({
   block: { gap: 10 },
   head: { gap: 4 },
   sub: { fontFamily: fonts.ui, fontSize: font.caption, lineHeight: 17 },
-  chips: { gap: 8, paddingRight: 16 },
+  chips: { gap: 8, paddingHorizontal: 16 },
   chip: { borderRadius: 16, paddingHorizontal: 14, height: 32, justifyContent: 'center' },
   chipText: { fontSize: font.footnote, fontWeight: '600' },
   skeleton: { flexDirection: 'row', gap: 12 },

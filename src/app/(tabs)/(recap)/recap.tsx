@@ -73,8 +73,8 @@ export default function RecapScreen() {
 
       {entries.length === 0 ? (
         <View style={styles.empty}>
-          <View style={[styles.emptyIcon, { backgroundColor: theme.accentSoft }]}>
-            <MaterialCommunityIcons name="filmstrip-box-multiple" size={38} color={theme.accent} />
+          <View style={[styles.emptyIcon, { backgroundColor: theme.chip }]}>
+            <MaterialCommunityIcons name="filmstrip-box-multiple" size={38} color={theme.textMuted} />
           </View>
           <Text style={[styles.emptyTitle, { color: theme.text }]}>Nothing on the reel yet</Text>
           <Text style={[styles.emptyText, { color: theme.textMuted }]}>

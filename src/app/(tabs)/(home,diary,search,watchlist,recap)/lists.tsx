@@ -66,7 +66,7 @@ export default function ListsScreen() {
         ListEmptyComponent={
           !ready ? undefined : (
             <View style={styles.empty}>
-              <Ionicons name="albums-outline" size={44} color={theme.accent} />
+              <Ionicons name="albums-outline" size={44} color={theme.textMuted} />
               <Text style={[styles.emptyTitle, { color: theme.text }]}>No lists yet</Text>
               <Text style={[styles.lede, { color: theme.textMuted, textAlign: 'center' }]}>Name one above, or open any entry and tap Add to list.</Text>
             </View>

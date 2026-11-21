@@ -49,8 +49,9 @@ export function Row({ theme, icon, leading, label, value, onPress, busy, destruc
       ]}
     >
       {leading ?? (
-        <View style={[styles.iconWrap, { backgroundColor: destructive ? theme.danger + '22' : theme.accentSoft }]}>
-          <Ionicons name={icon ?? 'ellipse-outline'} size={17} color={destructive ? theme.danger : theme.text} />
+        // A plain icon in a fixed column, so labels line up: no tile behind it.
+        <View style={styles.iconWrap}>
+          <Ionicons name={icon ?? 'ellipse-outline'} size={20} color={destructive ? theme.danger : theme.textMuted} />
         </View>
       )}
       <Text style={[styles.label, { color }]} numberOfLines={2}>
@@ -132,8 +133,8 @@ const styles = StyleSheet.create({
   section: { gap: 8 },
   group: { borderRadius: 14, borderWidth: StyleSheet.hairlineWidth, overflow: 'hidden' },
   footer: { fontSize: font.caption, fontFamily: fonts.ui, paddingHorizontal: 6, lineHeight: 17 },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, minHeight: 52, paddingVertical: 8 },
-  iconWrap: { width: 30, height: 30, borderRadius: 9, alignItems: 'center', justifyContent: 'center' },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 16, paddingHorizontal: 16, minHeight: 52, paddingVertical: 8 },
+  iconWrap: { width: 24, alignItems: 'center', justifyContent: 'center' },
   // The label keeps its words (wrapping to a second line if it must); the value gives way past that.
   // 30% leaves a short hint ("Needs an account") room beside a short label at phone width.
   label: { flex: 1, minWidth: '30%', fontSize: font.body, fontWeight: '500' },

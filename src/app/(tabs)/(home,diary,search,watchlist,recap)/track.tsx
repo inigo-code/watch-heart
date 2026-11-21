@@ -201,7 +201,7 @@ export default function TrackScreen() {
       <Stack.Screen
         options={{
           title: 'Episodes',
-          headerRight: () => (info ? <HeaderDisc icon="ellipsis-horizontal" label="More for the whole show" onPress={() => setMenu(true)} /> : null),
+          headerRight: () => (info ? <HeaderDisc plain icon="ellipsis-vertical" label="More for the whole show" onPress={() => setMenu(true)} /> : null),
         }}
       />
       <View style={styles.head}>
@@ -227,7 +227,7 @@ export default function TrackScreen() {
       </View>
 
       {(up || track?.nextAir) && (
-        <View style={[styles.next, { backgroundColor: theme.accentSoft, borderColor: theme.accent + '55' }]}>
+        <View style={[styles.next, { backgroundColor: theme.card, borderColor: theme.border }]}>
           <Ionicons name={up ? 'play-circle' : 'calendar'} size={22} color={theme.accent} />
           <Text style={[styles.nextText, { color: theme.text }]}>
             {up ? `Up next: S${up.season} · E${up.number}` : `Caught up. S${track!.nextAir!.season} · E${track!.nextAir!.number} airs ${friendlyDate(track!.nextAir!.date)}`}
@@ -297,6 +297,9 @@ export default function TrackScreen() {
             ))}
           </ScrollView>
 
+          {((list && seasonKeys.length > 0) || (show && current != null)) && (
+          // The season's two actions side by side, as tonal buttons; they stack if the text is large.
+          <View style={styles.seasonActions}>
           {list && seasonKeys.length > 0 && (
             <Pressable
               onPress={() => {
@@ -305,11 +308,12 @@ export default function TrackScreen() {
               }}
               onLongPress={() => current != null && seasonMenu(current)}
               accessibilityRole="button"
+              accessibilityLabel={seasonDone ? `Unmark season ${current}` : `Mark season ${current} as seen`}
               accessibilityHint="Long press to choose the day"
-              style={({ pressed }) => [styles.seasonAll, { borderColor: theme.border, opacity: pressed ? 0.7 : 1 }]}
+              style={({ pressed }) => [styles.seasonAll, { backgroundColor: theme.chip, opacity: pressed ? 0.7 : 1 }]}
             >
-              <Ionicons name={seasonDone ? 'close-circle-outline' : 'checkmark-done'} size={18} color={theme.accent} />
-              <Text style={[styles.seasonAllText, { color: theme.text }]}>{seasonDone ? `Unmark season ${current}` : `Mark season ${current} as seen`}</Text>
+              <Ionicons name={seasonDone ? 'close-circle-outline' : 'checkmark-done'} size={18} color={theme.text} />
+              <Text numberOfLines={2} style={[styles.seasonAllText, { color: theme.text }]}>{seasonDone ? 'Unmark season' : 'Mark season seen'}</Text>
             </Pressable>
           )}
 
@@ -320,18 +324,22 @@ export default function TrackScreen() {
                 router.push({ pathname: '/log', params: { title: JSON.stringify(t), season: String(current) } });
               }}
               accessibilityRole="button"
-              style={({ pressed }) => [styles.seasonAll, { borderColor: theme.border, opacity: pressed ? 0.7 : 1 }]}
+              accessibilityLabel={`Rate and review season ${current}`}
+              style={({ pressed }) => [styles.seasonAll, { backgroundColor: theme.chip, opacity: pressed ? 0.7 : 1 }]}
             >
-              <Ionicons name="star-outline" size={18} color={theme.accent} />
-              <Text style={[styles.seasonAllText, { color: theme.text }]}>Rate & review season {current}</Text>
+              <Ionicons name="star-outline" size={18} color={theme.text} />
+              <Text numberOfLines={2} style={[styles.seasonAllText, { color: theme.text }]}>Rate season</Text>
             </Pressable>
+          )}
+          </View>
           )}
 
           {!list ? (
             <ActivityIndicator color={theme.accent} />
           ) : (
-            <View style={{ gap: 8 }}>
-              {list.map((e) => {
+            // One list with dividers, not a stack of boxes: a season reads as a whole.
+            <View style={[styles.episodes, { backgroundColor: theme.card, borderColor: theme.border }]}>
+              {list.map((e, i) => {
                 const seen = isSeen(e);
                 const out = aired(e);
                 return (
@@ -341,7 +349,7 @@ export default function TrackScreen() {
                     onLongPress={() => out && episodeMenu(e)}
                     accessibilityRole="button"
                     accessibilityLabel={`Episode ${e.number}, ${e.name}`}
-                    style={({ pressed }) => [styles.episode, { backgroundColor: theme.card, borderColor: seen ? theme.accent + '66' : theme.border, opacity: !out ? 0.55 : pressed ? 0.8 : 1 }]}
+                    style={({ pressed }) => [styles.episode, i > 0 && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: theme.border }, pressed && { backgroundColor: theme.chip }, !out && { opacity: 0.6 }]}
                   >
                     <Text style={[styles.epNum, { color: seen ? theme.accent : theme.textMuted }]}>{e.number}</Text>
                     <View style={{ flex: 1 }}>
@@ -485,9 +493,11 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   seasonChip: { flexDirection: 'row', alignItems: 'center', gap: 4, height: 34, paddingHorizontal: 14, borderRadius: 17, borderWidth: 1 },
   seasonChipText: { fontFamily: fonts.uiSemibold, fontSize: font.footnote },
-  seasonAll: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: 44, borderRadius: 22, borderWidth: 1, borderStyle: 'dashed' },
-  seasonAllText: { fontFamily: fonts.uiSemibold, fontSize: font.caption },
-  episode: { flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, borderRadius: 12, paddingVertical: 10, paddingHorizontal: 12 },
+  seasonActions: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  seasonAll: { flexGrow: 1, flexBasis: 150, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 48, borderRadius: 24, paddingHorizontal: 16, paddingVertical: 6 },
+  seasonAllText: { flexShrink: 1, textAlign: 'center', fontFamily: fonts.uiSemibold, fontSize: font.footnote },
+  episodes: { borderWidth: StyleSheet.hairlineWidth, borderRadius: 14, overflow: 'hidden' },
+  episode: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 64, paddingVertical: 10, paddingHorizontal: 12 },
   epNum: { fontFamily: fonts.display, fontSize: 26, width: 32, textAlign: 'center' },
   epName: { fontSize: font.body, fontWeight: '600' },
   epMeta: { fontFamily: fonts.ui, fontSize: font.caption, marginTop: 2 },

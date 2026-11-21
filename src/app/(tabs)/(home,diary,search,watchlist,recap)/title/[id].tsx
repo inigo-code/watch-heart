@@ -2,7 +2,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Linking from 'expo-linking';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { Animated, ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
+import { Animated, ActivityIndicator, Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Text } from '@/components/AppText';
@@ -20,6 +20,7 @@ import { TitleExtras } from '@/components/TitleExtras';
 import { Synopsis, TitleMore, useAbout } from '@/components/title/AboutTitle';
 import { FriendsOnTitle } from '@/components/title/FriendsOnTitle';
 import { useToast } from '@/components/Toast';
+import { TopScrim } from '@/components/TopScrim';
 import { friendlyDate } from '@/lib/dates';
 import { useQuickLog } from '@/lib/useQuickLog';
 import { font, fonts, useTheme } from '@/lib/theme';
@@ -36,6 +37,7 @@ export default function TitleScreen() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const [scrollY] = useState(() => new Animated.Value(0));
+  const { width } = useWindowDimensions();
   const toast = useToast();
   const params = useLocalSearchParams<{ id: string; t?: string }>();
   const id = params.id;
@@ -189,6 +191,8 @@ export default function TitleScreen() {
           {a && <TitleMore id={id} t={t} about={a} theme={theme} />}
         </View>
       </Animated.ScrollView>
+      {/* The backdrop is the width × 0.56; the bar fills in as its bottom passes under it. */}
+      <TopScrim scrollY={scrollY} theme={theme} topInset={insets.top} from={Math.round(width * 0.56) - 56} />
       <AddToList item={listing ? t : null} theme={theme} onClose={() => setListing(false)} />
       {days.sheet}
       <MovieNightSheet t={t} visible={planning} theme={theme} onClose={() => setPlanning(false)} />

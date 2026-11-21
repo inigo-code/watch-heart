@@ -18,9 +18,9 @@ type Props = {
 /** A dismissible hint card, shown once to help new users discover a feature. */
 export function TipCard({ theme, icon, title, children, onDismiss, action }: Props) {
   return (
-    <View style={[styles.card, { backgroundColor: theme.accentSoft, borderColor: theme.accent + '55' }]}>
+    <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
       <View style={styles.head}>
-        {icon ?? <Ionicons name="bulb-outline" size={18} color={theme.text} />}
+        {icon ?? <Ionicons name="bulb-outline" size={18} color={theme.textMuted} />}
         <Text style={[styles.title, { color: theme.text }]}>{title}</Text>
         <Pressable onPress={onDismiss} hitSlop={10} accessibilityLabel="Dismiss tip">
           <Ionicons name="close" size={18} color={theme.textMuted} />

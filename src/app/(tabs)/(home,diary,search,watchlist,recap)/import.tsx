@@ -121,14 +121,10 @@ export default function ImportScreen() {
 
   return (
     <ScrollView contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 32 }]}>
-      <View>
-        <Text style={[styles.heading, { color: theme.text }]}>
-          BRING YOUR <Text style={{ color: theme.accent }}>HISTORY</Text>
-        </Text>
-        <Text style={[styles.sub, { color: theme.textMuted }]}>
-          Pick what your other app exported: a .zip as it comes, CSVs, JSON or a MyAnimeList list. You can pick several at once.
-        </Text>
-      </View>
+      {/* The top bar already says Import; the page starts with what to do. */}
+      <Text style={[styles.sub, { color: theme.text }]}>
+        Pick what your other app exported: a .zip as it comes, CSVs, JSON or a MyAnimeList list. You can pick several at once.
+      </Text>
 
       <Pressable
         onPress={choose}
@@ -141,7 +137,7 @@ export default function ImportScreen() {
       </Pressable>
 
       {found && (
-        <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.accent + '66' }]}>
+        <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
           <Text style={[styles.cardTitle, { color: theme.text }]}>{total ? 'Ready to import' : 'Nothing found'}</Text>
           {found.sources.map((s) => {
             const logo = logoFor(s.source);
@@ -172,7 +168,7 @@ export default function ImportScreen() {
       )}
 
       {done && (
-        <View style={[styles.card, { backgroundColor: theme.accentSoft, borderColor: theme.accent + '66' }]}>
+        <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
           <Text style={[styles.cardTitle, { color: theme.text }]}>Imported</Text>
           <Text style={[styles.meta, { color: theme.text }]}>{done}</Text>
           <Pressable onPress={() => router.dismissTo('/')} accessibilityRole="button">
@@ -246,8 +242,7 @@ function PosterStatus({ theme, haveKey, running, doneCount, total, foundCount }:
 
 const styles = StyleSheet.create({
   content: { padding: 16, gap: 14 },
-  heading: { fontFamily: fonts.display, fontSize: font.marquee, lineHeight: 46, letterSpacing: 1, includeFontPadding: false },
-  sub: { fontFamily: fonts.ui, fontSize: font.footnote, lineHeight: 19, marginTop: 4 },
+  sub: { fontFamily: fonts.ui, fontSize: font.body, lineHeight: 22 },
   primary: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, height: 52, borderRadius: 26 },
   primaryText: { fontFamily: fonts.uiSemibold, fontSize: font.body },
   card: { borderWidth: 1, borderRadius: 14, padding: 16, gap: 10 },

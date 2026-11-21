@@ -54,7 +54,7 @@ export default function TrashScreen() {
                 restoreEntry(item.id);
                 toast('Restored to your diary');
               }}
-              style={[styles.btn, { backgroundColor: theme.accentSoft }]}
+              style={[styles.btn, { backgroundColor: theme.chip }]}
               accessibilityLabel={`Restore ${item.title}`}
             >
               <Ionicons name="arrow-undo-outline" size={18} color={theme.text} />

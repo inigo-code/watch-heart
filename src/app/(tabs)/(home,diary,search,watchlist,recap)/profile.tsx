@@ -534,8 +534,8 @@ function PerksLine({ points, theme }: { points: number; theme: Theme }) {
   const next = PERKS.find((p) => p.points > points);
   const got = PERKS.filter((p) => p.points <= points);
   return (
-    <View style={[styles.perks, { backgroundColor: theme.accentSoft, borderColor: theme.accent }]}>
-      <Ionicons name="gift-outline" size={20} color={theme.accent} />
+    <View style={[styles.perks, { backgroundColor: theme.card, borderColor: theme.border }]}>
+      <Ionicons name="gift-outline" size={20} color={theme.textMuted} />
       <View style={{ flex: 1 }}>
         <Text style={[styles.perksTitle, { color: theme.text }]}>
           {points} achievement point{points === 1 ? '' : 's'}

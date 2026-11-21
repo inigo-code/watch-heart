@@ -34,6 +34,15 @@ const SORTS: { key: BrowseSort; label: string }[] = [
 ];
 
 /** A grid of titles from a Discover query (a shelf, a genre, a service…), sortable and filterable, loading more as you scroll. */
+/** The shelf a link asked for; a link without one (or a broken one) opens on all films, with the filters. */
+function opened(q: string | undefined): BrowseQuery {
+  try {
+    const parsed = q ? (JSON.parse(q) as BrowseQuery) : null;
+    if (parsed && typeof parsed === 'object' && parsed.kind) return parsed;
+  } catch {}
+  return { kind: 'movie' };
+}
+
 export default function BrowseScreen() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
@@ -44,7 +53,7 @@ export default function BrowseScreen() {
   const region = watchRegion(settings.watchRegion);
   const { viewingsOf } = useDiary();
   // The shelf as it opened: what makes it this shelf (India, a release window…), which Clear goes back to.
-  const [base] = useState<BrowseQuery>(() => JSON.parse(params.q) as BrowseQuery);
+  const [base] = useState<BrowseQuery>(() => opened(params.q));
   const [query, setQuery] = useState<BrowseQuery>(base);
   const [name, setName] = useState(params.name ?? 'Discover');
   const [filtering, setFiltering] = useState(params.filters === '1');

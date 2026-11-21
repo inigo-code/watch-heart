@@ -88,7 +88,6 @@ export function TitleExtras({ source, sourceId, imdbId, title, year, series, the
             label="IMDb"
             value={data.omdb.imdb.rating}
             sub={`${data.omdb.imdb.votes} votes`}
-            color="#F5C518"
             onPress={imdbUrl ? () => Linking.openURL(imdbUrl) : undefined}
           />
         )}
@@ -136,19 +135,29 @@ function Score({
   label,
   value,
   sub,
-  color,
   onPress,
 }: {
   theme: Theme;
   label: string;
   value: string;
   sub?: string;
-  color?: string;
   onPress?: () => void;
 }) {
+  // All scores alike, so none reads as the one to trust; one that opens its site says so with the arrow.
   return (
-    <Pressable onPress={onPress} disabled={!onPress} style={[styles.score, { backgroundColor: theme.card, borderColor: color ?? theme.border }]}>
-      <Text style={[styles.scoreLabel, { color: color ?? theme.textMuted }]}>{label}</Text>
+    <Pressable
+      onPress={onPress}
+      disabled={!onPress}
+      accessibilityRole={onPress ? 'link' : undefined}
+      accessibilityLabel={`${label} ${value}${sub ? `, ${sub}` : ''}`}
+      style={({ pressed }) => [styles.score, { backgroundColor: pressed ? theme.chip : theme.card, borderColor: theme.border }]}
+    >
+      <View style={styles.scoreHead}>
+        <Text style={[styles.scoreLabel, { color: theme.textMuted }]} numberOfLines={1}>
+          {label}
+        </Text>
+        {onPress && <Ionicons name="open-outline" size={12} color={theme.textMuted} />}
+      </View>
       <Text style={[styles.scoreValue, { color: theme.text }]}>{value}</Text>
       {sub && <Text style={[styles.scoreSub, { color: theme.textMuted }]}>{sub}</Text>}
     </Pressable>
@@ -178,8 +187,9 @@ const styles = StyleSheet.create({
   ghostLine: { height: 64, borderRadius: 12, marginTop: 4 },
   wrap: { gap: 12 },
   scores: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, alignItems: 'stretch' },
-  score: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8, minWidth: 92, maxWidth: 140 },
-  scoreLabel: { fontFamily: fonts.uiSemibold, fontSize: 12 },
+  score: { flexGrow: 1, flexBasis: 96, maxWidth: '50%', borderWidth: StyleSheet.hairlineWidth, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 10 },
+  scoreHead: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  scoreLabel: { flexShrink: 1, fontFamily: fonts.uiSemibold, fontSize: 12 },
   scoreValue: { fontFamily: fonts.display, fontSize: 28, lineHeight: 32, includeFontPadding: false },
   scoreSub: { fontFamily: fonts.ui, fontSize: 12 },
   imdb: {

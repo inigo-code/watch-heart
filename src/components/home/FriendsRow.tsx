@@ -6,7 +6,7 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Text } from '@/components/AppText';
 import { cached, MINUTE } from '@/api/cache';
 import { Poster } from '@/components/Film';
-import { Face, RowHead, openTitle, warmTitle } from '@/components/title/Rows';
+import { Face, RowHead, openTitle, rail, warmTitle } from '@/components/title/Rows';
 import { useFriends } from '@/friends/FriendsProvider';
 import { friendsFeed } from '@/friends/friendsApi';
 import type { FriendEntry } from '@/friends/friendsApi';
@@ -119,7 +119,7 @@ export function FriendsRow({ theme, round }: { theme: Theme; round: number }) {
   return (
     <View style={styles.block}>
       <RowHead title="Friends lately" theme={theme} more="All" onMore={() => router.push('/friends')} />
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={rail.edge} contentContainerStyle={styles.row}>
         {shown.map((e) => {
           const name = byId(e.userId)?.name ?? saved?.names[e.userId] ?? 'A friend';
           const what = watchedLabel(e);
@@ -201,7 +201,7 @@ const styles = StyleSheet.create({
   block: { gap: 10 },
   ghostRow: { flexDirection: 'row', overflow: 'hidden' },
   ghostLine: { height: 12, borderRadius: 4, marginTop: 10 },
-  row: { gap: 12, paddingRight: 16 },
+  row: { gap: 12, paddingHorizontal: 16 },
   face: { position: 'absolute', right: -4, bottom: -6, borderRadius: 16, borderWidth: 2 },
   name: { fontSize: font.footnote, fontWeight: '600', marginTop: 8, lineHeight: 18 },
   meta: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 },

@@ -62,6 +62,7 @@ export default function SettingsScreen() {
   const [busy, setBusy] = useState<Busy>(null);
   const [keyText, setKeyText] = useState(settings.tmdbKey);
   const [showKey, setShowKey] = useState(false);
+  const [showOmdb, setShowOmdb] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
   const [pickingCountry, setPickingCountry] = useState(false);
   const region = watchRegion(settings.watchRegion);
@@ -129,18 +130,15 @@ export default function SettingsScreen() {
       >
         {/* What shows below are the defaults, and nothing changed here is saved until yours are read. */}
         {loadFailed && <UnreadNote theme={theme} what="settings" />}
-        <Section theme={theme} title="Account and sync">
+        {/* One group for you: your account, your profile and your friends. */}
+        <Section theme={theme} title="You">
           <Row
             theme={theme}
             icon="cloud-outline"
             label={sync.email ?? 'Account & sync'}
             value={SYNC_LABEL[sync.status]}
             onPress={() => router.push('/account')}
-            last
           />
-        </Section>
-
-        <Section theme={theme} title="Your profile">
           <Row
             theme={theme}
             icon="person-circle-outline"
@@ -336,7 +334,7 @@ export default function SettingsScreen() {
               autoCorrect={false}
               style={[styles.input, { color: theme.text, fontFamily: fonts.ui }]}
             />
-            <Pressable onPress={() => setShowKey((v) => !v)} hitSlop={8} accessibilityLabel={showKey ? 'Hide key' : 'Show key'}>
+            <Pressable onPress={() => setShowKey((v) => !v)} hitSlop={15} accessibilityRole="button" accessibilityLabel={showKey ? 'Hide key' : 'Show key'}>
               <Ionicons name={showKey ? 'eye-off-outline' : 'eye-outline'} size={18} color={theme.textMuted} />
             </Pressable>
           </View>
@@ -355,10 +353,16 @@ export default function SettingsScreen() {
               onChangeText={(omdbKey) => update({ omdbKey: omdbKey.trim() })}
               placeholder="Paste your OMDb API key"
               placeholderTextColor={theme.textMuted}
+              secureTextEntry={!showOmdb}
               autoCapitalize="none"
               autoCorrect={false}
               style={[styles.input, { color: theme.text, fontFamily: fonts.ui }]}
             />
+            {!!settings.omdbKey && (
+              <Pressable onPress={() => setShowOmdb((v) => !v)} hitSlop={15} accessibilityRole="button" accessibilityLabel={showOmdb ? 'Hide key' : 'Show key'}>
+                <Ionicons name={showOmdb ? 'eye-off-outline' : 'eye-outline'} size={18} color={theme.textMuted} />
+              </Pressable>
+            )}
           </View>
           <Row theme={theme} icon="open-outline" label="Get a free key at omdbapi.com" onPress={() => Linking.openURL('https://www.omdbapi.com/apikey.aspx')} last />
         </Section>

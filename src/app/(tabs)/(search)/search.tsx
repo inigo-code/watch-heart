@@ -31,6 +31,15 @@ const KINDS: { kind: MediaKind; label: string }[] = [
   { kind: 'anime', label: 'Anime' },
 ];
 
+/** Each title once: a source can list the same one twice, and the list keys rows by title. */
+function once(list: Title[]) {
+  const seen = new Set<string>();
+  return list.filter((t) => {
+    const id = `${t.source}:${t.sourceId}`;
+    return !seen.has(id) && !!seen.add(id);
+  });
+}
+
 export default function SearchScreen() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
@@ -78,7 +87,7 @@ export default function SearchScreen() {
         setLoading(true);
         setError(null);
         (q ? search(kind, q, key, controller.signal) : trending(kind, key, controller.signal))
-          .then((r) => !controller.signal.aborted && setResults(r))
+          .then((r) => !controller.signal.aborted && setResults(once(r)))
           .catch((e) => {
             if (controller.signal.aborted) return;
             setResults([]);
@@ -319,7 +328,7 @@ const styles = StyleSheet.create({
   seen: { flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'flex-start', borderWidth: 1, borderRadius: 4, paddingHorizontal: 5, marginTop: 2 },
   seenText: { fontFamily: fonts.uiSemibold, fontSize: 12 },
   footer: { alignItems: 'center', gap: 12, paddingTop: 20 },
-  manual: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderStyle: 'dashed', borderRadius: 22, height: 44, paddingHorizontal: 18 },
+  manual: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderRadius: 24, height: 48, paddingHorizontal: 18 },
   manualText: { fontFamily: fonts.uiSemibold, fontSize: font.footnote },
   credit: { fontFamily: fonts.ui, fontSize: font.caption },
   keyCard: { borderWidth: 1, borderRadius: 14, padding: 18, gap: 10, marginTop: 8 },

@@ -71,7 +71,7 @@ export default function CardScreen() {
         )}
       </StoryPreview>
       {memory && (
-        <Pressable onPress={choose} accessibilityRole="button" style={({ pressed }) => [styles.pick, { borderColor: theme.accent, opacity: pressed ? 0.7 : 1 }]}>
+        <Pressable onPress={choose} accessibilityRole="button" style={({ pressed }) => [styles.pick, { borderColor: theme.border, opacity: pressed ? 0.7 : 1 }]}>
           <Ionicons name="image-outline" size={18} color={theme.accent} />
           <Text style={[styles.pickText, { color: theme.text }]}>{photo ? 'Choose another photo' : 'Choose a photo'}</Text>
         </Pressable>

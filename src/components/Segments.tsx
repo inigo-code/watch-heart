@@ -25,20 +25,22 @@ export function Segments<K extends string | number>({ theme, options, value, onC
   onPill?: string;
 }) {
   const [width, setWidth] = useState(0);
-  const [at] = useState(() => new Animated.Value(0));
   const index = Math.max(0, options.findIndex((o) => o.key === value));
+  // The pill moves by option, not by pixel: a width that settles after the first layout (or a turned
+  // phone) then puts it straight in place instead of chasing an old position.
+  const [at] = useState(() => new Animated.Value(index));
   const each = width ? (width - PAD * 2) / options.length : 0;
   useEffect(() => {
-    Animated.timing(at, { toValue: index * each, duration: ENTER * 0.7, easing: EASE, useNativeDriver: true }).start();
-  }, [at, index, each]);
+    Animated.timing(at, { toValue: index, duration: ENTER * 0.7, easing: EASE, useNativeDriver: true }).start();
+  }, [at, index]);
   return (
     <View onLayout={(e) => setWidth(e.nativeEvent.layout.width)} accessibilityRole="tablist" style={[styles.wrap, { backgroundColor: theme.chip }]}>
-      {each > 0 && <Animated.View style={[styles.pill, { width: each, backgroundColor: pill ?? theme.chipActive, transform: [{ translateX: at }] }]} />}
+      {each > 0 && <Animated.View style={[styles.pill, { width: each, backgroundColor: pill ?? theme.chipActive, transform: [{ translateX: Animated.multiply(at, each) }] }]} />}
       {options.map((o) => {
         const on = o.key === value;
         const color = on ? (onPill ?? theme.chipActiveText) : theme.textMuted;
         return (
-          <Pressable key={String(o.key)} onPress={() => onChange(o.key)} accessibilityRole="tab" accessibilityLabel={o.label} accessibilityState={{ selected: on }} style={styles.option}>
+          <Pressable key={String(o.key)} onPress={() => onChange(o.key)} accessibilityRole="tab" accessibilityLabel={o.label} accessibilityState={{ selected: on }} hitSlop={{ top: 4, bottom: 4 }} style={styles.option}>
             {o.icon && <Ionicons name={o.icon} size={16} color={color} />}
             <Text numberOfLines={1} style={[styles.label, { color }]}>
               {o.label}

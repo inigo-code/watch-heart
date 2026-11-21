@@ -99,7 +99,7 @@ function Ticket({ theme, visible = true, onClose, children }: { theme: Theme; vi
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <View style={[styles.backdrop, { backgroundColor: theme.overlay }]}>
-        <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.accent + '55' }]}>
+        <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
           <View style={[styles.punch, styles.punchLeft, { backgroundColor: theme.overlay }]} />
           <View style={[styles.punch, styles.punchRight, { backgroundColor: theme.overlay }]} />
           {children}

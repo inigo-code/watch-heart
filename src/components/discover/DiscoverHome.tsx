@@ -9,6 +9,7 @@ import type { Provider } from '@/api/tmdb';
 import { browse } from '@/components/discover/browse';
 import { CuratedLists } from '@/components/discover/CuratedLists';
 import { SectionLabel } from '@/components/SectionLabel';
+import { rail } from '@/components/title/Rows';
 import { COUNTRIES, DECADES, LANGUAGES, SHELVES, countryName, flag, seasonalShelves } from '@/lib/discover';
 import { font, fonts } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
@@ -46,7 +47,7 @@ export function DiscoverHome({ theme, tmdb, region }: { theme: Theme; tmdb: stri
       {providers.length > 0 && (
         <View style={styles.section}>
           <SectionLabel theme={theme}>On your services · {countryName(region)}</SectionLabel>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.providers}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={rail.edge} contentContainerStyle={styles.providers}>
             {providers.map((p) => (
               <Pressable
                 key={p.id}
@@ -71,9 +72,9 @@ export function DiscoverHome({ theme, tmdb, region }: { theme: Theme; tmdb: stri
             key={sh.id}
             onPress={() => browse(sh.q, sh.name)}
             accessibilityRole="button"
-            style={({ pressed }) => [styles.feature, { backgroundColor: theme.card, borderColor: theme.accent, opacity: pressed ? 0.85 : 1 }]}
+            style={({ pressed }) => [styles.feature, { backgroundColor: theme.card, borderColor: theme.border, opacity: pressed ? 0.85 : 1 }]}
           >
-            <Ionicons name={sh.icon} size={26} color={theme.accent} />
+            <Ionicons name={sh.icon} size={24} color={theme.textMuted} />
             <View style={{ flex: 1 }}>
               <Text style={[styles.featureName, { color: theme.text }]}>{sh.name}</Text>
               <Text style={[styles.note, { color: theme.textMuted }]}>{sh.note}</Text>
@@ -157,7 +158,7 @@ function Chips({ theme, title, items }: { theme: Theme; title: string; items: { 
 const styles = StyleSheet.create({
   wrap: { gap: 24, paddingTop: 8 },
   section: { gap: 10 },
-  providers: { gap: 10, paddingRight: 16 },
+  providers: { gap: 10, paddingHorizontal: 16 },
   logo: { width: 56, height: 56, borderRadius: 12 },
   feature: { flexDirection: 'row', alignItems: 'center', gap: 14, borderWidth: 1.5, borderRadius: 14, padding: 14 },
   featureName: { fontFamily: fonts.uiSemibold, fontSize: font.title },
@@ -168,6 +169,6 @@ const styles = StyleSheet.create({
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   chip: { borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8 },
   chipText: { fontSize: font.footnote, fontWeight: '600' },
-  build: { flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, borderStyle: 'dashed', borderRadius: 14, padding: 14 },
+  build: { flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, borderRadius: 14, padding: 14 },
   credit: { fontFamily: fonts.ui, fontSize: font.caption, textAlign: 'center' },
 });

@@ -227,8 +227,8 @@ export default function WatchlistScreen() {
         ListEmptyComponent={
           view !== 'next' ? undefined : queue.length === 0 ? (
             <View style={styles.empty}>
-              <View style={[styles.emptyIcon, { backgroundColor: theme.accentSoft }]}>
-                <MaterialCommunityIcons name="bookmark-multiple-outline" size={38} color={theme.accent} />
+              <View style={[styles.emptyIcon, { backgroundColor: theme.chip }]}>
+                <MaterialCommunityIcons name="bookmark-multiple-outline" size={38} color={theme.textMuted} />
               </View>
               <Text style={[styles.emptyTitle, { color: theme.text }]}>Nothing queued up</Text>
               <Text style={[styles.emptyText, { color: theme.textMuted }]}>
@@ -315,7 +315,7 @@ function NextWatch({
     <Modal visible={item !== null} transparent animationType="fade" onRequestClose={onClose}>
       <Pressable style={[styles.backdrop, { backgroundColor: theme.overlay }]} onPress={onClose}>
         {item && (
-          <View style={[styles.feature, { backgroundColor: theme.card, borderColor: theme.accent + '66' }]} onStartShouldSetResponder={() => true}>
+          <View style={[styles.feature, { backgroundColor: theme.card, borderColor: theme.border }]} onStartShouldSetResponder={() => true}>
             <Text style={[styles.featureKicker, { color: theme.textMuted }]}>Your next watch</Text>
             <Pop when={rolling ? 'rolling' : item.id}>
               {/* While it rolls, the tile-sized poster: already loaded, so nothing flashes blank. */}

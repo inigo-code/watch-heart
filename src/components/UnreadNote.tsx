@@ -22,6 +22,6 @@ export function UnreadNote({ theme, what }: { theme: Theme; what: string }) {
 
 // The same look as Home's offline line.
 const styles = StyleSheet.create({
-  note: { flexDirection: 'row', alignItems: 'center', gap: 10, borderWidth: 1, borderStyle: 'dashed', borderRadius: 12, paddingVertical: 10, paddingHorizontal: 12 },
+  note: { flexDirection: 'row', alignItems: 'center', gap: 10, borderWidth: 1, borderRadius: 12, paddingVertical: 10, paddingHorizontal: 12 },
   text: { flex: 1, fontFamily: fonts.ui, fontSize: font.caption, lineHeight: 17 },
 });

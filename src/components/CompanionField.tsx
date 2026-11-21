@@ -83,6 +83,6 @@ const styles = StyleSheet.create({
   chosenText: { fontSize: font.footnote, fontWeight: '700' },
   input: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, minHeight: 46 },
   field: { flex: 1, fontSize: font.body, paddingVertical: 8 },
-  suggestion: { flexDirection: 'row', alignItems: 'center', gap: 4, height: 30, paddingHorizontal: 10, borderRadius: 15, borderWidth: 1, borderStyle: 'dashed' },
+  suggestion: { flexDirection: 'row', alignItems: 'center', gap: 4, height: 30, paddingHorizontal: 10, borderRadius: 15, borderWidth: 1 },
   suggestionText: { fontFamily: fonts.ui, fontSize: font.caption },
 });

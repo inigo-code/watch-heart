@@ -6,6 +6,7 @@ import { Text } from '@/components/AppText';
 import { discoverTmdb } from '@/api/tmdb';
 import { browse } from '@/components/discover/browse';
 import { SectionLabel } from '@/components/SectionLabel';
+import { rail } from '@/components/title/Rows';
 import { AWARD_LISTS } from '@/lib/awards';
 import { INDIAN_GEMS, LISTS, indianFavourites } from '@/lib/discover';
 import { INDIAN_LANGUAGES } from '@/lib/regional';
@@ -45,6 +46,7 @@ function Row({ title, lists, theme, tmdb }: { title: string; lists: Shelf[]; the
         horizontal
         keyExtractor={(l) => l.id}
         showsHorizontalScrollIndicator={false}
+        style={rail.edge}
         contentContainerStyle={styles.row}
         initialNumToRender={3}
         windowSize={5}
@@ -99,7 +101,7 @@ function ListCard({ list, theme, tmdb }: { list: Shelf; theme: Theme; tmdb: stri
 
 const styles = StyleSheet.create({
   section: { gap: 10 },
-  row: { gap: 12, paddingRight: 16 },
+  row: { gap: 12, paddingHorizontal: 16 },
   card: { width: 168, borderWidth: StyleSheet.hairlineWidth, borderRadius: 14, padding: 12, gap: 4 },
   fan: { height: 112, marginBottom: 8 },
   poster: { position: 'absolute', top: 4, width: 72, height: 106, borderRadius: 5, borderWidth: 2, overflow: 'hidden' },

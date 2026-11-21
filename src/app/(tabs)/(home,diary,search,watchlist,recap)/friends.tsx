@@ -82,7 +82,7 @@ export default function FriendsScreen() {
   if (!available) {
     return (
       <View style={styles.center}>
-        <Ionicons name="people-outline" size={44} color={theme.accent} />
+        <Ionicons name="people-outline" size={44} color={theme.textMuted} />
         <Text style={[styles.emptyTitle, { color: theme.text }]}>Friends need an account</Text>
         <Text style={[styles.emptyText, { color: theme.textMuted }]}>
           Sign in (or make a free account) to get your invite code, add friends by theirs, and see what they’re watching.
@@ -142,7 +142,7 @@ export default function FriendsScreen() {
 
         {showAdd && (
           <View style={styles.block}>
-            <View style={[styles.codeCard, { backgroundColor: theme.card, borderColor: theme.accent }]}>
+            <View style={[styles.codeCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
               <Text style={[styles.codeLabel, { color: theme.textMuted }]}>Your invite code</Text>
               {code ? (
                 <Text style={[styles.code, { color: theme.text }]} selectable accessibilityLabel={`Your invite code: ${code.split('').join(' ')}`}>

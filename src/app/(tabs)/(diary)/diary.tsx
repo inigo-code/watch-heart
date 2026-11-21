@@ -270,8 +270,8 @@ export default function DiaryScreen() {
         ListEmptyComponent={
           !ready ? undefined : entries.length === 0 ? (
             <View style={styles.empty}>
-              <View style={[styles.emptyIcon, { backgroundColor: theme.accentSoft }]}>
-                <MaterialCommunityIcons name="projector" size={40} color={theme.accent} />
+              <View style={[styles.emptyIcon, { backgroundColor: theme.chip }]}>
+                <MaterialCommunityIcons name="projector" size={40} color={theme.textMuted} />
               </View>
               <Text style={[styles.emptyTitle, { color: theme.text }]}>The screen is dark</Text>
               <Text style={[styles.emptyText, { color: theme.textMuted }]}>Log the last film, series or anime you watched, and your diary starts rolling.</Text>

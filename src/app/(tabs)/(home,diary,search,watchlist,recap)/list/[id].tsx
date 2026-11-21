@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text, TextInput } from '@/components/AppText';
 import { KeyboardSafe } from '@/components/KeyboardSafe';
 import { ActionSheet } from '@/components/ActionSheet';
+import { headerEnd } from '@/components/BackDisc';
 import { DangerButton } from '@/components/DangerButton';
 import { Poster } from '@/components/Film';
 import { FavouritePicker } from '@/components/profile/FavouritePicker';
@@ -66,6 +67,7 @@ export default function ListScreen() {
               hitSlop={10}
               accessibilityRole="button"
               accessibilityLabel={editing ? 'Done editing' : 'Edit list'}
+              style={headerEnd}
             >
               <Text style={[styles.headerBtn, { color: theme.accent }]}>{editing ? 'Done' : 'Edit'}</Text>
             </Pressable>
@@ -235,7 +237,7 @@ function AddButton({
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
-      style={({ pressed }) => [styles.addBtn, { borderColor: theme.accent + '88', opacity: pressed ? 0.7 : 1 }]}
+      style={({ pressed }) => [styles.addBtn, { borderColor: theme.border, opacity: pressed ? 0.7 : 1 }]}
     >
       <Ionicons name={icon} size={16} color={theme.accent} />
       <Text style={[styles.addText, { color: theme.text }]}>{label}</Text>
@@ -289,10 +291,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
-    height: 44,
-    borderRadius: 22,
+    height: 48,
+    borderRadius: 24,
     borderWidth: 1,
-    borderStyle: 'dashed',
   },
   addText: { fontSize: font.footnote, fontWeight: '700' },
   listHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 },

@@ -1,7 +1,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Animated, Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Text } from '@/components/AppText';
@@ -20,6 +20,7 @@ import { Synopsis, TitleMore, useAbout } from '@/components/title/AboutTitle';
 import { FriendsOnTitle } from '@/components/title/FriendsOnTitle';
 import { Face, openTitle } from '@/components/title/Rows';
 import { useToast } from '@/components/Toast';
+import { TopScrim } from '@/components/TopScrim';
 import { dayParts, friendlyDate } from '@/lib/dates';
 import { easeNextLayout } from '@/lib/motion';
 import { viewingLine } from '@/lib/viewing';
@@ -36,6 +37,8 @@ export default function EntryScreen() {
   const { ready, getEntry, viewingsOf, deleteEntry, restoreEntry } = useDiary();
   const entry = getEntry(id);
   const [reveal, setReveal] = useState(false);
+  const [scrollY] = useState(() => new Animated.Value(0));
+  const { width } = useWindowDimensions();
   const [listing, setListing] = useState(false);
   const [trashing, setTrashing] = useState(false);
   const { listsWith } = useLists();
@@ -84,11 +87,16 @@ export default function EntryScreen() {
           ),
         }}
       />
-      <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 32 }}>
+      <Animated.ScrollView
+        contentContainerStyle={{ paddingBottom: insets.bottom + 32 }}
+        scrollEventThrottle={16}
+        onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], { useNativeDriver: true })}
+      >
         <Hero
           t={entry}
           theme={theme}
           topInset={insets.top}
+          scrollY={scrollY}
           onPoster={entry.source === 'tmdb' && entry.sourceId ? () => router.push({ pathname: '/poster/[id]', params: { id: entry.id } }) : undefined}
         />
 
@@ -264,7 +272,8 @@ export default function EntryScreen() {
 
           <DangerButton theme={theme} label="Move to trash" onPress={() => setTrashing(true)} />
         </View>
-      </ScrollView>
+      </Animated.ScrollView>
+      <TopScrim scrollY={scrollY} theme={theme} topInset={insets.top} from={Math.round(width * 0.56) - 56} />
       <AddToList item={listing ? entry : null} theme={theme} onClose={() => setListing(false)} />
       <ConfirmTrash title={trashing ? entry.title : null} onConfirm={remove} onClose={() => setTrashing(false)} />
     </View>

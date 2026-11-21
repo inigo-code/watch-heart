@@ -46,6 +46,19 @@ export const DATA_SOURCES = {
  */
 const NOTES: { id: string; items: string[] }[] = [
   {
+    id: '1.6.8',
+    items: [
+      'Episodes: a season’s episodes are one tidy list, with Mark season seen and Rate season side by side',
+      'Rows of posters run to the edge of the screen, so it’s clear they scroll',
+      'On a title or an entry, the top bar fills in as you scroll, so text no longer runs under the back button',
+      'Pages without a picture at the top have a plain back arrow',
+      'Scores sit in matching boxes, and the one that opens IMDb shows it',
+      'Settings: plainer icons, and your account, profile and friends in one group. Your own OMDb key is hidden like the TMDB one',
+      'Log it stays grey until there’s a title, and gold is kept for the main button on each page',
+      'The Trending and Discover switch on Find fits properly',
+    ],
+  },
+  {
     id: '1.6.7',
     items: [
       'A new look: clearer type throughout, calmer colours, and gold kept for the main buttons',
