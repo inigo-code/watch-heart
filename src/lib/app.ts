@@ -48,6 +48,7 @@ const NOTES: { id: string; items: string[] }[] = [
   {
     id: '1.7.1',
     items: [
+      'Opening the app no longer flashes a black screen between the logo and its animation',
       'Country names are written out in full on phones: “In cinemas in India” instead of “IN”',
     ],
   },

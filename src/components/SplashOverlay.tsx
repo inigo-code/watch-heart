@@ -8,7 +8,8 @@ import { fonts } from '@/lib/theme';
 // The native splash: assets/splash-icon.png at 160 points on the projector black (app.json). The reel below is
 // that icon redrawn from plain shapes, measured from the 1024 px file, so it's on screen in the very first
 // frame: an image loads a moment later, and closing the native splash before it did showed plain black.
-const BG = '#0B0A0D';
+export const SPLASH_BG = '#0B0A0D';
+const BG = SPLASH_BG;
 const GOLD = '#F2B84B';
 const PINK = '#FF4D6D';
 const SIZE = 160;
@@ -30,8 +31,9 @@ const WAIT_AT_MOST = 3000;
 const FADE = 150;
 const UNCOVER_AT_MOST = 1500;
 
-/** The reel: a gold disc with six holes round a centre one, and a pink heart in the middle. */
-function Reel() {
+/** The reel: a gold disc with six holes round a centre one, and a pink heart in the middle. App lock's cover
+ * draws it too, so the opening looks the same whichever is on top. */
+export function Reel() {
   return (
     <View style={styles.reelBox}>
       <View style={styles.disc}>
@@ -61,7 +63,7 @@ function Reel() {
  * as the app appears. Waits for `ready` (settings and diary loaded), or 3 s at most. With reduced motion it
  * only fades.
  */
-export function SplashOverlay({ ready }: { ready: boolean }) {
+export function SplashOverlay({ ready, covered = false }: { ready: boolean; covered?: boolean }) {
   const [spin] = useState(() => new Animated.Value(0));
   const [word] = useState(() => new Animated.Value(0));
   const [leave] = useState(() => new Animated.Value(0));
@@ -96,7 +98,9 @@ export function SplashOverlay({ ready }: { ready: boolean }) {
   };
 
   useEffect(() => {
-    if (!uncovered) return;
+    // App lock's cover (a still copy of this) sits on top until the settings are in; spinning under it would
+    // show the moment it lifts.
+    if (!uncovered || covered) return;
     let live = true;
     AccessibilityInfo.isReduceMotionEnabled()
       .catch(() => false)
@@ -117,7 +121,7 @@ export function SplashOverlay({ ready }: { ready: boolean }) {
       live = false;
       clearTimeout(timer);
     };
-  }, [spin, word, uncovered]);
+  }, [spin, word, uncovered, covered]);
 
   const leaving = introDone && (ready || timedOut);
   useEffect(() => {

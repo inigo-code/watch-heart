@@ -142,7 +142,7 @@ function Navigator() {
         <Stack.Screen name="welcome" options={{ headerShown: false, gestureEnabled: false, animation: 'fade' }} />
       </Stack>
       <DiaryLoadFailed />
-      <SplashOverlay ready={(ready || loadFailed) && (settingsReady || settingsFailed)} />
+      <SplashOverlay ready={(ready || loadFailed) && (settingsReady || settingsFailed)} covered={!settingsReady && !settingsFailed} />
     </>
   );
 }
