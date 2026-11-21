@@ -46,6 +46,16 @@ export const DATA_SOURCES = {
  */
 const NOTES: { id: string; items: string[] }[] = [
   {
+    id: '1.6.9',
+    items: [
+      'New icons drawn for Watch Heart: a cinema for Home, a ticket for the Diary, a lens for Find, a bookmark for the Watchlist, a reel for Recap and a clapperboard for logging',
+      'This week on Home is a strip of film, with today’s frame lit',
+      'A planned movie night is a ticket, with the day and time on its stub',
+      'Posters have a fine edge, so pale ones stand out from the page',
+      'A light tap under your finger when you tick an episode, +1 or move the stars (turn it off in Settings › Haptics)',
+    ],
+  },
+  {
     id: '1.6.8',
     items: [
       'Episodes: a season’s episodes are one tidy list, with Mark season seen and Rate season side by side',

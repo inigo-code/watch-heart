@@ -1,4 +1,3 @@
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useSegments } from 'expo-router';
 import { Tabs } from 'expo-router/js-tabs';
 import { useEffect, useState } from 'react';
@@ -7,18 +6,18 @@ import type { ColorValue } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Text } from '@/components/AppText';
+import { CineIcon } from '@/components/CineIcon';
+import type { CineIconName } from '@/components/CineIcon';
 import { EASE, Pop, useReducedMotion } from '@/components/Motion';
 import { fonts, useTheme } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
 
-type IconName = keyof typeof MaterialCommunityIcons.glyphMap;
-
-/** A tab's icon, lit in the accent on the tab you're on. */
-const tabIcon = (name: IconName) =>
-  function TabBarIcon({ color, size, focused }: { color: ColorValue; size: number; focused: boolean }) {
+/** A tab's icon, from the app's own set: filled and lit in the accent on the tab you're on. */
+const tabIcon = (name: CineIconName) =>
+  function TabBarIcon({ color, focused }: { color: ColorValue; focused: boolean }) {
     return (
       <Pop when={focused}>
-        <MaterialCommunityIcons name={name} size={size} color={color as string} />
+        <CineIcon name={name} size={26} color={color as string} on={focused} />
       </Pop>
     );
   };
@@ -95,35 +94,35 @@ export default function TabsLayout() {
         name="(home)"
         options={{
           title: 'Home',
-          tabBarIcon: tabIcon('home-variant-outline'),
+          tabBarIcon: tabIcon('home'),
         }}
       />
       <Tabs.Screen
         name="(diary)"
         options={{
           title: 'Diary',
-          tabBarIcon: tabIcon('ticket-confirmation-outline'),
+          tabBarIcon: tabIcon('diary'),
         }}
       />
       <Tabs.Screen
         name="(search)"
         options={{
           title: 'Find',
-          tabBarIcon: tabIcon('movie-search-outline'),
+          tabBarIcon: tabIcon('find'),
         }}
       />
       <Tabs.Screen
         name="(watchlist)"
         options={{
           title: 'Watchlist',
-          tabBarIcon: tabIcon('bookmark-multiple-outline'),
+          tabBarIcon: tabIcon('watchlist'),
         }}
       />
       <Tabs.Screen
         name="(recap)"
         options={{
           title: 'Recap',
-          tabBarIcon: tabIcon('filmstrip'),
+          tabBarIcon: tabIcon('recap'),
         }}
       />
     </Tabs>

@@ -1,12 +1,13 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Image } from 'expo-image';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { PixelRatio, StyleSheet, View } from 'react-native';
 import type { StyleProp, ViewStyle } from 'react-native';
 
 import { Text } from '@/components/AppText';
 import { Pop, Tap } from '@/components/Motion';
+import { useHaptic } from '@/lib/haptics';
 import { KIND_LABEL } from '@/lib/stats';
 import { font, fonts, kindColor } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
@@ -30,7 +31,11 @@ export function Poster({ uri, title, width, theme, radius = 6, style }: {
     <View style={[{ width, height, borderRadius: radius, backgroundColor: theme.elevated, overflow: 'hidden' }, style]}>
       {uri && !failed ? (
         // Kept in memory as well as on disk, so scrolling back up is instant, with no second fade-in.
-        <Image source={src} recyclingKey={src} style={StyleSheet.absoluteFill} contentFit="cover" transition={150} cachePolicy="memory-disk" onError={() => setFailed(true)} />
+        <>
+          <Image source={src} recyclingKey={src} style={StyleSheet.absoluteFill} contentFit="cover" transition={150} cachePolicy="memory-disk" onError={() => setFailed(true)} />
+          {/* A hairline edge like a print's, so a white poster keeps its shape on Paper and a black one on Projector. */}
+          <View pointerEvents="none" style={[StyleSheet.absoluteFill, { borderRadius: radius, borderWidth: StyleSheet.hairlineWidth, borderColor: theme.dark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.14)' }]} />
+        </>
       ) : (
         <View style={styles.slate}>
           <Ionicons name="film-outline" size={Math.max(14, width * 0.26)} color={theme.textMuted} />
@@ -96,6 +101,18 @@ export function StarInput({ value, onChange, theme, size = 40 }: { value: number
   const at = (x: number) => Math.min(10, Math.max(1, Math.ceil((x / width) * 10)));
   // The rating when the touch began, and whether the finger slid to another value since.
   const touch = useRef<{ before: number; moved: boolean } | null>(null);
+  // A light step under the finger each time the rating changes.
+  const haptic = useHaptic();
+  const last = useRef(value);
+  useEffect(() => {
+    last.current = value;
+  }, [value]);
+  const set = (v: number) => {
+    if (v === last.current) return;
+    last.current = v;
+    haptic('step');
+    onChange(v);
+  };
   return (
     <View
       onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
@@ -105,25 +122,25 @@ export function StarInput({ value, onChange, theme, size = 40 }: { value: number
       onResponderGrant={(e) => {
         if (!width) return;
         touch.current = { before: value, moved: false };
-        onChange(at(e.nativeEvent.locationX));
+        set(at(e.nativeEvent.locationX));
       }}
       onResponderMove={(e) => {
         if (!width || !touch.current) return;
         const v = at(e.nativeEvent.locationX);
         if (v !== value) touch.current.moved = true;
-        onChange(v);
+        set(v);
       }}
       onResponderRelease={(e) => {
         // A plain tap on the rating you already had clears it.
         const t = touch.current;
-        if (width && t && !t.moved && at(e.nativeEvent.locationX) === t.before) onChange(0);
+        if (width && t && !t.moved && at(e.nativeEvent.locationX) === t.before) set(0);
         touch.current = null;
       }}
       accessibilityRole="adjustable"
       accessibilityLabel="Rating"
       accessibilityValue={{ text: value ? `${value / 2} stars` : 'Not rated' }}
       accessibilityActions={[{ name: 'increment' }, { name: 'decrement' }]}
-      onAccessibilityAction={(e) => onChange(Math.min(10, Math.max(0, value + (e.nativeEvent.actionName === 'increment' ? 1 : -1))))}
+      onAccessibilityAction={(e) => set(Math.min(10, Math.max(0, value + (e.nativeEvent.actionName === 'increment' ? 1 : -1))))}
       style={styles.starInput}
     >
       <Pop when={value}>

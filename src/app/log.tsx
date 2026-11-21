@@ -1,5 +1,4 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import DateTimePicker, { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 import * as Haptics from 'expo-haptics';
 import { Stack, router, useLocalSearchParams, usePreventRemove } from 'expo-router';
@@ -10,6 +9,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ActionSheet } from '@/components/ActionSheet';
 import { Text, TextInput } from '@/components/AppText';
+import { CineIcon } from '@/components/CineIcon';
 import { details, tmdbKey } from '@/api';
 import { KeyboardSafe } from '@/components/KeyboardSafe';
 import { BackDisc, headerEnd } from '@/components/BackDisc';
@@ -580,7 +580,7 @@ function LogForm() {
             // Until there's a title it waits in grey, plainly not ready, rather than as a faded gold.
             style={({ pressed }) => [styles.logIt, { backgroundColor: canSave ? theme.accent : theme.chip, opacity: pressed ? 0.85 : 1 }]}
           >
-            <MaterialCommunityIcons name="movie-open-check-outline" size={22} color={canSave ? theme.accentText : theme.textMuted} />
+            <CineIcon name="log" size={22} color={canSave ? theme.accentText : theme.textMuted} />
             <Text style={[styles.logItText, { color: canSave ? theme.accentText : theme.textMuted }]}>{editing ? 'Save changes' : 'Log it'}</Text>
           </Pressable>
 

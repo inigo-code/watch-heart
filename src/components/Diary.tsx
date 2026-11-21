@@ -68,11 +68,7 @@ export function TicketStub({ entry, theme, onPress, onLongPress }: {
         {entry.rewatch && <Ionicons name="repeat" size={14} color={theme.accent} accessibilityLabel="Rewatch" />}
       </View>
 
-      <View style={styles.tear}>
-        <View style={[styles.notch, styles.notchTop, { backgroundColor: theme.hole, borderColor: p.border }]} />
-        <View style={[styles.dashes, { borderColor: p.border }]} />
-        <View style={[styles.notch, styles.notchBottom, { backgroundColor: theme.hole, borderColor: p.border }]} />
-      </View>
+      <TicketTear theme={theme} border={p.border} />
 
       <Poster uri={entry.posterUrl} title={entry.title} width={40} theme={theme} radius={3} />
 
@@ -97,6 +93,17 @@ export function TicketStub({ entry, theme, onPress, onLongPress }: {
         </View>
       </View>
     </Tap>
+  );
+}
+
+/** A ticket's tear line: a perforation with a notch punched out of each edge. Its ticket has 7dp of padding above and below. */
+export function TicketTear({ theme, border }: { theme: Theme; border: string }) {
+  return (
+    <View style={styles.tear}>
+      <View style={[styles.notch, styles.notchTop, { backgroundColor: theme.hole, borderColor: border }]} />
+      <View style={[styles.dashes, { borderColor: border }]} />
+      <View style={[styles.notch, styles.notchBottom, { backgroundColor: theme.hole, borderColor: border }]} />
+    </View>
   );
 }
 

@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Text } from '@/components/AppText';
 import { BottomSheet } from '@/components/BottomSheet';
+import { TicketPrint, TicketTear, ticketPaper } from '@/components/Diary';
 import { Poster } from '@/components/Film';
 import { useToast } from '@/components/Toast';
 import { askToRemindOnTime, canRemindOnTime, cancelMovieNight, hasAlarmSwitch, scheduleMovieNight } from '@/lib/movieNight';
@@ -177,33 +178,40 @@ export function MovieNightSheet({ t, visible, theme, onClose }: { t: Title; visi
   );
 }
 
-/** A planned night: the title, when, and a way to cancel. On the title page, and the next one on Home. */
+/**
+ * A planned night, printed as a ticket for the show: the day and time on the stub, then the title and a
+ * way to cancel. On the title page, and the next one on Home.
+ */
 export function MovieNightCard({ night, theme, showTitle }: { night: MovieNight; theme: Theme; showTitle?: boolean }) {
   const { cancel } = useMovieNights();
+  const p = ticketPaper(night.kind, theme);
+  const d = new Date(night.at);
+  const time = d.toLocaleTimeString('en-GB', { hour: 'numeric', minute: '2-digit', hour12: true }).replace(' ', '');
   return (
-    <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
+    <View style={[styles.ticket, { backgroundColor: p.paper, borderColor: p.border }]}>
+      <TicketPrint kind={night.kind} theme={theme} />
+      <View style={styles.stub} accessible accessibilityLabel={`Planned for ${nightLabel(night.at)}`}>
+        <Text style={[styles.stubDay, { color: theme.textMuted }]}>{d.toLocaleDateString('en-GB', { weekday: 'short' }).toUpperCase()}</Text>
+        <Text style={[styles.stubDate, { color: theme.text }]}>{d.getDate()}</Text>
+        <Text style={[styles.stubTime, { color: theme.textMuted }]}>{time.toUpperCase()}</Text>
+      </View>
+      <TicketTear theme={theme} border={p.border} />
       <Pressable
         onPress={() => showTitle && router.push({ pathname: '/title/[id]', params: { id: night.sourceId } })}
         disabled={!showTitle}
         accessibilityRole={showTitle ? 'button' : undefined}
         style={styles.cardMain}
       >
-        {showTitle ? (
-          <Poster uri={night.posterUrl} title={night.title} width={40} theme={theme} radius={4} />
-        ) : (
-          <Ionicons name="calendar-outline" size={26} color={theme.textMuted} />
-        )}
+        {showTitle && <Poster uri={night.posterUrl} title={night.title} width={40} theme={theme} radius={3} />}
         <View style={{ flex: 1, gap: 2 }}>
-          <Text style={[styles.cardKicker, { color: theme.textMuted }]}>Planned</Text>
-          <Text style={[styles.cardWhen, { color: theme.text }]}>{nightLabel(night.at)}</Text>
-          {showTitle && (
-            <Text style={[styles.cardTitle, { color: theme.textMuted }]} numberOfLines={1}>
-              {night.title}
-            </Text>
-          )}
+          <Text style={[styles.admit, { color: theme.textMuted }]}>ADMIT ONE · PLANNED</Text>
+          <Text style={[styles.cardWhen, { color: theme.text }]} numberOfLines={2}>
+            {showTitle ? night.title : nightLabel(night.at)}
+          </Text>
+          {showTitle && <Text style={[styles.cardTitle, { color: theme.textMuted }]}>{nightLabel(night.at)}</Text>}
         </View>
       </Pressable>
-      <Pressable onPress={() => cancel(night)} hitSlop={8} accessibilityRole="button" accessibilityLabel="Cancel the plan" style={styles.cancel}>
+      <Pressable onPress={() => cancel(night)} hitSlop={12} accessibilityRole="button" accessibilityLabel="Cancel the plan" style={styles.cancel}>
         <Ionicons name="close" size={20} color={theme.textMuted} />
       </Pressable>
     </View>
@@ -217,9 +225,14 @@ const styles = StyleSheet.create({
   sheetSub: { fontFamily: fonts.ui, fontSize: font.caption, lineHeight: 17, marginBottom: 4 },
   option: { flexDirection: 'row', alignItems: 'center', gap: 12, height: 50, borderRadius: 12, borderWidth: 1, paddingHorizontal: 14 },
   optionText: { fontSize: font.body, fontWeight: '600' },
-  card: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderRadius: 14, padding: 10, gap: 8 },
-  cardMain: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 12 },
-  cardKicker: { fontFamily: fonts.uiSemibold, fontSize: 12 },
+  // The same paper and tear as a Diary ticket.
+  ticket: { flexDirection: 'row', alignItems: 'center', borderRadius: 10, borderWidth: StyleSheet.hairlineWidth, paddingVertical: 7, paddingRight: 6, gap: 10, overflow: 'hidden' },
+  stub: { minWidth: 64, paddingLeft: 8, alignItems: 'center' },
+  stubDay: { fontFamily: fonts.ticketBold, fontSize: 12, letterSpacing: 1 },
+  stubDate: { fontFamily: fonts.display, fontSize: 30, lineHeight: 31, includeFontPadding: false },
+  stubTime: { fontFamily: fonts.ticketBold, fontSize: 11 },
+  cardMain: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 4 },
+  admit: { fontFamily: fonts.ticketBold, fontSize: 11, letterSpacing: 1 },
   cardWhen: { fontSize: font.body, fontWeight: '700' },
   cardTitle: { fontFamily: fonts.ui, fontSize: font.caption },
   cancel: { padding: 6 },

@@ -6,6 +6,7 @@ import { Animated, ActivityIndicator, Pressable, StyleSheet, View, useWindowDime
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Text } from '@/components/AppText';
+import { CineIcon } from '@/components/CineIcon';
 import { ConfirmTrash } from '@/components/ConfirmTrash';
 import { useDaySheet } from '@/components/DaySheet';
 import { Tap } from '@/components/Motion';
@@ -119,7 +120,7 @@ export default function TitleScreen() {
               accessibilityHint="Long press to log it on a day without the form"
               style={({ pressed }) => [styles.logBtn, { backgroundColor: theme.accent, opacity: pressed ? 0.85 : 1 }]}
             >
-              <Ionicons name="add" size={20} color={theme.accentText} />
+              <CineIcon name="log" size={22} color={theme.accentText} />
               <Text style={[styles.logText, { color: theme.accentText }]}>{viewings.length ? 'Log again' : 'Log it'}</Text>
             </Pressable>
             <Pressable

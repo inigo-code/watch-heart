@@ -6,6 +6,7 @@ import { Pressable, ScrollView, SectionList, StyleSheet, View, useWindowDimensio
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Text, TextInput } from '@/components/AppText';
+import { CineIcon } from '@/components/CineIcon';
 import { usePullRefresh } from '@/components/PullRefresh';
 import { ActionSheet } from '@/components/ActionSheet';
 import { AddToList } from '@/components/lists/AddToList';
@@ -303,7 +304,7 @@ export default function DiaryScreen() {
             { backgroundColor: theme.accent, bottom: 20, boxShadow: shadow.raised, transform: [{ scale: pressed ? 0.95 : 1 }] },
           ]}
         >
-          <MaterialCommunityIcons name="movie-open-plus-outline" size={28} color={theme.accentText} />
+          <CineIcon name="log" size={28} color={theme.accentText} />
         </Pressable>
       )}
 

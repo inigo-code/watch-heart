@@ -3,6 +3,7 @@ import { useCallback } from 'react';
 import { comingEpisodes, showInfo } from '@/api/episodes';
 import type { ShowInfo } from '@/api/episodes';
 import { today } from '@/lib/dates';
+import { useHaptic } from '@/lib/haptics';
 import { epKey, newTrack, parseKey, progressLabel, redated, seenDay, settle, stamped, withInfo } from '@/lib/tracking';
 import type { Day } from '@/lib/tracking';
 import { useSettings } from '@/settings/SettingsProvider';
@@ -30,6 +31,7 @@ function wholeSeason(keys: string[], track?: Track) {
 
 export function useTracker() {
   const { settings } = useSettings();
+  const haptic = useHaptic();
   const { entries, onWatchlist, addToWatchlist, updateWatchItem, addEntry, updateEntry, purgeEntry } = useDiary();
 
   /** The show's watchlist item, made (and tracked) if it isn't there yet. */
@@ -181,8 +183,9 @@ export function useTracker() {
       const next = { ...track, seen, ratings, status: track.status === 'paused' || track.status === 'dropped' ? 'watching' : track.status } as Track;
       save(it, next);
       logEpisode(it, key, now, when, next);
+      haptic('tick');
     },
-    [tracked, save, logEpisode],
+    [tracked, save, logEpisode, haptic],
   );
 
   /**
