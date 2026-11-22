@@ -1,6 +1,6 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Stack, useLocalSearchParams } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, FlatList, Dimensions, Pressable, ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -60,6 +60,13 @@ export default function BrowseScreen() {
   const [filtering, setFiltering] = useState(params.filters === '1');
   // Results belong to the query they were fetched for; a new query starts again from the first page.
   const qKey = JSON.stringify(query);
+  // Newest first, with no floor, is all festival shorts and home uploads nobody has seen. A few votes keeps it
+  // to real releases; fewer for one language, where new films are rated by fewer people. A shelf with its own
+  // floor keeps it.
+  const asked = useMemo<BrowseQuery>(
+    () => (query.sort === 'newest' && query.minVotes === undefined && !query.ids ? { ...query, minVotes: query.lang ? 3 : 20 } : query),
+    [query],
+  );
   const [data, setData] = useState<{ q: string; items: Title[]; page: number; pages: number; error: string | null } | null>(null);
   const current = data?.q === qKey ? data : null;
   const items = current?.items ?? [];
@@ -71,7 +78,7 @@ export default function BrowseScreen() {
   useEffect(() => {
     if (!key) return;
     const controller = new AbortController();
-    discoverTmdb(key, query, 1, controller.signal)
+    discoverTmdb(key, asked, 1, controller.signal)
       .then((r) => setData({ q: qKey, items: r.results.filter((t) => t.posterUrl), page: 1, pages: r.pages, error: null }))
       .catch((e) => {
         if (controller.signal.aborted) return;
@@ -79,13 +86,13 @@ export default function BrowseScreen() {
         setData({ q: qKey, items: [], page: 1, pages: 1, error: message });
       });
     return () => controller.abort();
-  }, [key, query, qKey]);
+  }, [key, asked, qKey]);
 
   const more = () => {
     if (!current || loadingRef.current || current.page >= current.pages || current.error) return;
     loadingRef.current = true;
     setLoadingMore(true);
-    discoverTmdb(key, query, current.page + 1)
+    discoverTmdb(key, asked, current.page + 1)
       .then((r) =>
         setData((d) =>
           d && d.q === qKey

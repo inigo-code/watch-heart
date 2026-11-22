@@ -117,6 +117,8 @@ The full list is `git log`; every user-facing commit names its What's new versio
 2. ~~The episode list on a show's page still shows TMDB's dates.~~ Checked 13 Nov: already fixed in 1.5.0 (`05bdc5c`). The Episodes page takes each day from the track's `upcoming`, the same list the alerts use, in the phone's time zone. Episodes already aired, and seasons after the airing one, show TMDB's (or TVmaze's) day; no alert uses those.
 3. The Netflix title link depends on Google's first result. No fix without a paid API.
 
+**Not yet released** (committed, goes out with the next OTA update): Discover's Newest sort asks for at least 20 votes (3 within one language), so it shows real releases instead of unrated uploads (`browse.tsx`; the website did the same in Watch Heart Web `eeb73fc`).
+
 **For the next native build** (after 1 December)
 - ~~Copy Prompt Heart's `android:windowBackground` change to clear the black strip on Android 15.~~ Checked 2026-11-21: `plugins/withSplashSystemBars.js` already matches Prompt Heart's, so the 1.7.0 build carries it.
 
