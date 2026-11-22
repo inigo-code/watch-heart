@@ -51,6 +51,15 @@ export const DATA_SOURCES = {
 type Note = string | { text: string; fromApp: string };
 const NOTES: { id: string; items: Note[] }[] = [
   {
+    id: '1.7.6',
+    items: [
+      'Your diary has a bar for each month of the year under your totals. Tap one to go to that month',
+      'Your friends’ photos show straight away, instead of loading each time you open the app',
+      'Deleting your account now asks for your password first',
+      'Newest in Discover shows real new releases, not unrated uploads',
+    ],
+  },
+  {
     id: '1.7.5',
     items: ['In cinemas is closer to what’s really showing: in India, films that aren’t in an Indian language now leave it after three weeks'],
   },
