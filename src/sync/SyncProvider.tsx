@@ -57,8 +57,8 @@ type SyncContext = {
   resetPassword: (email: string, code: string, password: string) => Promise<void>;
   /** Signs out; with `removeLocal`, also empties the diary and watchlist on this phone (the account keeps them). */
   signOut: (removeLocal: boolean) => Promise<void>;
-  /** Deletes the account and everything in it from the cloud, then signs out. The phone keeps its copy. */
-  deleteAccount: () => Promise<void>;
+  /** After the account's password, deletes the account and everything in it from the cloud, then signs out. The phone keeps its copy. */
+  deleteAccount: (password: string) => Promise<void>;
 };
 
 const Ctx = createContext<SyncContext | null>(null);
@@ -416,9 +416,17 @@ export function SyncProvider({ children }: { children: ReactNode }) {
     [client, runSync, forgetAccount, clearLocal, update],
   );
 
-  const deleteAccount = useCallback(async () => {
+  const deleteAccount = useCallback(async (password: string) => {
     const c = client();
-    if (!userId) throw new Error('Sign in first.');
+    const email = session?.user.email;
+    if (!userId || !email) throw new Error('Sign in first.');
+    // The password first, so a phone left unlocked can't delete the account.
+    const { error: wrong } = await c.auth.signInWithPassword({ email, password });
+    if (wrong) {
+      if (/invalid|credentials/i.test(wrong.message)) throw new Error('That isn’t your password.');
+      if (/rate|too many/i.test(wrong.message)) throw new Error('Too many tries. Wait a few minutes, then try again.');
+      throw wrong;
+    }
     // Files can only be removed through Storage, so the photos go first; the rest goes with the account.
     await removeRemote(c, userId).catch(() => {});
     const { error } = await c.rpc('delete_my_account');
@@ -430,7 +438,7 @@ export function SyncProvider({ children }: { children: ReactNode }) {
     await c.auth.signOut({ scope: 'local' }).catch(() => {});
     forgetAccount();
     setState({ status: 'idle', error: null, lastSyncedAt: null });
-  }, [client, userId, forgetAccount]);
+  }, [client, userId, session, forgetAccount]);
 
   const unsentCount = Object.keys(meta.entries).length + Object.keys(meta.watchlist).length;
 

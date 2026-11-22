@@ -1,6 +1,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useMemo, useRef, useState } from 'react';
+import type { ComponentRef } from 'react';
 import { Pressable, ScrollView, SectionList, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -16,11 +17,13 @@ import { PosterTile, ReelHeader, TicketStub } from '@/components/Diary';
 import { Chip } from '@/components/Film';
 import { TipCard } from '@/components/TipCard';
 import { useToast } from '@/components/Toast';
-import { friendlyDate, monthKey, today } from '@/lib/dates';
+import { MONTHS, friendlyDate, monthKey, today } from '@/lib/dates';
 import { plainText } from '@/lib/richText';
+import { useHaptic } from '@/lib/haptics';
 import { computeStats } from '@/lib/stats';
 import { useTracker } from '@/lib/useTracker';
 import { KIND_COLORS, font, fonts, shadow, useTheme } from '@/lib/theme';
+import type { Theme } from '@/lib/theme';
 import { useSettings } from '@/settings/SettingsProvider';
 import { useDiary } from '@/store/DiaryStore';
 import { useSync } from '@/sync/SyncProvider';
@@ -102,7 +105,9 @@ export default function DiaryScreen() {
   const grid = settings.diaryLayout === 'grid';
   const tile = (width - 32 - GAP * (GRID_COLS - 1)) / GRID_COLS;
 
-  const yearStats = useMemo(() => computeStats(entries.filter((e) => !e.undated && e.watchedOn.startsWith(today().slice(0, 4)))), [entries]);
+  const year = today().slice(0, 4);
+  const thisYear = useMemo(() => entries.filter((e) => !e.undated && e.watchedOn.startsWith(year)), [entries, year]);
+  const yearStats = useMemo(() => computeStats(thisYear), [thisYear]);
 
   const sections = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -139,18 +144,6 @@ export default function DiaryScreen() {
       <Text maxFontSizeMultiplier={1.15} style={[styles.heading, { color: theme.text }]} accessibilityRole="header">
         YOUR <Text style={{ color: theme.accent }}>DIARY</Text>
       </Text>
-
-      {entries.length > 0 && (
-        <View style={[styles.marquee, { borderColor: theme.border, backgroundColor: theme.card }]}>
-          <MarqueeStat theme={theme} value={String(yearStats.total)} label={`In ${today().slice(0, 4)}`} />
-          <View style={[styles.marqueeRule, { backgroundColor: theme.border }]} />
-          <MarqueeStat theme={theme} value={`${hours}h`} label="Watched" />
-          <View style={[styles.marqueeRule, { backgroundColor: theme.border }]} />
-          <MarqueeStat theme={theme} value={yearStats.avgStars ? `${yearStats.avgStars}★` : '—'} label="Average" />
-          <View style={[styles.marqueeRule, { backgroundColor: theme.border }]} />
-          <MarqueeStat theme={theme} value={String(yearStats.liked)} label="Loved" />
-        </View>
-      )}
 
       {entries.length > 0 && (
         <View style={[styles.search, { backgroundColor: theme.chip }]}>
@@ -198,6 +191,49 @@ export default function DiaryScreen() {
         Tap STORY to share a month. Hold a ticket for more.
       </TipCard>
     </View>
+  ) : null;
+
+  // A month's bar takes the list to that month. The list only draws rows near where it is, so the rows down
+  // to that month are drawn first (rows at the start of the list stay drawn once they are). Then the month's
+  // header is measured where it actually is, rather than where the list estimates it, and the list scrolls
+  // there. Waiting for it to be drawn stops after a few seconds, or as soon as you take hold of the list.
+  const [reach, setReach] = useState(8);
+  const reels = useRef(new Map<string, ComponentRef<typeof View>>());
+  const jumping = useRef({ month: '', id: 0 });
+  const jump = (key: string) => {
+    const section = sections.findIndex((s) => s.month === key);
+    if (section < 0) return;
+    // A section is its header, its rows and its footer; then a screenful past the header.
+    const header = sections.slice(0, section).reduce((n, s) => n + s.data.length + 2, 0);
+    setReach((r) => Math.max(r, header + 12));
+    const id = jumping.current.id + 1;
+    jumping.current = { month: key, id };
+    const go = (left: number) => {
+      if (jumping.current.id !== id || !jumping.current.month) return;
+      const reel = reels.current.get(key);
+      const scroller = listRef.current?.getScrollResponder();
+      const content = scroller?.getInnerViewRef();
+      const retry = () => left > 0 && setTimeout(() => go(left - 1), 100);
+      if (!reel || !scroller || !content) return void retry();
+      reel.measureLayout(content, (_x, y) => scroller.scrollTo({ y, animated: true }), retry);
+    };
+    setTimeout(() => go(40), 0);
+  };
+  const stopJump = () => {
+    jumping.current.month = '';
+  };
+  const shownMonths = useMemo(() => new Set(sections.map((s) => s.month)), [sections]);
+
+  // While searching, the results come first.
+  const strip =
+    entries.length > 0 && !query.trim() ? (
+      <YearStrip theme={theme} year={year} entries={thisYear} hours={hours} stats={yearStats} shown={shownMonths} onJump={jump} />
+    ) : null;
+  const listHeader = strip || tip ? (
+    <>
+      {strip}
+      {tip}
+    </>
   ) : undefined;
 
   const rows = sections.reduce((n, sec) => n + sec.data.length, 0);
@@ -234,19 +270,31 @@ export default function DiaryScreen() {
         stickySectionHeadersEnabled={false}
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
-        // A screenful first, then the rest in small batches, so a long diary opens at once.
-        initialNumToRender={8}
+        // A screenful first, then the rest in small batches, so a long diary opens at once (a month's bar
+        // raises it to that month).
+        initialNumToRender={reach}
         maxToRenderPerBatch={8}
         windowSize={9}
-        ListHeaderComponent={tip}
+        ListHeaderComponent={listHeader}
         contentContainerStyle={[styles.list, { paddingBottom: insets.bottom + 110 }]}
         renderSectionHeader={({ section }) => (
-          <ReelHeader
-            month={section.month}
-            count={section.count}
-            theme={theme}
-            onShare={() => router.navigate({ pathname: '/recap', params: { period: section.month } })}
-          />
+          <View
+            collapsable={false}
+            ref={(v) => {
+              if (!v) return;
+              reels.current.set(section.month, v);
+              return () => {
+                if (reels.current.get(section.month) === v) reels.current.delete(section.month);
+              };
+            }}
+          >
+            <ReelHeader
+              month={section.month}
+              count={section.count}
+              theme={theme}
+              onShare={() => router.navigate({ pathname: '/recap', params: { period: section.month } })}
+            />
+          </View>
         )}
         renderItem={({ item: row }) =>
           grid ? (
@@ -268,6 +316,7 @@ export default function DiaryScreen() {
         }
         ListFooterComponent={footer}
         onScrollToIndexFailed={() => {}}
+        onScrollBeginDrag={stopJump}
         ListEmptyComponent={
           !ready ? undefined : entries.length === 0 ? (
             <EmptyScene
@@ -327,6 +376,86 @@ export default function DiaryScreen() {
   );
 }
 
+/** This year at a glance: four figures, then a bar per month that takes you to that month. */
+function YearStrip({
+  theme,
+  year,
+  entries,
+  hours,
+  stats,
+  shown,
+  onJump,
+}: {
+  theme: Theme;
+  year: string;
+  entries: Entry[];
+  hours: number;
+  stats: ReturnType<typeof computeStats>;
+  shown: Set<string>;
+  onJump: (month: string) => void;
+}) {
+  const haptic = useHaptic();
+  const months = useMemo(() => {
+    const out = new Array<number>(12).fill(0);
+    entries.forEach((e) => out[Number(e.watchedOn.slice(5, 7)) - 1]++);
+    return out;
+  }, [entries]);
+  const max = Math.max(1, ...months);
+  const thisMonth = Number(today().slice(5, 7)) - 1;
+  return (
+    <View style={[styles.marquee, { borderColor: theme.border, backgroundColor: theme.card }]}>
+      <View style={styles.marqueeRow}>
+        <MarqueeStat theme={theme} value={String(stats.total)} label={`In ${year}`} />
+        <View style={[styles.marqueeRule, { backgroundColor: theme.border }]} />
+        <MarqueeStat theme={theme} value={`${hours}h`} label="Watched" />
+        <View style={[styles.marqueeRule, { backgroundColor: theme.border }]} />
+        <MarqueeStat theme={theme} value={stats.avgStars ? `${stats.avgStars}★` : '—'} label="Average" />
+        <View style={[styles.marqueeRule, { backgroundColor: theme.border }]} />
+        <MarqueeStat theme={theme} value={String(stats.liked)} label="Loved" />
+      </View>
+      <View style={styles.months}>
+        {months.map((n, i) => {
+          const key = `${year}-${String(i + 1).padStart(2, '0')}`;
+          const ahead = i > thisMonth;
+          const open = n > 0 && shown.has(key);
+          return (
+            <Pressable
+              key={key}
+              disabled={!open}
+              onPress={() => {
+                haptic('step');
+                onJump(key);
+              }}
+              accessibilityRole="button"
+              accessibilityLabel={`${MONTHS[i]}, ${n} ${n === 1 ? 'entry' : 'entries'}`}
+              accessibilityState={{ disabled: !open }}
+              style={styles.month}
+            >
+              {({ pressed }) => (
+                <>
+                  <View style={[styles.track, ahead ? { borderWidth: 1, borderColor: theme.border } : { backgroundColor: theme.chip }]}>
+                    {n > 0 && (
+                      <View
+                        style={[
+                          styles.fill,
+                          { height: `${Math.max(8, (n / max) * 100)}%`, backgroundColor: pressed ? theme.text : theme.textMuted, opacity: open ? 1 : 0.4 },
+                        ]}
+                      />
+                    )}
+                  </View>
+                  <Text allowFontScaling={false} style={[styles.monthLetter, { color: i === thisMonth ? theme.text : theme.textMuted }]}>
+                    {MONTHS[i][0]}
+                  </Text>
+                </>
+              )}
+            </Pressable>
+          );
+        })}
+      </View>
+    </View>
+  );
+}
+
 function MarqueeStat({ theme, value, label }: { theme: ReturnType<typeof useTheme>; value: string; label: string }) {
   return (
     <View style={styles.marqueeStat}>
@@ -346,7 +475,13 @@ const styles = StyleSheet.create({
   top: { gap: 12, paddingBottom: 6, paddingHorizontal: 16 },
   scroller: { flex: 1 },
   tip: { paddingTop: 10 },
-  marquee: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderRadius: 12, paddingVertical: 10 },
+  marquee: { borderWidth: 1, borderRadius: 12, paddingTop: 10, paddingBottom: 8, gap: 12, marginTop: 4, marginBottom: 2 },
+  marqueeRow: { flexDirection: 'row', alignItems: 'center' },
+  months: { flexDirection: 'row', gap: 4, height: 64, paddingHorizontal: 10 },
+  month: { flex: 1, gap: 4 },
+  track: { flex: 1, borderRadius: 4, overflow: 'hidden', justifyContent: 'flex-end' },
+  fill: { width: '100%', borderRadius: 4 },
+  monthLetter: { fontFamily: fonts.uiSemibold, fontSize: 11, lineHeight: 14, textAlign: 'center' },
   marqueeStat: { flex: 1, alignItems: 'center' },
   marqueeValue: { fontFamily: fonts.display, fontSize: 28, lineHeight: 30, includeFontPadding: false },
   marqueeLabel: { fontFamily: fonts.uiSemibold, fontSize: 12 },

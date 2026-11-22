@@ -80,7 +80,7 @@ export default function RecapScreen() {
           title="Nothing on the reel yet"
           text={
             all.length
-              ? 'Your diary’s entries have no watch dates, so they can’t go in a month. What you log from now on shows up here, ready for Instagram.'
+              ? 'Your diary’s entries have no watch dates, so they can’t go in a month. What you log from now on shows up here.'
               : 'Log a few titles and your monthly recap appears here, ready for Instagram.'
           }
           action={{ label: 'Find a title', icon: 'find', onPress: () => router.navigate('/search') }}

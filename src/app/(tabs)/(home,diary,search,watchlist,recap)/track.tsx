@@ -383,7 +383,7 @@ export default function TrackScreen() {
               })}
             </View>
           )}
-          <Text style={[styles.note, { color: theme.textMuted }]}>Tap an episode for details. Hold it to choose the day you saw it, or to catch up to it.</Text>
+          <Text style={[styles.note, { color: theme.textMuted }]}>Hold an episode to choose the day you saw it, or to catch up to it.</Text>
         </>
       )}
       <EpisodeSheet

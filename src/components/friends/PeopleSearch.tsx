@@ -239,7 +239,7 @@ export function PeopleSearch({ theme, onFriendsChanged }: { theme: Theme; onFrie
           {searching && <ActivityIndicator size="small" color={theme.accent} />}
         </View>
         {people?.map((p) => personRow(p))}
-        {people && !people.length && <Text style={[styles.bio, { color: theme.textMuted }]}>No one by that name, or they’ve chosen not to be found.</Text>}
+        {people && !people.length && <Text style={[styles.bio, { color: theme.textMuted }]}>No one by that name.</Text>}
         <View style={[styles.switchRow, { borderColor: theme.border }]}>
           <View style={{ flex: 1 }}>
             <Text style={[styles.name, { color: theme.text }]}>Let people find me by name</Text>

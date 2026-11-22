@@ -1,6 +1,7 @@
 import type { UserList } from '@/lists/ListsProvider';
 import type { Favourite } from '@/settings/SettingsProvider';
 import type { Entry } from '@/store/types';
+import { storage } from '@/lib/storage';
 import { supabase } from '@/sync/supabase';
 
 // Friends, through the functions in supabase/friends.sql: they check the friendship and return only what
@@ -112,10 +113,49 @@ export async function titleInFriendLists(source: string, sourceId: string): Prom
   return ((data ?? []) as { user_id: string; list: UserList }[]).map((r) => ({ ...r.list, userId: r.user_id }));
 }
 
-/** A short-lived link to a friend's photo (the bucket is private; friends may read each other's). */
+// Photo links are kept on the phone and reused while they have a day or more left. A new link on every
+// launch meant each face waited on the server, and the phone's copy of the photo was never used.
+// A new photo is a new path (avatar-<time>.jpg), so a kept link never shows an old one.
+const LINKS_KEY = 'friend-photo-links';
+const LINK_LIFE = 7 * 86_400; // seconds a link is signed for
+const LINK_MARGIN = 86_400_000; // ms a kept link must still have left
+type Links = Record<string, { url: string; until: number }>;
+let kept: Promise<Links> | null = null;
+const asking = new Map<string, Promise<string | null>>();
+
+const keptLinks = () =>
+  (kept ??= storage
+    .getItem(LINKS_KEY)
+    .then((raw) => (raw ? (JSON.parse(raw) as Links) : {}))
+    .catch((): Links => ({})));
+
+async function keep(path: string, url: string) {
+  const now = Date.now();
+  const next: Links = { [path]: { url, until: now + LINK_LIFE * 1000 } };
+  // Drop links that are running out, and keep the list to the people you actually see.
+  for (const [p, l] of Object.entries(await keptLinks()).slice(-199)) if (p !== path && l.until - now > LINK_MARGIN) next[p] = l;
+  kept = Promise.resolve(next);
+  storage.setItem(LINKS_KEY, JSON.stringify(next)).catch(() => {});
+}
+
+/** A link to a friend's photo (the bucket is private; friends may read each other's): the kept one, or a new one. */
 export async function photoUrl(path: string): Promise<string | null> {
-  const { data, error } = await client().storage.from('avatars').createSignedUrl(path, 60 * 60);
-  return error ? null : data.signedUrl;
+  const k = (await keptLinks())[path];
+  if (k && k.until - Date.now() > LINK_MARGIN) return k.url;
+  let p = asking.get(path);
+  if (!p) {
+    p = client()
+      .storage.from('avatars')
+      .createSignedUrl(path, LINK_LIFE)
+      .then(async ({ data, error }) => {
+        if (error || !data) return null;
+        await keep(path, data.signedUrl);
+        return data.signedUrl;
+      })
+      .finally(() => asking.delete(path));
+    asking.set(path, p);
+  }
+  return p;
 }
 
 // --- Finding people by name (supabase/people.sql) ----------------------------------------------------

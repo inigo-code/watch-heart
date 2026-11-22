@@ -347,8 +347,7 @@ function SignedIn({ theme }: { theme: Theme }) {
         </Text>
         {status === 'waiting' && (
           <Text style={[styles.p, { color: theme.textMuted }]}>
-            {secondsLeft ? `Syncs in ${secondsLeft} s. ` : 'Syncing soon. '}To save data, the app syncs at most once a minute; tap Sync now to send changes
-            straight away.
+            {secondsLeft ? `Syncs in ${secondsLeft} s.` : 'Syncing soon.'}
           </Text>
         )}
         {status === 'error' && error && <Text style={[styles.error, { color: theme.danger }]}>{error}</Text>}
@@ -356,14 +355,11 @@ function SignedIn({ theme }: { theme: Theme }) {
       </Card>
 
       <Button theme={theme} kind="secondary" label="Sign out" busy={busy && sheet === null} onPress={() => setSheet('sign-out')} />
-      <DangerButton
-        theme={theme}
-        label="Delete account"
-        icon="person-remove-outline"
-        busy={busy && sheet === 'delete'}
-        onPress={() => setSheet('delete')}
-        style={{ marginTop: 8 }}
-      />
+      {sheet === 'delete' ? (
+        <DeleteAccount theme={theme} onClose={() => setSheet(null)} onDelete={deleteAccount} />
+      ) : (
+        <DangerButton theme={theme} label="Delete account" icon="person-remove-outline" onPress={() => setSheet('delete')} style={{ marginTop: 8 }} />
+      )}
 
       <ActionSheet
         visible={sheet === 'sign-out'}
@@ -379,13 +375,57 @@ function SignedIn({ theme }: { theme: Theme }) {
           },
         ]}
       />
-      <ActionSheet
-        visible={sheet === 'delete'}
-        title="Delete your account and everything in it from the cloud? Your diary stays on this phone, but your other devices stop syncing. This can't be undone."
-        onClose={() => setSheet(null)}
-        actions={[{ label: 'Delete my account', icon: 'trash-outline', destructive: true, onPress: () => void act(deleteAccount, 'Account deleted') }]}
-      />
     </>
+  );
+}
+
+/** Deleting the account asks for its password first, like the website. */
+function DeleteAccount({ theme, onClose, onDelete }: { theme: Theme; onClose: () => void; onDelete: (password: string) => Promise<void> }) {
+  const toast = useToast();
+  const [password, setPassword] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const submit = async () => {
+    if (!password || busy) return;
+    setBusy(true);
+    setError(null);
+    try {
+      await onDelete(password);
+      toast('Account deleted');
+    } catch (e) {
+      setError(errorText(e));
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Card theme={theme}>
+      <Text style={[styles.h, { color: theme.text }]}>Delete your account?</Text>
+      <Text style={[styles.p, { color: theme.textMuted }]}>
+        Everything in it goes from the cloud. Your diary stays on this phone, but your other devices stop syncing. This can’t be undone.
+      </Text>
+      <TextInput
+        value={password}
+        onChangeText={(t) => {
+          setPassword(t);
+          setError(null);
+        }}
+        placeholder="Your password"
+        placeholderTextColor={theme.textMuted}
+        secureTextEntry
+        autoFocus
+        autoCapitalize="none"
+        autoComplete="current-password"
+        textContentType="password"
+        onSubmitEditing={() => void submit()}
+        accessibilityLabel="Your password"
+        style={[styles.input, { color: theme.text, backgroundColor: theme.bg, borderColor: error ? theme.danger : theme.border }]}
+      />
+      {error && <Text style={[styles.error, { color: theme.danger }]}>{error}</Text>}
+      <Button theme={theme} kind="danger" label="Delete my account" busy={busy} disabled={!password} onPress={() => void submit()} />
+      <Button theme={theme} kind="secondary" label="Cancel" disabled={busy} onPress={onClose} />
+    </Card>
   );
 }
 

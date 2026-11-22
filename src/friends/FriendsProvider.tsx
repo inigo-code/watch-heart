@@ -12,7 +12,7 @@ type FriendsContext = {
   /** Signed in, so friends are possible. */
   available: boolean;
   friends: Friend[];
-  /** Friend or requester id → a link to their photo, good for an hour. */
+  /** Friend or requester id → a link to their photo (kept on the phone for a week). */
   photos: Record<string, string>;
   /** Requests waiting for your answer. */
   requests: FriendRequest[];
@@ -31,7 +31,7 @@ const Ctx = createContext<FriendsContext | null>(null);
 type Loaded = { owner: string; friends: Friend[]; photos: Record<string, string>; requests: FriendRequest[]; peopleReady: boolean };
 
 // Coming back to the app after this long fetches everything again: requests and acceptances arrive from
-// other phones, and photo links last an hour.
+// other phones.
 const FRESH_MS = 2 * 60 * 1000;
 
 /** Friends and requests. Their photo links come after (`photosFor`), so the list never waits on them. */

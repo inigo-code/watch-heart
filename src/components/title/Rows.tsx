@@ -99,7 +99,10 @@ export function PeopleRow({ people, theme }: { people: Person[]; theme: Theme })
 /** A person's photo, or their initials when TMDB has none. */
 export function Face({ uri, name, theme, size, round }: { uri: string | null; name: string; theme: Theme; size: number; round?: boolean }) {
   const style = { width: size, height: round ? size : size * 1.25, borderRadius: round ? size / 2 : 8, backgroundColor: theme.elevated };
-  if (uri) return <Image source={{ uri }} style={style} contentFit="cover" transition={150} accessibilityIgnoresInvertColors />;
+  // A friend's photo comes through a signed link whose token changes; the photo doesn't, so it's cached under
+  // the link without the token.
+  if (uri)
+    return <Image source={{ uri, cacheKey: uri.split('?')[0] }} cachePolicy="memory-disk" style={style} contentFit="cover" transition={150} accessibilityIgnoresInvertColors />;
   const initials = name
     .split(/\s+/)
     .map((w) => w[0])

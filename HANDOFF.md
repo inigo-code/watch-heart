@@ -117,7 +117,12 @@ The full list is `git log`; every user-facing commit names its What's new versio
 2. ~~The episode list on a show's page still shows TMDB's dates.~~ Checked 13 Nov: already fixed in 1.5.0 (`05bdc5c`). The Episodes page takes each day from the track's `upcoming`, the same list the alerts use, in the phone's time zone. Episodes already aired, and seasons after the airing one, show TMDB's (or TVmaze's) day; no alert uses those.
 3. The Netflix title link depends on Google's first result. No fix without a paid API.
 
-**Not yet released** (committed, goes out with the next OTA update): Discover's Newest sort asks for at least 20 votes (3 within one language), so it shows real releases instead of unrated uploads (`browse.tsx`; the website did the same in Watch Heart Web `eeb73fc`).
+**Not yet released** (committed, goes out with the next OTA update; all JavaScript, no native change). Write the What's new entry when releasing:
+- Discover's Newest sort asks for at least 20 votes (3 within one language), so it shows real releases instead of unrated uploads (`browse.tsx`; the website did the same in Watch Heart Web `eeb73fc`).
+- Friends' photos: signed links are kept on the phone for a week (`photoUrl` in `friends/friendsApi.ts`, storage key `friend-photo-links`), and `Face` caches the photo under the link without its token, so faces show from the phone's copy instead of loading on every launch. A new photo is a new path (`avatar-<time>.jpg`), so a kept link never shows an old one.
+- Delete account asks for the password first (checked by signing in again in `deleteAccount` in `SyncProvider.tsx`), like the website. It's an inline card on Account, not a sheet. Not tried against a real account.
+- Diary: the year figures moved from the fixed header into the top of the list (they scroll away), with a bar per month under them; a bar takes the list to that month. The jump raises `initialNumToRender` to draw the rows down to that month, then measures the month's header with `measureLayout` and scrolls there; the list's own `scrollToLocation` guessed wrong for rows not drawn yet. Checked in the web build, including the poster wall and after switching layouts; not yet on a phone. The bars are narrower than 48dp (twelve across a phone).
+- Text trimmed: the sync wait note (Account), "or they've chosen not to be found" (people search), "ready for Instagram" (Recap with undated entries), and the tracker's "Tap an episode for details" hint.
 
 **For the next native build** (after 1 December)
 - ~~Copy Prompt Heart's `android:windowBackground` change to clear the black strip on Android 15.~~ Checked 2026-11-21: `plugins/withSplashSystemBars.js` already matches Prompt Heart's, so the 1.7.0 build carries it.
