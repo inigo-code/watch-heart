@@ -17,7 +17,7 @@ import { useToast } from '@/components/Toast';
 import { formatCode, friendsFeed, myInviteCode, redeemInvite } from '@/friends/friendsApi';
 import type { FriendEntry } from '@/friends/friendsApi';
 import { useFriends } from '@/friends/FriendsProvider';
-import { SITE_URL } from '@/lib/app';
+import { SITE_URL, WEB_URL } from '@/lib/app';
 import { friendlyDate } from '@/lib/dates';
 import { easeNextLayout } from '@/lib/motion';
 import { font, fonts, useTheme } from '@/lib/theme';
@@ -117,7 +117,7 @@ export default function FriendsScreen() {
   const share = () =>
     code &&
     Share.share({
-      message: `Add me on Watch Heart, the film and series diary: my invite code is ${formatCode(code)}\n${SITE_URL}invite.html?code=${code}`,
+      message: `Add me on Watch Heart, the film and series diary: my invite code is ${formatCode(code)}\n${SITE_URL}invite.html?code=${code}\nOn a computer: ${WEB_URL}`,
     }).catch(() => {});
 
   const reload = async () => {

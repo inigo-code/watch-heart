@@ -9,7 +9,7 @@ import { HeartAppsCard } from '@/components/HeartApps';
 import { Sprockets } from '@/components/Film';
 import { Row, Section } from '@/components/SettingsUI';
 import { UpdateCard } from '@/components/UpdateRow';
-import { ANILIST_ALLOWED, APP_TAGLINE, DATA_SOURCES, DEVELOPER, HEART_APPS, SUPPORT_EMAIL } from '@/lib/app';
+import { ANILIST_ALLOWED, APP_TAGLINE, DATA_SOURCES, DEVELOPER, HEART_APPS, SUPPORT_EMAIL, WEB_NAME, WEB_URL } from '@/lib/app';
 import { font, fonts, useTheme } from '@/lib/theme';
 
 export default function AboutScreen() {
@@ -38,6 +38,10 @@ export default function AboutScreen() {
       </View>
 
       <UpdateCard theme={theme} />
+
+      <Section theme={theme} title="On a computer">
+        <Row theme={theme} icon="desktop-outline" label="Use it in your browser" value={WEB_NAME} onPress={() => Linking.openURL(WEB_URL)} last />
+      </Section>
 
       <Section theme={theme} title="Credits">
         <Row theme={theme} icon="film-outline" label="Films and series" value="TMDB" onPress={() => Linking.openURL(DATA_SOURCES.tmdb.url)} />

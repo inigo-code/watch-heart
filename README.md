@@ -5,6 +5,7 @@
 <p align="center">
   <a href="../../releases/latest/download/watch-heart.apk"><img alt="Download APK" src="https://img.shields.io/badge/Download-Android%20APK-F2B84B?style=for-the-badge&logo=android&logoColor=white&labelColor=0B0A0D"></a>
   <a href="https://heartapps.github.io/watch-heart/fdroid.html"><img alt="Get it with F-Droid" src="https://img.shields.io/badge/Get%20it%20with-F--Droid-1976D2?style=for-the-badge&logo=f-droid&logoColor=white&labelColor=0B0A0D"></a>
+  <a href="https://watchheart.in/"><img alt="Use it in your browser at watchheart.in" src="https://img.shields.io/badge/Use%20it%20in%20your%20browser-watchheart.in-F2B84B?style=for-the-badge&logo=googlechrome&logoColor=white&labelColor=0B0A0D"></a>
   <a href="https://heartapps.github.io/watch-heart/"><img alt="Website" src="https://img.shields.io/badge/Website-Watch%20Heart-FF4D6D?style=for-the-badge&logo=githubpages&logoColor=white&labelColor=0B0A0D"></a>
   <img alt="Version" src="https://img.shields.io/badge/version-1.7.0-F2B84B?style=for-the-badge&labelColor=0B0A0D">
   <img alt="Expo SDK 58" src="https://img.shields.io/badge/Expo-SDK%2058-000020?style=for-the-badge&logo=expo&logoColor=white">
@@ -18,7 +19,8 @@
 <p align="center">
 <b>Watch Heart</b> is a diary for everything you watch: the film on Friday, the series you finish on Sunday,<br/>
 the anime you swear is the last episode at 1 am. Log it with half stars and a review,<br/>
-keep a watchlist, and turn each month into an <b>Instagram story</b>. Free, with no ads.
+keep a watchlist, and turn each month into an <b>Instagram story</b>. Free, with no ads.<br/>
+On a computer, the same diary is at <a href="https://watchheart.in/"><b>watchheart.in</b></a>.
 </p>
 
 <br/>
@@ -61,7 +63,7 @@ keep a watchlist, and turn each month into an <b>Instagram story</b>. Free, with
     </td>
     <td valign="top">
       <h4>☁️ Sync &amp; backup</h4>
-      Optional account to keep your diary on every device. Works offline. JSON backup, CSV export and a Letterboxd-ready file.
+      Optional account to keep your diary on every device, and at <a href="https://watchheart.in/">watchheart.in</a> in a browser. Works offline. JSON backup, CSV export and a Letterboxd-ready file.
     </td>
     <td valign="top">
       <h4>🌗 Projector or Paper</h4>

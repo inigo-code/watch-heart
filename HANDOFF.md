@@ -123,6 +123,8 @@ The full list is `git log`; every user-facing commit names its What's new versio
 - Search order shared with the website (`lib/searchRank.ts`, used in `api/tmdb.ts` and `api/index.ts`; Watch Heart Web `src/data/searchAll.ts` imports it). **Republish watchheart.in with the OTA.**
 - Full cast and crew was on the list by mistake: the app already has it (`credits/[id]`).
 
+**watchheart.in mentioned where it belongs (2026-11-23, What's new 1.7.8, not yet published):** About has an "On a computer" row (`WEB_URL`/`WEB_NAME` in `lib/app.ts`), friend invites add "On a computer: https://watchheart.in/", and `SITE_URL` is now `heartapps.github.io/watch-heart/`. README (badge, intro, Sync highlight), `store/listing.md` (a Sync line; Website and privacy now on heartapps.github.io, for Inigo to paste into Play Console), `store/play-console.md` addresses, the F-Droid metadata (`Watch Heart F-Droid/metadata/com.inigocode.watchheart.yml`: a bullet and WebSite; live only after the repo index is rebuilt and uploaded) and the Heart Apps home page (Sites `Heart Apps Home`: "Android, web", "Use it in your browser"). The README's F-Droid repo address stays on inigo-code.github.io on purpose.
+
 **Check on a real phone** (the web preview can't show these): the widget after resizing, notifications with the app closed, opening streaming apps, the This week stack, the friend page, the unsaved prompt, friend paging on the real database, large phone fonts, onboarding's poster wall.
 
 **Known bugs**

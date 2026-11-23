@@ -66,6 +66,7 @@ Bring your history
 Sync, or don’t
 • Works fully offline with no account
 • An optional free account keeps your diary on every device
+• On a computer, use the same diary at watchheart.in
 
 Private by design
 • No ads, no analytics, no tracking
@@ -83,8 +84,8 @@ Film and series data and images come from TMDB. Watch Heart uses TMDB and the TM
 - App category: **Entertainment**
 - Tags (pick up to 5): Entertainment, Movies, TV, Diary, Reviews (pick whichever Play offers)
 - Email: inigo@tosstheworld.org
-- Website: https://inigo-code.github.io/watch-heart-site/
-- Privacy policy: https://inigo-code.github.io/watch-heart-site/privacy.html
+- Website: https://heartapps.github.io/watch-heart/
+- Privacy policy: https://heartapps.github.io/watch-heart/privacy.html
 
 ## Graphics (in `graphics/`)
 

@@ -51,6 +51,10 @@ export const DATA_SOURCES = {
 type Note = string | { text: string; fromApp: string };
 const NOTES: { id: string; items: Note[] }[] = [
   {
+    id: '1.7.8',
+    items: ['Watch Heart works on a computer too, at watchheart.in, with the same diary. Find it in About'],
+  },
+  {
     id: '1.7.7',
     items: [
       'Meet Reel, Watch Heart’s reel come alive. He keeps you company when you sign in and on empty pages',
@@ -294,4 +298,7 @@ export const WHATS_NEW = {
       .map((item) => (typeof item === 'string' ? item : item.text));
   },
 };
-export const SITE_URL = 'https://inigo-code.github.io/watch-heart-site/';
+export const SITE_URL = 'https://heartapps.github.io/watch-heart/';
+/** Watch Heart in a browser: the same diary and account on any computer. */
+export const WEB_URL = 'https://watchheart.in/';
+export const WEB_NAME = 'watchheart.in';

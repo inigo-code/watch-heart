@@ -1,7 +1,7 @@
 # Play Console answers
 
 Answers for the forms under Play Console → Policy → App content, based on what the app actually does.
-If the app changes (new data, a new SDK, ads), update these and the [privacy policy](https://inigo-code.github.io/watch-heart-site/privacy.html).
+If the app changes (new data, a new SDK, ads), update these and the [privacy policy](https://heartapps.github.io/watch-heart/privacy.html).
 
 ## Before you start
 
@@ -13,7 +13,7 @@ If the app changes (new data, a new SDK, ads), update these and the [privacy pol
 
 ## Privacy policy
 
-https://inigo-code.github.io/watch-heart-site/privacy.html
+https://heartapps.github.io/watch-heart/privacy.html
 
 ## App access
 
@@ -61,11 +61,11 @@ Expected rating: Teen / PEGI 12–16 (film posters and synopses can show violenc
 
 **Does your app collect or share any of the required user data types?** Yes.
 **Is all of the user data collected by your app encrypted in transit?** Yes.
-**Do you provide a way for users to request that their data is deleted?** Yes. In the app (Settings → Account → your email → Delete account), and at https://inigo-code.github.io/watch-heart-site/delete-account.html
+**Do you provide a way for users to request that their data is deleted?** Yes. In the app (Settings → Account → your email → Delete account), and at https://heartapps.github.io/watch-heart/delete-account.html
 
-**Account creation:** username, password and other authentication (email and password, with a one-time code emailed at sign-up). Account deletion URL: https://inigo-code.github.io/watch-heart-site/delete-account.html
+**Account creation:** username, password and other authentication (email and password, with a one-time code emailed at sign-up). Account deletion URL: https://heartapps.github.io/watch-heart/delete-account.html
 
-**Delete some data without deleting the account?** Yes: https://inigo-code.github.io/watch-heart-site/delete-account.html#some-data (diary entries, watchlist titles, lists, profile details, what friends see).
+**Delete some data without deleting the account?** Yes: https://heartapps.github.io/watch-heart/delete-account.html#some-data (diary entries, watchlist titles, lists, profile details, what friends see).
 
 Data types. For each one: **Collected: yes. Shared: no. Processed ephemerally: no.**
 - Supabase and Expo are service providers processing data on your behalf, which Google doesn't count as sharing.
