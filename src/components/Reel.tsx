@@ -42,7 +42,7 @@ const LEAN: Record<ReelMood, string> = { idle: '0deg', look: '7deg', shy: '-9deg
 
 /**
  * Reel. `size` is his width; `mood` changes his face; `look` (0 to 1) moves the glints in his eyes along a
- * line of text being typed. `spins` turns him once each time it goes up (a tap on Home). He pops in when he
+ * line of text being typed. `spins` turns him once each time it goes up. He pops in when he
  * appears, blinks every few seconds and his heart beats now and then; with reduced motion he stays still, but
  * his face still changes. Decorative: TalkBack skips him, the words beside him carry the meaning.
  */
@@ -212,11 +212,6 @@ export function PaperTicket({ text, hole, size = 12, tilt = -5, style }: { text:
       <View style={[styles.notch, { width: n * 2, height: n * 2, borderRadius: n, right: -n, marginTop: -n, backgroundColor: hole }]} />
     </View>
   );
-}
-
-/** What's on at this hour, as a cinema would put it. */
-export function showTime(hour = new Date().getHours()) {
-  return hour < 5 ? 'Late show' : hour < 12 ? 'Morning show' : hour < 17 ? 'Matinee' : hour < 22 ? 'Evening show' : 'Late show';
 }
 
 const styles = StyleSheet.create({

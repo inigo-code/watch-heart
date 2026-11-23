@@ -50,7 +50,7 @@ need a new build, so drawing with Views is the better route.
 
 ### Step 1: the same places as the website
 
-All five are built. On empty pages Reel stands at the blank ticket's lower right corner, beside it, rather than
+All five were built; **the Home greeting one was removed again the same day** (Inigo: no mascot on Home, app or website), so Reel is on welcome, sign in, empty pages and Diary didn't load. On empty pages Reel stands at the blank ticket's lower right corner, beside it, rather than
 replacing it. He has no film strip yet: on welcome he stands with his ticket instead of rolling in. Not yet
 seen on a phone.
 

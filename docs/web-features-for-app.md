@@ -53,7 +53,7 @@ only in the list layout's wide mode, or behind a Settings switch.
 
 ## 3. "Show time" on Home, with Reel (done)
 
-**Done:** `components/home/Greeting.tsx`, every day (Inigo's choice).
+**Done, then taken back:** shipped in 1.7.7 (`components/home/Greeting.tsx`), then Inigo had Reel removed from Home on both the app and the website the same day. The greeting text stays.
 
 **On the website:** Reel sits beside "Good morning, Maya" holding a small paper ticket with the time of day:
 MORNING SHOW (5 am to noon), MATINEE (to 5 pm), EVENING SHOW (to 10 pm), LATE SHOW (after). He spins once

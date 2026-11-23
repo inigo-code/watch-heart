@@ -114,7 +114,7 @@ The full list is `git log`; every user-facing commit names its What's new versio
 
 **Released in OTA 1.7.7** (2026-11-23, all JavaScript, no native change; checked in the web build, not on a phone. From `docs/web-features-for-app.md` and `docs/reel-mascot-plan.md`, with Inigo's choices:
 - Reel, the mascot (`components/Reel.tsx`, plain Views and Animated, no SVG): moods idle, look, shy, oops; pop in, blink, heart beat, spin on tap; still with reduced motion; hidden from TalkBack. `PaperTicket` and `showTime` live there too. He's on welcome ("Grab a seat!"), Account sign in (looks along what you type, shuts his eyes for the password, oops on an error, a line per mode), beside the blank ticket on empty pages, and on Diary didn't load (oops).
-- Home greeting every day (`components/home/Greeting.tsx`): "Good morning, name" with Reel holding MORNING SHOW / MATINEE / EVENING SHOW / LATE SHOW; a tap spins him.
+- Home greeting every day (`components/home/Greeting.tsx`): "Good morning, name". It shipped in 1.7.7 with Reel beside it holding MORNING SHOW / MATINEE / EVENING SHOW / LATE SHOW; **Inigo had Reel taken off Home on 2026-11-23** (app and website), so only the greeting stays. Not yet published as an OTA.
 - Loved stamp on diary tickets in the ticket's kind colour (`LovedStamp` in `Diary.tsx`); the Logged stamp's ticket keeps the small heart.
 - A review line on tickets (not for spoiler reviews), Settings "Review lines on tickets", on by default (`settings.ticketReview`).
 - People you might know on Home under five friends (`components/home/PeopleRow.tsx`). Not tried signed in.
