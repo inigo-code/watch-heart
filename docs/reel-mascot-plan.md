@@ -59,6 +59,10 @@ need a new build, so drawing with Views is the better route.
    a small paper ticket with the scene's word, beside or instead of the blank ticket and empty strip. Decide on
    a phone which reads better.
 4. **Diary didn't load** (`DiaryLoadFailed.tsx`): Reel in his oops mood.
+5. **Home greeting** (added 2026-11-23, live on the website): a small Reel beside "Good morning", without his
+   film, holding a ticket that says MORNING SHOW, MATINEE, EVENING SHOW or LATE SHOW by the hour; a tap spins
+   him once. Home is opened often, so he only pops in quietly here, with no rolling or talking. See
+   `docs/web-features-for-app.md`, item 3.
 
 ### Step 2: rare, happy moments (once Step 1 feels right)
 
