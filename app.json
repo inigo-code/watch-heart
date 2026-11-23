@@ -51,7 +51,6 @@
       "expo-status-bar",
       "./plugins/withSplashSystemBars",
       "./plugins/withStreamingQueries",
-      "./plugins/withOptionalPortrait",
       [
         "expo-splash-screen",
         {
@@ -142,7 +141,8 @@
           "color": "#F2B84B"
         }
       ],
-      "expo-background-task"
+      "expo-background-task",
+      "./plugins/withOptionalHardware"
     ],
     "experiments": {
       "typedRoutes": true,
