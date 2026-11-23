@@ -97,6 +97,12 @@ Film and series data and images come from TMDB. Watch Heart uses TMDB and the TM
 
 What each picture shows, and how to make them again: `make/README.md`.
 
+## Release notes for 1.8.0 (500 max)
+
+<en-IN>
+Share to story now opens Instagram Stories straight away, and a new share button sends your story to WhatsApp or any other app. Also new: Reel, Watch Heart’s reel come alive; a heart stamp and a line of your review on diary tickets; movie nights in your calendar; people you might know; better search; and the same diary on a computer at watchheart.in.
+</en-IN>
+
 ## Release notes for 1.7.3 (500 max)
 
 <en-IN>
