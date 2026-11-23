@@ -51,6 +51,10 @@ export const DATA_SOURCES = {
 type Note = string | { text: string; fromApp: string };
 const NOTES: { id: string; items: Note[] }[] = [
   {
+    id: '1.8.0',
+    items: [{ text: 'Share to story now opens Instagram Stories straight away. The new share button beside it sends your story to any other app', fromApp: '1.8.0' }],
+  },
+  {
     id: '1.7.8',
     items: ['Watch Heart works on a computer too, at watchheart.in, with the same diary. Find it in About'],
   },

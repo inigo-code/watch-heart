@@ -1,3 +1,5 @@
+import { File } from 'expo-file-system';
+import { startActivityAsync } from 'expo-intent-launcher';
 import { Asset, requestPermissionsAsync } from 'expo-media-library';
 import * as Sharing from 'expo-sharing';
 import type { RefObject } from 'react';
@@ -13,11 +15,33 @@ export async function captureStory(ref: RefObject<StoryHandle | null>): Promise<
   return captureRef(ref, { format: 'png', quality: 1, width: EXPORT_W, height: EXPORT_H, result: 'tmpfile' });
 }
 
+/** Watch Heart's Meta app (developers.facebook.com). Instagram wants it on every story shared to it; it isn't secret. */
+const META_APP_ID = '1513214237381567';
+const FLAG_GRANT_READ_URI_PERMISSION = 1;
+
 /**
- * Opens the share sheet with the image. Choose Instagram, then Story, to post it; it works the same for
- * WhatsApp status, Snapchat or anything else. (Instagram's direct "share to story" intent needs a Meta
- * developer app id; the share sheet needs nothing.)
+ * Opens the image straight in Instagram's story editor. Instagram decides by itself whether "Story" shows in
+ * the share sheet, and on some phones it doesn't, so this asks for the story directly. Without Instagram, or
+ * if it turns the image away, the share sheet opens instead.
  */
+export async function shareToStory(uri: string) {
+  if (Platform.OS === 'android') {
+    try {
+      await startActivityAsync('com.instagram.share.ADD_TO_STORY', {
+        data: new File(uri).contentUri,
+        type: 'image/png',
+        flags: FLAG_GRANT_READ_URI_PERMISSION,
+        extra: { source_application: META_APP_ID },
+      });
+      return;
+    } catch {
+      // Instagram isn't on this phone: the share sheet below still works.
+    }
+  }
+  await shareImage(uri);
+}
+
+/** Opens the share sheet with the image, for WhatsApp status, Snapchat or any other app. */
 export async function shareImage(uri: string) {
   if (!(await Sharing.isAvailableAsync())) throw new Error('Sharing isn’t available on this device.');
   await Sharing.shareAsync(uri, { mimeType: 'image/png', dialogTitle: 'Share your story', UTI: 'public.png' });

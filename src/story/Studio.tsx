@@ -13,7 +13,7 @@ import { shownError } from '@/lib/errors';
 
 import { PALETTES } from './palettes';
 import type { PaletteKey } from './palettes';
-import { captureStory, saveImage, shareImage } from './share';
+import { captureStory, saveImage, shareImage, shareToStory } from './share';
 import { EXPORT_W } from './export';
 import { STORY_H, STORY_W } from './StoryCanvas';
 import type { StoryHandle } from './StoryCanvas';
@@ -76,16 +76,17 @@ export function PalettePicker({ value, onChange, theme }: { value: PaletteKey; o
   );
 }
 
-/** "Share to story" and "Save to photos". Disabled until every poster in the story has loaded. */
+/** "Share to story" (Instagram), "Share" (any app) and "Save to photos". Disabled until every poster in the story has loaded. */
 export function ShareButtons({ target, ready, theme }: { target: RefObject<StoryHandle | null>; ready: boolean; theme: Theme }) {
   const toast = useToast();
-  const [busy, setBusy] = useState<'share' | 'save' | null>(null);
+  const [busy, setBusy] = useState<'story' | 'share' | 'save' | null>(null);
 
-  const run = async (kind: 'share' | 'save') => {
+  const run = async (kind: 'story' | 'share' | 'save') => {
     setBusy(kind);
     try {
       const uri = await captureStory(target);
-      if (kind === 'share') await shareImage(uri);
+      if (kind === 'story') await shareToStory(uri);
+      else if (kind === 'share') await shareImage(uri);
       else {
         await saveImage(uri);
         toast('Saved to your photos');
@@ -100,13 +101,22 @@ export function ShareButtons({ target, ready, theme }: { target: RefObject<Story
   return (
     <View style={styles.buttons}>
       <Pressable
-        onPress={() => run('share')}
+        onPress={() => run('story')}
         disabled={!ready || busy !== null}
         accessibilityRole="button"
         style={({ pressed }) => [styles.primary, { backgroundColor: theme.accent, opacity: !ready || busy ? 0.6 : pressed ? 0.85 : 1 }]}
       >
-        {busy === 'share' ? <ActivityIndicator color={theme.accentText} /> : <Ionicons name="logo-instagram" size={20} color={theme.accentText} />}
+        {busy === 'story' ? <ActivityIndicator color={theme.accentText} /> : <Ionicons name="logo-instagram" size={20} color={theme.accentText} />}
         <Text style={[styles.primaryText, { color: theme.accentText }]}>{ready ? 'Share to story' : 'Loading posters…'}</Text>
+      </Pressable>
+      <Pressable
+        onPress={() => run('share')}
+        disabled={!ready || busy !== null}
+        accessibilityRole="button"
+        accessibilityLabel="Share to another app"
+        style={({ pressed }) => [styles.secondary, { borderColor: theme.border, opacity: !ready || busy ? 0.6 : pressed ? 0.7 : 1 }]}
+      >
+        {busy === 'share' ? <ActivityIndicator color={theme.text} /> : <Ionicons name="share-social-outline" size={20} color={theme.text} />}
       </Pressable>
       <Pressable
         onPress={() => run('save')}
