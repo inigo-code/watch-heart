@@ -111,6 +111,8 @@ The full list is `git log`; every user-facing commit names its What's new versio
 
 ## Open work
 
+**Reel, the mascot** (planned 2026-11-23, not started): the website has Reel, the logo's reel with a face, on sign in and in empty pages. The plan for the app, drawn from Views like the splash so it ships over the air, is in `docs/reel-mascot-plan.md`.
+
 **Check on a real phone** (the web preview can't show these): the widget after resizing, notifications with the app closed, opening streaming apps, the This week stack, the friend page, the unsaved prompt, friend paging on the real database, large phone fonts, onboarding's poster wall.
 
 **Known bugs**
