@@ -1,6 +1,6 @@
 # Website features to bring to the app
 
-Listed 2026-11-23, **done the same day** (waiting for the OTA, What's new 1.7.7). The website (watchheart.in, `Watch Heart Web`) now has a few touches the app doesn't. This
+Listed 2026-11-23, **done the same day** (published in OTA 1.7.7 the same day). The website (watchheart.in, `Watch Heart Web`) now has a few touches the app doesn't. This
 file lists the ones that suit a phone, where each would go in the app, and how big a job it is. Reel, the
 mascot, has his own plan in [reel-mascot-plan.md](reel-mascot-plan.md); his part is summed up below.
 

@@ -1,6 +1,6 @@
 # Reel in the Android app: plan
 
-Planned 2026-11-23. **Step 1 is built** the same day (`src/components/Reel.tsx`, What's new 1.7.7, waiting for the OTA). Reel is live on the website (watchheart.in): on sign in and registration, and in every empty
+Planned 2026-11-23. **Step 1 is built** the same day (`src/components/Reel.tsx`, published in OTA 1.7.7). Reel is live on the website (watchheart.in): on sign in and registration, and in every empty
 or missing page. This plan brings him to the app.
 
 ## Who Reel is
