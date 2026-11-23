@@ -1,13 +1,16 @@
 # Website features to bring to the app
 
-Draft, 2026-11-23. The website (watchheart.in, `Watch Heart Web`) now has a few touches the app doesn't. This
+Listed 2026-11-23, **done the same day** (waiting for the OTA, What's new 1.7.7). The website (watchheart.in, `Watch Heart Web`) now has a few touches the app doesn't. This
 file lists the ones that suit a phone, where each would go in the app, and how big a job it is. Reel, the
 mascot, has his own plan in [reel-mascot-plan.md](reel-mascot-plan.md); his part is summed up below.
 
 Everything here except where marked can be drawn with plain Views, Animated and the icons the app already has,
 so it ships as an over-the-air update (`eas update` to every runtime), with no new APK or Play release.
 
-## 1. Loved stamp on diary tickets
+## 1. Loved stamp on diary tickets (done)
+
+**Done:** `LovedStamp` in `components/Diary.tsx`, in the ticket's own kind colour (Inigo's choice), not pink.
+The Logged stamp's ticket (`LoggedStamp.tsx`) keeps the small heart so two stamps don't collide.
 
 **On the website:** a loved title gets a rubber stamp on the right edge of its ticket: a pink heart inside a
 double ring, tilted about -14°, slightly faded like ink on paper (`Watch Heart Web/src/ui/DiaryTicket.tsx`,
@@ -32,7 +35,9 @@ reads as one more icon in the row.
 
 **Size:** small. One component, both themes to check.
 
-## 2. A line of the review on the ticket
+## 2. A line of the review on the ticket (done)
+
+**Done:** behind a Settings switch, "Review lines on tickets" under Diary, on by default (`settings.ticketReview`).
 
 **On the website:** a ticket shows the first line of your review under the title, unless the review has
 spoilers. The diary reads like a diary, not just a list.
@@ -46,7 +51,9 @@ row. Drop the review icon when the line shows. Keep the icon for spoiler reviews
 **Size:** small. Check that a month still fits in a screen or two; if tickets grow too tall, show the line
 only in the list layout's wide mode, or behind a Settings switch.
 
-## 3. "Show time" on Home, with Reel
+## 3. "Show time" on Home, with Reel (done)
+
+**Done:** `components/home/Greeting.tsx`, every day (Inigo's choice).
 
 **On the website:** Reel sits beside "Good morning, Maya" holding a small paper ticket with the time of day:
 MORNING SHOW (5 am to noon), MATINEE (to 5 pm), EVENING SHOW (to 10 pm), LATE SHOW (after). He spins once
@@ -57,20 +64,14 @@ Reel waits.
 
 **Size:** small once `Reel.tsx` exists.
 
-## 4. Full cast and crew
+## 4. Full cast and crew (already in the app)
 
-**On the website:** the Title page's "Cast" row ends in "All cast and crew", a sheet with everyone, grouped
-by department (directing, writing, camera, music and so on).
+This draft was wrong: the app already has it. "Full list" in the title page's About opens `credits/[id]`,
+everyone grouped by department. Nothing to bring over.
 
-**In the app today:** the title page shows the top of the cast and "By the same director", but no full list.
+## 5. People you might know on Home (done)
 
-**What to do:** a `BottomSheet` (the app's own `src/components/BottomSheet.tsx`) from the title page, using the
-same TMDB credits call the cast row uses, with sections by department and the same person rows. Tapping a
-person opens their page, as the cast row does.
-
-**Size:** medium.
-
-## 5. People you might know on Home
+**Done:** `components/home/PeopleRow.tsx`, after Friends lately, while you have fewer than five friends.
 
 **On the website:** while you have fewer than five friends, Home shows "People you might know" (up to six)
 under Friends lately, with an Add button on each.
@@ -84,7 +85,11 @@ have five friends.
 
 **Size:** small to medium.
 
-## 6. Plan a watch: calendar reminder
+## 6. Plan a watch: calendar reminder (done, without expo-calendar)
+
+**Done:** a calendar button on a planned movie night (`MovieNight.tsx`) offers Google Calendar (a link) or a
+calendar file (.ics, through the share sheet), from `lib/calendar.ts`. Both ship over the air; writing
+straight into the phone's calendar (`expo-calendar`) is left out.
 
 **On the website:** "Plan a watch" on a title page adds it to the watchlist with "Planned for …" and offers
 Google Calendar and an .ics file.
@@ -97,7 +102,10 @@ works with what's already in the app. A direct calendar entry needs `expo-calend
 
 **Size:** small with .ics; medium with `expo-calendar` plus a release.
 
-## 7. Search order by popularity
+## 7. Search order by popularity (done)
+
+**Done:** `lib/searchRank.ts`, used by `api/tmdb.ts` and `api/index.ts`; the website's `src/data/searchAll.ts`
+imports it, so watchheart.in needs republishing with the OTA.
 
 **On the website:** the top bar search and Find rank results by how well the name matches, then by TMDB
 popularity, so the well-known title with a name comes first, not an obscure one with the same name
@@ -135,7 +143,7 @@ who watched a title, the story studio and the import logos.
 Website-only, and not needed on a phone: the Back button (Android has its own), "Keep me signed in", the
 corner doodles, keyboard shortcuts and the table layout of the diary.
 
-## Suggested order
+## Order it was planned in
 
 1. Loved stamp (1) and the review line (2): small, seen every day, no Reel needed.
 2. `Reel.tsx`, then his Step 1 places, including the Home show-time ticket (3).
@@ -143,9 +151,9 @@ corner doodles, keyboard shortcuts and the table layout of the diary.
 4. Full cast and crew (4).
 5. Calendar reminder (6), with the next APK and Play release.
 
-## For Inigo to decide
+## Inigo's decisions (2026-11-23)
 
-- The loved stamp: ink pink as on the website, or the kind's own colour (gold, teal, pink)?
-- The review line on tickets: always, or a Settings switch?
-- Reel on Home every day, or only on the first visit of the day?
-- Which of these go in the next OTA update?
+- The loved stamp matches the ticket's colour (gold film, teal series, pink anime).
+- The review line has a Settings switch, on by default.
+- Reel greets you on Home every day.
+- Everything goes in the next OTA update.

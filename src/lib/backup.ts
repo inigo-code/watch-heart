@@ -22,7 +22,8 @@ export type Backup = {
 
 const stamp = () => new Date().toISOString().slice(0, 10);
 
-async function share(name: string, contents: string, mimeType: string, dialogTitle: string) {
+/** Saves `contents` as a file and opens the share sheet for it (on the web, downloads it). */
+export async function shareFile(name: string, contents: string, mimeType: string, dialogTitle: string) {
   if (Platform.OS === 'web') {
     const url = URL.createObjectURL(new Blob([contents], { type: mimeType }));
     const a = document.createElement('a');
@@ -42,7 +43,7 @@ async function share(name: string, contents: string, mimeType: string, dialogTit
 /** The whole diary (Trash included, so a restore brings it back too) and the watchlist, as one JSON file. */
 export async function exportBackup(entries: Entry[], watchlist: WatchItem[]) {
   const backup: Backup = { format: FORMAT, version: FORMAT_VERSION, exportedAt: new Date().toISOString(), entries, watchlist };
-  await share(`${APP_SLUG}-backup-${stamp()}.json`, JSON.stringify(backup), 'application/json', `Save ${APP_NAME} backup`);
+  await shareFile(`${APP_SLUG}-backup-${stamp()}.json`, JSON.stringify(backup), 'application/json', `Save ${APP_NAME} backup`);
 }
 
 const csvCell = (v: string | number | null) => {
@@ -67,7 +68,7 @@ export async function exportLetterboxd(entries: Entry[]): Promise<number> {
     e.tags.join(', '),
     toHtml(e.review),
   ]);
-  await share(
+  await shareFile(
     `${APP_SLUG}-letterboxd-${stamp()}.csv`,
     csv([['Title', 'Year', 'tmdbID', 'WatchedDate', 'Rating', 'Rewatch', 'Tags', 'Review'], ...rows]),
     'text/csv',
@@ -98,7 +99,7 @@ export async function exportCsv(entries: Entry[]) {
     e.character ? `${e.character.name}${e.character.actor ? ` (${e.character.actor})` : ''}` : '',
     e.review,
   ]);
-  await share(
+  await shareFile(
     `${APP_SLUG}-diary-${stamp()}.csv`,
     csv([['Watched', 'Kind', 'Title', 'Year', 'Rating', 'Liked', 'Rewatch', 'Progress', 'Genres', 'Minutes', 'Tags', 'Watched with', 'Vibes', 'Watched on', 'Where', 'Service', 'Favourite character', 'Review'], ...rows]),
     'text/csv',

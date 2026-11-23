@@ -14,6 +14,8 @@ import { inCinemasQuery, nowPlayingTmdb, trendingAllTmdb } from '@/api/tmdb';
 import { AppHeader } from '@/components/AppHeader';
 import { Poster } from '@/components/Film';
 import { FriendsRow } from '@/components/home/FriendsRow';
+import { Greeting } from '@/components/home/Greeting';
+import { PeopleRow } from '@/components/home/PeopleRow';
 import { NotifyInvite } from '@/components/home/NotifyInvite';
 import { OfflineNote } from '@/components/home/OfflineNote';
 import { WeekStrip } from '@/components/home/WeekStrip';
@@ -126,6 +128,8 @@ export default function HomeScreen() {
     >
       <AppHeader theme={theme} />
 
+      <Greeting theme={theme} />
+
       {offline && <OfflineNote theme={theme} />}
 
       <WeekStrip entries={entries} theme={theme} />
@@ -170,6 +174,8 @@ export default function HomeScreen() {
       )}
 
       <FriendsRow round={round} theme={theme} />
+
+      <PeopleRow round={round} theme={theme} />
 
       {(trendingTitles === null || trendingTitles.length > 0) && (
         <View style={styles.block}>

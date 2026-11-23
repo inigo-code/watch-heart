@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/AppText';
-import { HeartMark } from '@/components/BrandTitle';
+import { Reel } from '@/components/Reel';
 import { font, fonts, useTheme } from '@/lib/theme';
 import { useDiary } from '@/store/DiaryStore';
 
@@ -29,7 +29,7 @@ export function DiaryLoadFailed() {
 
   return (
     <View style={[styles.screen, { backgroundColor: theme.bg }]} accessibilityViewIsModal>
-      <HeartMark size={88} />
+      <Reel size={110} mood="oops" />
       <View style={styles.texts}>
         <Text style={[styles.title, { color: theme.text }]} accessibilityRole="header">
           Couldn’t open your diary

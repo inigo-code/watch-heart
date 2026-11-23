@@ -1,5 +1,6 @@
 import { MINUTE, cached } from '@/api/cache';
 import { ANILIST_ALLOWED } from '@/lib/app';
+import { rank } from '@/lib/searchRank';
 import type { MediaKind, Title } from '@/store/types';
 
 import { searchAnime, trendingAnime } from './anilist';
@@ -20,8 +21,8 @@ export function sourceFor(kind: MediaKind, key: string): 'tmdb' | 'anilist' | 't
 
 export async function search(kind: MediaKind, query: string, key: string, signal?: AbortSignal): Promise<Title[]> {
   const source = sourceFor(kind, key);
-  if (source === 'anilist') return searchAnime(query, signal);
-  if (source === 'tvmaze') return searchTvmaze(query, signal);
+  if (source === 'anilist') return rank([await searchAnime(query, signal)], query);
+  if (source === 'tvmaze') return rank([await searchTvmaze(query, signal)], query);
   if (source === 'tmdb') return kind === 'anime' ? searchAnimeTmdb(key, query, signal) : searchTmdb(key, kind, query, signal);
   return [];
 }

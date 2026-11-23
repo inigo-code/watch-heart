@@ -37,6 +37,8 @@ export type Settings = {
   name: string;
   /** Diary as ticket stubs (list) or a poster wall (grid). */
   diaryLayout: 'list' | 'grid';
+  /** The first line of a review (without spoilers) on its Diary ticket. On by default. */
+  ticketReview: boolean;
   /** The kind the Search tab opens on. */
   searchKind: MediaKind;
   haptics: boolean;
@@ -107,6 +109,7 @@ export const DEFAULT_SETTINGS: Settings = {
   accent: 'marquee',
   name: '',
   diaryLayout: 'list',
+  ticketReview: true,
   searchKind: 'movie',
   haptics: true,
   textSize: 1,

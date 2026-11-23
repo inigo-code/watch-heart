@@ -10,6 +10,7 @@ import { BottomSheet } from '@/components/BottomSheet';
 import { TicketPrint, TicketTear, ticketPaper } from '@/components/Diary';
 import { Poster } from '@/components/Film';
 import { useToast } from '@/components/Toast';
+import { openInGoogleCalendar, shareCalendarFile } from '@/lib/calendar';
 import { askToRemindOnTime, canRemindOnTime, cancelMovieNight, hasAlarmSwitch, scheduleMovieNight } from '@/lib/movieNight';
 import { font, fonts } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
@@ -182,6 +183,15 @@ export function MovieNightSheet({ t, visible, theme, onClose }: { t: Title; visi
  * A planned night, printed as a ticket for the show: the day and time on the stub, then the title and a
  * way to cancel. On the title page, and the next one on Home.
  */
+/** Into your own calendar: Google Calendar with the event filled in, or a file for any other calendar app. */
+function addToCalendar(night: MovieNight) {
+  Alert.alert('Add to calendar', `Watch ${night.title}, ${nightLabel(night.at)}`, [
+    { text: 'Cancel', style: 'cancel' },
+    { text: 'Calendar file', onPress: () => void shareCalendarFile(night).catch(() => {}) },
+    { text: 'Google Calendar', onPress: () => void openInGoogleCalendar(night).catch(() => {}) },
+  ]);
+}
+
 export function MovieNightCard({ night, theme, showTitle }: { night: MovieNight; theme: Theme; showTitle?: boolean }) {
   const { cancel } = useMovieNights();
   const p = ticketPaper(night.kind, theme);
@@ -210,6 +220,9 @@ export function MovieNightCard({ night, theme, showTitle }: { night: MovieNight;
           </Text>
           {showTitle && <Text style={[styles.cardTitle, { color: theme.textMuted }]}>{nightLabel(night.at)}</Text>}
         </View>
+      </Pressable>
+      <Pressable onPress={() => addToCalendar(night)} hitSlop={8} accessibilityRole="button" accessibilityLabel="Add to calendar" style={styles.cancel}>
+        <Ionicons name="calendar-outline" size={19} color={theme.textMuted} />
       </Pressable>
       <Pressable onPress={() => cancel(night)} hitSlop={12} accessibilityRole="button" accessibilityLabel="Cancel the plan" style={styles.cancel}>
         <Ionicons name="close" size={20} color={theme.textMuted} />

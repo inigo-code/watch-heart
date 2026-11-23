@@ -1,6 +1,6 @@
 # Reel in the Android app: plan
 
-Draft, 2026-11-23. Reel is live on the website (watchheart.in): on sign in and registration, and in every empty
+Planned 2026-11-23. **Step 1 is built** the same day (`src/components/Reel.tsx`, What's new 1.7.7, waiting for the OTA). Reel is live on the website (watchheart.in): on sign in and registration, and in every empty
 or missing page. This plan brings him to the app.
 
 ## Who Reel is
@@ -49,6 +49,10 @@ need a new build, so drawing with Views is the better route.
 ## Where he goes
 
 ### Step 1: the same places as the website
+
+All five are built. On empty pages Reel stands at the blank ticket's lower right corner, beside it, rather than
+replacing it. He has no film strip yet: on welcome he stands with his ticket instead of rolling in. Not yet
+seen on a phone.
 
 1. **Welcome** (`src/app/welcome.tsx`, the `Intro` step): Reel rolls in on his film strip beside the first
    words, with "Grab a seat!" on a paper ticket.

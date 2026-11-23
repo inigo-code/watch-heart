@@ -51,6 +51,16 @@ export const DATA_SOURCES = {
 type Note = string | { text: string; fromApp: string };
 const NOTES: { id: string; items: Note[] }[] = [
   {
+    id: '1.7.7',
+    items: [
+      'Meet Reel, Watch Heart’s reel come alive. He says hello on Home each day. Tap him for a spin',
+      'Loved titles get a heart stamp on their diary ticket, and tickets show a line of your review. Turn that off in Settings',
+      'People you might know on Home, while you have only a few friends',
+      'Add a movie night to your calendar',
+      'Search puts the closest and best-known match first',
+    ],
+  },
+  {
     id: '1.7.6',
     items: [
       'Your diary has a bar for each month of the year under your totals. Tap one to go to that month',

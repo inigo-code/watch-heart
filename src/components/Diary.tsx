@@ -8,7 +8,9 @@ import { dayParts, monthName } from '@/lib/dates';
 import { KIND_COLORS, font, fonts, kindColor } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
 import type { Entry, MediaKind } from '@/store/types';
+import { plainText } from '@/lib/richText';
 import { plainProgress } from '@/lib/tracking';
+import { useSettings } from '@/settings/SettingsProvider';
 
 const NOTCH = 14;
 const PAPER_PRINT = require('../../assets/ticket-paper.png');
@@ -42,18 +44,23 @@ export function TicketPrint({ kind, theme }: { kind: MediaKind; theme: Theme }) 
 /**
  * One diary entry as an Indian cinema ticket: paper tinted by kind with an engraved print, a stub with the
  * date, a perforated tear line with notches cut out of the edges, then the poster and what you thought of it.
- * Compact, so a month fits on a screen or two.
+ * Compact, so a month fits on a screen or two. A loved title gets a rubber stamp on the right, and a review
+ * without spoilers shows its first line (Settings, Diary: Review lines on tickets).
  */
-export function TicketStub({ entry, theme, onPress, onLongPress }: {
+export function TicketStub({ entry, theme, onPress, onLongPress, lovedStamp = true }: {
   entry: Entry;
   theme: Theme;
   /** Without it the ticket is only shown, not a button (the stamp when you log). */
   onPress?: () => void;
   onLongPress?: () => void;
+  /** Off where another stamp lands on the ticket's right (LOGGED); a small heart by the stars instead. */
+  lovedStamp?: boolean;
 }) {
   const { day, weekday } = dayParts(entry.watchedOn);
   const p = ticketPaper(entry.kind, theme);
-  const label = `${entry.title}, watched ${weekday} ${day}${entry.rating ? `, ${entry.rating / 2} stars` : ''}`;
+  const { settings } = useSettings();
+  const review = settings.ticketReview && entry.review.trim() && !entry.spoilers ? plainText(entry.review).trim() : '';
+  const label = `${entry.title}, watched ${weekday} ${day}${entry.rating ? `, ${entry.rating / 2} stars` : ''}${entry.liked ? ', loved' : ''}`;
   const body = (
     <>
       <TicketPrint kind={entry.kind} theme={theme} />
@@ -84,10 +91,17 @@ export function TicketStub({ entry, theme, onPress, onLongPress }: {
         </View>
         <View style={styles.meta}>
           <Stars rating={entry.rating} size={13} color={theme.star} />
-          {entry.liked && <Ionicons name="heart" size={13} color={theme.like} accessibilityLabel="Liked" />}
-          {!!entry.review.trim() && <Ionicons name="reader-outline" size={13} color={theme.textMuted} accessibilityLabel="Has a review" />}
+          {entry.liked && !lovedStamp && <Ionicons name="heart" size={13} color={theme.like} accessibilityLabel="Liked" />}
+          {!!entry.review.trim() && !review && <Ionicons name="reader-outline" size={13} color={theme.textMuted} accessibilityLabel="Has a review" />}
         </View>
+        {!!review && (
+          <Text style={[styles.review, { color: theme.textMuted }]} numberOfLines={1}>
+            {review}
+          </Text>
+        )}
       </View>
+
+      {entry.liked && lovedStamp && <LovedStamp ink={p.ink} paper={p.paper} />}
     </>
   );
   const frame = [styles.ticket, { backgroundColor: p.paper, borderColor: p.border }];
@@ -98,6 +112,20 @@ export function TicketStub({ entry, theme, onPress, onLongPress }: {
   ) : (
     <View accessible accessibilityLabel={label} style={frame}>
       {body}
+    </View>
+  );
+}
+
+/**
+ * A rubber stamp for a loved title: a heart in a double ring, inked a little crooked and not quite full, as a
+ * cinema's stamp lands on paper. Inked in the ticket's own colour (films gold, series teal, anime pink);
+ * `paper` shows between the rings.
+ */
+function LovedStamp({ ink, paper }: { ink: string; paper: string }) {
+  return (
+    <View style={[styles.loved, { borderColor: ink, backgroundColor: paper }]} accessibilityLabel="Loved">
+      <View style={[styles.lovedRing, { borderColor: ink }]} />
+      <Ionicons name="heart" size={15} color={ink} />
     </View>
   );
 }
@@ -182,6 +210,9 @@ const styles = StyleSheet.create({
   year: { fontFamily: fonts.ticket, fontSize: font.footnote, fontWeight: '400' },
   meta: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   progress: { fontFamily: fonts.ticket, fontSize: font.caption, flexShrink: 1 },
+  review: { fontSize: font.footnote, lineHeight: 17 },
+  loved: { width: 34, height: 34, borderRadius: 17, borderWidth: 2, alignItems: 'center', justifyContent: 'center', opacity: 0.88, transform: [{ rotate: '-14deg' }] },
+  lovedRing: { position: 'absolute', top: 2.5, left: 2.5, right: 2.5, bottom: 2.5, borderRadius: 13, borderWidth: 1 },
   tileMeta: { flexDirection: 'row', alignItems: 'center', gap: 3, height: 16, marginTop: 3 },
   reel: { paddingVertical: 6, gap: 8, borderRadius: 4, marginTop: 14 },
   reelRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, gap: 10 },

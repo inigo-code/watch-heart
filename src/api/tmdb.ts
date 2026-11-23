@@ -1,5 +1,6 @@
 import { MINUTE, cached, cachedOnDisk, peek } from '@/api/cache';
 import { stillInCinemas } from '@/lib/regional';
+import { rank } from '@/lib/searchRank';
 import type { MediaKind, Title } from '@/store/types';
 
 // TMDB: free for non-commercial use with your own key (themoviedb.org/settings/api).
@@ -83,7 +84,10 @@ function toTitle(r: Result & { genres?: { id: number }[] }, type: 'movie' | 'tv'
 export async function searchTmdb(key: string, kind: 'movie' | 'tv', query: string, signal?: AbortSignal, year?: number): Promise<Title[]> {
   const params = { query, include_adult: 'false', ...(year && kind === 'movie' ? { year: String(year) } : {}) };
   const data = await get<{ results: Result[] }>(key, `/search/${kind}`, params, signal);
-  return data.results.map((r) => toTitle(r, kind));
+  // Best match first: the name, then popularity (lib/searchRank), not TMDB's own order.
+  const titles = data.results.map((r) => toTitle(r, kind));
+  const popularity = new Map(data.results.map((r, i) => [titles[i].sourceId, r.popularity ?? 0]));
+  return rank([titles], query, popularity, titles.length);
 }
 
 /** This week's trending films or series. Anime has its own tab, so it's left out here. */
@@ -97,7 +101,7 @@ export async function trendingTmdb(key: string, kind: 'movie' | 'tv', signal?: A
 
 const byPopularity = (a: Result, b: Result) => (b.popularity ?? 0) - (a.popularity ?? 0);
 
-/** Anime series and films matching the search, most popular first. */
+/** Anime series and films matching the search, best match first (the name, then popularity). */
 export async function searchAnimeTmdb(key: string, query: string, signal?: AbortSignal): Promise<Title[]> {
   const params = { query, include_adult: 'false' };
   const [tv, movie] = await Promise.all([
@@ -105,10 +109,10 @@ export async function searchAnimeTmdb(key: string, query: string, signal?: Abort
     get<{ results: Result[] }>(key, '/search/movie', params, signal),
   ]);
   const hits: [Result, 'tv' | 'movie'][] = [...tv.results.map((r) => [r, 'tv'] as [Result, 'tv']), ...movie.results.map((r) => [r, 'movie'] as [Result, 'movie'])];
-  return hits
-    .filter(([r]) => isAnime(r))
-    .sort(([a], [b]) => byPopularity(a, b))
-    .map(([r, type]) => toTitle(r, type));
+  const anime = hits.filter(([r]) => isAnime(r)).sort(([a], [b]) => byPopularity(a, b));
+  const titles = anime.map(([r, type]) => toTitle(r, type));
+  const popularity = new Map(anime.map(([r], i) => [titles[i].sourceId, r.popularity ?? 0]));
+  return rank([titles], query, popularity, titles.length);
 }
 
 const KIDS = 10762;

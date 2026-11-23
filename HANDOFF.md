@@ -111,9 +111,15 @@ The full list is `git log`; every user-facing commit names its What's new versio
 
 ## Open work
 
-**Reel, the mascot** (planned 2026-11-23, not started): the website has Reel, the logo's reel with a face, on sign in and in empty pages. The plan for the app, drawn from Views like the splash so it ships over the air, is in `docs/reel-mascot-plan.md`.
-
-**Website features for the app** (listed 2026-11-23, not started): the loved stamp on diary tickets, a review line on tickets, Reel's show-time ticket on Home, full cast and crew, People you might know on Home, a calendar reminder for movie nights and the website's search order, each with where it goes and its size, in `docs/web-features-for-app.md`.
+**Built 2026-11-23, waiting for the OTA (What's new 1.7.7)**, all JavaScript, not yet published to any runtime; checked in the web build, not on a phone. From `docs/web-features-for-app.md` and `docs/reel-mascot-plan.md`, with Inigo's choices:
+- Reel, the mascot (`components/Reel.tsx`, plain Views and Animated, no SVG): moods idle, look, shy, oops; pop in, blink, heart beat, spin on tap; still with reduced motion; hidden from TalkBack. `PaperTicket` and `showTime` live there too. He's on welcome ("Grab a seat!"), Account sign in (looks along what you type, shuts his eyes for the password, oops on an error, a line per mode), beside the blank ticket on empty pages, and on Diary didn't load (oops).
+- Home greeting every day (`components/home/Greeting.tsx`): "Good morning, name" with Reel holding MORNING SHOW / MATINEE / EVENING SHOW / LATE SHOW; a tap spins him.
+- Loved stamp on diary tickets in the ticket's kind colour (`LovedStamp` in `Diary.tsx`); the Logged stamp's ticket keeps the small heart.
+- A review line on tickets (not for spoiler reviews), Settings "Review lines on tickets", on by default (`settings.ticketReview`).
+- People you might know on Home under five friends (`components/home/PeopleRow.tsx`). Not tried signed in.
+- Add a movie night to the calendar: Google Calendar link or an .ics through the share sheet (`lib/calendar.ts`; `backup.ts` exports `shareFile`). Not tried on a phone.
+- Search order shared with the website (`lib/searchRank.ts`, used in `api/tmdb.ts` and `api/index.ts`; Watch Heart Web `src/data/searchAll.ts` imports it). **Republish watchheart.in with the OTA.**
+- Full cast and crew was on the list by mistake: the app already has it (`credits/[id]`).
 
 **Check on a real phone** (the web preview can't show these): the widget after resizing, notifications with the app closed, opening streaming apps, the This week stack, the friend page, the unsaved prompt, friend paging on the real database, large phone fonts, onboarding's poster wall.
 

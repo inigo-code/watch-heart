@@ -38,7 +38,7 @@ export function LoggedStamp({ theme, entry, onDone }: { theme: Theme; entry: Ent
       accessibilityLabel={`${entry.title} logged`}
     >
       <Animated.View style={[styles.ticket, { transform: [{ translateY: rise }] }]}>
-        <TicketStub entry={entry} theme={theme} />
+        <TicketStub entry={entry} theme={theme} lovedStamp={false} />
         <View style={styles.stampSpot} pointerEvents="none">
           <Animated.View style={[styles.stamp, { borderColor: theme.accent, opacity: hit, transform: [{ rotate: '-9deg' }, { scale }] }]}>
             <Text style={[styles.logged, { color: theme.accent }]}>LOGGED</Text>

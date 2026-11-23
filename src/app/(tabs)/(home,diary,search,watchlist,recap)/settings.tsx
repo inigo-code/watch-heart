@@ -279,6 +279,13 @@ export default function SettingsScreen() {
           </ControlRow>
           <ToggleRow
             theme={theme}
+            icon="reader-outline"
+            label="Review lines on tickets"
+            value={settings.ticketReview}
+            onChange={(ticketReview) => update({ ticketReview })}
+          />
+          <ToggleRow
+            theme={theme}
             icon="pulse-outline"
             label="Vibrate on log and like"
             value={settings.haptics}
