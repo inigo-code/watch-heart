@@ -13,7 +13,7 @@ Read this first when picking the project up in a new session or from another acc
 | What | Where |
 | --- | --- |
 | App source | this folder, GitHub `inigo-code/watch-heart` |
-| Website | `..\Sites\Watch Heart`, `inigo-code/watch-heart-site`, https://inigo-code.github.io/watch-heart-site/ |
+| Website | `..\Sites\Watch Heart`, `inigo-code/watch-heart-site`, https://heartapps.github.io/watch-heart/ |
 | F-Droid repo and signing key | `..\Watch Heart F-Droid` (its `publish.sh` also publishes the site; the keystore is not on GitHub) |
 | Play Store text, Console answers, graphics | `store/listing.md`, `store/play-console.md`, `store/graphics/` (made by `store/make/`, see its README) |
 | Supabase setup and SQL | `supabase/SETUP.md`, `supabase/*.sql` |

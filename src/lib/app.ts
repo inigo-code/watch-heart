@@ -15,9 +15,9 @@ export const SUPPORT_EMAIL = 'inigo@tosstheworld.org';
 
 /** Watch Heart is one of the Heart Apps; the same names and lines as the Heart Apps website. */
 export const HEART_APPS = {
-  url: 'https://inigo-code.github.io/',
+  url: 'https://heartapps.github.io/',
   line: 'Free Android apps by Inigo. No ads, no tracking, nothing to buy.',
-  apps: [{ name: 'Prompt Heart', tagline: 'For the AI prompts that work', url: 'https://inigo-code.github.io/prompt-heart-site/' }],
+  apps: [{ name: 'Prompt Heart', tagline: 'For the AI prompts that work', url: 'https://heartapps.github.io/prompt-heart/' }],
 };
 
 /**
