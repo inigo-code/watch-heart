@@ -174,10 +174,15 @@ export function mergeTrack(mine: Track, theirs: Track): Track {
   return settle(merged);
 }
 
-/** Completed once an ended show is all seen; back to watching if new episodes appear. */
+/**
+ * Completed once you've seen every episode out and no more are on the way: the show has ended, or no next
+ * episode has a date (TMDB calls a series "returning" until someone marks it ended, often long after the last
+ * season, as with a whole season out on one day). Back to watching when new episodes appear, so a show that
+ * does return comes back by itself. Caught up with a next episode dated stays watching ("Coming back").
+ */
 export function settle(t: Track): Track {
   const c = counts(t);
-  if (t.ended && c.aired > 0 && c.left === 0 && t.status === 'watching') return { ...t, status: 'completed' };
+  if ((t.ended || !t.nextAir) && c.aired > 0 && c.left === 0 && t.status === 'watching') return { ...t, status: 'completed' };
   if (t.status === 'completed' && c.left > 0) return { ...t, status: 'watching' };
   return t;
 }
@@ -200,7 +205,8 @@ export function continueWatching(items: WatchItem[], todayIso: string) {
   const comingBack: WatchItem[] = [];
   const today = Date.parse(todayIso);
   for (const w of items) {
-    const t = w.track;
+    // Settled here too, for shows saved before the last check.
+    const t = w.track && settle(w.track);
     if (!t || t.status === 'dropped' || t.status === 'completed') continue;
     const c = counts(t);
     const idle = (today - Date.parse(lastSeenDay(t))) / DAY;

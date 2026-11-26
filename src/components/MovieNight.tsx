@@ -16,8 +16,8 @@ import { font, fonts } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
 import { useSettings } from '@/settings/SettingsProvider';
 import type { MovieNight } from '@/settings/SettingsProvider';
-import { useDiary } from '@/store/DiaryStore';
-import type { Title } from '@/store/types';
+import { sameTitle, useDiary } from '@/store/DiaryStore';
+import type { Entry, Title } from '@/store/types';
 
 const HOUR = 3600000;
 
@@ -44,10 +44,22 @@ function quickDays(now = new Date()) {
   return out;
 }
 
-/** Your planned movie nights, soonest first (a night stays listed for three hours after it starts), and ways to change them. */
+/**
+ * Whether you've logged the film since you planned it: then the plan is done. Plans from before 1.7.6 don't
+ * know when they were made, so for them a log from the day before the night onwards counts.
+ */
+export function nightDone(n: MovieNight, entries: Entry[]) {
+  const since = n.planned ?? n.at - 24 * HOUR;
+  return entries.some((e) => e.createdAt >= since && sameTitle(e, { ...n, source: n.source as Entry['source'] }));
+}
+
+/**
+ * Your planned movie nights, soonest first (a night stays listed for three hours after it starts, and goes
+ * once you log the film), and ways to change them.
+ */
 export function useMovieNights() {
   const { settings, update } = useSettings();
-  const { onWatchlist, addToWatchlist } = useDiary();
+  const { entries, onWatchlist, addToWatchlist } = useDiary();
   const toast = useToast();
   // The time, kept fresh each minute, so a night drops off the list three hours after it starts.
   const [now, setNow] = useState(() => Date.now());
@@ -55,7 +67,19 @@ export function useMovieNights() {
     const timer = setInterval(() => setNow(Date.now()), 60000);
     return () => clearInterval(timer);
   }, []);
-  const nights = [...settings.movieNights].filter((n) => n.at > now - 3 * HOUR).sort((a, b) => a.at - b.at);
+  const nights = [...settings.movieNights].filter((n) => n.at > now - 3 * HOUR && !nightDone(n, entries)).sort((a, b) => a.at - b.at);
+
+  // A night whose film you've logged is cleared, reminder and all, so it doesn't ring after you've watched.
+  const done = settings.movieNights.filter((n) => nightDone(n, entries));
+  const doneKeys = done.map((n) => n.key).join(' ');
+  useEffect(() => {
+    if (!doneKeys) return;
+    const keys = new Set(doneKeys.split(' '));
+    settings.movieNights.filter((n) => keys.has(n.key)).forEach((n) => cancelMovieNight(n.reminderId));
+    update({ movieNights: settings.movieNights.filter((n) => !keys.has(n.key)) });
+    // Runs when the set of finished nights changes, not on every change to the list.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [doneKeys]);
 
   const plan = async (t: Title, date: Date) => {
     // Once, explain the Android switch that makes reminders arrive on time, then take you to it.
@@ -74,6 +98,7 @@ export function useMovieNights() {
       key: `${t.sourceId}:${date.getTime()}`,
       reminderId,
       at: date.getTime(),
+      planned: Date.now(),
       kind: t.kind,
       source: t.source,
       sourceId: t.sourceId,

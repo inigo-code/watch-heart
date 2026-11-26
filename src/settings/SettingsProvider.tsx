@@ -21,6 +21,8 @@ export type MovieNight = {
   key: string;
   reminderId: string | null;
   at: number;
+  /** When it was planned (plans made before 1.7.6 have none). */
+  planned?: number;
   kind: MediaKind;
   source: string;
   sourceId: string;

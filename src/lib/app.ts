@@ -78,6 +78,13 @@ const NOTES: { id: string; items: Note[] }[] = [
     ],
   },
   {
+    id: '1.7.6',
+    items: [
+      'A movie night goes off Home, reminder and all, once you log the film',
+      'A series you’ve caught up on with nothing new scheduled now counts as finished, and comes back to Watching by itself when new episodes are announced',
+    ],
+  },
+  {
     id: '1.7.5',
     items: ['In cinemas is closer to what’s really showing: in India, films that aren’t in an Indian language now leave it after three weeks'],
   },

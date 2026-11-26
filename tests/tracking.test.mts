@@ -5,7 +5,7 @@ import { test } from 'node:test';
 // Days are local calendar days, so pin the zone.
 process.env.TZ = 'Asia/Kolkata';
 
-const { mergeTrack, stamped, MOST_CHANGES, CHANGES_KEPT_MS } = await import('@/lib/tracking');
+const { mergeTrack, stamped, settle, continueWatching, MOST_CHANGES, CHANGES_KEPT_MS } = await import('@/lib/tracking');
 
 type Track = Parameters<typeof mergeTrack>[0];
 
@@ -123,4 +123,23 @@ test('the times are capped and old ones go', () => {
   const merged = mergeTrack(a, b);
   assert.equal(Object.keys(merged.changed ?? {}).length, MOST_CHANGES);
   assert.ok(Object.keys(merged.changed ?? {}).every((k) => k.startsWith('s1e')), 'the newest are kept');
+});
+
+test('caught up with no next episode dated: finished, even when TMDB still calls it returning', () => {
+  const all = Object.fromEntries(Array.from({ length: 10 }, (_, i) => [`s1e${i + 1}`, '2026-11-20']));
+  // The Body: one season, every episode out on one day, "Returning Series", nothing scheduled.
+  assert.equal(settle(show({ seen: all })).status, 'completed');
+  // A date for the next episode: still watching, under Coming back.
+  const dated = show({ seen: all, nextAir: { season: 2, number: 1, date: '2027-03-01' } });
+  assert.equal(settle(dated).status, 'watching');
+  const w = (track: Track) => ({ id: 'x', track }) as unknown as Parameters<typeof continueWatching>[0][number];
+  assert.equal(continueWatching([w(dated)], '2026-11-26').comingBack.length, 1);
+  assert.equal(continueWatching([w(show({ seen: all }))], '2026-11-26').comingBack.length, 0);
+  // Episodes left: watching.
+  const rest = { ...all };
+  delete rest.s1e10;
+  assert.equal(settle(show({ seen: rest })).status, 'watching');
+  // A new season appears: back to watching by itself.
+  const more = show({ seen: all, status: 'completed', seasons: [{ n: 1, count: 10 }, { n: 2, count: 8 }], lastAired: { season: 2, number: 1 } });
+  assert.equal(settle(more).status, 'watching');
 });

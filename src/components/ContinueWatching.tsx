@@ -11,7 +11,7 @@ import { Rise, Tap } from '@/components/Motion';
 import { SectionLabel } from '@/components/SectionLabel';
 import { useToast } from '@/components/Toast';
 import { friendlyDate, today } from '@/lib/dates';
-import { continueWatching, counts, epKey, nextUp } from '@/lib/tracking';
+import { continueWatching, counts, epKey, nextUp, settle } from '@/lib/tracking';
 import { font, fonts } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
 import { useTracker } from '@/lib/useTracker';
@@ -30,7 +30,10 @@ export function ContinueWatching({ items, theme, hidden }: { items: WatchItem[];
   const days = useDaySheet();
   const tracked = items.filter((w) => w.track);
   const groups = continueWatching(tracked, today());
-  const finished = tracked.filter((w) => w.track!.status === 'completed' || w.track!.status === 'dropped');
+  const finished = tracked.filter((w) => {
+    const status = settle(w.track!).status;
+    return status === 'completed' || status === 'dropped';
+  });
 
   if (hidden || !tracked.length) return null;
   const open = (w: WatchItem) => router.push({ pathname: '/track', params: { id: w.id } });
@@ -118,7 +121,7 @@ export function ContinueWatching({ items, theme, hidden }: { items: WatchItem[];
           <SectionLabel theme={theme}>Finished and dropped</SectionLabel>
           {finished.map((w) => (
             <View key={w.id} style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
-              <Tap onPress={() => open(w)} onLongPress={() => setMenu(w)} accessibilityRole="button" accessibilityLabel={`${w.title}, ${w.track!.status}`} style={styles.open}>
+              <Tap onPress={() => open(w)} onLongPress={() => setMenu(w)} accessibilityRole="button" accessibilityLabel={`${w.title}, ${w.track!.status === 'dropped' ? 'dropped' : 'finished'}`} style={styles.open}>
                 <Poster uri={w.posterUrl} title={w.title} width={40} theme={theme} radius={4} style={{ opacity: w.track!.status === 'dropped' ? 0.5 : 1 }} />
                 <View style={styles.cardBody}>
                   <Text style={[styles.title, { color: theme.text }]} numberOfLines={1}>
