@@ -51,6 +51,15 @@ export const DATA_SOURCES = {
 type Note = string | { text: string; fromApp: string };
 const NOTES: { id: string; items: Note[] }[] = [
   {
+    // Also carries what an update on 26 Nov sent only to older builds, under a 1.7.6 id phones had passed.
+    id: '1.8.1',
+    items: [
+      'A movie night goes off Home, reminder and all, once you log the film',
+      'A series you’ve seen every episode of, with nothing new scheduled, now counts as finished, paused ones too. It comes back to Watching by itself when its next episode gets a date',
+      'Fixed: after the last update the app could close as soon as it opened',
+    ],
+  },
+  {
     id: '1.8.0',
     items: [{ text: 'Share to story now opens Instagram Stories straight away. The new share button beside it sends your story to any other app', fromApp: '1.8.0' }],
   },
@@ -75,13 +84,6 @@ const NOTES: { id: string; items: Note[] }[] = [
       'Your friends’ photos show straight away, instead of loading each time you open the app',
       'Deleting your account now asks for your password first',
       'Newest in Discover shows real new releases, not unrated uploads',
-    ],
-  },
-  {
-    id: '1.7.6',
-    items: [
-      'A movie night goes off Home, reminder and all, once you log the film',
-      'A series you’ve caught up on with nothing new scheduled now counts as finished, and comes back to Watching by itself when new episodes are announced',
     ],
   },
   {

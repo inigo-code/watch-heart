@@ -1,5 +1,5 @@
+import { requireOptionalNativeModule } from 'expo';
 import { File } from 'expo-file-system';
-import { startActivityAsync } from 'expo-intent-launcher';
 import { Asset, requestPermissionsAsync } from 'expo-media-library';
 import * as Sharing from 'expo-sharing';
 import type { RefObject } from 'react';
@@ -19,15 +19,21 @@ export async function captureStory(ref: RefObject<StoryHandle | null>): Promise<
 const META_APP_ID = '1513214237381567';
 const FLAG_GRANT_READ_URI_PERMISSION = 1;
 
+// expo-intent-launcher's native side, which only builds from 1.8.0 have. Older builds get this code over the
+// air too, and importing the package there throws as soon as the file loads (it takes Recap and the story
+// cards down), so it's looked up here and is null where it isn't built in: the share sheet is used instead.
+type IntentLauncher = { startActivity(action: string, params: Record<string, unknown>): Promise<unknown> };
+const launcher = Platform.OS === 'android' ? requireOptionalNativeModule<IntentLauncher>('ExpoIntentLauncher') : null;
+
 /**
  * Opens the image straight in Instagram's story editor. Instagram decides by itself whether "Story" shows in
  * the share sheet, and on some phones it doesn't, so this asks for the story directly. Without Instagram, or
  * if it turns the image away, the share sheet opens instead.
  */
 export async function shareToStory(uri: string) {
-  if (Platform.OS === 'android') {
+  if (launcher) {
     try {
-      await startActivityAsync('com.instagram.share.ADD_TO_STORY', {
+      await launcher.startActivity('com.instagram.share.ADD_TO_STORY', {
         data: new File(uri).contentUri,
         type: 'image/png',
         flags: FLAG_GRANT_READ_URI_PERMISSION,
