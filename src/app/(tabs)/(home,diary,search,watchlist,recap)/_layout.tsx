@@ -53,7 +53,6 @@ const PAGES: Record<string, ScreenOptions> = {
   'friend/[id]': { title: '' },
   'friend-list': { title: 'List' },
   'friend-entry/[id]': { title: '' },
-  comments: { title: 'Comments' },
 };
 
 export default function TabStack() {

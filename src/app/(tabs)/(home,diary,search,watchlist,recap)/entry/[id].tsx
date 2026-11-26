@@ -18,7 +18,7 @@ import { SectionLabel } from '@/components/SectionLabel';
 import { TitleExtras } from '@/components/TitleExtras';
 import { Synopsis, TitleMore, useAbout } from '@/components/title/AboutTitle';
 import { FriendsOnTitle } from '@/components/title/FriendsOnTitle';
-import { CommentsPreview, LikedBy, SocialBar } from '@/components/friends/Social';
+import { Conversation, LikedBy, SocialBar } from '@/components/friends/Social';
 import { useFriends } from '@/friends/FriendsProvider';
 import { useMyId } from '@/friends/useSocial';
 import { useSettings } from '@/settings/SettingsProvider';
@@ -53,6 +53,7 @@ export default function EntryScreen() {
   // Friends can like and comment on what they can see: your diary, while you share it.
   const me = useMyId(available);
   const social = !!me && friends.length > 0 && settings.sharing.diary;
+  const [writing, setWriting] = useState(false);
 
   if (!ready) return <View style={{ flex: 1 }} />;
   if (!entry || entry.deletedAt !== null) {
@@ -100,6 +101,8 @@ export default function EntryScreen() {
       <Animated.ScrollView
         contentContainerStyle={{ paddingBottom: insets.bottom + 32 }}
         scrollEventThrottle={16}
+        // The comment box is a sheet inside this page: without this, a tap on Send only closes the keyboard.
+        keyboardShouldPersistTaps="handled"
         onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], { useNativeDriver: true })}
       >
         <Hero
@@ -201,6 +204,14 @@ export default function EntryScreen() {
             </View>
           )}
 
+          {social && me && (
+            <View style={styles.social}>
+              <SocialBar ownerId={me} entryId={entry.id} theme={theme} mine onComment={() => setWriting(true)} />
+              <LikedBy ownerId={me} entryId={entry.id} theme={theme} />
+              <Conversation ownerId={me} entryId={entry.id} theme={theme} mine ownerName="you" writing={writing} onWriting={setWriting} />
+            </View>
+          )}
+
           {entry.tags.length > 0 && (
             <View style={styles.tags}>
               {entry.tags.map((t) => (
@@ -248,14 +259,6 @@ export default function EntryScreen() {
               />
             )}
           </View>
-
-          {social && me && (
-            <View style={styles.social}>
-              <SocialBar ownerId={me} entryId={entry.id} title={entry.title} theme={theme} mine />
-              <LikedBy ownerId={me} entryId={entry.id} theme={theme} />
-              <CommentsPreview ownerId={me} entryId={entry.id} title={entry.title} theme={theme} />
-            </View>
-          )}
 
           {viewings.length > 1 && (
             <View style={styles.viewings}>

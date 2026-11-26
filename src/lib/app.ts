@@ -51,6 +51,13 @@ export const DATA_SOURCES = {
 type Note = string | { text: string; fromApp: string };
 const NOTES: { id: string; items: Note[] }[] = [
   {
+    id: '1.8.3',
+    items: [
+      'Likes are hearts now',
+      'Comments show right under the review, and yours appear the moment you send them',
+    ],
+  },
+  {
     id: '1.8.2',
     items: [
       'Like your friends’ diary entries and reviews, and comment on them. Your friend can reply, and their other friends can join in',

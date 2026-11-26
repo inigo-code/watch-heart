@@ -5,7 +5,7 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/AppText';
 import { Stars } from '@/components/Film';
-import { SocialBar } from '@/components/friends/Social';
+import { CommentList, SocialBar, openFriendEntry } from '@/components/friends/Social';
 import { RichText } from '@/components/RichText';
 import { Face, RowHead } from '@/components/title/Rows';
 import { titleFriends, titleInFriendLists } from '@/friends/friendsApi';
@@ -163,7 +163,8 @@ function Review({ e, who, photo, theme }: { e: FriendEntry; who: string; photo: 
       ) : (
         <RichText text={e.review} theme={theme} style={{ ...styles.reviewText, color: theme.text }} />
       )}
-      <SocialBar ownerId={e.userId} entryId={e.id} title={e.title} theme={theme} compact batched />
+      <SocialBar ownerId={e.userId} entryId={e.id} theme={theme} compact batched onComment={() => openFriendEntry(e, true)} />
+      <CommentList ownerId={e.userId} entryId={e.id} theme={theme} limit={2} />
     </View>
   );
 }

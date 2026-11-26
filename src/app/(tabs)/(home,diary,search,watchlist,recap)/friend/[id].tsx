@@ -7,7 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '@/components/AppText';
 import { ActionSheet } from '@/components/ActionSheet';
 import { DangerButton } from '@/components/DangerButton';
-import { SocialBar, openFriendEntry } from '@/components/friends/Social';
+import { CommentList, SocialBar, openFriendEntry } from '@/components/friends/Social';
 import { Poster, Stars } from '@/components/Film';
 import { ListCover } from '@/components/lists/ListCover';
 import { Rise, Tap } from '@/components/Motion';
@@ -350,7 +350,8 @@ function Review({ e, theme }: { e: FriendEntry; theme: Theme }) {
       ) : (
         <RichText text={e.review} theme={theme} style={{ ...styles.reviewText, color: theme.text }} />
       )}
-      <SocialBar ownerId={e.userId} entryId={e.id} title={e.title} theme={theme} compact batched />
+      <SocialBar ownerId={e.userId} entryId={e.id} theme={theme} compact batched onComment={() => openFriendEntry(e, true)} />
+      <CommentList ownerId={e.userId} entryId={e.id} theme={theme} limit={2} />
     </View>
   );
 }

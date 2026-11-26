@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Text } from '@/components/AppText';
 import { Poster, Stars } from '@/components/Film';
-import { CommentsPreview, SocialBar } from '@/components/friends/Social';
+import { Conversation, SocialBar } from '@/components/friends/Social';
 import { RichText } from '@/components/RichText';
 import { Face, openTitle } from '@/components/title/Rows';
 import { useFriends } from '@/friends/FriendsProvider';
@@ -23,11 +23,13 @@ import type { Entry } from '@/store/types';
 export default function FriendEntryScreen() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
-  const { id, owner } = useLocalSearchParams<{ id: string; owner: string }>();
+  const { id, owner, write } = useLocalSearchParams<{ id: string; owner: string; write?: string }>();
   const { byId, photos } = useFriends();
   const [entry, setEntry] = useState<Entry | null | undefined>(() => friendEntryCache.get(socialKey(owner, id)));
   const [failed, setFailed] = useState<string | null>(null);
   const [reveal, setReveal] = useState(false);
+  // Comment (on a card, or here) opens the box.
+  const [writing, setWriting] = useState(!!write);
   const who = byId(owner);
   const name = who?.name ?? 'Your friend';
 
@@ -72,7 +74,7 @@ export default function FriendEntryScreen() {
     });
 
   return (
-    <ScrollView contentContainerStyle={[styles.body, { paddingBottom: insets.bottom + 32 }]}>
+    <ScrollView contentContainerStyle={[styles.body, { paddingBottom: insets.bottom + 32 }]} keyboardShouldPersistTaps="handled">
       <Stack.Screen options={{ title: `${name}’s entry` }} />
       <Pressable
         onPress={() => router.push({ pathname: '/friend/[id]', params: { id: owner } })}
@@ -122,8 +124,8 @@ export default function FriendEntryScreen() {
           <RichText text={entry.review} theme={theme} style={{ ...styles.review, color: theme.text }} />
         ))}
 
-      <SocialBar ownerId={owner} entryId={id} title={entry.title} theme={theme} />
-      <CommentsPreview ownerId={owner} entryId={id} title={entry.title} theme={theme} />
+      <SocialBar ownerId={owner} entryId={id} theme={theme} onComment={() => setWriting(true)} />
+      <Conversation ownerId={owner} entryId={id} theme={theme} ownerName={name.split(' ')[0]} writing={writing} onWriting={setWriting} />
     </ScrollView>
   );
 }

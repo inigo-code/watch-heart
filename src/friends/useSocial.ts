@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 
-import { entrySocial, likeEntry, myId, socialKey } from '@/friends/socialApi';
-import type { Social } from '@/friends/socialApi';
+import { addComment, deleteComment, entrySocial, entryThread, likeEntry, myId, socialKey } from '@/friends/socialApi';
+import type { Comment, Social } from '@/friends/socialApi';
 import type { Entry } from '@/store/types';
 
 // Like and comment counts, shared by every screen that shows an entry, so a like on the entry page shows on
@@ -35,8 +35,93 @@ export function setSocial(key: string, next: Social) {
 
 /** One more (or one fewer) comment on an entry, after you post or delete one. */
 export function bumpComments(key: string, by: number) {
-  const now = counts.get(key);
-  if (now) setSocial(key, { ...now, comments: Math.max(0, now.comments + by) });
+  const now = counts.get(key) ?? { likes: 0, liked: false, comments: 0 };
+  setSocial(key, { ...now, comments: Math.max(0, now.comments + by) });
+}
+
+// --- Conversations ------------------------------------------------------------------------------------------
+// Each entry's comments, kept for the session like the counts, so a comment shows at once wherever the entry
+// does. Yours appear the moment you send them (marked pending until the server has them), and are taken back
+// if it says no.
+
+export type ShownComment = Comment & { pending?: boolean };
+let threads: ReadonlyMap<string, ShownComment[]> = new Map();
+const threadListeners = new Set<() => void>();
+const subscribeThreads = (l: () => void) => {
+  threadListeners.add(l);
+  return () => {
+    threadListeners.delete(l);
+  };
+};
+const currentThreads = () => threads;
+function putThread(key: string, list: ShownComment[]) {
+  const next = new Map(threads);
+  next.set(key, list);
+  threads = next;
+  threadListeners.forEach((l) => l());
+}
+
+/** The conversation on an entry: loaded when `load` is true, then kept. `null` until it's there. */
+export function useThread(ownerId: string, entryId: string, load = true) {
+  const all = useSyncExternalStore(subscribeThreads, currentThreads);
+  const key = socialKey(ownerId, entryId);
+  const [failed, setFailed] = useState<unknown>(null);
+  const [round, setRound] = useState(0);
+  useEffect(() => {
+    if (!load || !ownerId || !entryId) return;
+    let live = true;
+    entryThread(ownerId, entryId)
+      .then((t) => {
+        if (!live) return;
+        setFailed(null);
+        // Keep anything of yours still on its way.
+        const sending = (threads.get(key) ?? []).filter((c) => c.pending);
+        putThread(key, [...t, ...sending]);
+        const now = counts.get(key);
+        if (now && now.comments !== t.length + sending.length) setSocial(key, { ...now, comments: t.length + sending.length });
+      })
+      .catch((e: unknown) => live && setFailed(e));
+    return () => {
+      live = false;
+    };
+  }, [key, ownerId, entryId, load, round]);
+  return { thread: all.get(key) ?? null, failed, retry: () => setRound((r) => r + 1) };
+}
+
+/** Posts a comment: it shows at once, then gets its real id; if the server refuses, it's taken back and this throws. */
+export async function postComment(ownerId: string, entryId: string, words: string, me: { id: string; name: string; photoPath: string | null }) {
+  const key = socialKey(ownerId, entryId);
+  const temp: ShownComment = { id: `sending-${Date.now()}`, authorId: me.id, name: me.name || 'You', photoPath: me.photoPath, body: words.trim(), at: new Date().toISOString(), pending: true };
+  putThread(key, [...(threads.get(key) ?? []), temp]);
+  bumpComments(key, 1);
+  try {
+    const id = await addComment(ownerId, entryId, words);
+    const list = threads.get(key) ?? [];
+    if (id && list.some((c) => c.id === id)) {
+      // A reload meanwhile already brought the real one.
+      putThread(key, list.filter((c) => c.id !== temp.id));
+      bumpComments(key, -1);
+    } else putThread(key, list.map((c) => (c.id === temp.id ? { ...c, id: id || c.id, pending: false } : c)));
+  } catch (e) {
+    putThread(key, (threads.get(key) ?? []).filter((c) => c.id !== temp.id));
+    bumpComments(key, -1);
+    throw e;
+  }
+}
+
+/** Deletes a comment at once; puts it back if the server refuses, and throws. */
+export async function removeComment(ownerId: string, entryId: string, c: ShownComment) {
+  const key = socialKey(ownerId, entryId);
+  const before = threads.get(key) ?? [];
+  putThread(key, before.filter((x) => x.id !== c.id));
+  bumpComments(key, -1);
+  try {
+    await deleteComment(c.id);
+  } catch (e) {
+    putThread(key, before);
+    bumpComments(key, 1);
+    throw e;
+  }
 }
 
 /**
