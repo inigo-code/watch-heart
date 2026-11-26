@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 
 import { entrySocial, likeEntry, myId, socialKey } from '@/friends/socialApi';
 import type { Social } from '@/friends/socialApi';
@@ -6,17 +6,31 @@ import type { Entry } from '@/store/types';
 
 // Like and comment counts, shared by every screen that shows an entry, so a like on the entry page shows on
 // the feed when you go back. Fetched in batches; a like changes at once and is put back if it fails.
+// Every change makes a new map, which screens read through useSyncExternalStore: the React Compiler keeps
+// what a render read from a map that changed in place, and the button then showed the like before last.
 
-const counts = new Map<string, Social>();
+let counts: ReadonlyMap<string, Social> = new Map();
 const listeners = new Set<() => void>();
-const changed = () => listeners.forEach((l) => l());
+const subscribe = (l: () => void) => {
+  listeners.add(l);
+  return () => {
+    listeners.delete(l);
+  };
+};
+const current = () => counts;
+
+function put(entries: [string, Social][]) {
+  const next = new Map(counts);
+  for (const [k, v] of entries) next.set(k, v);
+  counts = next;
+  listeners.forEach((l) => l());
+}
 
 /** Friends' entries, last opened, so an entry page can show at once without asking the server. */
 export const friendEntryCache = new Map<string, Entry>();
 
 export function setSocial(key: string, next: Social) {
-  counts.set(key, next);
-  changed();
+  put([[key, next]]);
 }
 
 /** One more (or one fewer) comment on an entry, after you post or delete one. */
@@ -30,18 +44,10 @@ export function bumpComments(key: string, by: number) {
  * false until the server answers, and stays false when it doesn't have likes yet.
  */
 export function useSocial(items: { ownerId: string; entryId: string }[]) {
-  const [, setTick] = useState(0);
+  const known = useSyncExternalStore(subscribe, current);
   const [ready, setReady] = useState(false);
   const keys = useMemo(() => items.map((i) => socialKey(i.ownerId, i.entryId)), [items]);
   const wanted = keys.join('|');
-
-  useEffect(() => {
-    const listen = () => setTick((t) => t + 1);
-    listeners.add(listen);
-    return () => {
-      listeners.delete(listen);
-    };
-  }, []);
 
   useEffect(() => {
     if (!wanted) return;
@@ -49,9 +55,8 @@ export function useSocial(items: { ownerId: string; entryId: string }[]) {
     entrySocial(items)
       .then((got) => {
         if (!live) return;
-        for (const [k, v] of Object.entries(got)) counts.set(k, v);
         setReady(Object.keys(got).length > 0 || items.length === 0);
-        changed();
+        put(Object.entries(got));
       })
       .catch(() => {});
     return () => {
@@ -61,7 +66,7 @@ export function useSocial(items: { ownerId: string; entryId: string }[]) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [wanted]);
 
-  const get = useCallback((ownerId: string, entryId: string) => counts.get(socialKey(ownerId, entryId)), []);
+  const get = useCallback((ownerId: string, entryId: string) => known.get(socialKey(ownerId, entryId)), [known]);
 
   const toggleLike = useCallback(async (ownerId: string, entryId: string) => {
     const key = socialKey(ownerId, entryId);
