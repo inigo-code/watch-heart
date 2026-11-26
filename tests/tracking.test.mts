@@ -143,3 +143,18 @@ test('caught up with no next episode dated: finished, even when TMDB still calls
   const more = show({ seen: all, status: 'completed', seasons: [{ n: 1, count: 10 }, { n: 2, count: 8 }], lastAired: { season: 2, number: 1 } });
   assert.equal(settle(more).status, 'watching');
 });
+
+test('a paused show you caught up on finishes too, and a finished one returns when its next episode gets a date', () => {
+  const all = Object.fromEntries(Array.from({ length: 10 }, (_, i) => [`s1e${i + 1}`, '2026-11-20']));
+  assert.equal(settle(show({ seen: all, status: 'paused' })).status, 'completed');
+  // The Rings of Power: finished, then S3 E7 is dated.
+  const dated = settle(show({ seen: all, status: 'completed', nextAir: { season: 1, number: 11, date: '2026-12-03' } }));
+  assert.equal(dated.status, 'watching');
+  const w = (track: Track) => ({ id: 'x', track }) as unknown as Parameters<typeof continueWatching>[0][number];
+  assert.equal(continueWatching([w(show({ seen: all, status: 'completed', nextAir: { season: 1, number: 11, date: '2026-12-03' } }))], '2026-11-26').comingBack.length, 1);
+  // Ended stays finished, dated or not; dropped stays dropped.
+  assert.equal(settle(show({ seen: all, status: 'completed', ended: true, nextAir: { season: 1, number: 11, date: '2026-12-03' } })).status, 'completed');
+  assert.equal(settle(show({ seen: all, status: 'dropped' })).status, 'dropped');
+  // Settling twice changes nothing more.
+  assert.deepEqual(settle(dated), dated);
+});

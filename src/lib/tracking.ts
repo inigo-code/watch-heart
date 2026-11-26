@@ -175,15 +175,17 @@ export function mergeTrack(mine: Track, theirs: Track): Track {
 }
 
 /**
- * Completed once you've seen every episode out and no more are on the way: the show has ended, or no next
- * episode has a date (TMDB calls a series "returning" until someone marks it ended, often long after the last
- * season, as with a whole season out on one day). Back to watching when new episodes appear, so a show that
- * does return comes back by itself. Caught up with a next episode dated stays watching ("Coming back").
+ * Completed once you've seen every episode out (watching or paused) and no more are on the way: the show has
+ * ended, or no next episode has a date (TMDB calls a series "returning" until someone marks it ended, often
+ * long after the last season, as with a whole season out on one day). Back to watching when new episodes
+ * appear or the next one gets a date, so a show that returns comes back by itself, under Coming back, with
+ * its reminders. Caught up with a next episode dated stays watching.
  */
 export function settle(t: Track): Track {
   const c = counts(t);
-  if ((t.ended || !t.nextAir) && c.aired > 0 && c.left === 0 && t.status === 'watching') return { ...t, status: 'completed' };
-  if (t.status === 'completed' && c.left > 0) return { ...t, status: 'watching' };
+  const caughtUp = c.aired > 0 && c.left === 0;
+  if ((t.ended || !t.nextAir) && caughtUp && (t.status === 'watching' || t.status === 'paused')) return { ...t, status: 'completed' };
+  if (t.status === 'completed' && (c.left > 0 || (!t.ended && t.nextAir))) return { ...t, status: 'watching' };
   return t;
 }
 
@@ -211,7 +213,7 @@ export function continueWatching(items: WatchItem[], todayIso: string) {
     const c = counts(t);
     const idle = (today - Date.parse(lastSeenDay(t))) / DAY;
     if (c.left > 0) (t.status === 'watching' && idle <= 30 ? ongoing : oldFriends).push(w);
-    else if (!t.ended) comingBack.push(w);
+    else if (!t.ended && t.nextAir) comingBack.push(w);
   }
   const recent = (a: WatchItem, b: WatchItem) => lastSeenDay(b.track!).localeCompare(lastSeenDay(a.track!));
   const soonest = (a: WatchItem, b: WatchItem) => (a.track!.nextAir?.date ?? '9999').localeCompare(b.track!.nextAir?.date ?? '9999');
