@@ -1,22 +1,25 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, RefreshControl, ScrollView, Share, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Text, TextInput } from '@/components/AppText';
 import { ActionSheet } from '@/components/ActionSheet';
+import { SocialActivity } from '@/components/friends/Activity';
 import { BlockedPeople } from '@/components/friends/BlockedPeople';
 import { FriendsStrip } from '@/components/friends/FriendsStrip';
+import { SocialMarks, openFriendEntry } from '@/components/friends/Social';
 import { PeopleSearch } from '@/components/friends/PeopleSearch';
 import { Stars } from '@/components/Film';
 import { KeyboardSafe } from '@/components/KeyboardSafe';
 import { SectionLabel } from '@/components/SectionLabel';
-import { Face, openTitle } from '@/components/title/Rows';
+import { Face } from '@/components/title/Rows';
 import { useToast } from '@/components/Toast';
 import { formatCode, friendsFeed, myInviteCode, redeemInvite } from '@/friends/friendsApi';
 import type { FriendEntry } from '@/friends/friendsApi';
 import { useFriends } from '@/friends/FriendsProvider';
+import { useSocial } from '@/friends/useSocial';
 import { SITE_URL, WEB_URL } from '@/lib/app';
 import { friendlyDate } from '@/lib/dates';
 import { easeNextLayout } from '@/lib/motion';
@@ -37,6 +40,8 @@ export default function FriendsScreen() {
   const [entry, setEntry] = useState(params.code ?? '');
   const [adding, setAdding] = useState(false);
   const [feed, setFeed] = useState<FriendEntry[] | null>(null);
+  const shown = useMemo(() => (feed ?? []).slice(0, 40).map((e) => ({ ownerId: e.userId, entryId: e.id })), [feed]);
+  useSocial(shown);
   const [confirmReset, setConfirmReset] = useState(false);
   // Add stays open for someone with no friends yet, until they close it.
   const [addOpen, setAddOpen] = useState<boolean | null>(params.code ? true : null);
@@ -195,6 +200,8 @@ export default function FriendsScreen() {
 
         <PeopleSearch theme={theme} onFriendsChanged={reload} />
 
+        {friends.length > 0 && <SocialActivity theme={theme} round={round} />}
+
         {friends.length > 0 && (
           <View style={styles.block}>
             <SectionLabel theme={theme}>Lately</SectionLabel>
@@ -233,7 +240,7 @@ export default function FriendsScreen() {
   );
 }
 
-/** Sam, Past Lives with its stars, and the day: opens the title. */
+/** Sam, Past Lives with its stars, and the day: opens their entry, to like it or comment. */
 function FeedRow({ e, theme }: { e: FriendEntry; theme: Theme }) {
   const what = watchedLabel(e);
   const rating = viewingRating(e);
@@ -241,20 +248,7 @@ function FeedRow({ e, theme }: { e: FriendEntry; theme: Theme }) {
   const who = byId(e.userId);
   return (
     <Pressable
-      onPress={() =>
-        openTitle({
-          kind: e.kind,
-          source: e.source,
-          sourceId: e.sourceId,
-          title: e.title,
-          year: e.year,
-          posterUrl: e.posterUrl,
-          backdropUrl: e.backdropUrl,
-          genres: e.genres,
-          runtime: e.runtime,
-          credit: e.credit,
-        })
-      }
+      onPress={() => openFriendEntry(e)}
       accessibilityRole="button"
       style={({ pressed }) => [styles.feedRow, { borderBottomColor: theme.border, opacity: pressed ? 0.75 : 1 }]}
     >
@@ -278,7 +272,8 @@ function FeedRow({ e, theme }: { e: FriendEntry; theme: Theme }) {
           {rating ? <Stars rating={rating} size={12} color={theme.star} /> : null}
           {e.liked && <Ionicons name="heart" size={12} color={theme.like} />}
           <Text style={[styles.hint, { color: theme.textMuted }]}>{friendlyDate(e.watchedOn)}</Text>
-          {!!e.review && <Ionicons name="chatbubble-outline" size={12} color={theme.textMuted} accessibilityLabel="Has a review" />}
+          {!!e.review && <Ionicons name="document-text-outline" size={12} color={theme.textMuted} accessibilityLabel="Has a review" />}
+          <SocialMarks ownerId={e.userId} entryId={e.id} theme={theme} />
         </View>
       </View>
     </Pressable>

@@ -1,15 +1,17 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/AppText';
 import { Stars } from '@/components/Film';
+import { SocialBar } from '@/components/friends/Social';
 import { RichText } from '@/components/RichText';
 import { Face, RowHead } from '@/components/title/Rows';
 import { titleFriends, titleInFriendLists } from '@/friends/friendsApi';
 import type { FriendEntry } from '@/friends/friendsApi';
 import { useFriends } from '@/friends/FriendsProvider';
+import { useSocial } from '@/friends/useSocial';
 import { friendlyDate } from '@/lib/dates';
 import { easeNextLayout } from '@/lib/motion';
 import { font, fonts } from '@/lib/theme';
@@ -41,6 +43,11 @@ export function FriendsOnTitle({ source, sourceId, theme }: { source: string; so
   }, [ask, key, source, sourceId]);
 
   const data = found?.key === key ? found : null;
+  const counted = useMemo(
+    () => (data?.entries ?? []).filter((e) => e.review.trim()).map((e) => ({ ownerId: e.userId, entryId: e.id })),
+    [data],
+  );
+  useSocial(counted);
   if (!ask || !data || (!data.entries.length && !data.lists.length)) return null;
 
   // Each friend once: their latest viewing, and how many times they've seen it.
@@ -156,6 +163,7 @@ function Review({ e, who, photo, theme }: { e: FriendEntry; who: string; photo: 
       ) : (
         <RichText text={e.review} theme={theme} style={{ ...styles.reviewText, color: theme.text }} />
       )}
+      <SocialBar ownerId={e.userId} entryId={e.id} title={e.title} theme={theme} compact batched />
     </View>
   );
 }

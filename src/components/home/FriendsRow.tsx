@@ -6,7 +6,8 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Text } from '@/components/AppText';
 import { cached, MINUTE } from '@/api/cache';
 import { Poster } from '@/components/Film';
-import { Face, RowHead, openTitle, rail, warmTitle } from '@/components/title/Rows';
+import { openFriendEntry } from '@/components/friends/Social';
+import { Face, RowHead, rail, warmTitle } from '@/components/title/Rows';
 import { useFriends } from '@/friends/FriendsProvider';
 import { friendsFeed } from '@/friends/friendsApi';
 import type { FriendEntry } from '@/friends/friendsApi';
@@ -140,7 +141,7 @@ export function FriendsRow({ theme, round }: { theme: Theme; round: number }) {
             <Pressable
               key={`${e.userId}:${e.id}`}
               onPressIn={() => warmTitle(t)}
-              onPress={() => openTitle(t)}
+              onPress={() => openFriendEntry(e)}
               accessibilityRole="button"
               accessibilityLabel={`${name} watched ${what ? `${what} of ` : ''}${e.title}${rating ? `, ${rating / 2} stars` : ''}`}
               style={({ pressed }) => [{ width: 104 }, pressed && { opacity: 0.8 }]}

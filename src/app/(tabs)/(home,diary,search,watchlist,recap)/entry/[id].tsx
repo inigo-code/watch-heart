@@ -18,6 +18,10 @@ import { SectionLabel } from '@/components/SectionLabel';
 import { TitleExtras } from '@/components/TitleExtras';
 import { Synopsis, TitleMore, useAbout } from '@/components/title/AboutTitle';
 import { FriendsOnTitle } from '@/components/title/FriendsOnTitle';
+import { CommentsPreview, LikedBy, SocialBar } from '@/components/friends/Social';
+import { useFriends } from '@/friends/FriendsProvider';
+import { useMyId } from '@/friends/useSocial';
+import { useSettings } from '@/settings/SettingsProvider';
 import { Face, openTitle } from '@/components/title/Rows';
 import { useToast } from '@/components/Toast';
 import { TopScrim } from '@/components/TopScrim';
@@ -44,6 +48,11 @@ export default function EntryScreen() {
   const [trashing, setTrashing] = useState(false);
   const { listsWith } = useLists();
   const { about } = useAbout(entry?.source === 'tmdb' ? entry.sourceId : null);
+  const { available, friends } = useFriends();
+  const { settings } = useSettings();
+  // Friends can like and comment on what they can see: your diary, while you share it.
+  const me = useMyId(available);
+  const social = !!me && friends.length > 0 && settings.sharing.diary;
 
   if (!ready) return <View style={{ flex: 1 }} />;
   if (!entry || entry.deletedAt !== null) {
@@ -240,6 +249,14 @@ export default function EntryScreen() {
             )}
           </View>
 
+          {social && me && (
+            <View style={styles.social}>
+              <SocialBar ownerId={me} entryId={entry.id} title={entry.title} theme={theme} mine />
+              <LikedBy ownerId={me} entryId={entry.id} theme={theme} />
+              <CommentsPreview ownerId={me} entryId={entry.id} title={entry.title} theme={theme} />
+            </View>
+          )}
+
           {viewings.length > 1 && (
             <View style={styles.viewings}>
               <SectionLabel theme={theme}>Your viewings ({viewings.length})</SectionLabel>
@@ -327,6 +344,7 @@ const styles = StyleSheet.create({
   missing: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32 },
   missingText: { fontFamily: fonts.ui, fontSize: font.body, textAlign: 'center' },
   body: { padding: 16, gap: 20 },
+  social: { gap: 12 },
   ticket: { flexDirection: 'row', borderWidth: 1, borderRadius: 12, overflow: 'hidden' },
   stub: { width: 76, alignItems: 'center', justifyContent: 'center', paddingVertical: 12, borderRightWidth: 1.5, borderStyle: 'dashed' },
   stubSmall: { fontFamily: fonts.ticketBold, fontSize: 12, letterSpacing: 1 },

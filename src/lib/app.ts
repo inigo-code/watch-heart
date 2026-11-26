@@ -51,6 +51,13 @@ export const DATA_SOURCES = {
 type Note = string | { text: string; fromApp: string };
 const NOTES: { id: string; items: Note[] }[] = [
   {
+    id: '1.8.2',
+    items: [
+      'Like your friends’ diary entries and reviews, and comment on them. Your friend can reply, and their other friends can join in',
+      'Tap an entry in Friends lately to open it. Likes and comments on yours show on the Friends page, with an alert when someone likes, comments or replies',
+    ],
+  },
+  {
     // Also carries what an update on 26 Nov sent only to older builds, under a 1.7.6 id phones had passed.
     id: '1.8.1',
     items: [

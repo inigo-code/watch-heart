@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '@/components/AppText';
 import { ActionSheet } from '@/components/ActionSheet';
 import { DangerButton } from '@/components/DangerButton';
+import { SocialBar, openFriendEntry } from '@/components/friends/Social';
 import { Poster, Stars } from '@/components/Film';
 import { ListCover } from '@/components/lists/ListCover';
 import { Rise, Tap } from '@/components/Motion';
@@ -19,6 +20,7 @@ import { useToast } from '@/components/Toast';
 import { blockPerson, friendDiary, friendListCache, friendLists, removeFriend } from '@/friends/friendsApi';
 import type { FriendEntry } from '@/friends/friendsApi';
 import { useFriends } from '@/friends/FriendsProvider';
+import { useSocial } from '@/friends/useSocial';
 import { friendlyDate } from '@/lib/dates';
 import { easeNextLayout } from '@/lib/motion';
 import { viewingRating, watchedLabel } from '@/lib/watched';
@@ -130,6 +132,8 @@ export default function FriendScreen() {
 
   const months = useMemo(() => byMonth(diary ?? []), [diary]);
   const reviews = useMemo(() => (diary ?? []).filter((e) => e.review), [diary]);
+  const counted = useMemo(() => (diary ?? []).slice(0, 200).map((e) => ({ ownerId: e.userId, entryId: e.id })), [diary]);
+  useSocial(counted);
   const tile = (width - 32 - GAP * (COLS - 1)) / COLS;
 
   if (!friend) {
@@ -293,7 +297,7 @@ function Month({ month, tile, theme, order }: { month: { label: string; items: F
       <SectionLabel theme={theme}>{month.label}</SectionLabel>
       <View style={styles.wall}>
         {month.items.map((e) => (
-          <Tap key={e.id} onPress={() => openTitle(asTitle(e))} accessibilityRole="button" accessibilityLabel={`${e.title}${e.rating ? `, ${e.rating / 2} stars` : ''}`} style={{ width: tile }}>
+          <Tap key={e.id} onPress={() => openFriendEntry(e)} accessibilityRole="button" accessibilityLabel={`${e.title}${e.rating ? `, ${e.rating / 2} stars` : ''}`} style={{ width: tile }}>
             <Poster uri={e.posterUrl} title={e.title} width={tile} theme={theme} radius={6} />
             <View style={styles.marks}>
               {viewingRating(e) ? <Stars rating={viewingRating(e)} size={12} color={theme.star} /> : null}
@@ -346,6 +350,7 @@ function Review({ e, theme }: { e: FriendEntry; theme: Theme }) {
       ) : (
         <RichText text={e.review} theme={theme} style={{ ...styles.reviewText, color: theme.text }} />
       )}
+      <SocialBar ownerId={e.userId} entryId={e.id} title={e.title} theme={theme} compact batched />
     </View>
   );
 }

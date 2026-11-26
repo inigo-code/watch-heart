@@ -7,6 +7,9 @@ import { watchRegion } from '@/api/omdb';
 import { releaseDay } from '@/api/tmdb';
 import { friendNews } from '@/friends/friendAlerts';
 import { friendRequests, myFriends } from '@/friends/friendsApi';
+import { freshSocial } from '@/friends/socialAlerts';
+import { myId } from '@/friends/socialApi';
+import { newsRoute, newsText } from '@/lib/socialNews';
 import { today } from '@/lib/dates';
 import { applyNudges, notifyNow } from '@/lib/nudgeSchedule';
 import { planNudges, releaseDue } from '@/lib/nudges';
@@ -35,13 +38,22 @@ async function readSettings(): Promise<Settings> {
   return { ...DEFAULT_SETTINGS, ...saved, nudges: { ...DEFAULT_SETTINGS.nudges, ...saved.nudges } };
 }
 
-/** A new friend request, or someone saying yes. Servers can't reach a closed app here, so the phone asks. */
+/**
+ * A new friend request, someone saying yes, a like or a comment. Servers can't reach a closed app here, so
+ * the phone asks.
+ */
 async function friendAlerts(settings: Settings) {
   if (!settings.nudges.friends || !supabase) return;
   const { data } = await supabase.auth.getSession();
   if (!data.session) return;
   const [requests, friends] = await Promise.all([friendRequests(), myFriends()]);
   for (const n of await friendNews(requests, friends)) await notifyNow(n.id, n.title, n.body, '/friends');
+  // Likes and comments on your entries, and replies after yours.
+  const me = await myId();
+  for (const n of await freshSocial().catch(() => [])) {
+    const { title, body } = newsText(n);
+    await notifyNow(`social-${n.id}`, title, body, newsRoute(n, me));
+  }
 }
 
 async function check() {

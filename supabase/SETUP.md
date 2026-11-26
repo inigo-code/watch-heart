@@ -17,7 +17,8 @@ A project set up before lists or friends existed only needs the new parts: run [
 [friends.sql](friends.sql) the same way (each is safe to run again). Then
 [people.sql](people.sql) for finding people by name, and
 [friends-safety.sql](friends-safety.sql) for blocking and profile previews, then
-[suggestions.sql](suggestions.sql) for people you might know, in that order.
+[suggestions.sql](suggestions.sql) for people you might know, then [entry-social.sql](entry-social.sql) for likes
+and comments on diary entries, in that order.
 
 ## 3. Email codes (sign-up and forgot password)
 
