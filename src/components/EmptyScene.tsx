@@ -28,9 +28,9 @@ export function EmptyScene({ theme, scene, icon, title, text, action }: {
 }) {
   return (
     <View style={styles.wrap}>
-      <View accessible={false} importantForAccessibility="no-hide-descendants" style={styles.scene}>
+      <View accessible={false} importantForAccessibility="no-hide-descendants" style={[styles.scene, scene === 'ticket' ? styles.besideTicket : styles.besideStrip]}>
         {scene === 'ticket' ? <BlankTicket theme={theme} /> : <EmptyStrip theme={theme} icon={icon} />}
-        <Mascot pose={scene === 'ticket' ? 'diary' : 'asleep'} height={scene === 'ticket' ? 104 : 86} style={styles.reel} />
+        <Mascot pose={scene === 'ticket' ? 'diary' : 'asleep'} height={scene === 'ticket' ? 136 : 108} style={styles.reel} />
       </View>
       <Text style={[styles.title, { color: theme.text }]} accessibilityRole="header">
         {title}
@@ -94,8 +94,12 @@ const styles = StyleSheet.create({
   text: { fontFamily: fonts.ui, fontSize: font.body, textAlign: 'center', lineHeight: 21, maxWidth: 340 },
   button: { flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: 48, paddingHorizontal: 22, borderRadius: 24, marginTop: 10 },
   buttonText: { fontFamily: fonts.uiSemibold, fontSize: font.body },
-  scene: { paddingRight: 44, paddingBottom: 30 },
-  reel: { position: 'absolute', right: -14, bottom: -4 },
+  // She overlaps the scene's right end a little, as if sitting by it, and the scene makes room for the rest
+  // of her: 304 wide in all (232 + 72), which fits a 360-wide phone inside the page's padding.
+  scene: { paddingBottom: 30 },
+  besideTicket: { paddingRight: 54 },
+  besideStrip: { paddingRight: 72 },
+  reel: { position: 'absolute', right: 0, bottom: -4 },
 
   ticket: {
     flexDirection: 'row',

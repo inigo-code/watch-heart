@@ -125,7 +125,7 @@ const REEL_SAYS: Record<Mode, string> = {
   'sign-in': 'Welcome back!',
   'sign-up': 'Grab a seat!',
   confirm: 'Check your inbox!',
-  forgot: 'Happens to the best of us.',
+  forgot: 'Happens to us all.',
   reset: 'A fresh start!',
 };
 
@@ -223,8 +223,8 @@ function SignIn({ theme }: { theme: Theme }) {
     <Card theme={theme}>
       {/* The mascot waves hello, and has an oops moment at an error. */}
       <View style={styles.reelRow} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-        <Mascot pose={error ? 'oops' : 'hello'} height={124} />
-        <PaperTicket text={error ? 'Hmm, try again?' : REEL_SAYS[mode]} hole={theme.card} size={10} tilt={-5} />
+        <Mascot pose={error ? 'oops' : 'hello'} height={144} />
+        <PaperTicket text={error ? 'Hmm, try again?' : REEL_SAYS[mode]} hole={theme.card} size={10} tilt={-5} style={styles.reelTicket} />
       </View>
       <Text style={[styles.h, { color: theme.text }]}>{TITLES[mode]}</Text>
       <Text style={[styles.p, { color: theme.textMuted }]}>
@@ -441,6 +441,8 @@ function DeleteAccount({ theme, onClose, onDelete }: { theme: Theme; onClose: ()
 
 const styles = StyleSheet.create({
   reelRow: { flexDirection: 'row', alignItems: 'center', gap: 2 },
+  // A long line shrinks rather than pushing past the card on a narrow phone.
+  reelTicket: { flexShrink: 1 },
   content: { padding: 16, gap: 12 },
   card: { padding: 18, borderRadius: 14, borderWidth: StyleSheet.hairlineWidth, gap: 12 },
   h: { fontFamily: fonts.uiBold, fontSize: font.title2 },

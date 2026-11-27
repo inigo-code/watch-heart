@@ -1,6 +1,6 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
 
 import { Text } from '@/components/AppText';
 import { Mascot } from '@/components/Mascot';
@@ -17,6 +17,7 @@ export function DiaryLoadFailed() {
   const { loadFailed, retryLoad } = useDiary();
   const [busy, setBusy] = useState(false);
   const [tries, setTries] = useState(0);
+  const { height } = useWindowDimensions();
 
   if (!loadFailed) return null;
 
@@ -29,7 +30,7 @@ export function DiaryLoadFailed() {
 
   return (
     <View style={[styles.screen, { backgroundColor: theme.bg }]} accessibilityViewIsModal>
-      <Mascot pose="oops" height={168} />
+      <Mascot pose="oops" height={Math.round(Math.min(200, height * 0.27))} />
       <View style={styles.texts}>
         <Text style={[styles.title, { color: theme.text }]} accessibilityRole="header">
           Couldn’t open your diary
