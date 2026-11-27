@@ -30,7 +30,7 @@ export function DiaryLoadFailed() {
 
   return (
     <View style={[styles.screen, { backgroundColor: theme.bg }]} accessibilityViewIsModal>
-      <Mascot pose="oops" height={Math.round(Math.min(200, height * 0.27))} />
+      <Mascot pose="oops" height={Math.round(Math.min(260, height * 0.34))} />
       <View style={styles.texts}>
         <Text style={[styles.title, { color: theme.text }]} accessibilityRole="header">
           Couldn’t open your diary

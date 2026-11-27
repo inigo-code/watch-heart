@@ -26,10 +26,10 @@ The edge was halved on 27 Nov at Inigo's call: without one, her black hair and t
 
 | Pose | App | watchheart.in |
 |---|---|---|
-| `hello`: winking and waving, popcorn bucket | Welcome, Account sign in | Sign up and "Check your inbox", most empty pages |
-| `welcome`: holding up a blank ticket | (not used yet) | Sign in |
-| `diary`: sitting with an open blank diary | Empty Diary and lists (`EmptyScene` ticket) | Empty Diary, no lists yet |
-| `asleep`: on a black beanbag, hugging the popcorn | Empty Watchlist and Recap (`EmptyScene` strip) | Empty Watchlist, Recap, list, a friend's private diary |
+| `hello`: winking and waving, popcorn bucket | Welcome, Account sign in, no lists yet | Sign up and "Check your inbox", no lists yet |
+| `welcome`: holding up a blank ticket | Empty Recap | Sign in, empty Recap |
+| `diary`: sitting with an open blank diary | Empty Diary (`EmptyScene` ticket) | Empty Diary |
+| `asleep`: on a black beanbag, hugging the popcorn | Empty Watchlist (`EmptyScene` strip) | Empty Watchlist, an empty list, a friend's private diary |
 | `oops`: sweat drop, popcorn flying | Sign-in error, "Couldn't open your diary" | Sign-in error, Forgot password, missing pages |
 | `cheer`: jumping, popcorn bursting | (not used yet) | Empty Trash ("All clear"), New password |
 

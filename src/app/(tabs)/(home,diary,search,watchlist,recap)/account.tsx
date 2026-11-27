@@ -2,7 +2,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
 
 import { Text, TextInput } from '@/components/AppText';
 import { Mascot, PaperTicket } from '@/components/Mascot';
@@ -140,6 +140,8 @@ function SignIn({ theme }: { theme: Theme }) {
   const [notice, setNotice] = useState<string | null>(null);
   const [resendAt, setResendAt] = useState(0);
   const resendIn = useSecondsUntil(resendAt > 0 ? resendAt : null) ?? 0;
+  // A quarter of the screen's height, 150 to 190, so the form still starts in view on a small phone.
+  const mascot = Math.round(Math.min(190, Math.max(150, useWindowDimensions().height * 0.25)));
 
   const go = (next: Mode, message: string | null = null) => {
     setMode(next);
@@ -223,7 +225,7 @@ function SignIn({ theme }: { theme: Theme }) {
     <Card theme={theme}>
       {/* The mascot waves hello, and has an oops moment at an error. */}
       <View style={styles.reelRow} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-        <Mascot pose={error ? 'oops' : 'hello'} height={144} />
+        <Mascot pose={error ? 'oops' : 'hello'} height={mascot} />
         <PaperTicket text={error ? 'Hmm, try again?' : REEL_SAYS[mode]} hole={theme.card} size={10} tilt={-5} style={styles.reelTicket} />
       </View>
       <Text style={[styles.h, { color: theme.text }]}>{TITLES[mode]}</Text>

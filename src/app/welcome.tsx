@@ -149,9 +149,9 @@ function WallColumn({ posters, theme, width, up, offset }: { posters: Title[]; t
 function Intro({ theme, posters, bottom, onStart, onSignIn }: { theme: Theme; posters: Title[] | null; bottom: number; onStart: () => void; onSignIn: () => void }) {
   const { width, height } = useWindowDimensions();
   const tile = (width - GAP * (COLS + 1)) / COLS;
-  // She's the first face of the app, so as big as the screen allows: about a fifth of its height, which keeps
-  // the poster wall in view above her on a small phone (141 on 640 tall, 179 on 812, at most 188).
-  const mascot = Math.round(Math.min(188, Math.max(120, height * 0.22)));
+  // She's the first face of the app, so she takes the room the words leave: 30% of the screen's height (192 on
+  // a 640-tall phone, 244 on 812, 260 at most), with the poster wall fading in above her.
+  const mascot = Math.round(Math.min(260, Math.max(150, height * 0.3)));
   const columns = useMemo(() => {
     if (!posters?.length) return [];
     return [0, 1, 2].map((c) => posters.filter((_, i) => i % COLS === c).slice(0, 6));
@@ -170,7 +170,7 @@ function Intro({ theme, posters, bottom, onStart, onSignIn }: { theme: Theme; po
         {/* The mascot waving hello beside a ticket: the first face of the app. */}
         <View style={styles.reelRow} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
           <Mascot pose="hello" height={mascot} />
-          <PaperTicket text="Grab a seat!" hole={theme.bg} size={12} tilt={-6} />
+          <PaperTicket text="Grab a seat!" hole={theme.bg} size={13} tilt={-6} />
         </View>
         <Rise order={1}>
           <BrandTitle theme={theme} size={34} />

@@ -22,6 +22,9 @@ const POSES: Record<MascotPose, { src: number; ratio: number }> = {
   cheer: { src: require('../../assets/mascot/cheer.webp'), ratio: 415 / 640 },
 };
 
+/** Width over height for a pose, to size what sits beside her. */
+export const mascotRatio = (pose: MascotPose) => POSES[pose].ratio;
+
 const INK = '#120F08';
 const CREAM = '#F4EFE6';
 
