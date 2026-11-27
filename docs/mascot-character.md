@@ -26,12 +26,12 @@ The edge was halved on 27 Nov at Inigo's call: without one, her black hair and t
 
 | Pose | App | watchheart.in |
 |---|---|---|
-| `hello`: winking and waving, popcorn bucket | Welcome, Account sign in, no lists yet | Sign up and "Check your inbox", no lists yet |
-| `welcome`: holding up a blank ticket | Empty Recap | Sign in, empty Recap |
+| `hello`: winking and waving, popcorn bucket | Welcome, Create an account and Check your inbox, no lists yet | Sign up and "Check your inbox", no lists yet |
+| `welcome`: holding up a blank ticket | Sign in, empty Recap | Sign in, empty Recap |
 | `diary`: sitting with an open blank diary | Empty Diary (`EmptyScene` ticket) | Empty Diary |
 | `asleep`: on a black beanbag, hugging the popcorn | Empty Watchlist (`EmptyScene` strip), an empty list | Empty Watchlist, an empty list, a friend's private diary |
-| `oops`: sweat drop, popcorn flying | Sign-in error, "Couldn't open your diary" | Sign-in error, Forgot password, missing pages |
-| `cheer`: jumping, popcorn bursting | Empty Trash ("All clear!") | Empty Trash ("All clear"), New password |
+| `oops`: sweat drop, popcorn flying | Forgot password, a sign-in error, "Couldn't open your diary" | Sign-in error, Forgot password, missing pages |
+| `cheer`: jumping, popcorn bursting | New password, empty Trash ("All clear!") | Empty Trash ("All clear"), New password |
 
 She stays a still drawing. She fades and rises in (360 to 420 ms), and gives a small shake when she turns to
 "oops". With reduced motion she just appears. Screen readers skip her; the words beside her carry the meaning.

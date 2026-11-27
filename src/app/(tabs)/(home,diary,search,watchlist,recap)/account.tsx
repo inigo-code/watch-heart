@@ -6,6 +6,7 @@ import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View, useWindowDi
 
 import { Text, TextInput } from '@/components/AppText';
 import { Mascot, PaperTicket } from '@/components/Mascot';
+import type { MascotPose } from '@/components/Mascot';
 import { KeyboardSafe } from '@/components/KeyboardSafe';
 import { ActionSheet } from '@/components/ActionSheet';
 import { DangerButton } from '@/components/DangerButton';
@@ -129,6 +130,16 @@ const REEL_SAYS: Record<Mode, string> = {
   reset: 'A fresh start!',
 };
 
+/** Her pose for each step, as on the website: holding up a ticket to sign in, waving to join, a sweat drop for a
+ * lost password, a cheer for the new one. */
+const POSE: Record<Mode, MascotPose> = {
+  'sign-in': 'welcome',
+  'sign-up': 'hello',
+  confirm: 'hello',
+  forgot: 'oops',
+  reset: 'cheer',
+};
+
 function SignIn({ theme }: { theme: Theme }) {
   const { signIn, signUp, confirmSignUp, resendSignUpCode, sendPasswordReset, resetPassword } = useSync();
   const [mode, setMode] = useState<Mode>('sign-in');
@@ -140,8 +151,8 @@ function SignIn({ theme }: { theme: Theme }) {
   const [notice, setNotice] = useState<string | null>(null);
   const [resendAt, setResendAt] = useState(0);
   const resendIn = useSecondsUntil(resendAt > 0 ? resendAt : null) ?? 0;
-  // A quarter of the screen's height, 150 to 190, so the form still starts in view on a small phone.
-  const mascot = Math.round(Math.min(190, Math.max(150, useWindowDimensions().height * 0.25)));
+  // Centred at the top of the card and as big as the room allows: 30% of the screen's height, 180 to 240.
+  const mascot = Math.round(Math.min(240, Math.max(180, useWindowDimensions().height * 0.3)));
 
   const go = (next: Mode, message: string | null = null) => {
     setMode(next);
@@ -223,10 +234,10 @@ function SignIn({ theme }: { theme: Theme }) {
 
   return (
     <Card theme={theme}>
-      {/* The mascot waves hello, and has an oops moment at an error. */}
+      {/* Iniya, centred, in a pose for each step, and an oops moment at an error. */}
       <View style={styles.reelRow} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-        <Mascot pose={error ? 'oops' : 'hello'} height={mascot} />
-        <PaperTicket text={error ? 'Hmm, try again?' : REEL_SAYS[mode]} hole={theme.card} size={10} tilt={-5} style={styles.reelTicket} />
+        <Mascot key={error ? 'oops' : mode} pose={error ? 'oops' : POSE[mode]} height={mascot} />
+        <PaperTicket text={error ? 'Hmm, try again?' : REEL_SAYS[mode]} hole={theme.card} size={12} tilt={-4} style={styles.reelTicket} />
       </View>
       <Text style={[styles.h, { color: theme.text }]}>{TITLES[mode]}</Text>
       <Text style={[styles.p, { color: theme.textMuted }]}>
@@ -442,9 +453,9 @@ function DeleteAccount({ theme, onClose, onDelete }: { theme: Theme; onClose: ()
 }
 
 const styles = StyleSheet.create({
-  reelRow: { flexDirection: 'row', alignItems: 'center', gap: 2 },
-  // A long line shrinks rather than pushing past the card on a narrow phone.
-  reelTicket: { flexShrink: 1 },
+  // Her ticket overlaps her feet, like a sign at the foot of a poster.
+  reelRow: { alignItems: 'center', marginBottom: 6 },
+  reelTicket: { marginTop: -22 },
   content: { padding: 16, gap: 12 },
   card: { padding: 18, borderRadius: 14, borderWidth: StyleSheet.hairlineWidth, gap: 12 },
   h: { fontFamily: fonts.uiBold, fontSize: font.title2 },
