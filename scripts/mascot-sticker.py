@@ -7,7 +7,7 @@ Gemini sparkle. Steps:
 1. The background is everything near-white and grey (not cream) that joins the picture's corners.
 2. Pockets of background she encloses (between her hair and neck) are found as wide near-white areas
    that survive a shrink, so her eye whites and teeth stay.
-3. A cream edge (#F4EFE6) about 0.6% of the height grows around her, so black hair reads on dark pages.
+3. A thin cream edge (#F4EFE6), about 0.3% of the height, grows around her so black hair reads on dark pages.
 4. Cropped, scaled so the longer side is 640 px, saved as WebP (quality 88, about 45-55 KB).
 """
 
@@ -43,7 +43,7 @@ def sticker(src: str, dst: str, long_side: int = 640) -> None:
     fg &= np.asarray(m) != 128
 
     # 3. The cream edge.
-    blur = np.asarray(Image.fromarray(fg.astype(np.uint8) * 255).filter(ImageFilter.GaussianBlur(h * 0.006))).astype(np.float32) / 255
+    blur = np.asarray(Image.fromarray(fg.astype(np.uint8) * 255).filter(ImageFilter.GaussianBlur(h * 0.003))).astype(np.float32) / 255
     alpha = np.maximum(np.clip((blur - 0.02) / 0.06, 0, 1), fg)
     col = np.where(fg[..., None], a.astype(np.float32), CREAM)
     im = Image.fromarray(np.dstack([col, alpha * 255]).astype(np.uint8), 'RGBA')

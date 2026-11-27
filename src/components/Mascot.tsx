@@ -14,11 +14,11 @@ import { fonts } from '@/lib/theme';
 export type MascotPose = 'hello' | 'welcome' | 'diary' | 'asleep' | 'oops' | 'cheer';
 
 const POSES: Record<MascotPose, { src: number; ratio: number }> = {
-  hello: { src: require('../../assets/mascot/hello.webp'), ratio: 328 / 640 },
-  welcome: { src: require('../../assets/mascot/welcome.webp'), ratio: 361 / 640 },
-  diary: { src: require('../../assets/mascot/diary.webp'), ratio: 385 / 640 },
+  hello: { src: require('../../assets/mascot/hello.webp'), ratio: 324 / 640 },
+  welcome: { src: require('../../assets/mascot/welcome.webp'), ratio: 359 / 640 },
+  diary: { src: require('../../assets/mascot/diary.webp'), ratio: 383 / 640 },
   asleep: { src: require('../../assets/mascot/asleep.webp'), ratio: 640 / 594 },
-  oops: { src: require('../../assets/mascot/oops.webp'), ratio: 374 / 640 },
+  oops: { src: require('../../assets/mascot/oops.webp'), ratio: 371 / 640 },
   cheer: { src: require('../../assets/mascot/cheer.webp'), ratio: 415 / 640 },
 };
 

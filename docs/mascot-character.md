@@ -20,7 +20,9 @@ over a taller anime one, then asked for the logo's colours on her.
 
 ## Poses
 
-All six are in `assets/mascot/*.webp` (640 px on the longer side, 42 to 55 KB each, cream sticker edge).
+All six are in `assets/mascot/*.webp` (640 px on the longer side, 44 to 56 KB each, a thin cream edge).
+
+The edge was halved on 27 Nov at Inigo's call: without one, her black hair and the beanbag vanish into the dark theme; the thicker one looked like a sticker.
 
 | Pose | App | watchheart.in |
 |---|---|---|
