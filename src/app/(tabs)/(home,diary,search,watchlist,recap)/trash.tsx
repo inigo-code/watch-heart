@@ -1,12 +1,13 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useState } from 'react';
-import { FlatList, Pressable, StyleSheet, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Text } from '@/components/AppText';
 import { DangerButton } from '@/components/DangerButton';
 import { ActionSheet } from '@/components/ActionSheet';
 import { Poster } from '@/components/Film';
+import { Mascot, PaperTicket } from '@/components/Mascot';
 import { useToast } from '@/components/Toast';
 import { friendlyDate } from '@/lib/dates';
 import { font, fonts, useTheme } from '@/lib/theme';
@@ -17,6 +18,8 @@ const DAY = 24 * 60 * 60 * 1000;
 
 export default function TrashScreen() {
   const theme = useTheme();
+  // Iniya cheers an empty trash, as big as the other empty pages: 30% of the screen's height, 170 to 240.
+  const mascot = Math.round(Math.min(240, Math.max(170, useWindowDimensions().height * 0.3)));
   const insets = useSafeAreaInsets();
   const toast = useToast();
   const { trash, restoreEntry, purgeEntry, emptyTrash } = useDiary();
@@ -70,7 +73,10 @@ export default function TrashScreen() {
         )}
         ListEmptyComponent={
           <View style={styles.empty}>
-            <Ionicons name="trash-outline" size={36} color={theme.textMuted} />
+            <View style={styles.cheer} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+              <Mascot pose="cheer" height={mascot} />
+              <PaperTicket text="All clear!" hole={theme.bg} size={12} tilt={-6} />
+            </View>
             <Text style={[styles.emptyTitle, { color: theme.text }]}>Trash is empty</Text>
             <Text style={[styles.emptyText, { color: theme.textMuted }]}>Deleted entries stay here for {TRASH_DAYS} days</Text>
           </View>
@@ -102,7 +108,8 @@ const styles = StyleSheet.create({
   title: { fontSize: font.body, fontWeight: '700' },
   meta: { fontFamily: fonts.ui, fontSize: font.caption },
   btn: { width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center' },
-  empty: { alignItems: 'center', gap: 10, paddingTop: 96, paddingHorizontal: 24 },
+  empty: { alignItems: 'center', gap: 10, paddingTop: 48, paddingHorizontal: 24 },
+  cheer: { flexDirection: 'row', alignItems: 'center', gap: 2, marginBottom: 14 },
   emptyTitle: { fontFamily: fonts.uiBold, fontSize: font.title2 },
   emptyText: { fontFamily: fonts.ui, fontSize: font.body, lineHeight: 21, textAlign: 'center', maxWidth: 300 },
 });
