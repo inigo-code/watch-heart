@@ -14,6 +14,7 @@ Read this first when picking the project up in a new session or from another acc
 | --- | --- |
 | App source | this folder, GitHub `inigo-code/watch-heart` |
 | Website | `..\Sites\Watch Heart`, `inigo-code/watch-heart-site`, https://heartapps.github.io/watch-heart/ |
+| watchheart.in (the app on the web) | `..\Watch Heart Web` (local git only), published with `python scripts/publish.py`; see its README |
 | F-Droid repo and signing key | `..\Watch Heart F-Droid` (its `publish.sh` also publishes the site; the keystore is not on GitHub) |
 | Play Store text, Console answers, graphics | `store/listing.md`, `store/play-console.md`, `store/graphics/` (made by `store/make/`, see its README) |
 | Supabase setup and SQL | `supabase/SETUP.md`, `supabase/*.sql` |
@@ -30,6 +31,7 @@ The README has the feature list, the code map and the build commands.
 - **Commits** as `Inigo <270059847+inigo-code@users.noreply.github.com>`. No Claude co-author trailer and no "Generated with Claude Code" line.
 - **Never print API keys** (TMDB, OMDb). For a test, `eas env:pull` into a scratch file, use it, delete it. Setting secrets is Inigo's step.
 - **Ask before outward actions**: pushing, releases, OTA publishes, site uploads, Play uploads.
+- **The app and watchheart.in stay in step** (Inigo, 2026-11-27: "Always make the app and website parallel."): every feature, fix or wording change made in one goes into the other in the same piece of work (Watch Heart Web reuses the app's `src/` through `@/`, but its screens are its own). Only what a browser can't do stays app-only (reminders, App lock, widgets, Share to Instagram Stories); say so when it happens. Check, publish and record both together.
 - **Nothing is removed without asking first** (Inigo, 2026-11-27): a plan, a watchlist title, a list item, a favourite, a comment, a friend request, a block, a ticked episode or season, and anything new like them. Use `useConfirm()` from `src/components/Confirm.tsx` (one sheet for the app, mounted in `_layout.tsx`): the question in full, one red button, and Cancel (or a clearer `keep` label). Adding things never asks.
 - **Every update gets a What's new entry** with a new id, OTAs included. An update without one shows nothing.
 - **Every OTA goes to both channels**, `preview` (APK phones) and `production` (Play phones).
