@@ -51,6 +51,12 @@ export const DATA_SOURCES = {
 type Note = string | { text: string; fromApp: string };
 const NOTES: { id: string; items: Note[] }[] = [
   {
+    id: '1.8.4',
+    items: [
+      'Unlock always answers now: sometimes the fingerprint check went missing as you came back to the app, and Unlock stayed greyed out until Watch Heart was closed',
+    ],
+  },
+  {
     id: '1.8.3',
     items: [
       'Likes are hearts now',
