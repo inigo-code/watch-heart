@@ -5,7 +5,7 @@ import type { ReactNode } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { Text, TextInput } from '@/components/AppText';
-import { PaperTicket, Reel } from '@/components/Reel';
+import { Mascot, PaperTicket } from '@/components/Mascot';
 import { KeyboardSafe } from '@/components/KeyboardSafe';
 import { ActionSheet } from '@/components/ActionSheet';
 import { DangerButton } from '@/components/DangerButton';
@@ -120,7 +120,7 @@ function useSecondsUntil(at: number | null) {
   return at === null ? null : Math.max(0, Math.ceil((at - now) / 1000));
 }
 
-/** What Reel says on his ticket, by step (the website's lines). */
+/** What the mascot says on her ticket, by step (the website's lines). */
 const REEL_SAYS: Record<Mode, string> = {
   'sign-in': 'Welcome back!',
   'sign-up': 'Grab a seat!',
@@ -138,7 +138,6 @@ function SignIn({ theme }: { theme: Theme }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
-  const [focus, setFocus] = useState<'email' | 'code' | 'password' | null>(null);
   const [resendAt, setResendAt] = useState(0);
   const resendIn = useSecondsUntil(resendAt > 0 ? resendAt : null) ?? 0;
 
@@ -222,13 +221,9 @@ function SignIn({ theme }: { theme: Theme }) {
 
   return (
     <Card theme={theme}>
-      {/* Reel, the mascot: he follows what you type, looks away from your password, and pulls a face at an error. */}
+      {/* The mascot waves hello, and has an oops moment at an error. */}
       <View style={styles.reelRow} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-        <Reel
-          size={76}
-          mood={error ? 'oops' : focus === 'password' ? 'shy' : focus ? 'look' : 'idle'}
-          look={focus === 'email' ? email.length / 28 : focus === 'code' ? code.length / 6 : 0.5}
-        />
+        <Mascot pose={error ? 'oops' : 'hello'} height={124} />
         <PaperTicket text={error ? 'Hmm, try again?' : REEL_SAYS[mode]} hole={theme.card} size={10} tilt={-5} />
       </View>
       <Text style={[styles.h, { color: theme.text }]}>{TITLES[mode]}</Text>
@@ -252,8 +247,6 @@ function SignIn({ theme }: { theme: Theme }) {
           textContentType="emailAddress"
           autoCorrect={false}
           onSubmitEditing={mode === 'forgot' ? submit : undefined}
-          onFocus={() => setFocus('email')}
-          onBlur={() => setFocus(null)}
           style={inputStyle}
         />
       )}
@@ -268,8 +261,6 @@ function SignIn({ theme }: { theme: Theme }) {
           textContentType="oneTimeCode"
           accessibilityLabel="Code from the email"
           onSubmitEditing={mode === 'confirm' ? submit : undefined}
-          onFocus={() => setFocus('code')}
-          onBlur={() => setFocus(null)}
           style={[inputStyle, code ? [styles.code, { color: theme.accent }] : styles.codeEmpty]}
         />
       )}
@@ -284,8 +275,6 @@ function SignIn({ theme }: { theme: Theme }) {
           autoComplete={newPassword ? 'new-password' : 'current-password'}
           textContentType={newPassword ? 'newPassword' : 'password'}
           onSubmitEditing={submit}
-          onFocus={() => setFocus('password')}
-          onBlur={() => setFocus(null)}
           style={inputStyle}
         />
       )}
@@ -451,7 +440,7 @@ function DeleteAccount({ theme, onClose, onDelete }: { theme: Theme; onClose: ()
 }
 
 const styles = StyleSheet.create({
-  reelRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 2 },
+  reelRow: { flexDirection: 'row', alignItems: 'center', gap: 2 },
   content: { padding: 16, gap: 12 },
   card: { padding: 18, borderRadius: 14, borderWidth: StyleSheet.hairlineWidth, gap: 12 },
   h: { fontFamily: fonts.uiBold, fontSize: font.title2 },

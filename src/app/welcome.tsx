@@ -16,7 +16,7 @@ import { BrandTitle } from '@/components/BrandTitle';
 import { Chip, Poster } from '@/components/Film';
 import { KeyboardSafe } from '@/components/KeyboardSafe';
 import { Pop, Rise, Tap, useReducedMotion } from '@/components/Motion';
-import { PaperTicket, Reel } from '@/components/Reel';
+import { Mascot, PaperTicket } from '@/components/Mascot';
 import { COUNTRIES, countryName, flag } from '@/lib/discover';
 import { blankDraft } from '@/lib/entryDraft';
 import { homeLanguage, languagesFor, regionalFeatured } from '@/lib/regional';
@@ -164,9 +164,9 @@ function Intro({ theme, posters, bottom, onStart, onSignIn }: { theme: Theme; po
       </View>
       <LinearGradient colors={[theme.bg + '00', theme.bg + 'CC', theme.bg]} locations={[0, 0.5, 0.74]} style={StyleSheet.absoluteFill} pointerEvents="none" />
       <View style={[styles.introBody, { paddingBottom: bottom + 24 }]}>
-        {/* Reel, the mascot, holding up a ticket: the first face of the app. */}
+        {/* The mascot waving hello beside a ticket: the first face of the app. */}
         <View style={styles.reelRow} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-          <Reel size={84} />
+          <Mascot pose="hello" height={136} />
           <PaperTicket text="Grab a seat!" hole={theme.bg} size={11} tilt={-6} />
         </View>
         <Rise order={1}>
@@ -332,7 +332,7 @@ const styles = StyleSheet.create({
   screen: { flex: 1, overflow: 'hidden' },
   wall: { ...StyleSheet.absoluteFill, flexDirection: 'row', justifyContent: 'center', gap: GAP },
   introBody: { flex: 1, justifyContent: 'flex-end', paddingHorizontal: 24, gap: 12 },
-  reelRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 4, marginBottom: 2 },
+  reelRow: { flexDirection: 'row', alignItems: 'center', gap: 2, marginBottom: 2 },
   headline: { fontFamily: fonts.display, fontSize: font.marquee, lineHeight: 46, letterSpacing: 1, includeFontPadding: false },
   lead: { fontSize: font.body, lineHeight: 22 },
   actions: { gap: 4, marginTop: 8 },

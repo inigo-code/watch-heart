@@ -5,7 +5,7 @@ import { CineIcon } from '@/components/CineIcon';
 import type { CineIconName } from '@/components/CineIcon';
 import { TicketPrint, TicketTear, ticketPaper } from '@/components/Diary';
 import { Sprockets } from '@/components/Film';
-import { Reel } from '@/components/Reel';
+import { Mascot } from '@/components/Mascot';
 import { font, fonts } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
 
@@ -14,7 +14,8 @@ const ON_STRIP = 'rgba(244,239,230,0.07)';
 /**
  * An empty page, drawn in the app's own world instead of an icon in a circle: a blank ticket waiting to be
  * printed (the Diary, lists) or a strip of empty frames (the Watchlist, Recap), then one line of what goes
- * here and, when there's something to do, one button for it. Reel sits by the scene, waiting with you.
+ * here and, when there's something to do, one button for it. The mascot sits by the scene: with her blank diary
+ * beside the ticket, asleep on her beanbag beside the empty strip.
  */
 export function EmptyScene({ theme, scene, icon, title, text, action }: {
   theme: Theme;
@@ -29,7 +30,7 @@ export function EmptyScene({ theme, scene, icon, title, text, action }: {
     <View style={styles.wrap}>
       <View accessible={false} importantForAccessibility="no-hide-descendants" style={styles.scene}>
         {scene === 'ticket' ? <BlankTicket theme={theme} /> : <EmptyStrip theme={theme} icon={icon} />}
-        <Reel size={64} style={styles.reel} />
+        <Mascot pose={scene === 'ticket' ? 'diary' : 'asleep'} height={scene === 'ticket' ? 104 : 86} style={styles.reel} />
       </View>
       <Text style={[styles.title, { color: theme.text }]} accessibilityRole="header">
         {title}
@@ -93,8 +94,8 @@ const styles = StyleSheet.create({
   text: { fontFamily: fonts.ui, fontSize: font.body, textAlign: 'center', lineHeight: 21, maxWidth: 340 },
   button: { flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: 48, paddingHorizontal: 22, borderRadius: 24, marginTop: 10 },
   buttonText: { fontFamily: fonts.uiSemibold, fontSize: font.body },
-  scene: { paddingRight: 34, paddingBottom: 18 },
-  reel: { position: 'absolute', right: -6, bottom: -6 },
+  scene: { paddingRight: 44, paddingBottom: 30 },
+  reel: { position: 'absolute', right: -14, bottom: -4 },
 
   ticket: {
     flexDirection: 'row',

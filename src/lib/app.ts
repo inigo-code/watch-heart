@@ -51,6 +51,10 @@ export const DATA_SOURCES = {
 type Note = string | { text: string; fromApp: string };
 const NOTES: { id: string; items: Note[] }[] = [
   {
+    id: '1.8.7',
+    items: ['Watch Heart has a new mascot: a film fan dressed in the app’s gold. She keeps you company when you sign in, on empty pages, and when something goes wrong'],
+  },
+  {
     id: '1.8.6',
     items: [
       'Nothing goes without asking first: cancelling a plan, taking a title off your watchlist or a list, a favourite, unticking an episode or a season, a friend request or a block',
