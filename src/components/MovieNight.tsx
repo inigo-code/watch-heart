@@ -94,11 +94,13 @@ export function useMovieNights() {
       if (yes) await askToRemindOnTime();
     }
     const reminderId = await scheduleMovieNight(t, date).catch(() => null);
+    // One night per title: planning again moves it.
+    const old = settings.movieNights.filter((n) => n.sourceId === t.sourceId);
     const night: MovieNight = {
       key: `${t.sourceId}:${date.getTime()}`,
       reminderId,
       at: date.getTime(),
-      planned: Date.now(),
+      planned: old[0]?.planned ?? Date.now(),
       kind: t.kind,
       source: t.source,
       sourceId: t.sourceId,
@@ -107,17 +109,16 @@ export function useMovieNights() {
       posterUrl: t.posterUrl,
       backdropUrl: t.backdropUrl,
     };
-    // One night per title: planning again moves it.
-    const old = settings.movieNights.filter((n) => n.sourceId === t.sourceId);
     await Promise.all(old.map((n) => cancelMovieNight(n.reminderId)));
     update({ movieNights: [...settings.movieNights.filter((n) => n.sourceId !== t.sourceId), night] });
     if (!onWatchlist(t)) addToWatchlist(t, `Planned for ${nightLabel(night.at)}`);
+    const said = old.length ? 'Moved to' : 'Planned:';
     toast(
       reminderId
-        ? `Planned: ${nightLabel(night.at)}. You’ll get a reminder.`
+        ? `${said} ${nightLabel(night.at)}. You’ll get a reminder.`
         : Platform.OS === 'web'
-          ? `Planned: ${nightLabel(night.at)}`
-          : `Planned for ${nightLabel(night.at)}. Turn on notifications for Watch Heart to get a reminder.`,
+          ? `${said} ${nightLabel(night.at)}`
+          : `${said} ${nightLabel(night.at)}. Turn on notifications for Watch Heart to get a reminder.`,
     );
   };
 
@@ -130,20 +131,24 @@ export function useMovieNights() {
   return { nights, plan, cancel, forTitle: (sourceId: string) => nights.find((n) => n.sourceId === sourceId) };
 }
 
-/** Choose when: a day (today, tomorrow, Saturday or any), then the time, in Android's own pickers. */
+/**
+ * Choose when: a day (today, tomorrow, Saturday or any), then the time, in Android's own pickers. With a plan
+ * for the title already, it changes that one: the clock opens at its time, and the plan can be cancelled.
+ */
 export function MovieNightSheet({ t, visible, theme, onClose }: { t: Title; visible: boolean; theme: Theme; onClose: () => void }) {
   const insets = useSafeAreaInsets();
-  const { plan } = useMovieNights();
+  const { plan, cancel, forTitle } = useMovieNights();
   const toast = useToast();
+  const current = forTitle(t.sourceId);
   const choose = (date: Date) => {
     onClose();
     plan(t, date).catch(() => {});
   };
-  // The time is yours to choose; the clock just opens on the next full hour.
+  // The time is yours to choose; the clock opens at the plan's time, or else on the next full hour.
   const pickTime = (day: Date) => {
-    const next = new Date();
-    next.setHours(next.getHours() + 1, 0, 0, 0);
-    const opensAt = new Date(day.getFullYear(), day.getMonth(), day.getDate(), next.getHours(), 0);
+    const next = current ? new Date(current.at) : new Date();
+    if (!current) next.setHours(next.getHours() + 1, 0, 0, 0);
+    const opensAt = new Date(day.getFullYear(), day.getMonth(), day.getDate(), next.getHours(), next.getMinutes());
     if (Platform.OS !== 'android') {
       choose(opensAt);
       return;
@@ -164,7 +169,7 @@ export function MovieNightSheet({ t, visible, theme, onClose }: { t: Title; visi
     const now = new Date();
     onClose();
     DateTimePickerAndroid.open({
-      value: now,
+      value: current && current.at > now.getTime() ? new Date(current.at) : now,
       mode: 'date',
       minimumDate: now,
       onChange: (e, day) => e.type === 'set' && day && pickTime(day),
@@ -174,9 +179,11 @@ export function MovieNightSheet({ t, visible, theme, onClose }: { t: Title; visi
     <BottomSheet visible={visible} onClose={onClose}>
       <View style={[styles.sheet, { backgroundColor: theme.card, paddingBottom: insets.bottom + 16 }]}>
         <View style={[styles.grabber, { backgroundColor: theme.border }]} />
-        <Text style={[styles.sheetTitle, { color: theme.text }]}>Plan a watch</Text>
+        <Text style={[styles.sheetTitle, { color: theme.text }]}>{current ? 'Change the plan' : 'Plan a watch'}</Text>
         <Text style={[styles.sheetSub, { color: theme.textMuted }]} numberOfLines={2}>
-          When are you watching {t.title}? Pick the day, then the time, and you’ll get a reminder then.
+          {current
+            ? `${t.title} is planned for ${nightLabel(current.at).replace(/^(Today|Tomorrow)/, (m) => m.toLowerCase())}. Pick a new day, then the time.`
+            : `When are you watching ${t.title}? Pick the day, then the time, and you’ll get a reminder then.`}
         </Text>
         {quickDays().map((q) => (
           <Pressable
@@ -199,6 +206,19 @@ export function MovieNightSheet({ t, visible, theme, onClose }: { t: Title; visi
             <Text style={[styles.optionText, { color: theme.text }]}>Another day…</Text>
           </Pressable>
         )}
+        {current && (
+          <Pressable
+            onPress={() => {
+              onClose();
+              cancel(current).catch(() => {});
+            }}
+            accessibilityRole="button"
+            style={({ pressed }) => [styles.option, { backgroundColor: pressed ? theme.chip : theme.bg, borderColor: theme.border }]}
+          >
+            <Ionicons name="close-circle-outline" size={18} color={theme.danger} />
+            <Text style={[styles.optionText, { color: theme.danger }]}>Cancel the plan</Text>
+          </Pressable>
+        )}
       </View>
     </BottomSheet>
   );
@@ -217,8 +237,22 @@ function addToCalendar(night: MovieNight) {
   ]);
 }
 
+/** The planned title, enough for the sheet to move its plan. */
+const nightTitle = (n: MovieNight): Title => ({
+  kind: n.kind,
+  source: n.source as Title['source'],
+  sourceId: n.sourceId,
+  title: n.title,
+  year: n.year,
+  posterUrl: n.posterUrl,
+  backdropUrl: n.backdropUrl,
+  genres: [],
+  runtime: null,
+});
+
 export function MovieNightCard({ night, theme, showTitle }: { night: MovieNight; theme: Theme; showTitle?: boolean }) {
   const { cancel } = useMovieNights();
+  const [editing, setEditing] = useState(false);
   const p = ticketPaper(night.kind, theme);
   const d = new Date(night.at);
   const time = d.toLocaleTimeString('en-GB', { hour: 'numeric', minute: '2-digit', hour12: true }).replace(' ', '');
@@ -232,9 +266,9 @@ export function MovieNightCard({ night, theme, showTitle }: { night: MovieNight;
       </View>
       <TicketTear theme={theme} border={p.border} />
       <Pressable
-        onPress={() => showTitle && router.push({ pathname: '/title/[id]', params: { id: night.sourceId } })}
-        disabled={!showTitle}
-        accessibilityRole={showTitle ? 'button' : undefined}
+        onPress={() => (showTitle ? router.push({ pathname: '/title/[id]', params: { id: night.sourceId } }) : setEditing(true))}
+        accessibilityRole="button"
+        accessibilityHint={showTitle ? undefined : 'Change the day or time'}
         style={styles.cardMain}
       >
         {showTitle && <Poster uri={night.posterUrl} title={night.title} width={40} theme={theme} radius={3} />}
@@ -246,12 +280,16 @@ export function MovieNightCard({ night, theme, showTitle }: { night: MovieNight;
           {showTitle && <Text style={[styles.cardTitle, { color: theme.textMuted }]}>{nightLabel(night.at)}</Text>}
         </View>
       </Pressable>
+      <Pressable onPress={() => setEditing(true)} hitSlop={8} accessibilityRole="button" accessibilityLabel="Change the plan" style={styles.cancel}>
+        <Ionicons name="create-outline" size={19} color={theme.textMuted} />
+      </Pressable>
       <Pressable onPress={() => addToCalendar(night)} hitSlop={8} accessibilityRole="button" accessibilityLabel="Add to calendar" style={styles.cancel}>
         <Ionicons name="calendar-outline" size={19} color={theme.textMuted} />
       </Pressable>
       <Pressable onPress={() => cancel(night)} hitSlop={12} accessibilityRole="button" accessibilityLabel="Cancel the plan" style={styles.cancel}>
         <Ionicons name="close" size={20} color={theme.textMuted} />
       </Pressable>
+      <MovieNightSheet t={nightTitle(night)} visible={editing} theme={theme} onClose={() => setEditing(false)} />
     </View>
   );
 }

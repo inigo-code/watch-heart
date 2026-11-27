@@ -249,7 +249,7 @@ export default function WatchlistScreen() {
           menu
             ? [
                 ...(menu.source === 'tmdb' && menu.sourceId ? [{ label: 'Open the title page', icon: 'open-outline' as const, onPress: () => openTitle(titleOf(menu)) }] : []),
-                { label: 'Plan a watch', icon: 'calendar-outline' as const, onPress: () => setPlanning(menu) },
+                { label: forTitle(menu.sourceId) ? 'Change the plan' : 'Plan a watch', icon: 'calendar-outline' as const, onPress: () => setPlanning(menu) },
                 { label: 'Watched it: log now', icon: 'checkmark-done-outline', onPress: () => log(menu) },
                 {
                   label: 'Watched it: just pick the day',
