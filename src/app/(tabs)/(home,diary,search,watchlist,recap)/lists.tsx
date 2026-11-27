@@ -66,7 +66,7 @@ export default function ListsScreen() {
         }
         ListEmptyComponent={
           !ready ? undefined : (
-            <EmptyScene theme={theme} scene="ticket" pose="hello" title="No lists yet" text="Name one above, or open any entry and tap Add to list." />
+            <EmptyScene theme={theme} scene="ticket" title="No lists yet" text="Name one above, or open any entry and tap Add to list." />
           )
         }
         renderItem={({ item: l }) => (

@@ -1,51 +1,35 @@
-import { Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/AppText';
 import { CineIcon } from '@/components/CineIcon';
 import type { CineIconName } from '@/components/CineIcon';
 import { TicketPrint, TicketTear, ticketPaper } from '@/components/Diary';
 import { Sprockets } from '@/components/Film';
-import { Mascot, mascotRatio } from '@/components/Mascot';
-import type { MascotPose } from '@/components/Mascot';
 import { font, fonts } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
 
 const ON_STRIP = 'rgba(244,239,230,0.07)';
 const TICKET_W = 232;
-const STRIP_W = 220;
+const STRIP_W = 232;
 
 /**
  * An empty page, drawn in the app's own world instead of an icon in a circle: a blank ticket waiting to be
  * printed (the Diary, lists) or a strip of empty frames (the Watchlist, Recap), then one line of what goes
- * here and, when there's something to do, one button for it. Iniya, the mascot, sits in front of the scene: with
- * her blank diary by the ticket, asleep on her beanbag by the empty strip, or in the pose the page asks for.
+ * here and, when there's something to do, one button for it.
  */
-export function EmptyScene({ theme, scene, pose, icon, title, text, action }: {
+export function EmptyScene({ theme, scene, icon, title, text, action }: {
   theme: Theme;
   scene: 'ticket' | 'strip';
-  /** Her pose; by default her diary by the ticket and asleep by the strip. Pages that share a scene differ here. */
-  pose?: MascotPose;
   /** The strip's middle frame shows this. */
   icon?: CineIconName;
   title: string;
   text: string;
   action?: { label: string; icon?: CineIconName; onPress: () => void };
 }) {
-  const { width } = useWindowDimensions();
-  // She's the biggest thing on the page: she takes all the width the scene leaves inside the page's padding,
-  // overlapping its right end. On a 360-wide phone that's 186 tall with her diary and 144 asleep; on wider
-  // phones she grows to 260 and 200.
-  const room = Math.min(width, 440) - 56;
-  const ticket = scene === 'ticket';
-  const shown = pose ?? (ticket ? 'diary' : 'asleep');
-  const lying = shown === 'asleep';
-  const overlap = lying ? 70 : 40;
-  const height = Math.round(Math.min(lying ? 200 : 260, (room - (ticket ? TICKET_W : STRIP_W) + overlap) / mascotRatio(shown)));
   return (
     <View style={styles.wrap}>
       <View accessible={false} importantForAccessibility="no-hide-descendants" style={styles.scene}>
-        <View style={styles.backdrop}>{ticket ? <BlankTicket theme={theme} /> : <EmptyStrip theme={theme} icon={icon} />}</View>
-        <Mascot pose={shown} height={height} style={{ marginLeft: -overlap }} />
+        {scene === 'ticket' ? <BlankTicket theme={theme} /> : <EmptyStrip theme={theme} icon={icon} />}
       </View>
       <Text style={[styles.title, { color: theme.text }]} accessibilityRole="header">
         {title}
@@ -109,9 +93,7 @@ const styles = StyleSheet.create({
   text: { fontFamily: fonts.ui, fontSize: font.body, textAlign: 'center', lineHeight: 21, maxWidth: 340 },
   button: { flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: 48, paddingHorizontal: 22, borderRadius: 24, marginTop: 10 },
   buttonText: { fontFamily: fonts.uiSemibold, fontSize: font.body },
-  // The scene sits a little up and behind her, so she's in front of its right end, as if sitting by it.
-  scene: { flexDirection: 'row', alignItems: 'flex-end' },
-  backdrop: { marginBottom: 34 },
+  scene: { marginBottom: 8 },
 
   ticket: {
     flexDirection: 'row',

@@ -1,9 +1,8 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/AppText';
-import { Mascot } from '@/components/Mascot';
 import { font, fonts, useTheme } from '@/lib/theme';
 import { useDiary } from '@/store/DiaryStore';
 
@@ -17,7 +16,6 @@ export function DiaryLoadFailed() {
   const { loadFailed, retryLoad } = useDiary();
   const [busy, setBusy] = useState(false);
   const [tries, setTries] = useState(0);
-  const { height } = useWindowDimensions();
 
   if (!loadFailed) return null;
 
@@ -30,7 +28,9 @@ export function DiaryLoadFailed() {
 
   return (
     <View style={[styles.screen, { backgroundColor: theme.bg }]} accessibilityViewIsModal>
-      <Mascot pose="oops" height={Math.round(Math.min(260, height * 0.34))} />
+      <View style={[styles.icon, { borderColor: theme.border }]}>
+        <Ionicons name="book-outline" size={30} color={theme.textMuted} />
+      </View>
       <View style={styles.texts}>
         <Text style={[styles.title, { color: theme.text }]} accessibilityRole="header">
           Couldn’t open your diary
@@ -61,6 +61,7 @@ export function DiaryLoadFailed() {
 // The same layout as the lock screen.
 const styles = StyleSheet.create({
   screen: { ...StyleSheet.absoluteFill, alignItems: 'center', justifyContent: 'center', padding: 32, gap: 20, zIndex: 50 },
+  icon: { width: 72, height: 72, borderRadius: 36, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center' },
   texts: { alignItems: 'center', gap: 6 },
   title: { fontSize: font.title2, fontFamily: fonts.uiBold, textAlign: 'center' },
   body: { fontSize: font.body, textAlign: 'center', lineHeight: 21 },

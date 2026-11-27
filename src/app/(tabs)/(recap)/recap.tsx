@@ -76,7 +76,7 @@ export default function RecapScreen() {
         <EmptyScene
           theme={theme}
           scene="strip"
-          pose="welcome"
+         
           icon="recap"
           title="Nothing on the reel yet"
           text={

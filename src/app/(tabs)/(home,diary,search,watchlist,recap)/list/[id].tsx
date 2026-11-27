@@ -10,7 +10,7 @@ import { ActionSheet } from '@/components/ActionSheet';
 import { headerEnd } from '@/components/BackDisc';
 import { DangerButton } from '@/components/DangerButton';
 import { Poster } from '@/components/Film';
-import { Mascot } from '@/components/Mascot';
+import { EmptyScene } from '@/components/EmptyScene';
 import { FavouritePicker } from '@/components/profile/FavouritePicker';
 import { SectionLabel } from '@/components/SectionLabel';
 import { TitlePicker } from '@/components/TitlePicker';
@@ -141,11 +141,7 @@ export default function ListScreen() {
           </View>
         }
         ListEmptyComponent={
-          // Iniya asleep on her beanbag, as on watchheart.in's empty list.
-          <View style={{ alignItems: 'center', gap: 14, marginTop: 24 }}>
-            <Mascot pose="asleep" height={170} />
-            <Text style={[styles.lede, { color: theme.textMuted, textAlign: 'center' }]}>Empty so far. Add titles from your diary or from a search.</Text>
-          </View>
+          <EmptyScene theme={theme} scene="ticket" title="Nothing on this list yet" text="Add titles from your diary or from a search." />
         }
         renderItem={({ item, index }) => {
           // While editing, the row holds its own buttons, so it isn't one itself.
