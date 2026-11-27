@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Text } from '@/components/AppText';
 import { BottomSheet } from '@/components/BottomSheet';
+import { useConfirm } from '@/components/Confirm';
 import { TicketPrint, TicketTear, ticketPaper } from '@/components/Diary';
 import { Poster } from '@/components/Film';
 import { useToast } from '@/components/Toast';
@@ -30,6 +31,12 @@ export function nightLabel(at: number, now = new Date()) {
   if (diff === 0) return `Today, ${time}`;
   if (diff === 1) return `Tomorrow, ${time}`;
   return `${d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}, ${time}`;
+}
+
+/** The same, inside a sentence: "today at 2:00 pm", "tomorrow at 9:30 pm", "on Sat 1 Nov at 8:00 pm". */
+export function nightPhrase(at: number, now = new Date()) {
+  const [day, time] = nightLabel(at, now).split(', ');
+  return day === 'Today' || day === 'Tomorrow' ? `${day.toLowerCase()} at ${time}` : `on ${day} at ${time}`;
 }
 
 const startOfDay = (base: Date, addDays: number) => new Date(base.getFullYear(), base.getMonth(), base.getDate() + addDays);
@@ -61,6 +68,7 @@ export function useMovieNights() {
   const { settings, update } = useSettings();
   const { entries, onWatchlist, addToWatchlist } = useDiary();
   const toast = useToast();
+  const confirm = useConfirm();
   // The time, kept fresh each minute, so a night drops off the list three hours after it starts.
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
@@ -122,11 +130,19 @@ export function useMovieNights() {
     );
   };
 
-  const cancel = async (n: MovieNight) => {
-    await cancelMovieNight(n.reminderId);
-    update({ movieNights: settings.movieNights.filter((x) => x.key !== n.key) });
-    toast('Plan cancelled');
-  };
+  // Asks first, as every removal does.
+  const cancel = (n: MovieNight) =>
+    confirm({
+      title: `Cancel your plan to watch ${n.title} ${nightPhrase(n.at)}? Its reminder goes too.`,
+      label: 'Cancel the plan',
+      icon: 'close-circle-outline',
+      keep: 'Keep the plan',
+      onConfirm: () => {
+        cancelMovieNight(n.reminderId).catch(() => {});
+        update({ movieNights: settings.movieNights.filter((x) => x.key !== n.key) });
+        toast('Plan cancelled');
+      },
+    });
 
   return { nights, plan, cancel, forTitle: (sourceId: string) => nights.find((n) => n.sourceId === sourceId) };
 }
@@ -182,7 +198,7 @@ export function MovieNightSheet({ t, visible, theme, onClose }: { t: Title; visi
         <Text style={[styles.sheetTitle, { color: theme.text }]}>{current ? 'Change the plan' : 'Plan a watch'}</Text>
         <Text style={[styles.sheetSub, { color: theme.textMuted }]} numberOfLines={2}>
           {current
-            ? `${t.title} is planned for ${nightLabel(current.at).replace(/^(Today|Tomorrow)/, (m) => m.toLowerCase())}. Pick a new day, then the time.`
+            ? `${t.title} is planned ${nightPhrase(current.at)}. Pick a new day, then the time.`
             : `When are you watching ${t.title}? Pick the day, then the time, and you’ll get a reminder then.`}
         </Text>
         {quickDays().map((q) => (
@@ -210,7 +226,7 @@ export function MovieNightSheet({ t, visible, theme, onClose }: { t: Title; visi
           <Pressable
             onPress={() => {
               onClose();
-              cancel(current).catch(() => {});
+              cancel(current);
             }}
             accessibilityRole="button"
             style={({ pressed }) => [styles.option, { backgroundColor: pressed ? theme.chip : theme.bg, borderColor: theme.border }]}

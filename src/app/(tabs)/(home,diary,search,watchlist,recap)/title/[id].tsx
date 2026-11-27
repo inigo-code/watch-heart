@@ -20,6 +20,7 @@ import { SectionLabel } from '@/components/SectionLabel';
 import { TitleExtras } from '@/components/TitleExtras';
 import { Synopsis, TitleMore, useAbout } from '@/components/title/AboutTitle';
 import { FriendsOnTitle } from '@/components/title/FriendsOnTitle';
+import { useConfirm, watchlistAsk } from '@/components/Confirm';
 import { useToast } from '@/components/Toast';
 import { TopScrim } from '@/components/TopScrim';
 import { friendlyDate } from '@/lib/dates';
@@ -40,6 +41,7 @@ export default function TitleScreen() {
   const [scrollY] = useState(() => new Animated.Value(0));
   const { width } = useWindowDimensions();
   const toast = useToast();
+  const confirm = useConfirm();
   const params = useLocalSearchParams<{ id: string; t?: string }>();
   const id = params.id;
   const { viewingsOf, queued, addToWatchlist, removeFromWatchlist, deleteEntry, restoreEntry } = useDiary();
@@ -81,8 +83,12 @@ export default function TitleScreen() {
   const log = () => router.push({ pathname: '/log', params: { title: JSON.stringify(t) } });
   const toggleWatchlist = () => {
     if (saved) {
-      removeFromWatchlist(saved.id);
-      toast('Taken off your watchlist');
+      confirm(
+        watchlistAsk(saved.title, !!saved.track, () => {
+          removeFromWatchlist(saved.id);
+          toast('Taken off your watchlist');
+        }),
+      );
     } else {
       addToWatchlist(t);
       toast('Added to your watchlist');

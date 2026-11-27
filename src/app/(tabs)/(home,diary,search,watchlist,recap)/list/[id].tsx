@@ -13,6 +13,7 @@ import { Poster } from '@/components/Film';
 import { FavouritePicker } from '@/components/profile/FavouritePicker';
 import { SectionLabel } from '@/components/SectionLabel';
 import { TitlePicker } from '@/components/TitlePicker';
+import { useConfirm } from '@/components/Confirm';
 import { useToast } from '@/components/Toast';
 import { KIND_LABEL } from '@/lib/stats';
 import { font, fonts, useTheme } from '@/lib/theme';
@@ -25,6 +26,7 @@ export default function ListScreen() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const toast = useToast();
+  const confirm = useConfirm();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { ready, getList, updateList, deleteList, addItem, removeItem, moveItem } = useLists();
   const { entries, viewingsOf } = useDiary();
@@ -174,7 +176,10 @@ export default function ListScreen() {
                     disabled={index === list.items.length - 1}
                     onPress={() => moveItem(list.id, index, index + 1)}
                   />
-                  <Tool theme={theme} icon="close" label={`Remove ${item.title}`} danger onPress={() => removeItem(list.id, index)} />
+                  <Tool theme={theme} icon="close" label={`Remove ${item.title}`} danger onPress={() =>
+                      confirm({ title: `Take “${item.title}” off “${list.name}”?`, label: 'Take it off', icon: 'remove-circle-outline', onConfirm: () => removeItem(list.id, index) })
+                    }
+                  />
                 </View>
               ) : (
                 <Ionicons name="chevron-forward" size={16} color={theme.textMuted} />

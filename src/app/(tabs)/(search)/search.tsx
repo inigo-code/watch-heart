@@ -15,6 +15,7 @@ import { DiscoverHome } from '@/components/discover/DiscoverHome';
 import { SectionLabel } from '@/components/SectionLabel';
 import { Poster } from '@/components/Film';
 import { openTitle, warmTitle } from '@/components/title/Rows';
+import { useConfirm, watchlistAsk } from '@/components/Confirm';
 import { useToast } from '@/components/Toast';
 import { DATA_SOURCES } from '@/lib/app';
 import { today } from '@/lib/dates';
@@ -46,6 +47,7 @@ export default function SearchScreen() {
   const { settings, update } = useSettings();
   const { viewingsOf, queued, watchlist, addToWatchlist, removeFromWatchlist } = useDiary();
   const toast = useToast();
+  const confirm = useConfirm();
   const kind = settings.searchKind;
   const key = tmdbKey(settings.tmdbKey);
   const source = sourceFor(kind, key);
@@ -243,8 +245,12 @@ export default function SearchScreen() {
               <Pressable
                 onPress={() => {
                   if (saved) {
-                    removeFromWatchlist(saved.id);
-                    toast('Taken off your watchlist');
+                    confirm(
+                      watchlistAsk(saved.title, !!saved.track, () => {
+                        removeFromWatchlist(saved.id);
+                        toast('Taken off your watchlist');
+                      }),
+                    );
                   } else {
                     addToWatchlist(item);
                     toast('Added to your watchlist');

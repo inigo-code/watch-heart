@@ -19,6 +19,7 @@ import { Chip, KindBadge, Poster } from '@/components/Film';
 import { Pop, Rise, Tap, useReducedMotion } from '@/components/Motion';
 import { usePullRefresh } from '@/components/PullRefresh';
 import { Segments } from '@/components/Segments';
+import { useConfirm, watchlistAsk } from '@/components/Confirm';
 import { useToast } from '@/components/Toast';
 import { formatRuntime } from '@/lib/dates';
 import { useQuickLog } from '@/lib/useQuickLog';
@@ -53,6 +54,7 @@ export default function WatchlistScreen() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const toast = useToast();
+  const confirm = useConfirm();
   const { width } = useWindowDimensions();
   const { watchlist, removeFromWatchlist, importWatchlist } = useDiary();
   const days = useDaySheet();
@@ -96,10 +98,13 @@ export default function WatchlistScreen() {
   }, [queue, filter, sort]);
 
   const log = (w: WatchItem) => router.push({ pathname: '/log', params: { title: JSON.stringify(titleOf(w)) } });
-  const remove = (w: WatchItem) => {
-    removeFromWatchlist(w.id);
-    toast(`Took “${w.title}” off your watchlist`, { label: 'Undo', onPress: () => importWatchlist([w]) });
-  };
+  const remove = (w: WatchItem) =>
+    confirm(
+      watchlistAsk(w.title, !!w.track, () => {
+        removeFromWatchlist(w.id);
+        toast(`Took “${w.title}” off your watchlist`, { label: 'Undo', onPress: () => importWatchlist([w]) });
+      }),
+    );
   // Never the same title twice in a row, when there's a choice. A few posters flicker past first, like a
   // reel running down, and it lands with a tap you can feel.
   const spin = () => {

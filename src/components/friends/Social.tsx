@@ -216,7 +216,7 @@ export function CommentList({ ownerId, entryId, theme, limit }: { ownerId: strin
       )}
       <ActionSheet
         visible={!!options}
-        title={options ? (options.authorId === me ? 'Your comment' : `${options.name}’s comment`) : ''}
+        title={options ? `Delete ${options.authorId === me ? 'your comment' : `${options.name}’s comment`}? This can’t be undone.` : ''}
         actions={options ? [{ label: 'Delete comment', icon: 'trash-outline', destructive: true, onPress: () => remove(options) }] : []}
         onClose={() => setOptions(null)}
       />

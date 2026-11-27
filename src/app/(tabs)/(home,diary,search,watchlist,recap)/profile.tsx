@@ -19,6 +19,7 @@ import { SectionLabel } from '@/components/SectionLabel';
 import { Achievements } from '@/components/profile/Achievements';
 import { ActivityGraph, ActivityKey } from '@/components/profile/ActivityGraph';
 import { FavouritePicker } from '@/components/profile/FavouritePicker';
+import { useConfirm } from '@/components/Confirm';
 import { useToast } from '@/components/Toast';
 import { UnreadNote } from '@/components/UnreadNote';
 import { MONTHS, friendlyDate, today } from '@/lib/dates';
@@ -55,6 +56,7 @@ function ProfileBody() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const toast = useToast();
+  const confirm = useConfirm();
   const { settings, update } = useSettings();
   const sync = useSync();
 
@@ -124,6 +126,8 @@ function ProfileBody() {
     } else next.splice(slot, 1);
     update({ favourites: next.filter(Boolean).slice(0, 4) });
   };
+  const unfavourite = (slot: number, f: Favourite) =>
+    confirm({ title: `Take “${f.title}” out of your favourites?`, label: 'Take it out', icon: 'heart-dislike-outline', onConfirm: () => setFavourite(slot, null) });
 
   const goal = settings.yearGoal;
   const pct = goal ? Math.min(1, s.thisYear / goal) : 0;
@@ -202,7 +206,7 @@ function ProfileBody() {
                 <Pressable
                   key={i}
                   onPress={() => setPicking(f || i <= settings.favourites.length ? Math.min(i, settings.favourites.length) : settings.favourites.length)}
-                  onLongPress={() => f && setFavourite(i, null)}
+                  onLongPress={() => f && unfavourite(i, f)}
                   accessibilityRole="button"
                   accessibilityLabel={f ? `${f.title}. Tap to change` : 'Add a favourite'}
                   style={styles.fav}
@@ -210,7 +214,7 @@ function ProfileBody() {
                   {f ? (
                     <View>
                       <Poster uri={f.posterUrl} title={f.title} width={74} theme={theme} radius={6} />
-                      <Pressable onPress={() => setFavourite(i, null)} hitSlop={8} accessibilityRole="button" accessibilityLabel={`Remove ${f.title} from your favourites`} style={styles.favRemove}>
+                      <Pressable onPress={() => unfavourite(i, f)} hitSlop={8} accessibilityRole="button" accessibilityLabel={`Remove ${f.title} from your favourites`} style={styles.favRemove}>
                         <Ionicons name="close" size={14} color="#FFFFFF" />
                       </Pressable>
                     </View>

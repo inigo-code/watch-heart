@@ -51,6 +51,12 @@ export const DATA_SOURCES = {
 type Note = string | { text: string; fromApp: string };
 const NOTES: { id: string; items: Note[] }[] = [
   {
+    id: '1.8.6',
+    items: [
+      'Nothing goes without asking first: cancelling a plan, taking a title off your watchlist or a list, a favourite, unticking an episode or a season, a friend request or a block',
+    ],
+  },
+  {
     id: '1.8.5',
     items: ['Change a planned watch: tap the pencil on its ticket to pick a new day or time, or cancel it'],
   },

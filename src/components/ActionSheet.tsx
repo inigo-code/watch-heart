@@ -28,11 +28,13 @@ type Props = {
   title?: string;
   actions: SheetAction[];
   quick?: SheetQuickRow;
+  /** The button that closes it without doing anything; "Cancel" unless that would be unclear. */
+  cancelLabel?: string;
   onClose: () => void;
 };
 
 // Cross-platform replacement for multi-button Alert, which doesn't work on web.
-export function ActionSheet({ visible, title, actions, quick, onClose }: Props) {
+export function ActionSheet({ visible, title, actions, quick, cancelLabel = 'Cancel', onClose }: Props) {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const { height } = useWindowDimensions();
@@ -98,7 +100,7 @@ export function ActionSheet({ visible, title, actions, quick, onClose }: Props) 
           accessibilityRole="button"
           style={({ pressed }) => [styles.cancel, { backgroundColor: pressed ? theme.border : theme.chip }]}
         >
-          <Text style={[styles.cancelText, { color: theme.text }]}>Cancel</Text>
+          <Text style={[styles.cancelText, { color: theme.text }]}>{cancelLabel}</Text>
         </Pressable>
       </View>
     </BottomSheet>

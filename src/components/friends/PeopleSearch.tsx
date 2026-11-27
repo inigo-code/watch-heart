@@ -6,6 +6,7 @@ import { ActivityIndicator, Pressable, StyleSheet, Switch, View } from 'react-na
 import { Text, TextInput } from '@/components/AppText';
 import { SectionLabel } from '@/components/SectionLabel';
 import { Face } from '@/components/title/Rows';
+import { useConfirm } from '@/components/Confirm';
 import { useToast } from '@/components/Toast';
 import { answerFriendRequest, cancelFriendRequest, photoUrl, searchPeople, sendFriendRequest, suggestPeople } from '@/friends/friendsApi';
 import type { FriendRequest, Person, Suggestion } from '@/friends/friendsApi';
@@ -28,6 +29,7 @@ const why = (p: Suggestion) =>
  */
 export function PeopleSearch({ theme, onFriendsChanged }: { theme: Theme; onFriendsChanged: () => void }) {
   const toast = useToast();
+  const confirm = useConfirm();
   const { settings, update } = useSettings();
   const { requests, peopleReady, photos, forgetRequest } = useFriends();
   const findable = !!settings.sharing.findable;
@@ -124,7 +126,11 @@ export function PeopleSearch({ theme, onFriendsChanged }: { theme: Theme; onFrie
         <ActivityIndicator color={theme.accent} />
       ) : (
         <Pressable
-          onPress={() => ask(p)}
+          onPress={() =>
+            p.status === 'sent'
+              ? confirm({ title: `Take back your friend request to ${p.name}?`, label: 'Take it back', icon: 'arrow-undo-outline', onConfirm: () => void ask(p) })
+              : void ask(p)
+          }
           accessibilityRole="button"
           accessibilityLabel={p.status === 'sent' ? `Take back your request to ${p.name}` : p.status === 'received' ? `Accept ${p.name}` : `Ask ${p.name} to be friends`}
           style={[styles.btn, p.status === 'sent' ? { borderWidth: 1, borderColor: theme.border } : { backgroundColor: theme.accent }]}
@@ -203,7 +209,7 @@ export function PeopleSearch({ theme, onFriendsChanged }: { theme: Theme; onFrie
                 <ActivityIndicator color={theme.accent} />
               ) : (
                 <>
-                  <Pressable onPress={() => answer(r, false)} accessibilityRole="button" accessibilityLabel={`Decline ${r.name}`} hitSlop={6} style={[styles.icon, { borderColor: theme.border }]}>
+                  <Pressable onPress={() => confirm({ title: `Decline ${r.name}’s friend request?`, label: 'Decline', icon: 'close-circle-outline', onConfirm: () => void answer(r, false) })} accessibilityRole="button" accessibilityLabel={`Decline ${r.name}`} hitSlop={6} style={[styles.icon, { borderColor: theme.border }]}>
                     <Ionicons name="close" size={18} color={theme.text} />
                   </Pressable>
                   <Pressable onPress={() => answer(r, true)} accessibilityRole="button" accessibilityLabel={`Accept ${r.name}`} style={[styles.btn, { backgroundColor: theme.accent }]}>

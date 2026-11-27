@@ -3,6 +3,7 @@ import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/AppText';
 import { SectionLabel } from '@/components/SectionLabel';
+import { useConfirm } from '@/components/Confirm';
 import { useToast } from '@/components/Toast';
 import { myBlocks, unblockPerson } from '@/friends/friendsApi';
 import type { Blocked } from '@/friends/friendsApi';
@@ -13,6 +14,7 @@ import { shownError } from '@/lib/errors';
 /** People you've blocked, shown only when there are some. `round` reloads it when the screen is refreshed. */
 export function BlockedPeople({ theme, round }: { theme: Theme; round: number }) {
   const toast = useToast();
+  const confirm = useConfirm();
   const [blocked, setBlocked] = useState<Blocked[]>([]);
   const [busy, setBusy] = useState<string | null>(null);
   const load = useCallback(() => {
@@ -47,7 +49,10 @@ export function BlockedPeople({ theme, round }: { theme: Theme; round: number })
           {busy === b.id ? (
             <ActivityIndicator color={theme.accent} />
           ) : (
-            <Pressable onPress={() => unblock(b)} hitSlop={8} accessibilityRole="button" accessibilityLabel={`Unblock ${b.name}`} style={[styles.btn, { borderColor: theme.border }]}>
+            <Pressable
+              onPress={() =>
+                confirm({ title: `Unblock ${b.name}? They’ll be able to find you and ask to be friends again.`, label: 'Unblock', icon: 'lock-open-outline', onConfirm: () => void unblock(b) })
+              } hitSlop={8} accessibilityRole="button" accessibilityLabel={`Unblock ${b.name}`} style={[styles.btn, { borderColor: theme.border }]}>
               <Text style={[styles.btnText, { color: theme.text }]}>Unblock</Text>
             </Pressable>
           )}

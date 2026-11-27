@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Text, TextInput } from '@/components/AppText';
 import { BottomSheet } from '@/components/BottomSheet';
+import { useConfirm } from '@/components/Confirm';
 import { useToast } from '@/components/Toast';
 import { UnreadNote } from '@/components/UnreadNote';
 import { font, fonts } from '@/lib/theme';
@@ -28,6 +29,7 @@ export function AddToList({ item, theme, onClose }: { item: ListItem | null; the
 function Sheet({ item, theme, onClose }: { item: ListItem; theme: Theme; onClose: () => void }) {
   const insets = useSafeAreaInsets();
   const toast = useToast();
+  const confirm = useConfirm();
   const { ready, loadFailed, lists, createList, addItem, removeItem } = useLists();
   const [name, setName] = useState('');
 
@@ -36,8 +38,15 @@ function Sheet({ item, theme, onClose }: { item: ListItem; theme: Theme; onClose
     if (!l) return;
     const at = l.items.findIndex((x) => sameTitle(x, item));
     if (at >= 0) {
-      removeItem(id, at);
-      toast(`Taken off “${l.name}”`);
+      confirm({
+        title: `Take “${item.title}” off “${l.name}”?`,
+        label: 'Take it off',
+        icon: 'remove-circle-outline',
+        onConfirm: () => {
+          removeItem(id, at);
+          toast(`Taken off “${l.name}”`);
+        },
+      });
     } else {
       addItem(id, item);
       toast(`Added to “${l.name}”`);

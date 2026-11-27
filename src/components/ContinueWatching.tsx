@@ -9,6 +9,7 @@ import { Text } from '@/components/AppText';
 import { Poster } from '@/components/Film';
 import { Rise, Tap } from '@/components/Motion';
 import { SectionLabel } from '@/components/SectionLabel';
+import { useConfirm, watchlistAsk } from '@/components/Confirm';
 import { useToast } from '@/components/Toast';
 import { friendlyDate, today } from '@/lib/dates';
 import { continueWatching, counts, epKey, nextUp, settle } from '@/lib/tracking';
@@ -25,6 +26,7 @@ import type { WatchItem } from '@/store/types';
 export function ContinueWatching({ items, theme, hidden }: { items: WatchItem[]; theme: Theme; hidden?: boolean }) {
   const tracker = useTracker();
   const toast = useToast();
+  const confirm = useConfirm();
   const { removeFromWatchlist, importWatchlist } = useDiary();
   const [menu, setMenu] = useState<WatchItem | null>(null);
   const days = useDaySheet();
@@ -37,10 +39,13 @@ export function ContinueWatching({ items, theme, hidden }: { items: WatchItem[];
 
   if (hidden || !tracked.length) return null;
   const open = (w: WatchItem) => router.push({ pathname: '/track', params: { id: w.id } });
-  const stop = (w: WatchItem) => {
-    removeFromWatchlist(w.id);
-    toast(`Stopped tracking “${w.title}”`, { label: 'Undo', onPress: () => importWatchlist([w]) });
-  };
+  const stop = (w: WatchItem) =>
+    confirm(
+      watchlistAsk(w.title, true, () => {
+        removeFromWatchlist(w.id);
+        toast(`Stopped tracking “${w.title}”`, { label: 'Undo', onPress: () => importWatchlist([w]) });
+      }),
+    );
 
   return (
     <View style={styles.wrap}>

@@ -14,6 +14,7 @@ import type { Episode, ShowInfo } from '@/api/episodes';
 import { EpisodeSheet } from '@/components/EpisodeSheet';
 import { Chip, KindBadge, Poster } from '@/components/Film';
 import { SectionLabel } from '@/components/SectionLabel';
+import { useConfirm, watchlistAsk } from '@/components/Confirm';
 import { useToast } from '@/components/Toast';
 import { daysAgo, friendlyDate, isoDate, parseIso, today } from '@/lib/dates';
 import { UNKNOWN_DAY, airedKeys, counts, epKey, nextUp, seasonAired, withInfo } from '@/lib/tracking';
@@ -46,6 +47,7 @@ export default function TrackScreen() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const toast = useToast();
+  const confirm = useConfirm();
   const params = useLocalSearchParams<Params>();
   const { settings } = useSettings();
   const { watchlist, onWatchlist, removeFromWatchlist, importWatchlist } = useDiary();
@@ -138,9 +140,27 @@ export default function TrackScreen() {
 
   const tick = (e: Episode) => {
     const was = isSeen(e);
-    tracker.toggle(item ?? show, e.season, e.number, info ?? undefined, day);
-    toast(was ? `Unticked S${e.season} E${e.number}` : `S${e.season} E${e.number} logged ${onDay(day)}`);
+    const go = () => {
+      tracker.toggle(item ?? show, e.season, e.number, info ?? undefined, day);
+      toast(was ? `Unticked S${e.season} E${e.number}` : `S${e.season} E${e.number} logged ${onDay(day)}`);
+    };
+    if (!was) return go();
+    // Unticking takes the episode out of the diary, with its stars, so it asks first.
+    confirm({
+      title: `Untick S${e.season} E${e.number}${e.name ? `: ${e.name}` : ''}? It comes out of your diary too, with any stars you gave it.`,
+      label: 'Untick',
+      icon: 'close-circle-outline',
+      onConfirm: go,
+    });
   };
+  /** Unmarking a season asks first, like unmarking every episode. */
+  const unmarkSeason = (n: number, keys: string[], go: () => void) =>
+    confirm({
+      title: `Unmark season ${n}? Diary entries made by ticking its ${keys.length === 1 ? 'episode' : `${keys.length} episodes`} go too. Viewings you rated or reviewed stay, without them.`,
+      label: `Unmark season ${n}`,
+      icon: 'close-circle-outline',
+      onConfirm: go,
+    });
   const rated = (e: Episode) => track?.ratings?.[epKey(e.season, e.number)] ?? 0;
   const upToHere = (e: Episode) => {
     if (!info) return;
@@ -186,7 +206,7 @@ export default function TrackScreen() {
       {
         title: `Season ${n}: ${seenHere.length} of ${keys.length} aired episodes seen`,
         extra: seenHere.length
-          ? [{ label: `Unmark season ${n}`, icon: 'close-circle-outline', destructive: true, onPress: () => (tracker.logSeason(target, n, keys, false, info ?? undefined), toast(`Season ${n} unmarked`)) }]
+          ? [{ label: `Unmark season ${n}`, icon: 'close-circle-outline', destructive: true, onPress: () => unmarkSeason(n, seenHere, () => (tracker.logSeason(target, n, keys, false, info ?? undefined), toast(`Season ${n} unmarked`))) }]
           : [],
       },
       (d) => {
@@ -264,9 +284,13 @@ export default function TrackScreen() {
             active={false}
             onPress={() => {
               const was = item;
-              removeFromWatchlist(was.id);
-              toast(`Stopped tracking “${was.title}”`, { label: 'Undo', onPress: () => importWatchlist([was]) });
-              if (router.canGoBack()) router.back();
+              confirm(
+                watchlistAsk(was.title, true, () => {
+                  removeFromWatchlist(was.id);
+                  toast(`Stopped tracking “${was.title}”`, { label: 'Undo', onPress: () => importWatchlist([was]) });
+                  if (router.canGoBack()) router.back();
+                }),
+              );
             }}
           />
         </View>
@@ -303,8 +327,13 @@ export default function TrackScreen() {
           {list && seasonKeys.length > 0 && (
             <Pressable
               onPress={() => {
-                if (current != null) tracker.logSeason(item ?? show, current, seasonKeys, !seasonDone, info, day);
-                toast(seasonDone ? `Season ${current} unmarked` : `Season ${current} logged ${onDay(day)}`);
+                if (current == null) return;
+                const go = () => {
+                  tracker.logSeason(item ?? show, current, seasonKeys, !seasonDone, info, day);
+                  toast(seasonDone ? `Season ${current} unmarked` : `Season ${current} logged ${onDay(day)}`);
+                };
+                if (seasonDone) unmarkSeason(current, seasonKeys, go);
+                else go();
               }}
               onLongPress={() => current != null && seasonMenu(current)}
               accessibilityRole="button"

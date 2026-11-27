@@ -16,6 +16,7 @@ import type { ReactNode } from 'react';
 import { Platform } from 'react-native';
 
 import { TextSizeProvider } from '@/components/AppText';
+import { ConfirmProvider } from '@/components/Confirm';
 import { ToastProvider } from '@/components/Toast';
 import { BackDisc } from '@/components/BackDisc';
 import { DiaryLoadFailed } from '@/components/DiaryLoadFailed';
@@ -67,7 +68,9 @@ export default function RootLayout() {
           <ToastProvider>
             <AppLockProvider>
               <SizedText>
-                <Navigator />
+                <ConfirmProvider>
+                  <Navigator />
+                </ConfirmProvider>
               </SizedText>
               <WidgetSync />
             </AppLockProvider>
