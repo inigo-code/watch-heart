@@ -1,6 +1,9 @@
 """Turn a Gemini mascot drawing on a white background into the app's sticker: cut out, cream edge, WebP.
 
-    python scripts/mascot-sticker.py IN.png assets/mascot/NAME.webp
+    python scripts/mascot-sticker.py IN.png assets/mascot/NAME.webp [LONG_SIDE]
+
+LONG_SIDE is 1024 by default (the app, and the website at normal zoom); the website also has a 2048 copy,
+NAME-2048.webp, for zoomed-in and high-density screens.
 
 Needs Pillow and numpy (Frame Heart's .venv has both). Run Frame Heart on the PNG first if it carries the
 Gemini sparkle. Steps:
@@ -8,7 +11,7 @@ Gemini sparkle. Steps:
 2. Pockets of background she encloses (between her hair and neck) are found as wide near-white areas
    that survive a shrink, so her eye whites and teeth stay.
 3. A thin cream edge (#F4EFE6), about 0.3% of the height, grows around her so black hair reads on dark pages.
-4. Cropped, scaled so the longer side is 640 px, saved as WebP (quality 88, about 45-55 KB).
+4. Cropped, scaled so the longer side is LONG_SIDE, saved as WebP (quality 86).
 """
 
 import sys
@@ -19,7 +22,7 @@ from PIL import Image, ImageDraw, ImageFilter
 CREAM = np.array([244, 239, 230], np.float32)
 
 
-def sticker(src: str, dst: str, long_side: int = 640) -> None:
+def sticker(src: str, dst: str, long_side: int = 1024) -> None:
     a = np.asarray(Image.open(src).convert('RGB')).astype(np.int16)
     h, w = a.shape[:2]
     mn, mx = a.min(2), a.max(2)
@@ -54,9 +57,9 @@ def sticker(src: str, dst: str, long_side: int = 640) -> None:
     im = im.crop((max(0, bb[0] - pad), max(0, bb[1] - pad), min(w, bb[2] + pad), min(h, bb[3] + pad)))
     s = long_side / max(im.size)
     im = im.resize((round(im.width * s), round(im.height * s)), Image.LANCZOS)
-    im.save(dst, 'WEBP', quality=88, method=6)
+    im.save(dst, 'WEBP', quality=86, method=6)
     print(dst, im.size)
 
 
 if __name__ == '__main__':
-    sticker(sys.argv[1], sys.argv[2])
+    sticker(sys.argv[1], sys.argv[2], int(sys.argv[3]) if len(sys.argv) > 3 else 1024)

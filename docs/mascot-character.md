@@ -20,7 +20,7 @@ over a taller anime one, then asked for the logo's colours on her.
 
 ## Poses
 
-All six are in `assets/mascot/*.webp` (640 px on the longer side, 44 to 56 KB each, a thin cream edge).
+All six are in `assets/mascot/*.webp`: 1024 px on the longer side (72 to 92 KB; the app and the website), and `*-2048.webp` (154 to 202 KB; the website only, picked by `srcset` when screen density times zoom passes about 2, so she stays sharp zoomed in). A thin cream edge.
 
 The edge was halved on 27 Nov at Inigo's call: without one, her black hair and the beanbag vanish into the dark theme; the thicker one looked like a sticker.
 
@@ -45,7 +45,7 @@ She stays a still drawing. She fades and rises in (360 to 420 ms), and gives a s
    worked; long ones sometimes failed with "Something went wrong".
 2. Full-size downloads (1792 × 2400, or 2400 × 1792 for asleep). Frame Heart found no visible Gemini mark on
    them, and the corners were checked by eye.
-3. `scripts/mascot-sticker.py IN.png assets/mascot/NAME.webp` cuts her out and adds the cream edge (run it
+3. `scripts/mascot-sticker.py IN.png assets/mascot/NAME.webp` (then again with `assets/mascot/NAME-2048.webp 2048`) cuts her out and adds the cream edge (run it
    with Frame Heart's `.venv` Python, which has Pillow and numpy). The full-size PNGs are in Inigo's Downloads
    as `Gemini_Generated_Image_*.png`; they're not in the repo (about 5 MB each).
 
