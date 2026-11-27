@@ -1,4 +1,4 @@
-# Watch Heart's mascot: a character, not a thing
+# Iniya, Watch Heart's mascot: a character, not a thing
 
 Inigo's call (2026-11-27): Reel, the reel come alive, read as a "drishti bommai" to a tester. The mascot became
 an anime-style girl, in the spirit of Crunchyroll's Hime but entirely our own: not her face, hair, outfit or pose.
@@ -7,7 +7,7 @@ over a taller anime one, then asked for the logo's colours on her.
 
 ## Who she is
 
-- **Name:** not chosen yet. Ideas: Tara (star), Chitra (picture), Mira, Nila. The code calls her `Mascot`.
+- **Name:** Iniya (Tamil for "sweet", Inigo's pick on 27 Nov). The code calls her `Mascot`.
 - **Feel:** a cheerful film fan who logs everything she watches. Warm, a little dramatic, never mean.
 - **Look (chibi):**
   - Warm brown skin, big dark-brown eyes.

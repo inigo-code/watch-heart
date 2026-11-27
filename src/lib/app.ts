@@ -52,7 +52,7 @@ type Note = string | { text: string; fromApp: string };
 const NOTES: { id: string; items: Note[] }[] = [
   {
     id: '1.8.7',
-    items: ['Watch Heart has a new mascot: a film fan dressed in the app’s gold. She keeps you company when you sign in, on empty pages, and when something goes wrong'],
+    items: ['Meet Iniya, Watch Heart’s new mascot: a film fan dressed in the app’s gold. She keeps you company when you sign in, on empty pages, and when something goes wrong'],
   },
   {
     id: '1.8.6',

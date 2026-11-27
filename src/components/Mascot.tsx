@@ -7,7 +7,7 @@ import { Text } from '@/components/AppText';
 import { EASE, useReducedMotion } from '@/components/Motion';
 import { fonts } from '@/lib/theme';
 
-// Watch Heart's mascot: a film-loving girl in the logo's colours (gold cardigan, the reel-and-heart pin, a pink
+// Watch Heart's mascot, Iniya: a film-loving girl in the logo's colours (gold cardigan, the reel-and-heart pin, a pink
 // scrunchie). She replaced Reel, the reel come alive. Drawn as six still poses on a cream sticker edge, so she
 // reads on the dark and the light theme alike. The drawings and how they were made: docs/mascot-character.md.
 
