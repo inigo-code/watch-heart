@@ -1,3 +1,5 @@
+import { sortReactions } from '@/lib/reactions';
+import type { Reaction } from '@/lib/reactions';
 import type { SocialNews } from '@/lib/socialNews';
 import type { Entry } from '@/store/types';
 import { supabase } from '@/sync/supabase';
@@ -9,7 +11,7 @@ import { supabase } from '@/sync/supabase';
 export type Social = { likes: number; liked: boolean; comments: number };
 export type Comment = { id: string; authorId: string; name: string; photoPath: string | null; body: string; at: string };
 export type Liker = { id: string; name: string; photoPath: string | null; at: string };
-export type { SocialNews };
+export type { Reaction, SocialNews };
 const client = () => {
   if (!supabase) throw new Error('Friends aren’t available in this version of the app.');
   return supabase;
@@ -20,7 +22,7 @@ const missing = (m: string) => /function .* does not exist|Could not find the fu
 /** Our own wording passes through; a missing server part reads as not available; anything else is the connection. */
 function fail(e: { message?: string } | null): never {
   const m = e?.message ?? '';
-  if (/Sign in first|Write something first|too long|isn’t shared with you|Too many comments/.test(m)) throw new Error(m);
+  if (/Sign in first|Write something first|too long|isn’t shared with you|Too many comments|Too many reactions|Pick one of the reactions/.test(m)) throw new Error(m);
   if (missing(m)) throw new Error('Comments aren’t available yet. Try again later.');
   throw new Error(m || 'No connection. Try again in a moment.');
 }
@@ -100,6 +102,32 @@ export async function addComment(ownerId: string, entryId: string, words: string
 export async function deleteComment(id: string): Promise<void> {
   const { error } = await client().rpc('delete_comment', { comment: id });
   if (error) fail(error);
+}
+
+// --- Reactions on comments (supabase/comment-reactions.sql) ----------------------------------------------------
+
+/** Every comment's reactions on an entry, by comment id. Empty until the server has them. */
+export async function commentReactions(ownerId: string, entryId: string): Promise<Record<string, Reaction[]>> {
+  const { data, error } = await client().rpc('comment_reaction_counts', { owner: ownerId, entry: entryId });
+  if (error) {
+    if (missing(error.message)) return {};
+    fail(error);
+  }
+  const out: Record<string, Reaction[]> = {};
+  for (const r of (data ?? []) as { comment_id: string; emoji: string; count: number; mine: boolean }[])
+    (out[r.comment_id] ??= []).push({ emoji: r.emoji, count: Number(r.count) || 0, mine: !!r.mine });
+  for (const k of Object.keys(out)) out[k] = sortReactions(out[k]);
+  return out;
+}
+
+/** Sets your reaction to a comment (null takes it off). Returns the one now on it. */
+export async function reactComment(commentId: string, emoji: string | null): Promise<string | null> {
+  const { data, error } = await client().rpc('react_comment', { comment: commentId, emoji });
+  if (error) {
+    if (missing(error.message)) throw new Error('Reactions aren’t available yet. Try again later.');
+    fail(error);
+  }
+  return (data as string | null) ?? null;
 }
 
 /** What's happened on entries since then (30 days at most), newest first. */

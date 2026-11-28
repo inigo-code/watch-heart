@@ -23,18 +23,22 @@ export type SheetQuickRow = {
   items: { key: string; label: string; leading: ReactNode; onPress: () => void }[];
 };
 
+/** A row of emoji above the list (a comment's reactions); `current` is shown picked. */
+export type SheetEmojiRow = { options: readonly string[]; current: string | null; onPick: (emoji: string) => void };
+
 type Props = {
   visible: boolean;
   title?: string;
   actions: SheetAction[];
   quick?: SheetQuickRow;
+  emojis?: SheetEmojiRow;
   /** The button that closes it without doing anything; "Cancel" unless that would be unclear. */
   cancelLabel?: string;
   onClose: () => void;
 };
 
 // Cross-platform replacement for multi-button Alert, which doesn't work on web.
-export function ActionSheet({ visible, title, actions, quick, cancelLabel = 'Cancel', onClose }: Props) {
+export function ActionSheet({ visible, title, actions, quick, emojis, cancelLabel = 'Cancel', onClose }: Props) {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const { height } = useWindowDimensions();
@@ -51,6 +55,28 @@ export function ActionSheet({ visible, title, actions, quick, cancelLabel = 'Can
           <Text style={[styles.title, { color: theme.textMuted }]} numberOfLines={4}>
             {title}
           </Text>
+        )}
+        {emojis && (
+          <View style={[styles.emojis, { backgroundColor: theme.bg }]}>
+            {emojis.options.map((e) => {
+              const on = emojis.current === e;
+              return (
+                <Pressable
+                  key={e}
+                  onPress={() => run(() => emojis.onPick(e))}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: on }}
+                  accessibilityLabel={on ? `${e}, your reaction. Tap to take it off` : `React ${e}`}
+                  style={({ pressed }) => [
+                    styles.emoji,
+                    { borderColor: on ? theme.accent : 'transparent', backgroundColor: on ? theme.accentSoft : pressed ? theme.chip : 'transparent' },
+                  ]}
+                >
+                  <Text style={styles.emojiText}>{e}</Text>
+                </Pressable>
+              );
+            })}
+          </View>
         )}
         <ScrollView style={{ maxHeight: height * 0.7 }} bounces={false} showsVerticalScrollIndicator={false}>
           {quick && quick.items.length > 0 && (
@@ -110,6 +136,9 @@ export function ActionSheet({ visible, title, actions, quick, cancelLabel = 'Can
 const styles = StyleSheet.create({
   sheet: { borderTopLeftRadius: 22, borderTopRightRadius: 22, paddingTop: 8, paddingHorizontal: 10 },
   handle: { alignSelf: 'center', width: 36, height: 4, borderRadius: 2, marginBottom: 6 },
+  emojis: { flexDirection: 'row', justifyContent: 'space-between', borderRadius: 30, padding: 4, marginHorizontal: 6, marginTop: 4, marginBottom: 8 },
+  emoji: { width: 48, height: 48, borderRadius: 24, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center' },
+  emojiText: { fontSize: 26, lineHeight: 32 },
   title: { fontSize: font.footnote, fontFamily: fonts.ui, lineHeight: 18, paddingHorizontal: 12, paddingTop: 4, paddingBottom: 6 },
   quick: { gap: 8, paddingTop: 4, paddingBottom: 8 },
   quickLabel: { fontSize: font.caption, fontFamily: fonts.uiSemibold, paddingHorizontal: 12 },

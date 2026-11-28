@@ -50,6 +50,10 @@ export const DATA_SOURCES = {
 type Note = string | { text: string; fromApp: string };
 const NOTES: { id: string; items: Note[] }[] = [
   {
+    id: '1.8.13',
+    items: ['React to a friend’s comment or reply: hold it and pick ❤️ 😂 😮 😢 🍿 or 🔥. Counts show under the comment, and tapping yours again takes it off'],
+  },
+  {
     id: '1.8.12',
     items: [
       'About has Report a problem. It opens an email to Inigo with the app version, the phone model and recent errors (never your diary), and nothing is sent until you tap Send',

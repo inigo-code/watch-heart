@@ -5,17 +5,19 @@ import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ActionSheet } from '@/components/ActionSheet';
+import { useConfirm } from '@/components/Confirm';
 import { Text, TextInput } from '@/components/AppText';
 import { BottomSheet } from '@/components/BottomSheet';
 import { Face } from '@/components/title/Rows';
 import { useToast } from '@/components/Toast';
 import { photoUrl } from '@/friends/friendsApi';
 import { entryLikers, socialKey } from '@/friends/socialApi';
-import type { Liker, Social } from '@/friends/socialApi';
-import { friendEntryCache, postComment, removeComment, useMyId, useSocial, useThread } from '@/friends/useSocial';
+import type { Liker, Reaction, Social } from '@/friends/socialApi';
+import { friendEntryCache, postComment, reactToComment, removeComment, useMyId, useSocial, useThread } from '@/friends/useSocial';
 import type { ShownComment } from '@/friends/useSocial';
 import { shownError } from '@/lib/errors';
 import { useHaptic } from '@/lib/haptics';
+import { COMMENT_REACTIONS, myReaction } from '@/lib/reactions';
 import { shortAgo } from '@/lib/socialNews';
 import { font, fonts } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
@@ -154,8 +156,27 @@ export function SocialBar({
   );
 }
 
-/** One comment: face, name, when, and the words. Yours shows "Sending" until the server has it. */
-export function CommentRow({ c, photo, theme, isOwner, onLongPress }: { c: ShownComment; photo: string | null; theme: Theme; isOwner: boolean; onLongPress?: () => void }) {
+/**
+ * One comment: face, name, when, the words, and its reactions. Yours shows "Sending" until the server has it.
+ * `onReact` (someone else's comment) makes each reaction a button: yours comes off, another moves yours there.
+ */
+export function CommentRow({
+  c,
+  photo,
+  theme,
+  isOwner,
+  onLongPress,
+  reactions,
+  onReact,
+}: {
+  c: ShownComment;
+  photo: string | null;
+  theme: Theme;
+  isOwner: boolean;
+  onLongPress?: () => void;
+  reactions?: Reaction[];
+  onReact?: (emoji: string) => void;
+}) {
   return (
     <Pressable onLongPress={c.pending ? undefined : onLongPress} delayLongPress={350} style={[styles.comment, c.pending && { opacity: 0.6 }]} accessibilityHint={onLongPress ? 'Hold for options' : undefined}>
       <Face uri={photo} name={c.name} theme={theme} size={32} round />
@@ -170,6 +191,37 @@ export function CommentRow({ c, photo, theme, isOwner, onLongPress }: { c: Shown
         <Text style={[styles.commentText, { color: theme.text }]} selectable>
           {c.body}
         </Text>
+        {!!reactions?.length && (
+          <View style={styles.reactions}>
+            {reactions.map((r) => {
+              const label = `${r.emoji} ${r.count}${r.mine ? ', yours' : ''}`;
+              const look = [styles.reaction, { backgroundColor: r.mine ? theme.accentSoft : theme.chip, borderColor: r.mine ? theme.accent : 'transparent' }];
+              const inner = (
+                <>
+                  <Text style={styles.reactionEmoji}>{r.emoji}</Text>
+                  <Text style={[styles.reactionCount, { color: r.mine ? theme.text : theme.textMuted }]}>{r.count}</Text>
+                </>
+              );
+              return onReact ? (
+                <Pressable
+                  key={r.emoji}
+                  onPress={() => onReact(r.emoji)}
+                  hitSlop={4}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: r.mine }}
+                  accessibilityLabel={r.mine ? `${label}. Tap to take it off` : `${label}. Tap to react ${r.emoji}`}
+                  style={({ pressed }) => [look, pressed && { opacity: 0.6 }]}
+                >
+                  {inner}
+                </Pressable>
+              ) : (
+                <View key={r.emoji} style={look} accessibilityLabel={label}>
+                  {inner}
+                </View>
+              );
+            })}
+          </View>
+        )}
       </View>
     </Pressable>
   );
@@ -183,9 +235,11 @@ export function CommentList({ ownerId, entryId, theme, limit }: { ownerId: strin
   const { get } = useSocial(NONE);
   const count = get(ownerId, entryId)?.comments ?? 0;
   // A card asks only when there's something to show; an entry page always does.
-  const { thread } = useThread(ownerId, entryId, limit ? count > 0 : true);
+  const { thread, reactions } = useThread(ownerId, entryId, limit ? count > 0 : true);
   const me = useMyId(true);
   const toast = useToast();
+  const haptic = useHaptic();
+  const confirm = useConfirm();
   const [options, setOptions] = useState<ShownComment | null>(null);
   const links = usePhotoLinks((thread ?? []).map((c) => c.photoPath));
   if (!thread?.length) return null;
@@ -196,6 +250,13 @@ export function CommentList({ ownerId, entryId, theme, limit }: { ownerId: strin
     removeComment(ownerId, entryId, c)
       .then(() => toast('Comment deleted'))
       .catch((e: unknown) => toast(shownError(e, 'Couldn’t delete that comment.')));
+  const react = (c: ShownComment, emoji: string) => {
+    haptic('tick');
+    reactToComment(ownerId, entryId, c.id, emoji).catch((e: unknown) => toast(shownError(e, 'Couldn’t save your reaction.')));
+  };
+  // Someone else's comment: react to it (and, on your entry, delete it after asking). Your own: delete it.
+  const theirs = !!options && !!me && options.authorId !== me;
+  const deleteAsk = (c: ShownComment) => `Delete ${c.authorId === me ? 'your comment' : `${c.name}’s comment`}? This can’t be undone.`;
 
   return (
     <View style={styles.list}>
@@ -206,7 +267,9 @@ export function CommentList({ ownerId, entryId, theme, limit }: { ownerId: strin
           photo={c.photoPath ? (links[c.photoPath] ?? null) : null}
           theme={theme}
           isOwner={c.authorId === ownerId}
-          onLongPress={c.authorId === me || mineEntry ? () => setOptions(c) : undefined}
+          onLongPress={me ? () => setOptions(c) : undefined}
+          reactions={reactions[c.id]}
+          onReact={me && c.authorId !== me && !c.pending ? (emoji) => react(c, emoji) : undefined}
         />
       ))}
       {!!limit && thread.length > shown.length && (
@@ -216,8 +279,17 @@ export function CommentList({ ownerId, entryId, theme, limit }: { ownerId: strin
       )}
       <ActionSheet
         visible={!!options}
-        title={options ? `Delete ${options.authorId === me ? 'your comment' : `${options.name}’s comment`}? This can’t be undone.` : ''}
-        actions={options ? [{ label: 'Delete comment', icon: 'trash-outline', destructive: true, onPress: () => remove(options) }] : []}
+        title={options ? (theirs ? `React to ${options.name}’s comment` : deleteAsk(options)) : ''}
+        emojis={options && theirs ? { options: COMMENT_REACTIONS, current: myReaction(reactions[options.id]), onPick: (e) => react(options, e) } : undefined}
+        actions={
+          !options
+            ? []
+            : !theirs
+              ? [{ label: 'Delete comment', icon: 'trash-outline', destructive: true, onPress: () => remove(options) }]
+              : mineEntry
+                ? [{ label: 'Delete comment', icon: 'trash-outline', destructive: true, onPress: () => confirm({ title: deleteAsk(options), label: 'Delete comment', onConfirm: () => void remove(options) }) }]
+                : []
+        }
         onClose={() => setOptions(null)}
       />
     </View>
@@ -379,6 +451,10 @@ const styles = StyleSheet.create({
   badge: { fontFamily: fonts.uiSemibold, fontSize: 11, borderWidth: 1, borderRadius: 4, paddingHorizontal: 5, overflow: 'hidden' },
   when: { fontFamily: fonts.ui, fontSize: font.caption, marginLeft: 'auto' },
   commentText: { fontFamily: fonts.ui, fontSize: font.body, lineHeight: 21 },
+  reactions: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 6 },
+  reaction: { flexDirection: 'row', alignItems: 'center', gap: 4, minHeight: 28, paddingHorizontal: 9, borderRadius: 14, borderWidth: 1 },
+  reactionEmoji: { fontSize: 14, lineHeight: 18 },
+  reactionCount: { fontFamily: fonts.uiSemibold, fontSize: font.caption },
   all: { alignSelf: 'flex-start', minHeight: 32, justifyContent: 'center' },
   allText: { fontFamily: fonts.uiSemibold, fontSize: font.footnote },
   conversation: { gap: 16 },

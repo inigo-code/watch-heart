@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 
-import { addComment, deleteComment, entrySocial, entryThread, likeEntry, myId, socialKey } from '@/friends/socialApi';
-import type { Comment, Social } from '@/friends/socialApi';
+import { addComment, commentReactions, deleteComment, entrySocial, entryThread, likeEntry, myId, reactComment, socialKey } from '@/friends/socialApi';
+import type { Comment, Reaction, Social } from '@/friends/socialApi';
+import { pickReaction } from '@/lib/reactions';
 import type { Entry } from '@/store/types';
 
 // Like and comment counts, shared by every screen that shows an entry, so a like on the entry page shows on
@@ -61,9 +62,42 @@ function putThread(key: string, list: ShownComment[]) {
   threadListeners.forEach((l) => l());
 }
 
+// Reactions on the comments, by entry and then by comment id; loaded with the conversation.
+let reactions: ReadonlyMap<string, Readonly<Record<string, Reaction[]>>> = new Map();
+const reactionListeners = new Set<() => void>();
+const subscribeReactions = (l: () => void) => {
+  reactionListeners.add(l);
+  return () => {
+    reactionListeners.delete(l);
+  };
+};
+const currentReactions = () => reactions;
+function putReactions(key: string, byComment: Readonly<Record<string, Reaction[]>>) {
+  const next = new Map(reactions);
+  next.set(key, byComment);
+  reactions = next;
+  reactionListeners.forEach((l) => l());
+}
+const NO_REACTIONS: Readonly<Record<string, Reaction[]>> = {};
+
+/** Your reaction to a comment (or taking it off, when it's the one already there): at once, put back if refused. */
+export async function reactToComment(ownerId: string, entryId: string, commentId: string, emoji: string) {
+  const key = socialKey(ownerId, entryId);
+  const before = reactions.get(key) ?? NO_REACTIONS;
+  const { list, send } = pickReaction(before[commentId], emoji);
+  putReactions(key, { ...before, [commentId]: list });
+  try {
+    await reactComment(commentId, send);
+  } catch (e) {
+    putReactions(key, { ...(reactions.get(key) ?? NO_REACTIONS), [commentId]: before[commentId] ?? [] });
+    throw e;
+  }
+}
+
 /** The conversation on an entry: loaded when `load` is true, then kept. `null` until it's there. */
 export function useThread(ownerId: string, entryId: string, load = true) {
   const all = useSyncExternalStore(subscribeThreads, currentThreads);
+  const allReactions = useSyncExternalStore(subscribeReactions, currentReactions);
   const key = socialKey(ownerId, entryId);
   const [failed, setFailed] = useState<unknown>(null);
   const [round, setRound] = useState(0);
@@ -81,11 +115,14 @@ export function useThread(ownerId: string, entryId: string, load = true) {
         if (now && now.comments !== t.length + sending.length) setSocial(key, { ...now, comments: t.length + sending.length });
       })
       .catch((e: unknown) => live && setFailed(e));
+    commentReactions(ownerId, entryId)
+      .then((r) => live && putReactions(key, r))
+      .catch(() => {});
     return () => {
       live = false;
     };
   }, [key, ownerId, entryId, load, round]);
-  return { thread: all.get(key) ?? null, failed, retry: () => setRound((r) => r + 1) };
+  return { thread: all.get(key) ?? null, reactions: allReactions.get(key) ?? NO_REACTIONS, failed, retry: () => setRound((r) => r + 1) };
 }
 
 /** Posts a comment: it shows at once, then gets its real id; if the server refuses, it's taken back and this throws. */
