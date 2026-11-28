@@ -120,6 +120,12 @@ export function PeopleSearch({ theme, onFriendsChanged }: { theme: Theme; onFrie
               {why || p.bio}
             </Text>
           )}
+          {/* Otherwise the row simply doesn't open, which reads as a missed tap. */}
+          {!p.previewable && (
+            <Text style={[styles.bio, { color: theme.textMuted }]} numberOfLines={1}>
+              Profile not shown
+            </Text>
+          )}
         </View>
       </Pressable>
       {busy === p.id ? (

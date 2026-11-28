@@ -95,7 +95,11 @@ export type Settings = {
 /** The settings that make up your profile, synced across devices when you're signed in. */
 export const PROFILE_KEYS = ['name', 'bio', 'photo', 'favourites', 'yearGoal', 'sharing'] as const;
 
-/** What friends can see, and whether people can find you by name (off unless you turn it on). */
+/**
+ * What friends can see, and whether people can find you by name (off unless you turn it on). Once you can be found,
+ * your profile (photo, bio, favourites, never the diary) shows to people who find you, unless you turn that off
+ * (on by default since 2026-11-28; accounts that already had a setting keep it).
+ */
 export type Sharing = {
   diary: boolean;
   reviews: boolean;
@@ -125,7 +129,7 @@ export const DEFAULT_SETTINGS: Settings = {
   photo: null,
   favourites: [],
   yearGoal: 0,
-  sharing: { diary: true, reviews: true, lists: true, findable: false, preview: false, taste: false },
+  sharing: { diary: true, reviews: true, lists: true, findable: false, preview: true, taste: false },
   omdbKey: '',
   watchRegion: '',
   homeLanguage: '',

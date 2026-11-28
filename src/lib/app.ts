@@ -51,6 +51,13 @@ export const DATA_SOURCES = {
 type Note = string | { text: string; fromApp: string };
 const NOTES: { id: string; items: Note[] }[] = [
   {
+    id: '1.8.10',
+    items: [
+      'People you might know say “Profile not shown” when someone keeps their profile to themselves, so a card that doesn’t open makes sense',
+      'Taking back a friend request from Home now asks first, as it does in Friends',
+    ],
+  },
+  {
     id: '1.8.9',
     items: [
       'Easier to tap: filter chips, buttons and switches all have a full-size touch area, and grow with larger text',

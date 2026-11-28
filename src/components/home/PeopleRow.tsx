@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/AppText';
+import { useConfirm } from '@/components/Confirm';
 import { Face, RowHead } from '@/components/title/Rows';
 import { useToast } from '@/components/Toast';
 import { cancelFriendRequest, photoUrl, sendFriendRequest, suggestPeople } from '@/friends/friendsApi';
@@ -28,6 +29,7 @@ const why = (p: Suggestion) => (p.mutual ? `${plural(p.mutual, 'friend')} in com
  */
 export function PeopleRow({ theme, round }: { theme: Theme; round: number }) {
   const toast = useToast();
+  const askFirst = useConfirm();
   const { available, peopleReady, friends, loading, refresh } = useFriends();
   const [people, setPeople] = useState<Suggestion[]>([]);
   const [faces, setFaces] = useState<Record<string, string>>({});
@@ -102,6 +104,12 @@ export function PeopleRow({ theme, round }: { theme: Theme; round: number }) {
                 <Text style={[styles.why, { color: why(p) ? theme.accent : theme.textMuted }]} numberOfLines={2}>
                   {reason || ' '}
                 </Text>
+                {/* Otherwise the card simply doesn't open, which reads as a missed tap. */}
+                {!p.previewable && (
+                  <Text style={[styles.hidden, { color: theme.textMuted }]} numberOfLines={1}>
+                    Profile not shown
+                  </Text>
+                )}
               </Pressable>
               {busy === p.id ? (
                 <View style={styles.btn}>
@@ -109,7 +117,11 @@ export function PeopleRow({ theme, round }: { theme: Theme; round: number }) {
                 </View>
               ) : (
                 <Pressable
-                  onPress={() => ask(p)}
+                  onPress={() =>
+                    sent
+                      ? askFirst({ title: `Take back your friend request to ${p.name}?`, label: 'Take it back', icon: 'arrow-undo-outline', onConfirm: () => void ask(p) })
+                      : void ask(p)
+                  }
                   accessibilityRole="button"
                   accessibilityLabel={sent ? `Take back your request to ${p.name}` : p.status === 'received' ? `Accept ${p.name}` : `Ask ${p.name} to be friends`}
                   style={({ pressed }) => [styles.btn, sent ? { borderWidth: 1, borderColor: theme.border } : { backgroundColor: theme.accent }, pressed && { opacity: 0.75 }]}
@@ -132,6 +144,7 @@ const styles = StyleSheet.create({
   who: { alignItems: 'center', gap: 4, alignSelf: 'stretch' },
   name: { fontSize: font.footnote, fontWeight: '700', marginTop: 4, textAlign: 'center' },
   why: { fontFamily: fonts.ui, fontSize: 12, lineHeight: 15, textAlign: 'center', minHeight: 30 },
+  hidden: { fontFamily: fonts.ui, fontSize: 11, lineHeight: 14, textAlign: 'center' },
   btn: { alignSelf: 'stretch', minHeight: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center' },
   btnText: { fontFamily: fonts.uiSemibold, fontSize: font.caption },
 });
