@@ -132,6 +132,7 @@ $$;
 
 -- What's happened since then, for the phone's alerts and the Friends page: likes and comments on your
 -- entries, and comments after yours on other people's. Thirty days at most.
+-- entry-reactions.sql replaces this one (a like's emoji in `body`): run that again after running this file again.
 create or replace function public.social_news(since timestamptz default null)
 returns table (kind text, id text, owner_id uuid, entry_id text, who_id uuid, who text, title text, body text, at timestamptz)
 language sql stable security definer set search_path = ''

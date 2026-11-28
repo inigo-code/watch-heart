@@ -13,11 +13,11 @@ import { useToast } from '@/components/Toast';
 import { photoUrl } from '@/friends/friendsApi';
 import { entryLikers, socialKey } from '@/friends/socialApi';
 import type { Liker, Reaction, Social } from '@/friends/socialApi';
-import { friendEntryCache, postComment, reactToComment, removeComment, useMyId, useSocial, useThread } from '@/friends/useSocial';
+import { friendEntryCache, postComment, reactToComment, reactToEntry, removeComment, useMyId, useSocial, useThread } from '@/friends/useSocial';
 import type { ShownComment } from '@/friends/useSocial';
 import { shownError } from '@/lib/errors';
 import { useHaptic } from '@/lib/haptics';
-import { COMMENT_REACTIONS, myReaction } from '@/lib/reactions';
+import { COMMENT_REACTIONS, entryReactions, hasOtherReactions, LIKE, myReaction } from '@/lib/reactions';
 import { shortAgo } from '@/lib/socialNews';
 import { font, fonts } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
@@ -25,7 +25,7 @@ import { useSettings } from '@/settings/SettingsProvider';
 import type { Entry } from '@/store/types';
 
 // Likes and comments on a diary entry: the heart and comment count, the conversation under the review, the box
-// to write in, and who liked yours.
+// to write in, and who liked yours. Holding the heart picks an emoji instead (a plain like is the heart).
 
 const MOST = 1000;
 
@@ -50,7 +50,11 @@ export function SocialMarks({ ownerId, entryId, theme }: { ownerId: string; entr
     <View style={styles.marks} accessibilityLabel={`${s.likes} likes, ${s.comments} comments`}>
       {s.likes > 0 && (
         <>
-          <Ionicons name={s.liked ? 'heart' : 'heart-outline'} size={12} color={s.liked ? theme.like : theme.textMuted} />
+          {hasOtherReactions(entryReactions(s)) ? (
+            <Text style={styles.markEmoji}>{entryReactions(s).slice(0, 2).map((r) => r.emoji).join('')}</Text>
+          ) : (
+            <Ionicons name={s.liked ? 'heart' : 'heart-outline'} size={12} color={s.liked ? theme.like : theme.textMuted} />
+          )}
           <Text style={[styles.markText, { color: theme.textMuted }]}>{s.likes}</Text>
         </>
       )}
@@ -108,39 +112,69 @@ export function SocialBar({
   onComment?: () => void;
 }) {
   const [items] = useState(() => (batched ? NONE : [{ ownerId, entryId }]));
-  const { get, toggleLike, ready } = useSocial(items);
+  const { get, ready } = useSocial(items);
   const toast = useToast();
   const haptic = useHaptic();
+  const [picking, setPicking] = useState(false);
   const s: Social | undefined = get(ownerId, entryId);
   if (!ready && !s) return null;
   const likes = s?.likes ?? 0;
   const comments = s?.comments ?? 0;
   const size = compact ? 15 : 19;
+  const list = entryReactions(s);
+  const yours = myReaction(list);
+  // The emoji show only when there's more than hearts on it.
+  const faces = hasOtherReactions(list) ? list.slice(0, 3) : [];
 
-  const like = () => {
+  const react = (emoji?: string) => {
     haptic('tick');
-    toggleLike(ownerId, entryId).catch((e: unknown) => toast(shownError(e, 'Couldn’t save your like.')));
+    reactToEntry(ownerId, entryId, emoji).catch((e: unknown) => toast(shownError(e, 'Couldn’t save your like.')));
   };
+  const pick = () => {
+    haptic('tick');
+    setPicking(true);
+  };
+  const facesView = faces.length > 0 && (
+    <View style={styles.faceRow} accessibilityLabel={faces.map((r) => `${r.emoji} ${r.count}`).join(', ')}>
+      {faces.map((r, i) => (
+        <View key={r.emoji} style={[styles.faceBubble, { backgroundColor: theme.chip, borderColor: theme.bg, marginLeft: i ? -6 : 0, zIndex: 3 - i }]}>
+          <Text style={[styles.faceEmoji, compact && styles.faceEmojiSmall]}>{r.emoji}</Text>
+        </View>
+      ))}
+    </View>
+  );
 
   return (
     <View style={styles.bar}>
       {mine ? (
         <View style={styles.barItem} accessibilityLabel={likes === 1 ? '1 like' : `${likes} likes`}>
-          <Ionicons name={likes ? 'heart' : 'heart-outline'} size={size} color={likes ? theme.like : theme.textMuted} />
+          {facesView || <Ionicons name={likes ? 'heart' : 'heart-outline'} size={size} color={likes ? theme.like : theme.textMuted} />}
           <Text style={[styles.barText, compact && styles.barSmall, { color: theme.textMuted }]}>{likes ? (likes === 1 ? '1 like' : `${likes} likes`) : 'No likes yet'}</Text>
         </View>
       ) : (
-        <Pressable
-          onPress={like}
-          hitSlop={8}
-          accessibilityRole="button"
-          accessibilityState={{ selected: !!s?.liked }}
-          accessibilityLabel={`${s?.liked ? 'Liked' : 'Like'}${likes ? `, ${likes} ${likes === 1 ? 'like' : 'likes'}` : ''}`}
-          style={({ pressed }) => [styles.barItem, pressed && { opacity: 0.6 }]}
-        >
-          <Ionicons name={s?.liked ? 'heart' : 'heart-outline'} size={size} color={s?.liked ? theme.like : theme.textMuted} />
-          <Text style={[styles.barText, compact && styles.barSmall, { color: s?.liked ? theme.like : theme.textMuted }]}>{likes ? String(likes) : 'Like'}</Text>
-        </Pressable>
+        <View style={styles.likeGroup}>
+          <Pressable
+            onPress={() => react()}
+            onLongPress={pick}
+            delayLongPress={300}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityState={{ selected: !!yours }}
+            accessibilityLabel={`${yours && yours !== LIKE ? `You reacted ${yours}` : yours ? 'Liked' : 'Like'}${likes ? `, ${likes} ${likes === 1 ? 'like' : 'likes'}` : ''}`}
+            accessibilityHint="Hold to pick a reaction"
+            accessibilityActions={[{ name: 'longpress', label: 'Pick a reaction' }]}
+            onAccessibilityAction={(e) => e.nativeEvent.actionName === 'longpress' && pick()}
+            style={({ pressed }) => [styles.barItem, pressed && { opacity: 0.6 }]}
+          >
+            {yours && yours !== LIKE ? (
+              <Text style={[styles.yourEmoji, { fontSize: size, lineHeight: size + 5 }]}>{yours}</Text>
+            ) : (
+              <Ionicons name={yours ? 'heart' : 'heart-outline'} size={size} color={yours ? theme.like : theme.textMuted} />
+            )}
+            <Text style={[styles.barText, compact && styles.barSmall, { color: yours ? theme.like : theme.textMuted }]}>{likes ? String(likes) : 'Like'}</Text>
+          </Pressable>
+          {facesView}
+        </View>
       )}
       <Pressable
         onPress={onComment ?? (() => openEntryToWrite(ownerId, entryId))}
@@ -152,6 +186,15 @@ export function SocialBar({
         <Ionicons name="chatbubble-outline" size={size - 1} color={theme.textMuted} />
         <Text style={[styles.barText, compact && styles.barSmall, { color: theme.textMuted }]}>{comments ? String(comments) : mine ? 'Reply' : 'Comment'}</Text>
       </Pressable>
+      {!mine && (
+        <ActionSheet
+          visible={picking}
+          title="React to this entry"
+          emojis={{ options: COMMENT_REACTIONS, current: yours, onPick: (e) => react(e) }}
+          actions={[]}
+          onClose={() => setPicking(false)}
+        />
+      )}
     </View>
   );
 }
@@ -407,6 +450,7 @@ export function LikedBy({ ownerId, entryId, theme }: { ownerId: string; entryId:
 
   if (!likes || !people.length) return null;
   const names = people.map((p) => p.name);
+  const emoji = people.some((p) => p.emoji && p.emoji !== LIKE);
   const line = names.length === 1 ? names[0] : names.length === 2 ? `${names[0]} and ${names[1]}` : `${names[0]} and ${names.length - 1} others`;
   return (
     <View style={styles.liked}>
@@ -419,7 +463,7 @@ export function LikedBy({ ownerId, entryId, theme }: { ownerId: string; entryId:
           ))}
         </View>
         <Text style={[styles.likedText, { color: theme.textMuted }]} numberOfLines={1}>
-          Liked by <Text style={{ color: theme.text, fontFamily: fonts.uiSemibold }}>{line}</Text>
+          {emoji ? 'Reactions from' : 'Liked by'} <Text style={{ color: theme.text, fontFamily: fonts.uiSemibold }}>{line}</Text>
         </Text>
       </Pressable>
       {open &&
@@ -427,6 +471,7 @@ export function LikedBy({ ownerId, entryId, theme }: { ownerId: string; entryId:
           <View key={p.id} style={styles.likerRow}>
             <Face uri={p.photoPath ? (links[p.photoPath] ?? null) : null} name={p.name} theme={theme} size={28} round />
             <Text style={[styles.commentName, { color: theme.text, flex: 1 }]}>{p.name}</Text>
+            {!!p.emoji && <Text style={styles.likerEmoji}>{p.emoji}</Text>}
             <Text style={[styles.when, { color: theme.textMuted }]}>{shortAgo(p.at)}</Text>
           </View>
         ))}
@@ -439,6 +484,14 @@ export { socialKey };
 const styles = StyleSheet.create({
   marks: { flexDirection: 'row', alignItems: 'center', gap: 3 },
   markText: { fontFamily: fonts.uiSemibold, fontSize: 12, marginRight: 4 },
+  markEmoji: { fontSize: 11, lineHeight: 15 },
+  likeGroup: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  yourEmoji: { textAlign: 'center' },
+  faceRow: { flexDirection: 'row', alignItems: 'center' },
+  faceBubble: { width: 24, height: 24, borderRadius: 12, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
+  faceEmoji: { fontSize: 12, lineHeight: 16 },
+  faceEmojiSmall: { fontSize: 11, lineHeight: 14 },
+  likerEmoji: { fontSize: 16, lineHeight: 20 },
   bar: { flexDirection: 'row', alignItems: 'center', gap: 22 },
   barItem: { flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 32 },
   barText: { fontFamily: fonts.uiSemibold, fontSize: font.footnote },

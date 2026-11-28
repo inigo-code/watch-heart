@@ -29,7 +29,8 @@ export function newsText(n: SocialNews): { title: string; body: string } {
   const what = n.title || (n.kind === 'like' || n.kind === 'comment' ? 'your entry' : 'an entry');
   switch (n.kind) {
     case 'like':
-      return { title: `${n.who} liked your entry`, body: what };
+      // A like with an emoji other than the heart carries it in `body`.
+      return { title: n.body ? `${n.who} reacted ${n.body} to your entry` : `${n.who} liked your entry`, body: what };
     case 'comment':
       return { title: `${n.who} commented on ${what}`, body: excerpt(n.body ?? '') };
     case 'reply':

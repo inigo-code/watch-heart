@@ -20,7 +20,7 @@ function line(n: SocialNews) {
   const on = n.title ? ` on ${n.title}` : '';
   switch (n.kind) {
     case 'like':
-      return { did: ` liked your entry${n.title ? ` for ${n.title}` : ''}`, said: null };
+      return { did: `${n.body ? ` reacted ${n.body} to` : ' liked'} your entry${n.title ? ` for ${n.title}` : ''}`, said: null };
     case 'comment':
       return { did: ` commented${on}`, said: n.body };
     case 'reply':

@@ -50,6 +50,10 @@ export const DATA_SOURCES = {
 type Note = string | { text: string; fromApp: string };
 const NOTES: { id: string; items: Note[] }[] = [
   {
+    id: '1.8.14',
+    items: ['Hold the heart on a friend’s entry to react with 😂 😮 😢 🍿 or 🔥 instead of a like. The top reactions show beside it'],
+  },
+  {
     id: '1.8.13',
     items: ['React to a friend’s comment or reply: hold it and pick ❤️ 😂 😮 😢 🍿 or 🔥. Counts show under the comment, and tapping yours again takes it off'],
   },

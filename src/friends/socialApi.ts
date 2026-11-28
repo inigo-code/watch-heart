@@ -1,4 +1,4 @@
-import { sortReactions } from '@/lib/reactions';
+import { LIKE, sortReactions } from '@/lib/reactions';
 import type { Reaction } from '@/lib/reactions';
 import type { SocialNews } from '@/lib/socialNews';
 import type { Entry } from '@/store/types';
@@ -8,9 +8,10 @@ import { supabase } from '@/sync/supabase';
 // you can see the entry (yours, or a friend's while they share their diary) and hide blocked people.
 // Until that file has run on the server, reads come back empty and the app shows nothing for them.
 
-export type Social = { likes: number; liked: boolean; comments: number };
+/** `likes` counts every reaction (a plain like is the heart); `reactions` says which, once the server has them. */
+export type Social = { likes: number; liked: boolean; comments: number; reactions?: Reaction[] };
 export type Comment = { id: string; authorId: string; name: string; photoPath: string | null; body: string; at: string };
-export type Liker = { id: string; name: string; photoPath: string | null; at: string };
+export type Liker = { id: string; name: string; photoPath: string | null; at: string; emoji?: string };
 export type { Reaction, SocialNews };
 const client = () => {
   if (!supabase) throw new Error('Friends aren’t available in this version of the app.');
@@ -39,14 +40,22 @@ export const socialKey = (ownerId: string, entryId: string) => `${ownerId}/${ent
 /** Counts for many entries at once, keyed by socialKey. Empty when the server doesn't have them yet. */
 export async function entrySocial(items: { ownerId: string; entryId: string }[]): Promise<Record<string, Social>> {
   if (!items.length) return {};
-  const { data, error } = await client().rpc('entry_social', { owners: items.map((i) => i.ownerId), ids: items.map((i) => i.entryId) });
+  const args = { owners: items.map((i) => i.ownerId), ids: items.map((i) => i.entryId) };
+  const [{ data, error }, faces] = await Promise.all([client().rpc('entry_social', args), client().rpc('entry_reactions', args)]);
   if (error) {
     if (missing(error.message)) return {};
     fail(error);
   }
+  // Which emoji: left out (all hearts) until entry-reactions.sql has run, or if that ask fails.
+  const byEntry: Record<string, Reaction[]> = {};
+  if (!faces.error)
+    for (const r of (faces.data ?? []) as { owner_id: string; entry_id: string; emoji: string; count: number; mine: boolean }[])
+      (byEntry[socialKey(r.owner_id, r.entry_id)] ??= []).push({ emoji: r.emoji, count: Number(r.count) || 0, mine: !!r.mine });
   const out: Record<string, Social> = {};
-  for (const r of (data ?? []) as { owner_id: string; entry_id: string; likes: number; liked: boolean; comments: number }[])
-    out[socialKey(r.owner_id, r.entry_id)] = { likes: Number(r.likes) || 0, liked: !!r.liked, comments: Number(r.comments) || 0 };
+  for (const r of (data ?? []) as { owner_id: string; entry_id: string; likes: number; liked: boolean; comments: number }[]) {
+    const key = socialKey(r.owner_id, r.entry_id);
+    out[key] = { likes: Number(r.likes) || 0, liked: !!r.liked, comments: Number(r.comments) || 0, ...(faces.error ? {} : { reactions: sortReactions(byEntry[key] ?? []) }) };
+  }
   return out;
 }
 
@@ -66,8 +75,17 @@ export async function entryThread(ownerId: string, entryId: string): Promise<Com
   }));
 }
 
-/** Who liked your entry (only the owner gets names). */
+/** Who liked your entry, with their emoji once the server has them (only the owner gets names). */
 export async function entryLikers(ownerId: string, entryId: string): Promise<Liker[]> {
+  const faces = await client().rpc('entry_reactors', { owner: ownerId, entry: entryId });
+  if (!faces.error)
+    return ((faces.data ?? []) as { user_id: string; name: string; photo_path: string | null; emoji: string; created_at: string }[]).map((r) => ({
+      id: r.user_id,
+      name: r.name,
+      photoPath: r.photo_path,
+      at: r.created_at,
+      emoji: r.emoji,
+    }));
   const { data, error } = await client().rpc('entry_likers', { owner: ownerId, entry: entryId });
   if (error) {
     if (missing(error.message)) return [];
@@ -91,6 +109,15 @@ export async function friendEntry(ownerId: string, entryId: string): Promise<Ent
 export async function likeEntry(ownerId: string, entryId: string, on: boolean): Promise<void> {
   const { error } = await client().rpc('like_entry', { owner: ownerId, entry: entryId, on_off: on });
   if (error) fail(error);
+}
+
+/** Sets your reaction to an entry (null takes it off; the heart is a plain like). Older servers take likes only. */
+export async function reactEntry(ownerId: string, entryId: string, emoji: string | null): Promise<void> {
+  const { error } = await client().rpc('react_entry', { owner: ownerId, entry: entryId, emoji });
+  if (!error) return;
+  if (!missing(error.message)) fail(error);
+  if (emoji && emoji !== LIKE) throw new Error('Reactions aren’t available yet. Try again later.');
+  await likeEntry(ownerId, entryId, !!emoji);
 }
 
 export async function addComment(ownerId: string, entryId: string, words: string): Promise<string> {

@@ -19,7 +19,8 @@ A project set up before lists or friends existed only needs the new parts: run [
 [friends-safety.sql](friends-safety.sql) for blocking and profile previews, then
 [suggestions.sql](suggestions.sql) for people you might know, then [entry-social.sql](entry-social.sql) for likes
 and comments on diary entries, then [comment-reactions.sql](comment-reactions.sql) for emoji reactions on comments,
-in that order.
+then [entry-reactions.sql](entry-reactions.sql) for emoji reactions on entries (run it again whenever entry-social.sql
+is run again), in that order.
 
 ## 3. Email codes (sign-up and forgot password)
 

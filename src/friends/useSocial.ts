@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 
-import { addComment, commentReactions, deleteComment, entrySocial, entryThread, likeEntry, myId, reactComment, socialKey } from '@/friends/socialApi';
+import { addComment, commentReactions, deleteComment, entrySocial, entryThread, myId, reactComment, reactEntry, socialKey } from '@/friends/socialApi';
 import type { Comment, Reaction, Social } from '@/friends/socialApi';
-import { pickReaction } from '@/lib/reactions';
+import { likeTap, pickEntryReaction, pickReaction } from '@/lib/reactions';
 import type { Entry } from '@/store/types';
 
 // Like and comment counts, shared by every screen that shows an entry, so a like on the entry page shows on
@@ -190,19 +190,26 @@ export function useSocial(items: { ownerId: string; entryId: string }[]) {
 
   const get = useCallback((ownerId: string, entryId: string) => known.get(socialKey(ownerId, entryId)), [known]);
 
-  const toggleLike = useCallback(async (ownerId: string, entryId: string) => {
-    const key = socialKey(ownerId, entryId);
-    const was = counts.get(key) ?? { likes: 0, liked: false, comments: 0 };
-    setSocial(key, { ...was, liked: !was.liked, likes: Math.max(0, was.likes + (was.liked ? -1 : 1)) });
-    try {
-      await likeEntry(ownerId, entryId, !was.liked);
-    } catch (e) {
-      setSocial(key, was);
-      throw e;
-    }
-  }, []);
+  const toggleLike = useCallback((ownerId: string, entryId: string) => reactToEntry(ownerId, entryId), []);
 
   return { get, toggleLike, ready };
+}
+
+/**
+ * Your reaction to an entry, at once, put back if refused. With no emoji it's the Like button: it takes
+ * yours off, or gives a heart.
+ */
+export async function reactToEntry(ownerId: string, entryId: string, emoji?: string) {
+  const key = socialKey(ownerId, entryId);
+  const was = counts.get(key) ?? { likes: 0, liked: false, comments: 0 };
+  const { next, send } = pickEntryReaction(was, emoji ?? likeTap(was));
+  setSocial(key, next);
+  try {
+    await reactEntry(ownerId, entryId, send);
+  } catch (e) {
+    setSocial(key, was);
+    throw e;
+  }
 }
 
 /** Your account id while signed in (read from the saved sign-in), else null. */

@@ -1,5 +1,6 @@
-// Emoji reactions on comments and replies (supabase/comment-reactions.sql): the set offered, and how a pick
-// changes what a comment shows. Plain logic, shared with watchheart.in and the tests.
+// Emoji reactions on comments and replies (supabase/comment-reactions.sql) and on entries (entry-reactions.sql,
+// where the like is the heart): the set offered, and how a pick changes what shows. Plain logic, shared with
+// watchheart.in and the tests.
 
 /** The reactions offered on a comment, in this order. The server takes only these. */
 export const COMMENT_REACTIONS = ['❤️', '😂', '😮', '😢', '🍿', '🔥'] as const;
@@ -29,3 +30,35 @@ export function pickReaction(list: Reaction[] | undefined, emoji: string): { lis
   }
   return { list: sortReactions(next), send };
 }
+
+// --- Reactions on an entry ---------------------------------------------------------------------------------------
+// Each like has an emoji; a plain like is the heart, so the like count counts every reaction.
+
+/** The like itself. */
+export const LIKE = '❤️';
+type Liked = { likes: number; liked: boolean; reactions?: Reaction[] };
+
+/** An entry's reactions. Before the server knew emoji (or for an older like), every like is a heart. */
+export function entryReactions(s: Liked | undefined): Reaction[] {
+  if (!s) return [];
+  if (s.reactions?.length) return s.reactions;
+  return s.likes > 0 ? [{ emoji: LIKE, count: s.likes, mine: s.liked }] : [];
+}
+
+/** Your reaction on an entry: an emoji (the heart for a plain like), or null. */
+export const myEntryReaction = (s: Liked | undefined) => myReaction(entryReactions(s));
+
+/** Whether there's more than hearts on it, so the emoji are worth showing. */
+export const hasOtherReactions = (list: Reaction[]) => list.some((r) => r.emoji !== LIKE);
+
+/**
+ * The entry's counts after you pick `emoji` (tapping Like picks the heart, or yours again to take it off).
+ * Returns them and what to send (null = take it off).
+ */
+export function pickEntryReaction<T extends Liked>(s: T, emoji: string): { next: T; send: string | null } {
+  const { list, send } = pickReaction(entryReactions(s), emoji);
+  return { next: { ...s, reactions: list, likes: list.reduce((n, r) => n + r.count, 0), liked: !!send }, send };
+}
+
+/** What tapping Like picks: your reaction (to take it off), or the heart. */
+export const likeTap = (s: Liked | undefined) => myEntryReaction(s) ?? LIKE;
