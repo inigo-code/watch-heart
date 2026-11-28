@@ -25,6 +25,8 @@ type Props = { entry: Entry; palette: PaletteKey; showReview: boolean; onReady?:
 
 /** How far down the card the photo reaches. */
 const BACKDROP = 0.55;
+/** How much of that the photo itself fills; the fade is solid below it. */
+const PHOTO = 0.9;
 
 const CREDIT: Record<Entry['kind'], string> = { movie: 'DIRECTED BY', tv: 'ON', anime: 'STUDIO' };
 
@@ -50,10 +52,11 @@ export const ReviewCard = forwardRef<StoryHandle, Props>(function ReviewCard({ e
       {backdrop && (
         // Clipped, so a blurred photo can't spill past the fade (it does on the web).
         <View style={[styles.backdrop, { overflow: 'hidden' }]}>
-          <Image source={{ uri: sharp(backdrop, 360) }} style={[StyleSheet.absoluteFill, { opacity: 0.6 }]} resizeMode="cover" resizeMethod="scale" blurRadius={entry.backdropUrl ? 2 : 20} />
-          {/* Ends in the background's own colour where the photo stops (the old fade ended in the bottom colour,
-              which left an edge across the card). On a light paper the photo is washed out further for the dark text. */}
-          <LinearGradient {...photoFade(p, BACKDROP, p.light ? 0.55 : 0.15)} style={StyleSheet.absoluteFill} />
+          {/* The photo stops a little above the fade's end, inside its solid part, so their edges never share a row. */}
+          <Image source={{ uri: sharp(backdrop, 360) }} style={[styles.photo, { opacity: 0.6 }]} resizeMode="cover" resizeMethod="scale" blurRadius={entry.backdropUrl ? 2 : 20} />
+          {/* Follows the background's own colours (the old fade ended in the bottom colour, which left an edge across
+              the card). On a light paper the photo is washed out further for the dark text. */}
+          <LinearGradient {...photoFade(p, BACKDROP, p.light ? 0.55 : 0.15, PHOTO)} style={StyleSheet.absoluteFill} />
         </View>
       )}
 
@@ -126,6 +129,7 @@ export const ReviewCard = forwardRef<StoryHandle, Props>(function ReviewCard({ e
 const styles = StyleSheet.create({
   canvas: { width: STORY_W, height: STORY_H, overflow: 'hidden' },
   backdrop: { position: 'absolute', left: 0, right: 0, top: 0, height: STORY_H * BACKDROP },
+  photo: { position: 'absolute', left: 0, right: 0, top: 0, height: STORY_H * BACKDROP * PHOTO },
   inner: { flex: 1, paddingTop: 56, paddingBottom: 32, paddingHorizontal: 28, alignItems: 'center', gap: 6 },
   kicker: { fontFamily: fonts.ticketBold, fontSize: 11, letterSpacing: 4, marginBottom: 6 },
   // The poster gives up height first, so a long title, credits and review never push the stub and the

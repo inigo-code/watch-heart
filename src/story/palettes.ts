@@ -124,19 +124,26 @@ export function bgAt(p: Palette, at: number, alpha = 1): string {
 }
 
 /**
- * A fade laid over a photo that covers the top `height` (0 to 1) of a story: it starts at `from` opacity and
- * ends in exactly the colour the background has where the photo stops, so there's no edge across the card.
+ * A fade laid over a photo that covers the top `height` (0 to 1) of a story: it starts at `from` opacity, is solid
+ * from `solid` (0 to 1 of its own height) on, and follows the background's own colours all the way, so there's no
+ * edge across the card. The photo must stop inside the solid part: where the photo and the fade end on the same
+ * row, a scaled card half-covers that row with each, and the photo shows through as a thin dark line.
  */
-export function photoFade(p: Palette, height: number, from: number): { colors: [string, string, ...string[]]; locations: [number, number, ...number[]] } {
+export function photoFade(p: Palette, height: number, from: number, solid = 1): { colors: [string, string, ...string[]]; locations: [number, number, ...number[]] } {
   const steps = 8;
   const colors: string[] = [];
   const locations: number[] = [];
   for (let s = 0; s <= steps; s++) {
-    const at = s / steps;
+    const t = s / steps;
+    const at = t * solid;
     // Eased, so the photo stays clear at the top and goes quietly at the bottom.
-    const alpha = from + (1 - from) * at * at * (3 - 2 * at);
+    const alpha = from + (1 - from) * t * t * (3 - 2 * t);
     colors.push(bgAt(p, at * height, Math.round(alpha * 1000) / 1000));
     locations.push(at);
+  }
+  if (solid < 1) {
+    colors.push(bgAt(p, height));
+    locations.push(1);
   }
   return { colors: colors as [string, string, ...string[]], locations: locations as [number, number, ...number[]] };
 }
