@@ -62,14 +62,14 @@ as $$
   select coalesce((select (p.data -> 'sharing' ->> what)::boolean from public.profiles p where p.user_id = owner), true);
 $$;
 
--- A diary entry as a friend sees it: no "watched with" names or tags, and no review unless shared.
+-- A diary entry as a friend sees it: no "watched with" names or tags, and no review (or its heading) unless shared.
 create or replace function public.entry_for_friends(owner uuid, entry jsonb)
 returns jsonb
 language sql stable security definer set search_path = ''
 as $$
   select case
     when public.shares(owner, 'reviews') then entry - 'companions' - 'tags'
-    else (entry - 'companions' - 'tags' - 'review') || '{"review": "", "spoilers": false}'::jsonb
+    else (entry - 'companions' - 'tags' - 'review' - 'heading') || '{"review": "", "spoilers": false}'::jsonb
   end;
 $$;
 

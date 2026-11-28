@@ -20,7 +20,7 @@ A project set up before lists or friends existed only needs the new parts: run [
 [suggestions.sql](suggestions.sql) for people you might know, then [entry-social.sql](entry-social.sql) for likes
 and comments on diary entries, then [comment-reactions.sql](comment-reactions.sql) for emoji reactions on comments,
 then [entry-reactions.sql](entry-reactions.sql) for emoji reactions on entries (run it again whenever entry-social.sql
-is run again), in that order.
+is run again), then [review-heading.sql](review-heading.sql) so a review's heading stays hidden with the review, in that order.
 
 ## 3. Email codes (sign-up and forgot password)
 

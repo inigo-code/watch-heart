@@ -19,6 +19,7 @@ import { TipCard } from '@/components/TipCard';
 import { useToast } from '@/components/Toast';
 import { MONTHS, friendlyDate, monthKey, today } from '@/lib/dates';
 import { plainText } from '@/lib/richText';
+import { hasReview } from '@/lib/review';
 import { useHaptic } from '@/lib/haptics';
 import { computeStats } from '@/lib/stats';
 import { useTracker } from '@/lib/useTracker';
@@ -51,7 +52,7 @@ function matches(e: Entry, filter: Filter, q: string) {
   if (filter === 'movie' || filter === 'tv' || filter === 'anime') {
     if (e.kind !== filter) return false;
   } else if (filter === 'liked' && !e.liked) return false;
-  else if (filter === 'reviewed' && !e.review.trim()) return false;
+  else if (filter === 'reviewed' && !hasReview(e)) return false;
   else if (filter === 'rewatch' && !e.rewatch) return false;
   if (!q) return true;
   return searchText(e).includes(q.replace(/\s+/g, ' '));
@@ -63,7 +64,7 @@ const searched = new WeakMap<Entry, string>();
 function searchText(e: Entry) {
   let hay = searched.get(e);
   if (hay === undefined) {
-    hay = `${e.title} ${e.originalTitle ?? ''} ${e.year ?? ''} ${plainText(e.review)} ${e.tags.join(' ')} ${e.credit ?? ''} ${e.progress} ${(e.companions ?? []).join(' ')}`
+    hay = `${e.title} ${e.originalTitle ?? ''} ${e.year ?? ''} ${e.heading ?? ''} ${plainText(e.review)} ${e.tags.join(' ')} ${e.credit ?? ''} ${e.progress} ${(e.companions ?? []).join(' ')}`
       .replace(/\s+/g, ' ')
       .toLowerCase();
     searched.set(e, hay);

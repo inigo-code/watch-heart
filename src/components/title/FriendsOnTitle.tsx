@@ -6,7 +6,8 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Text } from '@/components/AppText';
 import { Stars } from '@/components/Film';
 import { CommentList, SocialBar, openFriendEntry } from '@/components/friends/Social';
-import { RichText } from '@/components/RichText';
+import { ReviewText } from '@/components/ReviewText';
+import { hasReview } from '@/lib/review';
 import { Face, RowHead } from '@/components/title/Rows';
 import { titleFriends, titleInFriendLists } from '@/friends/friendsApi';
 import type { FriendEntry } from '@/friends/friendsApi';
@@ -44,7 +45,7 @@ export function FriendsOnTitle({ source, sourceId, theme }: { source: string; so
 
   const data = found?.key === key ? found : null;
   const counted = useMemo(
-    () => (data?.entries ?? []).filter((e) => e.review.trim()).map((e) => ({ ownerId: e.userId, entryId: e.id })),
+    () => (data?.entries ?? []).filter(hasReview).map((e) => ({ ownerId: e.userId, entryId: e.id })),
     [data],
   );
   useSocial(counted);
@@ -60,7 +61,7 @@ export function FriendsOnTitle({ source, sourceId, theme }: { source: string; so
   const rows = [...people.entries()];
   const rated = rows.map(([, p]) => p.latest.rating).filter(Boolean);
   const avg = rated.length ? rated.reduce((a, b) => a + b, 0) / rated.length / 2 : null;
-  const reviews = data.entries.filter((e) => e.review.trim());
+  const reviews = data.entries.filter(hasReview);
   const name = (id: string) => byId(id)?.name ?? 'A friend';
 
   return (
@@ -161,7 +162,7 @@ function Review({ e, who, photo, theme }: { e: FriendEntry; who: string; photo: 
           <Text style={[styles.small, { color: theme.textMuted }]}>Contains spoilers. Tap to read.</Text>
         </Pressable>
       ) : (
-        <RichText text={e.review} theme={theme} style={{ ...styles.reviewText, color: theme.text }} />
+        <ReviewText entry={e} theme={theme} style={{ ...styles.reviewText, color: theme.text }} />
       )}
       <SocialBar ownerId={e.userId} entryId={e.id} theme={theme} compact batched onComment={() => openFriendEntry(e, true)} />
       <CommentList ownerId={e.userId} entryId={e.id} theme={theme} limit={2} />

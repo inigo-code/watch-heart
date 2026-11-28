@@ -8,7 +8,7 @@ import { dayParts, monthName } from '@/lib/dates';
 import { KIND_COLORS, font, fonts, kindColor } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
 import type { Entry, MediaKind } from '@/store/types';
-import { plainText } from '@/lib/richText';
+import { hasReview, reviewLine } from '@/lib/review';
 import { plainProgress } from '@/lib/tracking';
 import { useSettings } from '@/settings/SettingsProvider';
 
@@ -59,7 +59,7 @@ export function TicketStub({ entry, theme, onPress, onLongPress, lovedStamp = tr
   const { day, weekday } = dayParts(entry.watchedOn);
   const p = ticketPaper(entry.kind, theme);
   const { settings } = useSettings();
-  const review = settings.ticketReview && entry.review.trim() && !entry.spoilers ? plainText(entry.review).trim() : '';
+  const review = settings.ticketReview && !entry.spoilers ? reviewLine(entry) : '';
   const label = `${entry.title}, watched ${weekday} ${day}${entry.rating ? `, ${entry.rating / 2} stars` : ''}${entry.liked ? ', loved' : ''}`;
   const body = (
     <>
@@ -92,7 +92,7 @@ export function TicketStub({ entry, theme, onPress, onLongPress, lovedStamp = tr
         <View style={styles.meta}>
           <Stars rating={entry.rating} size={13} color={theme.star} />
           {entry.liked && !lovedStamp && <Ionicons name="heart" size={13} color={theme.like} accessibilityLabel="Liked" />}
-          {!!entry.review.trim() && !review && <Ionicons name="reader-outline" size={13} color={theme.textMuted} accessibilityLabel="Has a review" />}
+          {hasReview(entry) && !review && <Ionicons name="reader-outline" size={13} color={theme.textMuted} accessibilityLabel="Has a review" />}
         </View>
         {!!review && (
           <Text style={[styles.review, { color: theme.textMuted }]} numberOfLines={1}>

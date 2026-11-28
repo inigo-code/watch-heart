@@ -12,7 +12,8 @@ import { Poster, Stars } from '@/components/Film';
 import { ListCover } from '@/components/lists/ListCover';
 import { Rise, Tap } from '@/components/Motion';
 import { usePullRefresh } from '@/components/PullRefresh';
-import { RichText } from '@/components/RichText';
+import { ReviewText } from '@/components/ReviewText';
+import { hasReview } from '@/lib/review';
 import { SectionLabel } from '@/components/SectionLabel';
 import { Segments } from '@/components/Segments';
 import { Face, TitleRow, openTitle } from '@/components/title/Rows';
@@ -113,7 +114,7 @@ export default function FriendScreen() {
     setLoadingMore(true);
     try {
       const total = friend?.entries ?? Infinity;
-      const reviewsBefore = diary.filter((e) => e.review).length;
+      const reviewsBefore = diary.filter(hasReview).length;
       let all = diary;
       let left = true;
       do {
@@ -121,7 +122,7 @@ export default function FriendScreen() {
         const rows = await friendDiary(id, all.length, count);
         all = [...all, ...rows];
         left = rows.length === count && all.length < total;
-      } while (tab === 'reviews' && left && all.filter((e) => e.review).length === reviewsBefore);
+      } while (tab === 'reviews' && left && all.filter(hasReview).length === reviewsBefore);
       setDiary(all);
       setMore(left);
     } catch {
@@ -131,7 +132,7 @@ export default function FriendScreen() {
   };
 
   const months = useMemo(() => byMonth(diary ?? []), [diary]);
-  const reviews = useMemo(() => (diary ?? []).filter((e) => e.review), [diary]);
+  const reviews = useMemo(() => (diary ?? []).filter(hasReview), [diary]);
   const counted = useMemo(() => (diary ?? []).slice(0, 200).map((e) => ({ ownerId: e.userId, entryId: e.id })), [diary]);
   useSocial(counted);
   const tile = (width - 32 - GAP * (COLS - 1)) / COLS;
@@ -348,7 +349,7 @@ function Review({ e, theme }: { e: FriendEntry; theme: Theme }) {
           <Text style={[styles.meta, { color: theme.textMuted }]}>Spoilers</Text>
         </Pressable>
       ) : (
-        <RichText text={e.review} theme={theme} style={{ ...styles.reviewText, color: theme.text }} />
+        <ReviewText entry={e} theme={theme} style={{ ...styles.reviewText, color: theme.text }} />
       )}
       <SocialBar ownerId={e.userId} entryId={e.id} theme={theme} compact batched onComment={() => openFriendEntry(e, true)} />
       <CommentList ownerId={e.userId} entryId={e.id} theme={theme} limit={2} />

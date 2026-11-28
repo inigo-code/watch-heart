@@ -35,6 +35,7 @@ import { useTracker } from '@/lib/useTracker';
 import { hasViewingDetails } from '@/lib/viewing';
 import { buddies } from '@/lib/companions';
 import { applyFormat } from '@/lib/richText';
+import { HEADING_MAX, hasReview, headingOf } from '@/lib/review';
 import { KIND_LABEL } from '@/lib/stats';
 import { KIND_COLORS, font, fonts, useTheme } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
@@ -89,7 +90,7 @@ function LogForm() {
       // viewing's stay with it. Another viewing of a series is usually the next season, not a rewatch.
       const fresh = { vibes: [], device: null, context: [], platform: null, character: null, episodes: undefined, episodeRatings: undefined };
       const movie = prev.kind === 'movie';
-      return { ...prev, ...fresh, watchedOn: today(), undated: undefined, rewatch: movie, rating: movie ? prev.rating : 0, review: '', spoilers: false, progress: '', tags: [], season: null };
+      return { ...prev, ...fresh, watchedOn: today(), undated: undefined, rewatch: movie, rating: movie ? prev.rating : 0, review: '', heading: null, spoilers: false, progress: '', tags: [], season: null };
     }
     if (params.title) {
       const t = JSON.parse(params.title) as Title;
@@ -228,6 +229,7 @@ function LogForm() {
       year: manual ? (year >= 1870 && year <= 2100 ? year : null) : draft.year,
       tags: parseTags(tagText),
       review: draft.review.trim(),
+      heading: headingOf(draft) || null,
       progress: draft.progress.trim(),
       season: series && draft.season ? draft.season : null,
     };
@@ -301,8 +303,8 @@ function LogForm() {
 
   // Words and stars you haven't saved shouldn't vanish on a stray Back.
   const unsaved = editing
-    ? draft.review.trim() !== editing.review.trim() || draft.rating !== editing.rating || draft.liked !== editing.liked || draft.watchedOn !== editing.watchedOn || !!draft.undated !== !!editing.undated
-    : !!draft.review.trim() || draft.rating > 0;
+    ? draft.review.trim() !== editing.review.trim() || headingOf(draft) !== headingOf(editing) || draft.rating !== editing.rating || draft.liked !== editing.liked || draft.watchedOn !== editing.watchedOn || !!draft.undated !== !!editing.undated
+    : hasReview(draft) || draft.rating > 0;
   usePreventRemove(unsaved && !stamped && !leaving, () => setAskDiscard(true));
 
   const detailCount = [
@@ -492,6 +494,17 @@ function LogForm() {
           )}
 
           <Field theme={theme} label={draft.season ? `Review of season ${draft.season}` : 'Review'}>
+            {/* A heading: what the share card shows whole when the review is too long for it. */}
+            <TextInput
+              value={draft.heading ?? ''}
+              onChangeText={(heading) => set({ heading })}
+              placeholder="Heading (optional)"
+              placeholderTextColor={theme.textMuted}
+              maxLength={HEADING_MAX}
+              returnKeyType="next"
+              accessibilityLabel="Review heading"
+              style={[styles.input, styles.heading, { color: theme.text, backgroundColor: theme.card, borderColor: theme.border }]}
+            />
             <View style={styles.formatBar}>
               {([
                 ['bold', 'B', { fontWeight: '800' }],
@@ -520,7 +533,7 @@ function LogForm() {
               style={[styles.input, styles.review, { color: theme.text, backgroundColor: theme.card, borderColor: theme.border }]}
             />
           </Field>
-          {(!!draft.review.trim() || draft.spoilers) && (
+          {(hasReview(draft) || draft.spoilers) && (
             <ToggleLine theme={theme} icon="eye-off-outline" label="Contains spoilers" value={draft.spoilers} onChange={(spoilers) => set({ spoilers })} />
           )}
 
@@ -651,6 +664,7 @@ const styles = StyleSheet.create({
   input: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: font.body },
   titleInput: { fontFamily: fonts.uiSemibold, fontSize: font.title2, paddingVertical: 6 },
   review: { minHeight: 120, lineHeight: 21 },
+  heading: { fontFamily: fonts.uiBold, marginBottom: 8 },
   ratingRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   ratingValue: { fontFamily: fonts.display, fontSize: 36, width: 44, includeFontPadding: false },
   like: { alignItems: 'center', marginLeft: 'auto' },

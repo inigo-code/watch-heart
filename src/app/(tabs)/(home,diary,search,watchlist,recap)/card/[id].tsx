@@ -9,6 +9,7 @@ import { Chip } from '@/components/Film';
 import { SectionLabel } from '@/components/SectionLabel';
 import { useToast } from '@/components/Toast';
 import { pickMemoryPhoto } from '@/lib/memoryPhoto';
+import { hasReview } from '@/lib/review';
 import { font, fonts, useTheme } from '@/lib/theme';
 import { useSettings } from '@/settings/SettingsProvider';
 import { useDiary } from '@/store/DiaryStore';
@@ -131,7 +132,7 @@ export default function CardScreen() {
       )}
       <SectionLabel theme={theme}>Palette</SectionLabel>
       <PalettePicker value={settings.story.palette} onChange={(palette) => update({ story: { ...settings.story, palette } })} theme={theme} />
-      {!memory && !!entry.review && (
+      {!memory && hasReview(entry) && (
         <>
           <SectionLabel theme={theme}>Show</SectionLabel>
           <View style={styles.row}>

@@ -8,6 +8,7 @@ import { Text } from '@/components/AppText';
 import { CardBrand } from '@/components/BrandTitle';
 import { admit, namesLine } from '@/lib/companions';
 import { friendlyDate } from '@/lib/dates';
+import { headingOf } from '@/lib/review';
 import { plainText } from '@/lib/richText';
 import { KIND_LABEL } from '@/lib/stats';
 import { fonts } from '@/lib/theme';
@@ -15,12 +16,15 @@ import type { Entry } from '@/store/types';
 import { plainProgress } from '@/lib/tracking';
 
 import { sharp } from './export';
-import { PALETTES } from './palettes';
+import { PALETTES, photoFade } from './palettes';
 import type { PaletteKey } from './palettes';
 import { STORY_H, STORY_W } from './StoryCanvas';
 import type { StoryHandle } from './StoryCanvas';
 
 type Props = { entry: Entry; palette: PaletteKey; showReview: boolean; onReady?: (ready: boolean) => void };
+
+/** How far down the card the photo reaches. */
+const BACKDROP = 0.55;
 
 const CREDIT: Record<Entry['kind'], string> = { movie: 'DIRECTED BY', tv: 'ON', anime: 'STUDIO' };
 
@@ -31,6 +35,9 @@ export const ReviewCard = forwardRef<StoryHandle, Props>(function ReviewCard({ e
   useEffect(() => onReady?.(loaded), [loaded, onReady]);
   const backdrop = entry.backdropUrl ?? entry.posterUrl;
   const review = showReview && !entry.spoilers ? plainText(entry.review).replace(/\s+/g, ' ').trim() : '';
+  // The heading is shown whole; with one, the review gives it room.
+  const heading = showReview && !entry.spoilers ? headingOf(entry) : '';
+  const room = heading ? 150 : 240;
   const stars = [];
   for (let i = 1; i <= 5; i++) {
     if (entry.rating >= i * 2) stars.push(<Ionicons key={i} name="star" size={22} color={p.star} />);
@@ -41,10 +48,13 @@ export const ReviewCard = forwardRef<StoryHandle, Props>(function ReviewCard({ e
     <View ref={ref} collapsable={false} style={styles.canvas}>
       <LinearGradient colors={p.bg} style={StyleSheet.absoluteFill} />
       {backdrop && (
-        <>
-          <Image source={{ uri: sharp(backdrop, 360) }} style={[styles.backdrop, { opacity: 0.6 }]} resizeMode="cover" resizeMethod="scale" blurRadius={entry.backdropUrl ? 2 : 20} />
-          <LinearGradient colors={['transparent', p.bg[p.bg.length - 1]]} locations={[0.1, 0.95]} style={styles.backdrop} />
-        </>
+        // Clipped, so a blurred photo can't spill past the fade (it does on the web).
+        <View style={[styles.backdrop, { overflow: 'hidden' }]}>
+          <Image source={{ uri: sharp(backdrop, 360) }} style={[StyleSheet.absoluteFill, { opacity: 0.6 }]} resizeMode="cover" resizeMethod="scale" blurRadius={entry.backdropUrl ? 2 : 20} />
+          {/* Ends in the background's own colour where the photo stops (the old fade ended in the bottom colour,
+              which left an edge across the card). On a light paper the photo is washed out further for the dark text. */}
+          <LinearGradient {...photoFade(p, BACKDROP, p.light ? 0.55 : 0.15)} style={StyleSheet.absoluteFill} />
+        </View>
       )}
 
       <View style={styles.inner}>
@@ -90,9 +100,14 @@ export const ReviewCard = forwardRef<StoryHandle, Props>(function ReviewCard({ e
           {entry.liked && <Ionicons name="heart" size={22} color={p.like} style={{ marginLeft: 6 }} />}
         </View>
 
+        {!!heading && (
+          <Text allowFontScaling={false} style={[styles.heading, { color: p.text }]} numberOfLines={3}>
+            {heading}
+          </Text>
+        )}
         {!!review && (
-          <Text allowFontScaling={false} style={[styles.review, { color: p.text }]} numberOfLines={6}>
-            “{review.length > 240 ? `${review.slice(0, 237)}…` : review}”
+          <Text allowFontScaling={false} style={[styles.review, { color: p.text }, !!heading && styles.reviewUnder]} numberOfLines={heading ? 4 : 6}>
+            “{review.length > room ? `${review.slice(0, room - 3).trimEnd()}…` : review}”
           </Text>
         )}
 
@@ -110,7 +125,7 @@ export const ReviewCard = forwardRef<StoryHandle, Props>(function ReviewCard({ e
 
 const styles = StyleSheet.create({
   canvas: { width: STORY_W, height: STORY_H, overflow: 'hidden' },
-  backdrop: { position: 'absolute', left: 0, right: 0, top: 0, height: STORY_H * 0.55 },
+  backdrop: { position: 'absolute', left: 0, right: 0, top: 0, height: STORY_H * BACKDROP },
   inner: { flex: 1, paddingTop: 56, paddingBottom: 32, paddingHorizontal: 28, alignItems: 'center', gap: 6 },
   kicker: { fontFamily: fonts.ticketBold, fontSize: 11, letterSpacing: 4, marginBottom: 6 },
   // The poster gives up height first, so a long title, credits and review never push the stub and the
@@ -121,7 +136,9 @@ const styles = StyleSheet.create({
   title: { fontFamily: fonts.display, fontSize: 38, lineHeight: 38, textAlign: 'center', letterSpacing: 1, includeFontPadding: false },
   meta: { fontFamily: fonts.ticketBold, fontSize: 9, letterSpacing: 1.5, textAlign: 'center' },
   rating: { flexDirection: 'row', alignItems: 'center', marginTop: 8 },
+  heading: { fontFamily: fonts.ticketBold, fontSize: 15, lineHeight: 20, textAlign: 'center', marginTop: 12, paddingHorizontal: 6 },
   review: { fontFamily: fonts.ticket, fontSize: 11.5, lineHeight: 17, textAlign: 'center', fontStyle: 'italic', marginTop: 10 },
+  reviewUnder: { marginTop: 4, opacity: 0.85 },
   spacer: { flexGrow: 1 },
   stub: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderStyle: 'dashed', borderRadius: 6, paddingHorizontal: 12, height: 30, gap: 10 },
   stubText: { fontFamily: fonts.ticketBold, fontSize: 9, letterSpacing: 2 },

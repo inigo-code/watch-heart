@@ -50,6 +50,13 @@ export const DATA_SOURCES = {
 type Note = string | { text: string; fromApp: string };
 const NOTES: { id: string; items: Note[] }[] = [
   {
+    id: '1.8.15',
+    items: [
+      'Give a review a heading. The share card shows it in full, so a long review no longer gets cut off',
+      'The review card no longer has a line across it, and Sakura and Paper are easier to read',
+    ],
+  },
+  {
     id: '1.8.14',
     items: ['Hold the heart on a friend’s entry to react with 😂 😮 😢 🍿 or 🔥 instead of a like. The top reactions show beside it'],
   },

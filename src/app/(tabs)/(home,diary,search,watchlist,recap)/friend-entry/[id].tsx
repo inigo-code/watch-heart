@@ -7,7 +7,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '@/components/AppText';
 import { Poster, Stars } from '@/components/Film';
 import { Conversation, SocialBar } from '@/components/friends/Social';
-import { RichText } from '@/components/RichText';
+import { ReviewText } from '@/components/ReviewText';
+import { hasReview } from '@/lib/review';
 import { Face, openTitle } from '@/components/title/Rows';
 import { useFriends } from '@/friends/FriendsProvider';
 import { friendEntry, socialKey } from '@/friends/socialApi';
@@ -107,7 +108,7 @@ export default function FriendEntryScreen() {
         <Ionicons name="chevron-forward" size={18} color={theme.textMuted} />
       </Pressable>
 
-      {!!entry.review &&
+      {hasReview(entry) &&
         (hidden ? (
           <Pressable
             onPress={() => {
@@ -121,7 +122,7 @@ export default function FriendEntryScreen() {
             <Text style={[styles.meta, { color: theme.textMuted }]}>Contains spoilers. Tap to read.</Text>
           </Pressable>
         ) : (
-          <RichText text={entry.review} theme={theme} style={{ ...styles.review, color: theme.text }} />
+          <ReviewText entry={entry} theme={theme} style={{ ...styles.review, color: theme.text }} />
         ))}
 
       <SocialBar ownerId={owner} entryId={id} theme={theme} onComment={() => setWriting(true)} />

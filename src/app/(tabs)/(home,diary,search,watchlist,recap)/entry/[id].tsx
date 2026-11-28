@@ -13,7 +13,8 @@ import { DangerButton } from '@/components/DangerButton';
 import { AddToList } from '@/components/lists/AddToList';
 import { TicketPrint, ticketPaper } from '@/components/Diary';
 import { ConfirmTrash } from '@/components/ConfirmTrash';
-import { RichText } from '@/components/RichText';
+import { ReviewText } from '@/components/ReviewText';
+import { hasReview } from '@/lib/review';
 import { SectionLabel } from '@/components/SectionLabel';
 import { TitleExtras } from '@/components/TitleExtras';
 import { Synopsis, TitleMore, useAbout } from '@/components/title/AboutTitle';
@@ -183,7 +184,7 @@ export default function EntryScreen() {
 
           <TitleExtras source={entry.source} sourceId={entry.sourceId} imdbId={entry.imdbId} title={entry.title} year={entry.year} series={entry.kind !== 'movie'} theme={theme} />
 
-          {!!entry.review && (
+          {hasReview(entry) && (
             <View style={styles.reviewWrap}>
               <SectionLabel theme={theme}>Review</SectionLabel>
               {hideReview ? (
@@ -199,7 +200,7 @@ export default function EntryScreen() {
                   <Text style={[styles.spoilerText, { color: theme.textMuted }]}>Contains spoilers. Tap to read.</Text>
                 </Pressable>
               ) : (
-                <RichText text={entry.review} theme={theme} style={{ ...styles.review, color: theme.text }} />
+                <ReviewText entry={entry} theme={theme} style={{ ...styles.review, color: theme.text }} />
               )}
             </View>
           )}

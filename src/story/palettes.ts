@@ -4,6 +4,8 @@ export type PaletteKey = 'marquee' | 'velvet' | 'neon' | 'sakura' | 'noir' | 'pa
 
 export type Palette = {
   label: string;
+  /** A light paper (Sakura, Paper): photos behind text are washed out further so dark text reads. */
+  light?: boolean;
   /** Background gradient, top to bottom. */
   bg: [string, string, ...string[]];
   text: string;
@@ -52,11 +54,12 @@ export const PALETTES: Record<PaletteKey, Palette> = {
   },
   sakura: {
     label: 'Sakura',
+    light: true,
     bg: ['#FFE3EF', '#FBC6DD', '#E9A3C9'],
     text: '#3A0E26',
-    muted: '#8C4A6C',
-    accent: '#C2417F',
-    star: '#C2417F',
+    muted: '#6B2A4C',
+    accent: '#7E1D52',
+    star: '#9A1E5E',
     like: '#E0314B',
     strip: '#3A0E26',
     card: '#FFF2F8',
@@ -74,12 +77,13 @@ export const PALETTES: Record<PaletteKey, Palette> = {
   },
   paper: {
     label: 'Paper',
+    light: true,
     bg: ['#F6F0E3', '#EDE4D1', '#E3D7BF'],
     text: '#1A1714',
-    muted: '#7A7064',
-    accent: '#B3203A',
-    star: '#B8862B',
-    like: '#B3203A',
+    muted: '#5C5246',
+    accent: '#9A1B32',
+    star: '#86601A',
+    like: '#9A1B32',
     strip: '#1A1714',
     card: '#FBF8F1',
   },
@@ -106,6 +110,36 @@ export const PALETTES: Record<PaletteKey, Palette> = {
     card: '#111F44',
   },
 };
+
+/** The background's colour at `at` (0 = top, 1 = bottom), with `alpha`: the stops are spread evenly, as LinearGradient draws them. */
+export function bgAt(p: Palette, at: number, alpha = 1): string {
+  const stops = p.bg;
+  const pos = Math.min(1, Math.max(0, at)) * (stops.length - 1);
+  const i = Math.min(stops.length - 2, Math.floor(pos));
+  const f = pos - i;
+  const rgb = (h: string) => [1, 3, 5].map((k) => parseInt(h.slice(k, k + 2), 16));
+  const [a, b] = [rgb(stops[i]), rgb(stops[i + 1])];
+  const mix = a.map((v, k) => Math.round(v + (b[k] - v) * f));
+  return `rgba(${mix.join(', ')}, ${alpha})`;
+}
+
+/**
+ * A fade laid over a photo that covers the top `height` (0 to 1) of a story: it starts at `from` opacity and
+ * ends in exactly the colour the background has where the photo stops, so there's no edge across the card.
+ */
+export function photoFade(p: Palette, height: number, from: number): { colors: [string, string, ...string[]]; locations: [number, number, ...number[]] } {
+  const steps = 8;
+  const colors: string[] = [];
+  const locations: number[] = [];
+  for (let s = 0; s <= steps; s++) {
+    const at = s / steps;
+    // Eased, so the photo stays clear at the top and goes quietly at the bottom.
+    const alpha = from + (1 - from) * at * at * (3 - 2 * at);
+    colors.push(bgAt(p, at * height, Math.round(alpha * 1000) / 1000));
+    locations.push(at);
+  }
+  return { colors: colors as [string, string, ...string[]], locations: locations as [number, number, ...number[]] };
+}
 
 export const LAYOUTS: { value: StoryLayout; label: string }[] = [
   { value: 'strip', label: 'Film strip' },

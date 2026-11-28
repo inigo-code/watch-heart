@@ -50,6 +50,9 @@ export type Entry = {
   /** For series and anime: what you watched, e.g. "Season 2" or "Ep 1–12". */
   progress: string;
   review: string;
+  /** One short line above the review (src/lib/review.ts); the share card shows it whole. Part of the review: hidden
+   * behind spoilers with it, and from friends when reviews aren't shared. */
+  heading?: string | null;
   /** The review gives away the plot; it's hidden behind a tap. */
   spoilers: boolean;
   tags: string[];

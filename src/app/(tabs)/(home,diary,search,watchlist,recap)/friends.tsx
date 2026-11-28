@@ -22,6 +22,7 @@ import { useFriends } from '@/friends/FriendsProvider';
 import { useSocial } from '@/friends/useSocial';
 import { SITE_URL, WEB_URL } from '@/lib/app';
 import { friendlyDate } from '@/lib/dates';
+import { hasReview } from '@/lib/review';
 import { easeNextLayout } from '@/lib/motion';
 import { font, fonts, useTheme } from '@/lib/theme';
 import { viewingRating, watchedLabel } from '@/lib/watched';
@@ -272,7 +273,7 @@ function FeedRow({ e, theme }: { e: FriendEntry; theme: Theme }) {
           {rating ? <Stars rating={rating} size={12} color={theme.star} /> : null}
           {e.liked && <Ionicons name="heart" size={12} color={theme.like} />}
           <Text style={[styles.hint, { color: theme.textMuted }]}>{friendlyDate(e.watchedOn)}</Text>
-          {!!e.review && <Ionicons name="document-text-outline" size={12} color={theme.textMuted} accessibilityLabel="Has a review" />}
+          {hasReview(e) && <Ionicons name="document-text-outline" size={12} color={theme.textMuted} accessibilityLabel="Has a review" />}
           <SocialMarks ownerId={e.userId} entryId={e.id} theme={theme} />
         </View>
       </View>
