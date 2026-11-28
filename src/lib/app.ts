@@ -17,7 +17,10 @@ export const SUPPORT_EMAIL = 'inigo@tosstheworld.org';
 export const HEART_APPS = {
   url: 'https://heartapps.github.io/',
   line: 'Free Android apps by Inigo. No ads, no tracking, nothing to buy.',
-  apps: [{ name: 'Prompt Heart', tagline: 'For the AI prompts that work', url: 'https://heartapps.github.io/prompt-heart/' }],
+  apps: [
+    { name: 'Prompt Heart', tagline: 'For the AI prompts that work', url: 'https://heartapps.github.io/prompt-heart/' },
+    { name: 'Kural Heart', tagline: 'A private journal with Thiruvalluvar', url: 'https://heartapps.github.io/kural-heart/' },
+  ],
 };
 
 /**
@@ -50,6 +53,10 @@ export const DATA_SOURCES = {
  */
 type Note = string | { text: string; fromApp: string };
 const NOTES: { id: string; items: Note[] }[] = [
+  {
+    id: '1.8.11',
+    items: ['About now shows Kural Heart, a private journal with Thiruvalluvar, beside Prompt Heart in the Heart Apps card'],
+  },
   {
     id: '1.8.10',
     items: [

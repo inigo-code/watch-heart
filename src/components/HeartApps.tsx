@@ -8,7 +8,10 @@ import { font, fonts } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
 
 const LOGO = require('../../assets/heart-apps.png');
-const ICONS: Record<string, number> = { 'Prompt Heart': require('../../assets/prompt-heart.png') };
+const ICONS: Record<string, number> = {
+  'Prompt Heart': require('../../assets/prompt-heart.png'),
+  'Kural Heart': require('../../assets/kural-heart.png'),
+};
 
 /** The Heart Apps logo as a small rounded tile (for rows and headings). */
 export function HeartAppsMark({ size = 30 }: { size?: number }) {
