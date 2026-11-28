@@ -50,6 +50,10 @@ export const DATA_SOURCES = {
 type Note = string | { text: string; fromApp: string };
 const NOTES: { id: string; items: Note[] }[] = [
   {
+    id: '1.8.16',
+    items: ['Share a long review whole: pick Full review on the story card, and your words fill the card'],
+  },
+  {
     id: '1.8.15',
     items: [
       'Give a review a heading. The share card shows it in full, so a long review no longer gets cut off',

@@ -15,19 +15,24 @@ import { useSettings } from '@/settings/SettingsProvider';
 import { useDiary } from '@/store/DiaryStore';
 import { MemoryCard, PHOTO_FILTERS, memoryKicker } from '@/story/MemoryCard';
 import type { PhotoFilter, PosterSpot } from '@/story/MemoryCard';
+import { FullReviewCard } from '@/story/FullReviewCard';
 import { ReviewCard } from '@/story/ReviewCard';
 import type { StoryHandle } from '@/story/StoryCanvas';
 import { PalettePicker, ShareButtons, StoryPreview } from '@/story/Studio';
 import { shownError } from '@/lib/errors';
 
-/** One entry as an Instagram story: the review card (poster, stars, a line of the review) or a memory (your own photo in a film frame). */
+/**
+ * One entry as an Instagram story: the review card (poster, stars, a line of the review), the full review (the words
+ * fill the card, for a long one), or a memory (your own photo in a film frame).
+ */
 export default function CardScreen() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const { id, style } = useLocalSearchParams<{ id: string; style?: string }>();
   const toast = useToast();
-  const [memory, setMemory] = useState(style === 'memory');
+  const [kind, setKind] = useState<'review' | 'full' | 'memory'>(style === 'memory' ? 'memory' : 'review');
+  const memory = kind === 'memory';
   const [photo, setPhoto] = useState<string | null>(null);
   const [kicker, setKicker] = useState('');
   const [caption, setCaption] = useState('');
@@ -60,12 +65,18 @@ export default function CardScreen() {
 
   return (
     <ScrollView contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 32 }]} keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets>
-      <View style={styles.row}>
-        <Chip theme={theme} icon="ticket-outline" label="Review" active={!memory} onPress={() => setMemory(false)} />
-        <Chip theme={theme} icon="images-outline" label="Memory" active={memory} onPress={() => setMemory(true)} />
+      <View style={styles.wrap}>
+        <Chip theme={theme} icon="ticket-outline" label="Review" active={kind === 'review'} onPress={() => setKind('review')} />
+        {/* The whole review, for one too long for the review card. Not for spoilers: they stay off cards. */}
+        {!!entry.review.trim() && !entry.spoilers && (
+          <Chip theme={theme} icon="reader-outline" label="Full review" active={kind === 'full'} onPress={() => setKind('full')} />
+        )}
+        <Chip theme={theme} icon="images-outline" label="Memory" active={memory} onPress={() => setKind('memory')} />
       </View>
       <StoryPreview width={Math.min(width - 32, 300)} theme={theme} target={ref}>
-        {memory ? (
+        {kind === 'full' ? (
+          <FullReviewCard key="full" entry={entry} palette={settings.story.palette} onReady={onReady} />
+        ) : memory ? (
           <MemoryCard key="memory" entry={entry} photo={photo} palette={settings.story.palette} kicker={kicker} caption={caption} poster={poster} filter={filter} onReady={onReady} />
         ) : (
           <ReviewCard key="review" entry={entry} palette={settings.story.palette} showReview={showReview} onReady={onReady} />
@@ -132,7 +143,7 @@ export default function CardScreen() {
       )}
       <SectionLabel theme={theme}>Palette</SectionLabel>
       <PalettePicker value={settings.story.palette} onChange={(palette) => update({ story: { ...settings.story, palette } })} theme={theme} />
-      {!memory && hasReview(entry) && (
+      {kind === 'review' && hasReview(entry) && (
         <>
           <SectionLabel theme={theme}>Show</SectionLabel>
           <View style={styles.row}>
