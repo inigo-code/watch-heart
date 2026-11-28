@@ -27,6 +27,7 @@ import { omdbKey as omdbKeyFor, watchRegion } from '@/api/omdb';
 import { setScoreDefaults } from '@/lib/titleScores';
 import { fonts, useTheme } from '@/lib/theme';
 import { useMovieNightTaps } from '@/lib/movieNight';
+import { startProblemLog } from '@/lib/problemReport';
 import { useTmdbFreshness } from '@/lib/tmdbFreshness';
 import { AppLockProvider } from '@/lock/AppLockProvider';
 import { FriendsProvider } from '@/friends/FriendsProvider';
@@ -35,6 +36,9 @@ import { SettingsProvider, useSettings } from '@/settings/SettingsProvider';
 import { DiaryStoreProvider, useDiary } from '@/store/DiaryStore';
 import { SyncProvider } from '@/sync/SyncProvider';
 import { WidgetSync } from '@/widget/WidgetSync';
+
+// Notes errors and crashes for "Report a problem" (About), from the first moment.
+startProblemLog();
 
 // Keep the splash up until the fonts, settings and diary are in, so the first thing on screen is the diary
 // itself: no titles in the fallback font, no empty Diary that fills a moment later.

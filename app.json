@@ -13,6 +13,7 @@
       "bundleIdentifier": "com.inigocode.watchheart"
     },
     "android": {
+      "versionCode": 18,
       "package": "com.inigocode.watchheart",
       "allowBackup": false,
       "adaptiveIcon": {

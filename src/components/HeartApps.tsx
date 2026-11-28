@@ -4,14 +4,11 @@ import { Image, Pressable, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/AppText';
 import { HEART_APPS } from '@/lib/app';
+import { OTHER_HEART_APPS } from '@/lib/heartAppsList';
 import { font, fonts } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
 
 const LOGO = require('../../assets/heart-apps.png');
-const ICONS: Record<string, number> = {
-  'Prompt Heart': require('../../assets/prompt-heart.png'),
-  'Kural Heart': require('../../assets/kural-heart.png'),
-};
 
 /** The Heart Apps logo as a small rounded tile (for rows and headings). */
 export function HeartAppsMark({ size = 30 }: { size?: number }) {
@@ -32,7 +29,7 @@ export function HeartAppsCard({ theme }: { theme: Theme }) {
           <Text style={[styles.line, { color: theme.textMuted }]}>{HEART_APPS.line}</Text>
         </View>
       </View>
-      {HEART_APPS.apps.map((app) => (
+      {OTHER_HEART_APPS.map((app) => (
         <Pressable
           key={app.name}
           onPress={() => Linking.openURL(app.url)}
@@ -40,7 +37,7 @@ export function HeartAppsCard({ theme }: { theme: Theme }) {
           accessibilityLabel={`${app.name}: ${app.tagline}`}
           style={({ pressed }) => [styles.app, { backgroundColor: pressed ? theme.chip : theme.bg, borderColor: theme.border }]}
         >
-          <Image source={ICONS[app.name]} style={styles.icon} accessibilityIgnoresInvertColors />
+          <Image source={app.icon} style={styles.icon} accessibilityIgnoresInvertColors />
           <View style={{ flex: 1 }}>
             <Text style={[styles.appName, { color: theme.text }]}>{app.name}</Text>
             <Text style={[styles.line, { color: theme.textMuted }]}>{app.tagline}</Text>

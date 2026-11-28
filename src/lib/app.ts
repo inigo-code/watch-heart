@@ -17,10 +17,6 @@ export const SUPPORT_EMAIL = 'inigo@tosstheworld.org';
 export const HEART_APPS = {
   url: 'https://heartapps.github.io/',
   line: 'Free Android apps by Inigo. No ads, no tracking, nothing to buy.',
-  apps: [
-    { name: 'Prompt Heart', tagline: 'For the AI prompts that work', url: 'https://heartapps.github.io/prompt-heart/' },
-    { name: 'Kural Heart', tagline: 'A private journal with Thiruvalluvar', url: 'https://heartapps.github.io/kural-heart/' },
-  ],
 };
 
 /**
@@ -53,6 +49,14 @@ export const DATA_SOURCES = {
  */
 type Note = string | { text: string; fromApp: string };
 const NOTES: { id: string; items: Note[] }[] = [
+  {
+    id: '1.8.12',
+    items: [
+      'About has Report a problem. It opens an email to Inigo with the app version, the phone model and recent errors (never your diary), and nothing is sent until you tap Send',
+      'Signing out and removing your diary from this phone now removes your planned watches and their reminders too',
+      'Planning a watch asks for Alarms & reminders again where the phone needs it, so the reminder arrives on time',
+    ],
+  },
   {
     id: '1.8.11',
     items: ['About now shows Kural Heart, a private journal with Thiruvalluvar, beside Prompt Heart in the Heart Apps card'],
@@ -356,12 +360,26 @@ function newer(a: string, b: string) {
   return false;
 }
 
+// The installed build's version. expo-constants dropped nativeAppVersion (it read as undefined, so notes for a
+// newer build and the Alarms & reminders ask never showed). Each build has its own runtime, and an update
+// published to a runtime carries it in expoConfig, so the runtime names the build. Without one (a launch of the
+// build's own bundle), expoConfig.version is the build's. The website has neither, so it reads '0'.
+const BUILD_OF_RUNTIME: Record<string, string> = {
+  '2479c13f94f80fb5842b425b01a7409af7d6b0a7': '1.7.3',
+  '314b51ee52cfb71f4ac248f963f3cd29948609c1': '1.8.0',
+};
+export function installedVersion(): string {
+  const config = Constants.expoConfig as { runtimeVersion?: unknown; version?: string } | null;
+  const runtime = typeof config?.runtimeVersion === 'string' ? config.runtimeVersion : '';
+  return BUILD_OF_RUNTIME[runtime] ?? config?.version ?? '0';
+}
+
 export const WHATS_NEW = {
   id: NOTES[0].id,
   /** The lines a phone hasn't seen yet: only this update's, unless it skipped some. */
   since(seen: string | null) {
     const fresh = seen ? NOTES.filter((n) => newer(n.id, seen)) : NOTES.slice(0, 1);
-    const native = Constants.nativeAppVersion ?? '0';
+    const native = installedVersion();
     return (fresh.length ? fresh : NOTES.slice(0, 1))
       .flatMap((n) => n.items)
       .filter((item) => typeof item === 'string' || native.localeCompare(item.fromApp, undefined, { numeric: true }) >= 0)

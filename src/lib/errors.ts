@@ -2,6 +2,8 @@
 // the library ("Network request failed", "fetch failed: java.net.UnknownHostException: Unable to resolve
 // host…", "Failed to fetch", a timeout), and none of them should reach the screen as they are.
 
+import { noteError } from '@/lib/problemLog';
+
 export const NO_CONNECTION = 'No connection. Check your internet and try again.';
 
 const NETWORK =
@@ -33,6 +35,7 @@ export const isTechnical = (text: string) => text.length > MOST_LETTERS || TECHN
  * reaches the screen.
  */
 export function shownError(e: unknown, fallback: string, offline = NO_CONNECTION): string {
+  noteError(e, fallback); // kept for "Report a problem", cleaned of personal details
   if (isOffline(e)) return offline;
   const text = errorText(e).trim();
   return text && !isTechnical(text) && text !== '[object Object]' ? text : fallback;

@@ -8,13 +8,16 @@ import { BrandTitle } from '@/components/BrandTitle';
 import { HeartAppsCard } from '@/components/HeartApps';
 import { Sprockets } from '@/components/Film';
 import { Row, Section } from '@/components/SettingsUI';
+import { useToast } from '@/components/Toast';
 import { UpdateCard } from '@/components/UpdateRow';
 import { ANILIST_ALLOWED, APP_TAGLINE, DATA_SOURCES, DEVELOPER, HEART_APPS, SUPPORT_EMAIL, WEB_NAME, WEB_URL } from '@/lib/app';
+import { reportProblem } from '@/lib/problemReport';
 import { font, fonts, useTheme } from '@/lib/theme';
 
 export default function AboutScreen() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
+  const toast = useToast();
 
   return (
     <ScrollView contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 32 }]}>
@@ -62,7 +65,15 @@ export default function AboutScreen() {
 
       <Section theme={theme} title="Made by">
         <Row theme={theme} icon="logo-github" label={DEVELOPER.name} value="GitHub" onPress={() => Linking.openURL(DEVELOPER.github)} />
-        <Row theme={theme} icon="mail-outline" label="Send feedback" onPress={() => Linking.openURL(`mailto:${SUPPORT_EMAIL}?subject=Watch%20Heart`)} last />
+        <Row theme={theme} icon="mail-outline" label="Send feedback" onPress={() => Linking.openURL(`mailto:${SUPPORT_EMAIL}?subject=Watch%20Heart`)} />
+        <Row
+          theme={theme}
+          icon="bug-outline"
+          label="Report a problem"
+          value="Opens an email"
+          onPress={() => void reportProblem().then((opened) => opened || toast(`No email app found. Write to ${SUPPORT_EMAIL}`))}
+          last
+        />
       </Section>
 
       <Text style={[styles.privacy, { color: theme.textMuted }]}>

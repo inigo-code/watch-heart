@@ -1,8 +1,9 @@
-import Constants from 'expo-constants';
 import * as Notifications from 'expo-notifications';
 import { AndroidImportance } from 'expo-notifications';
 import { router } from 'expo-router';
 import { useEffect } from 'react';
+
+import { installedVersion } from '@/lib/app';
 
 // Planned-watch reminders: a local notification at the time you plan, opening the title. Nothing is asked for
 // until you plan one. Android 12 and later hold ordinary alarms back while the phone is idle or the app is
@@ -17,7 +18,7 @@ Notifications.setNotificationHandler({
 
 /** Schedules the reminder; resolves to its id, or null when notifications aren't allowed. */
 /** Installs before 1.3.0 don't declare the permission, so Android has no switch to send anyone to. */
-export const hasAlarmSwitch = () => (Constants.nativeAppVersion ?? '0').localeCompare('1.3.0', undefined, { numeric: true }) >= 0;
+export const hasAlarmSwitch = () => installedVersion().localeCompare('1.3.0', undefined, { numeric: true }) >= 0;
 
 /** Whether reminders can arrive at the exact minute. False where the app doesn't hold the permission. */
 export async function canRemindOnTime() {
