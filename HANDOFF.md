@@ -121,13 +121,13 @@ The full list is `git log`; every user-facing commit names its What's new versio
 
 ## Open work
 
-**Report a problem, sign-out, installed version (2026-11-28, What's new 1.8.12), committed and pushed, NOT published** (Inigo: "Do all the pending and suggestions"). Master `f4b11ea` + `e3b1065`:
+**Report a problem, sign-out, installed version (2026-11-28, What's new 1.8.12), ✅ published 2026-11-28** (Inigo: "Do all the pending and suggestions", then "Publish all"). Master `f4b11ea` + `e3b1065`:
 - About → **Report a problem** (`src/lib/problemReport.ts`): an email to inigo@tosstheworld.org with the version, phone model and the last eight errors (`problemLog.ts`, cleaned of emails, addresses, quoted text and long numbers), sent only when the person taps Send. `shownError` notes every error it words; `startProblemLog()` in the root layout notes crashes. Master copies in `..\Tools\expo\problem-report`. watchheart.in imports only `problemLog.ts` (through `errors.ts`) and needs no change.
 - **Sign out and remove from this phone** now also cancels planned-watch reminders and empties `movieNights` (they live only on the phone); the toast says so.
 - **Installed version:** expo-constants removed `nativeAppVersion`, so `WHATS_NEW.since` and `hasAlarmSwitch` always read '0': notes with `fromApp` never showed and the Alarms & reminders ask never came. `installedVersion()` in `lib/app.ts` maps the update's pinned runtime to its build (`BUILD_OF_RUNTIME`: add each new build's runtime there), else `expoConfig.version`.
 - The Heart Apps card reads `src/lib/heartAppsList.ts`, generated from `..\Tools\heart-apps\apps.json`.
 - eas.json `appVersionSource: local`, app.json `android.versionCode` 18.
-- **To publish:** `python ..\Tools\expo\ota.py watch-heart "Report a problem"`. tsc, lint, 44 tests and the website's tsc pass; not seen on a phone (release APKs are ARM-only and won't start on the x86_64 emulator).
+- Published with `..\Tools\expo\ota.py`: preview 314b51ee `a89d410f`, 2479c13f `9c193af6`; production 314b51ee `850b9312`, 2479c13f `efa24cff`. watchheart.in not republished (nothing visible changes there). tsc, lint, 44 tests and the website's tsc pass; not seen on a phone (release APKs are ARM-only and won't start on the x86_64 emulator).
 
 **People you might know (2026-11-28, What's new 1.8.10), ✅ published 2026-11-28** (Inigo: "Ship both"): OTA from master `de69fe1` to `314b51ee` and `2479c13f` (preview groups `e9bbd332`/`ead7a402`, production `74291996`/`6d92dc3a`). A suggestion whose profile is hidden says "Profile not shown"; Home asks before taking back a friend request; Show my profile is on by default for new accounts. watchheart.in matches it in Watch Heart Web `fdd4f73`, published the same day on top of `605ef75` (the 1.8.9 parity below), bundle `index-CBAu238P.js` (checked live). Not seen on a phone.
 
