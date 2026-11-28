@@ -52,6 +52,16 @@ export const myEntryReaction = (s: Liked | undefined) => myReaction(entryReactio
 export const hasOtherReactions = (list: Reaction[]) => list.some((r) => r.emoji !== LIKE);
 
 /**
+ * The emoji shown beside the like button: the top three, once there's more than hearts on it. Yours is left out,
+ * because the button already shows it.
+ */
+export function reactionFaces(list: Reaction[]): Reaction[] {
+  if (!hasOtherReactions(list)) return [];
+  const yours = myReaction(list);
+  return list.filter((r) => r.emoji !== yours).slice(0, 3);
+}
+
+/**
  * The entry's counts after you pick `emoji` (tapping Like picks the heart, or yours again to take it off).
  * Returns them and what to send (null = take it off).
  */

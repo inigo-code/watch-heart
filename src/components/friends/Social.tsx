@@ -17,7 +17,7 @@ import { friendEntryCache, postComment, reactToComment, reactToEntry, removeComm
 import type { ShownComment } from '@/friends/useSocial';
 import { shownError } from '@/lib/errors';
 import { useHaptic } from '@/lib/haptics';
-import { COMMENT_REACTIONS, entryReactions, hasOtherReactions, LIKE, myReaction } from '@/lib/reactions';
+import { COMMENT_REACTIONS, entryReactions, hasOtherReactions, LIKE, myReaction, reactionFaces } from '@/lib/reactions';
 import { shortAgo } from '@/lib/socialNews';
 import { font, fonts } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
@@ -123,8 +123,8 @@ export function SocialBar({
   const size = compact ? 15 : 19;
   const list = entryReactions(s);
   const yours = myReaction(list);
-  // The emoji show only when there's more than hearts on it.
-  const faces = hasOtherReactions(list) ? list.slice(0, 3) : [];
+  // On your own entry there's no button, so every emoji shows.
+  const faces = mine ? (hasOtherReactions(list) ? list.slice(0, 3) : []) : reactionFaces(list);
 
   const react = (emoji?: string) => {
     haptic('tick');

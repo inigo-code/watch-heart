@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-const { COMMENT_REACTIONS, entryReactions, hasOtherReactions, likeTap, myReaction, pickEntryReaction, pickReaction, sortReactions } = await import('@/lib/reactions');
+const { COMMENT_REACTIONS, entryReactions, hasOtherReactions, likeTap, myReaction, pickEntryReaction, pickReaction, reactionFaces, sortReactions } = await import('@/lib/reactions');
 
 test('six film-friendly reactions, in a fixed order', () => {
   assert.deepEqual([...COMMENT_REACTIONS], ['❤️', '😂', '😮', '😢', '🍿', '🔥']);
@@ -62,4 +62,11 @@ test('tapping Like with an emoji on it takes it off; tapping again gives a heart
   assert.equal(on.send, '❤️');
   assert.deepEqual(on.next, { likes: 2, liked: true, reactions: [{ emoji: '❤️', count: 2, mine: true }] });
   assert.equal(hasOtherReactions(on.next.reactions), false);
+});
+
+test('the emoji beside the button leave out yours, which the button shows', () => {
+  assert.deepEqual(reactionFaces([{ emoji: '🍿', count: 1, mine: true }]), []);
+  assert.deepEqual(reactionFaces([{ emoji: '🍿', count: 2, mine: true }, { emoji: '😂', count: 1, mine: false }]), [{ emoji: '😂', count: 1, mine: false }]);
+  assert.deepEqual(reactionFaces([{ emoji: '❤️', count: 2, mine: true }]), []);
+  assert.deepEqual(reactionFaces([{ emoji: '🔥', count: 1, mine: false }]), [{ emoji: '🔥', count: 1, mine: false }]);
 });
