@@ -5,6 +5,7 @@ import { AppState } from 'react-native';
 
 import { useLists } from '@/lists/ListsProvider';
 import { SUPPORT_EMAIL } from '@/lib/app';
+import { cancelMovieNight } from '@/lib/movieNight';
 import { removePhotoFile } from '@/lib/profilePhoto';
 import { DEFAULT_SETTINGS, useSettings } from '@/settings/SettingsProvider';
 import { useDiary } from '@/store/DiaryStore';
@@ -399,7 +400,11 @@ export function SyncProvider({ children }: { children: ReactNode }) {
         listsRef.current.clear();
         // The profile is the account's too: name, bio, photo, favourites, goal and what friends can see.
         removePhotoFile(settingsRef.current.photo);
+        // Planned watches live only on this phone: they go too, with their reminders, so none goes off for
+        // whoever uses the phone next.
+        await Promise.all(settingsRef.current.movieNights.map((n) => cancelMovieNight(n.reminderId)));
         update({
+          movieNights: [],
           name: '',
           bio: '',
           photo: null,

@@ -366,7 +366,7 @@ function SignedIn({ theme }: { theme: Theme }) {
             label: 'Sign out and remove my diary and profile from this phone',
             icon: 'trash-outline',
             destructive: true,
-            onPress: () => void act(() => signOut(true), 'Signed out; your diary and profile are removed from this phone'),
+            onPress: () => void act(() => signOut(true), 'Signed out; your diary, profile and planned watches are removed from this phone'),
           },
         ]}
       />
