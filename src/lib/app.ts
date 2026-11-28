@@ -51,6 +51,15 @@ export const DATA_SOURCES = {
 type Note = string | { text: string; fromApp: string };
 const NOTES: { id: string; items: Note[] }[] = [
   {
+    id: '1.8.9',
+    items: [
+      'Easier to tap: filter chips, buttons and switches all have a full-size touch area, and grow with larger text',
+      'Clearer on Paper: red buttons, Series labels and empty pages are easier to read',
+      'Long names and titles fit: your name wraps on your profile, a title page shows more of a long title, and the logo stays on one line',
+      'The watchlist’s sort sits beside its filters, and an entry’s moods are quieter so Story card stands out',
+    ],
+  },
+  {
     id: '1.8.8',
     items: ['A cleaner, simpler look for the welcome screen, sign in and empty pages'],
   },

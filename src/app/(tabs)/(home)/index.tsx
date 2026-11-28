@@ -209,9 +209,9 @@ export default function HomeScreen() {
       <Pressable
         onPress={() => router.navigate({ pathname: '/search', params: { mode: 'discover' } })}
         accessibilityRole="button"
-        style={({ pressed }) => [styles.discover, { backgroundColor: pressed ? theme.chip : 'transparent', borderColor: theme.border }]}
+        style={({ pressed }) => [styles.discover, { backgroundColor: theme.chip, opacity: pressed ? 0.8 : 1 }]}
       >
-        <Ionicons name="compass" size={18} color={theme.accent} />
+        <Ionicons name="compass-outline" size={18} color={theme.text} />
         <Text style={[styles.discoverText, { color: theme.text }]}>Discover more</Text>
       </Pressable>
     </ScrollView>
@@ -238,6 +238,6 @@ const styles = StyleSheet.create({
   because: { fontFamily: fonts.ui, fontSize: font.caption, lineHeight: 17 },
   episode: { position: 'absolute', left: 6, bottom: 6, borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2 },
   episodeText: { fontFamily: fonts.uiSemibold, fontSize: 12 },
-  discover: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: 46, borderRadius: 23, borderWidth: 1 },
+  discover: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 48, paddingVertical: 10, borderRadius: 24 },
   discoverText: { fontFamily: fonts.uiSemibold, fontSize: font.footnote },
 });

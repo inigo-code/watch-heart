@@ -177,7 +177,7 @@ const styles = StyleSheet.create({
   bio: { fontSize: font.footnote, lineHeight: 20, textAlign: 'center' },
   count: { fontFamily: fonts.ui, fontSize: font.caption },
   actions: { flexDirection: 'row', justifyContent: 'center', gap: 10, minHeight: 46 },
-  action: { flex: 1, height: 46, borderRadius: 23, alignItems: 'center', justifyContent: 'center' },
+  action: { flex: 1, minHeight: 48, paddingVertical: 10, borderRadius: 24, alignItems: 'center', justifyContent: 'center' },
   actionText: { fontFamily: fonts.uiSemibold, fontSize: font.footnote },
   favourites: { gap: 10 },
   note: { fontFamily: fonts.ui, fontSize: font.caption, lineHeight: 17, textAlign: 'center' },

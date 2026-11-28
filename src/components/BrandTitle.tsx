@@ -39,7 +39,8 @@ export function BrandTitle({ theme, size = 29 }: { theme: Theme; size?: number }
   return (
     <View style={styles.row} accessibilityRole="header" accessibilityLabel="Watch Heart">
       <HeartMark size={size * 1.03} />
-      <Text maxFontSizeMultiplier={1.15} style={[styles.word, { color: theme.text, fontSize: size, lineHeight: size * 1.1 }]}>
+      {/* The wordmark is the logo: it keeps its size, so it stays on one line beside the header's buttons at any text size. */}
+      <Text allowFontScaling={false} numberOfLines={1} style={[styles.word, { color: theme.text, fontSize: size, lineHeight: size * 1.1 }]}>
         WATCH <Text style={{ color: theme.accent }}>HEART</Text>
       </Text>
     </View>

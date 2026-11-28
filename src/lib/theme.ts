@@ -48,7 +48,7 @@ const light: typeof dark = {
   chipActiveText: '#F3EDE1',
   star: '#A06E00',
   like: '#E0314B',
-  danger: '#C93636',
+  danger: '#B42F2F',
   toast: '#1A1714',
   toastText: '#F3EDE1',
   overlay: 'rgba(20,16,12,0.45)',
@@ -132,6 +132,6 @@ export const KIND_COLORS = {
 } as const;
 
 /** Darker inks for the same kinds, readable on screenplay paper. */
-const KIND_INK = { movie: '#87600F', tv: '#0B7A86', anime: '#B8306F' } as const;
+const KIND_INK = { movie: '#87600F', tv: '#086C76', anime: '#B8306F' } as const;
 
 export const kindColor = (kind: keyof typeof KIND_COLORS, theme: Theme) => (theme.dark ? KIND_COLORS : KIND_INK)[kind];

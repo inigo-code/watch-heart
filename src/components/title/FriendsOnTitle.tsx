@@ -184,6 +184,6 @@ const styles = StyleSheet.create({
   reviewText: { fontSize: font.body, lineHeight: 22 },
   spoiler: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   lists: { gap: 8 },
-  listChip: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, height: 42 },
+  listChip: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, minHeight: 48 },
   listName: { flex: 1, fontSize: font.footnote, fontWeight: '700' },
 });

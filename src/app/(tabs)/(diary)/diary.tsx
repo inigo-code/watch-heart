@@ -166,14 +166,14 @@ export default function DiaryScreen() {
 
       {entries.length > 0 && (
         <View style={styles.toolbar}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips} style={{ flex: 1 }}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips} style={styles.chipScroll}>
             {FILTERS.map((f) => (
               <Chip key={f.key} theme={theme} label={f.label} color={f.color} icon={f.icon} active={filter === f.key} onPress={() => setFilter(f.key)} />
             ))}
           </ScrollView>
           <Pressable
             onPress={() => update({ diaryLayout: grid ? 'list' : 'grid' })}
-            hitSlop={6}
+            hitSlop={8}
             accessibilityRole="button"
             accessibilityLabel={grid ? 'Show as tickets' : 'Show as poster wall'}
             style={({ pressed }) => [styles.layoutBtn, { borderColor: theme.border, opacity: pressed ? 0.7 : 1 }]}
@@ -489,8 +489,10 @@ const styles = StyleSheet.create({
   search: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, height: 44, borderRadius: 12 },
   searchInput: { flex: 1, fontSize: font.body, height: '100%' },
   toolbar: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  chips: { gap: 8, paddingRight: 8 },
-  layoutBtn: { width: 36, height: 32, borderRadius: 10, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
+  // The chips' row is 16 taller than it looks, so their 48dp touch area isn't cut off by the scroller.
+  chipScroll: { flex: 1, marginVertical: -8 },
+  chips: { gap: 8, paddingRight: 8, paddingVertical: 8 },
+  layoutBtn: { width: 40, height: 32, borderRadius: 16, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
   gridRow: { flexDirection: 'row', gap: GAP },
   empty: { alignItems: 'center', gap: 10, paddingTop: 64, paddingHorizontal: 28 },
   end: { alignItems: 'center', gap: 12, paddingTop: 36, paddingBottom: 8 },

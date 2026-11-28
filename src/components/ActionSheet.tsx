@@ -118,7 +118,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    height: 38,
+    minHeight: 40,
     paddingLeft: 6,
     paddingRight: 12,
     borderRadius: 19,
@@ -128,6 +128,6 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 46, paddingVertical: 6, paddingHorizontal: 10, borderRadius: 12 },
   icon: { width: 30, height: 30, borderRadius: 9, alignItems: 'center', justifyContent: 'center' },
   rowText: { flex: 1, fontSize: font.body, fontWeight: '600' },
-  cancel: { marginTop: 8, height: 46, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+  cancel: { marginTop: 8, minHeight: 48, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
   cancelText: { fontSize: font.body, fontFamily: fonts.uiSemibold },
 });

@@ -169,6 +169,10 @@ function ProfileBody() {
             onChangeText={setName}
             onSubmitEditing={() => saveText()}
             returnKeyType="done"
+            // A long name wraps under the photo instead of running off the edge; Enter still saves.
+            multiline
+            submitBehavior="blurAndSubmit"
+            scrollEnabled={false}
             placeholder="Your name"
             placeholderTextColor={theme.textMuted}
             style={[styles.name, { color: theme.text }]}
@@ -320,9 +324,9 @@ function ProfileBody() {
           <Block theme={theme} title="How it felt">
             <View style={styles.vibes}>
               {s.topVibes.map((v, i) => (
-                <View key={v.name} style={[styles.vibe, { backgroundColor: i === 0 ? theme.accent : theme.card, borderColor: i === 0 ? theme.accent : theme.border }]}>
-                  <Text style={[styles.vibeName, { color: i === 0 ? theme.accentText : theme.text }]}>{v.name}</Text>
-                  <Text style={[styles.vibeCount, { color: i === 0 ? theme.accentText : theme.textMuted }]}>×{v.count}</Text>
+                <View key={v.name} style={[styles.vibe, { backgroundColor: i === 0 ? theme.chipActive : theme.card, borderColor: i === 0 ? theme.chipActive : theme.border }]}>
+                  <Text style={[styles.vibeName, { color: i === 0 ? theme.chipActiveText : theme.text }]}>{v.name}</Text>
+                  <Text style={[styles.vibeCount, { color: i === 0 ? theme.chipActiveText : theme.textMuted }]}>×{v.count}</Text>
                 </View>
               ))}
             </View>
@@ -594,7 +598,7 @@ const styles = StyleSheet.create({
   vibes: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   friend: { width: 72, alignItems: 'center', gap: 6 },
   friendAdd: { width: 64, height: 64, borderRadius: 32, borderWidth: 1, borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center' },
-  vibe: { flexDirection: 'row', alignItems: 'center', gap: 6, borderWidth: 1, borderRadius: 16, paddingHorizontal: 12, height: 32 },
+  vibe: { flexDirection: 'row', alignItems: 'center', gap: 6, borderWidth: 1, borderRadius: 16, paddingHorizontal: 12, minHeight: 32 },
   vibeName: { fontFamily: fonts.uiSemibold, fontSize: font.caption },
   vibeCount: { fontFamily: fonts.ui, fontSize: font.caption },
   tops: { gap: 10 },

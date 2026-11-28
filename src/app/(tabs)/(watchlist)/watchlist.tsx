@@ -141,7 +141,7 @@ export default function WatchlistScreen() {
             {queue.length ? `${queue.length} saved` : 'For later'}
           </Text>
         </View>
-        <Tap onPress={() => router.push('/lists')} accessibilityRole="button" accessibilityLabel="Your lists" style={[styles.listsBtn, { borderColor: theme.border, backgroundColor: theme.chip }]}>
+        <Tap onPress={() => router.push('/lists')} accessibilityRole="button" accessibilityLabel="Your lists" style={[styles.listsBtn, { backgroundColor: theme.chip }]}>
           <Ionicons name="albums-outline" size={20} color={theme.text} />
           <Text style={[styles.listsText, { color: theme.text }]} numberOfLines={1}>
             My lists
@@ -175,17 +175,24 @@ export default function WatchlistScreen() {
             </Text>
           </Tap>
           <View style={styles.toolbar}>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips} style={{ flex: 1 }}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips} style={styles.chipScroll}>
               <Chip theme={theme} label="All" active={filter === 'all'} onPress={() => setFilter('all')} />
               <Chip theme={theme} label="Films" color={KIND_COLORS.movie} active={filter === 'movie'} onPress={() => setFilter('movie')} />
               <Chip theme={theme} label="Series" color={KIND_COLORS.tv} active={filter === 'tv'} onPress={() => setFilter('tv')} />
               <Chip theme={theme} label="Anime" color={KIND_COLORS.anime} active={filter === 'anime'} onPress={() => setFilter('anime')} />
             </ScrollView>
+            <Pressable
+              onPress={() => setSort(SORTS[sort].next)}
+              accessibilityRole="button"
+              accessibilityLabel={`Sorted by ${SORTS[sort].label}. Change`}
+              style={({ pressed }) => [styles.sortBtn, { opacity: pressed ? 0.6 : 1 }]}
+            >
+              <Ionicons name="swap-vertical" size={15} color={theme.textMuted} />
+              <Text style={[styles.sortText, { color: theme.textMuted }]} numberOfLines={1}>
+                {SORTS[sort].label}
+              </Text>
+            </Pressable>
           </View>
-          <Pressable onPress={() => setSort(SORTS[sort].next)} hitSlop={16} accessibilityRole="button" style={styles.sortBtn}>
-            <Ionicons name="swap-vertical" size={14} color={theme.textMuted} />
-            <Text style={[styles.sortText, { color: theme.textMuted }]}>{SORTS[sort].label}</Text>
-          </Pressable>
         </>
       )}
     </View>
@@ -379,15 +386,17 @@ const styles = StyleSheet.create({
   // The gold word is a span a little taller than the line; the gap keeps it off the line below.
   titleBlock: { flex: 1, gap: 4 },
   sub: { fontFamily: fonts.ui, fontSize: font.footnote },
-  pickBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, height: 50, borderRadius: 25 },
+  pickBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, minHeight: 50, paddingVertical: 12, borderRadius: 25 },
   pickText: { fontFamily: fonts.uiSemibold, fontSize: font.footnote },
-  toolbar: { flexDirection: 'row', alignItems: 'center' },
+  toolbar: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   headRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
-  listsBtn: { flexShrink: 0, flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 46, paddingHorizontal: 16, borderRadius: 23, borderWidth: 1.5 },
+  listsBtn: { flexShrink: 0, flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 48, paddingHorizontal: 16, borderRadius: 24 },
   listsText: { fontFamily: fonts.uiSemibold, fontSize: font.footnote },
-  chips: { gap: 8 },
-  sortBtn: { flexDirection: 'row', alignItems: 'center', gap: 5, alignSelf: 'flex-end' },
-  sortText: { fontFamily: fonts.uiSemibold, fontSize: 12 },
+  // 16 taller than it looks, so the chips' 48dp touch area isn't cut off by the scroller.
+  chipScroll: { flex: 1, marginVertical: -8 },
+  chips: { gap: 8, paddingVertical: 8, paddingRight: 8 },
+  sortBtn: { flexShrink: 1, flexDirection: 'row', alignItems: 'center', gap: 5, minHeight: 48 },
+  sortText: { flexShrink: 1, fontFamily: fonts.uiSemibold, fontSize: font.caption },
   tileTitle: { fontSize: font.footnote, fontWeight: '700', marginTop: 6, lineHeight: 17 },
   tileNight: { fontFamily: fonts.uiSemibold, fontSize: 12, marginTop: 1 },
   tileMeta: { fontFamily: fonts.ui, fontSize: font.caption, marginTop: 2 },
@@ -400,6 +409,6 @@ const styles = StyleSheet.create({
   featureTitle: { fontFamily: fonts.uiBold, fontSize: font.title2, lineHeight: 29, textAlign: 'center' },
   featureMeta: { fontFamily: fonts.ui, fontSize: font.footnote, textAlign: 'center' },
   featureButtons: { gap: 8, marginTop: 8, alignSelf: 'stretch' },
-  featureBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 46, borderRadius: 23 },
+  featureBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 48, borderRadius: 24 },
   featureBtnText: { fontFamily: fonts.uiSemibold, fontSize: font.footnote },
 });

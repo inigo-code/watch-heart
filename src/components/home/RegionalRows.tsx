@@ -43,16 +43,17 @@ export function RegionalRows({ region, mine, theme, seen }: { region: string; mi
         name={lang.code ? `New ${lang.name} releases` : 'New Indian releases'}
         q={fresh}
         above={
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={rail.edge} contentContainerStyle={styles.chips}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={[rail.edge, styles.chipScroll]} contentContainerStyle={styles.chips}>
             {languages.map((l) => {
               const on = l.code === lang.code;
               return (
                 <Pressable
                   key={l.code || 'all'}
                   onPress={() => setLang(l)}
+                  hitSlop={{ top: 8, bottom: 8 }}
                   accessibilityRole="tab"
                   accessibilityState={{ selected: on }}
-                  style={[styles.chip, { backgroundColor: on ? theme.chipActive : theme.chip }]}
+                  style={[styles.chip, { backgroundColor: on ? theme.chipActive : 'transparent', borderColor: on ? theme.chipActive : theme.border }]}
                 >
                   <Text style={[styles.chipText, { color: on ? theme.chipActiveText : theme.text }]}>{l.name}</Text>
                 </Pressable>
@@ -131,9 +132,11 @@ const styles = StyleSheet.create({
   block: { gap: 10 },
   head: { gap: 4 },
   sub: { fontFamily: fonts.ui, fontSize: font.caption, lineHeight: 17 },
-  chips: { gap: 8, paddingHorizontal: 16 },
-  chip: { borderRadius: 16, paddingHorizontal: 14, height: 32, justifyContent: 'center' },
-  chipText: { fontSize: font.footnote, fontWeight: '600' },
+  // 16 taller than it looks, so the chips' 48dp touch area isn't cut off by the scroller.
+  chipScroll: { marginVertical: -8 },
+  chips: { gap: 8, paddingHorizontal: 16, paddingVertical: 8 },
+  chip: { borderRadius: 16, borderWidth: 1, paddingHorizontal: 12, minHeight: 32, justifyContent: 'center' },
+  chipText: { fontFamily: fonts.uiSemibold, fontSize: font.caption },
   skeleton: { flexDirection: 'row', gap: 12 },
   ghost: { width: 104, height: 156, borderRadius: 6 },
 });

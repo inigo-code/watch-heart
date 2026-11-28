@@ -29,11 +29,11 @@ export function TipCard({ theme, icon, title, children, onDismiss, action }: Pro
       <Text style={[styles.body, { color: theme.text }]}>{children}</Text>
       <View style={styles.actions}>
         {action && (
-          <Pressable onPress={action.onPress} style={[styles.btn, { borderColor: theme.text + '33' }]}>
+          <Pressable onPress={action.onPress} hitSlop={8} style={[styles.btn, { borderColor: theme.text + '33' }]}>
             <Text style={[styles.btnText, { color: theme.text }]}>{action.label}</Text>
           </Pressable>
         )}
-        <Pressable onPress={onDismiss} style={[styles.btn, { backgroundColor: theme.text, borderColor: theme.text }]}>
+        <Pressable onPress={onDismiss} hitSlop={8} accessibilityRole="button" style={[styles.btn, { backgroundColor: theme.text, borderColor: theme.text }]}>
           <Text style={[styles.btnText, { color: theme.bg }]}>Got it</Text>
         </Pressable>
       </View>
@@ -47,6 +47,6 @@ const styles = StyleSheet.create({
   title: { flex: 1, fontSize: font.body, fontFamily: fonts.uiSemibold },
   body: { fontSize: font.footnote, lineHeight: 19 },
   actions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 8, marginTop: 2 },
-  btn: { paddingHorizontal: 16, height: 32, borderRadius: 16, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
+  btn: { paddingHorizontal: 16, minHeight: 32, borderRadius: 16, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
   btnText: { fontSize: font.footnote, fontFamily: fonts.uiSemibold },
 });

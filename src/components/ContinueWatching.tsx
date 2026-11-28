@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
   bar: { height: 5, borderRadius: 3, overflow: 'hidden', marginTop: 2 },
   fill: { height: '100%', borderRadius: 3 },
   plus: {
-    height: 34,
+    minHeight: 34,
     minWidth: 44,
     borderRadius: 17,
     alignItems: 'center',

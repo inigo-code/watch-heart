@@ -161,7 +161,7 @@ export default function EntryScreen() {
               {!!entry.vibes?.length && (
                 <View style={styles.vibes}>
                   {entry.vibes.map((v) => (
-                    <Text key={v} style={[styles.vibe, { color: theme.accentText, backgroundColor: theme.accent }]}>
+                    <Text key={v} style={[styles.vibe, { color: theme.text, backgroundColor: theme.chip }]}>
                       {v}
                     </Text>
                   ))}
@@ -231,7 +231,7 @@ export default function EntryScreen() {
               primary
             />
             <Action theme={theme} icon="repeat" label="Log again" onPress={() => router.push({ pathname: '/log', params: { again: entry.id } })} />
-            <Action theme={theme} icon="albums-outline" label={onLists.length ? `LISTS (${onLists.length})` : 'Add to list'} onPress={() => setListing(true)} />
+            <Action theme={theme} icon="albums-outline" label={onLists.length ? `On ${onLists.length} ${onLists.length === 1 ? 'list' : 'lists'}` : 'Add to list'} onPress={() => setListing(true)} />
             {trackable(entry) && (
               <Action
                 theme={theme}
@@ -322,7 +322,7 @@ function Action({
       accessibilityRole="button"
       style={({ pressed }) => [
         styles.action,
-        primary ? { backgroundColor: theme.accent } : { borderColor: theme.border, borderWidth: 1 },
+        { backgroundColor: primary ? theme.accent : theme.chip },
         pressed && { opacity: 0.8 },
       ]}
     >
@@ -335,7 +335,7 @@ function Action({
 const styles = StyleSheet.create({
   viewingWrap: { gap: 10 },
   vibes: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  vibe: { fontFamily: fonts.uiSemibold, fontSize: font.caption, borderRadius: 4, paddingHorizontal: 8, paddingVertical: 4, overflow: 'hidden' },
+  vibe: { fontFamily: fonts.uiMedium, fontSize: font.caption, borderRadius: 14, paddingHorizontal: 12, paddingVertical: 6, overflow: 'hidden' },
   viewingLine: { fontFamily: fonts.ui, fontSize: font.footnote },
   character: { flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, borderRadius: 12, padding: 10 },
   characterLabel: { fontFamily: fonts.uiSemibold, fontSize: 12 },
@@ -364,9 +364,9 @@ const styles = StyleSheet.create({
   tags: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   tag: { fontFamily: fonts.ui, fontSize: font.footnote, borderWidth: 1, borderRadius: 4, paddingHorizontal: 8, paddingVertical: 3 },
   actions: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  action: { flexGrow: 1, flexBasis: '45%', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: 46, borderRadius: 23 },
+  action: { flexGrow: 1, flexBasis: '45%', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 48, paddingHorizontal: 16, paddingVertical: 10, borderRadius: 24 },
   actionText: { fontFamily: fonts.uiSemibold, fontSize: font.footnote },
   viewings: { gap: 4 },
-  viewing: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 10, borderBottomWidth: StyleSheet.hairlineWidth },
+  viewing: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 48, paddingVertical: 10, borderBottomWidth: StyleSheet.hairlineWidth },
   viewingDate: { fontFamily: fonts.ui, fontSize: font.body, flex: 1 },
 });

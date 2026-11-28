@@ -187,6 +187,8 @@ export function Chip({ label, active, icon, color, theme, onPress }: {
     <Tap
       onPress={onPress}
       scale={0.95}
+      // 32 high to the eye, 48 to the finger (Android only honours the part inside the parent).
+      hitSlop={{ top: 8, bottom: 8 }}
       accessibilityRole="button"
       accessibilityState={{ selected: !!active }}
       style={[styles.chip, { backgroundColor: active ? theme.chipActive : 'transparent', borderColor: active ? theme.chipActive : theme.border }]}

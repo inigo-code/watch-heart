@@ -68,7 +68,7 @@ export function Hero({ t, theme, topInset = 0, onPoster, scrollY, pending, child
         )}
         <View style={styles.info}>
           <KindBadge kind={t.kind} theme={theme} />
-          <Text style={[styles.title, { color: theme.text }]} numberOfLines={3}>
+          <Text style={[styles.title, { color: theme.text }]} numberOfLines={4}>
             {t.title}
           </Text>
           {!!t.originalTitle && (

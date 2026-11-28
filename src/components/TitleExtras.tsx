@@ -201,7 +201,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingHorizontal: 14,
     alignSelf: 'center',
-    height: 40,
+    minHeight: 40,
   },
   imdbText: { fontWeight: '900', fontSize: font.body, color: '#000000' },
   note: { fontFamily: fonts.ui, fontSize: font.caption, lineHeight: 16 },

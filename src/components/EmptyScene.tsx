@@ -5,7 +5,7 @@ import { CineIcon } from '@/components/CineIcon';
 import type { CineIconName } from '@/components/CineIcon';
 import { TicketPrint, TicketTear, ticketPaper } from '@/components/Diary';
 import { Sprockets } from '@/components/Film';
-import { font, fonts } from '@/lib/theme';
+import { font, fonts, shadow } from '@/lib/theme';
 import type { Theme } from '@/lib/theme';
 
 const ON_STRIP = 'rgba(244,239,230,0.07)';
@@ -52,19 +52,21 @@ export function EmptyScene({ theme, scene, icon, title, text, action }: {
 /** A ticket with nothing printed on it yet: the stub says ADMIT ONE, the rest is blank lines. */
 function BlankTicket({ theme }: { theme: Theme }) {
   const p = ticketPaper('movie', theme);
+  // On Paper the ticket's own border is too close to the page; a soft ink keeps it a drawn object.
+  const ink = theme.dark ? p.border : theme.textMuted + '59';
   return (
-    <View style={[styles.ticket, { backgroundColor: p.paper, borderColor: p.border }]}>
+    <View style={[styles.ticket, { backgroundColor: p.paper, borderColor: ink }, !theme.dark && { borderWidth: 1, boxShadow: shadow.subtle }]}>
       <TicketPrint kind="movie" theme={theme} />
       <View style={styles.stub}>
         <Text style={[styles.admit, { color: theme.textMuted }]}>ADMIT</Text>
         <Text style={[styles.admit, { color: theme.textMuted }]}>ONE</Text>
       </View>
-      <TicketTear theme={theme} border={p.border} />
-      <View style={[styles.posterSlot, { borderColor: p.border }]} />
+      <TicketTear theme={theme} border={ink} />
+      <View style={[styles.posterSlot, { borderColor: ink }]} />
       <View style={styles.lines}>
-        <View style={[styles.line, { width: '86%', backgroundColor: p.border }]} />
-        <View style={[styles.line, { width: '52%', backgroundColor: p.border }]} />
-        <View style={[styles.line, { width: '64%', backgroundColor: p.border }]} />
+        <View style={[styles.line, { width: '86%', backgroundColor: ink }]} />
+        <View style={[styles.line, { width: '52%', backgroundColor: ink }]} />
+        <View style={[styles.line, { width: '64%', backgroundColor: ink }]} />
       </View>
     </View>
   );
